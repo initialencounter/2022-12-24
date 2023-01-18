@@ -1,13 +1,13 @@
 commands:
   b-eula:
-    description: eula协议
+    description: 获取绘图权限
     usage: |-
       输入 b-eula 加入协议
       本插件基于 eula 修改完成
       好用的话去点个 star 参考自https://github.com/Lipraty/koishi-plugin-eula/
     messages:
       not-found: 指令未找到。
-      global-prolog: 当前可用的指令有{0}：
+      global-prolog: 当前可用的指令有{0};
       eulaMessage: |-
         <>
           <message forward>
@@ -17,15 +17,8 @@ commands:
           </message>
         </>
       acceptedMessage: 您已同意 {0}，服务已生效。
-      rejectMessage: 您未同意 {0}，将不能为您提供条款限制的服务。\n 如果您需要使用，可发送 eula 命令来重新执行该流程。
+      rejectMessage: 您未同意 {0}，将不能为您提供条款限制的服务。\n 如果您需要使用，可发送 b-eula 命令来重新执行该流程。
       timeout: 等待超时
-      rape: |-
-        <>
-          <at id="{0}"/>
-          {1}
-        </>
-      audit: |-
-        <>
-          <at id="{0}"/>
-          {1}{2}
-        </>
+      user-expected: 请艾特需要释放权限的用户,示例:rls @风
+      pass-test: ^……:{0}
+      release: 释放成功
