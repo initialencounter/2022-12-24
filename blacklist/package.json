@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-blacklist",
   "description": "黑名单+[EULA](https://github.com/Lipraty/koishi-plugin-eula/),剥夺违规用户权限",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
