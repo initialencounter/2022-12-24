@@ -1,0 +1,31 @@
+{
+  "name": "koishi-plugin-facercg",
+  "description": "[百度智能云](https://console.bce.baidu.com/ai/#/ai/face/overview/index),颜值评分",
+  "version": "1.2.2",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "author": "initencounter <2911583893@qq.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/koishi-plugin-facercg.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/koishi-plugin-facercg/issues"
+  },
+  "homepage": "https://github.com/initialencounter/koishi-plugin-facercg#readme",
+  "scripts": {},
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "Face-recognition"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.10.10"
+  }
+}
