@@ -1,0 +1,21 @@
+{
+  "name": "koishi-plugin-sd-taylor",
+  "description": "[stabe_diffusion](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/API)绘图插件,[github](https://github.com/initialencounter/koishi-plugin-sd-taylor)源码",
+  "version": "1.2.2",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "MIT",
+  "scripts": {},
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.10.10"
+  }
+}
