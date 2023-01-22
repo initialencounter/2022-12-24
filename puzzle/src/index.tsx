@@ -2,7 +2,13 @@ import { Context, Schema } from 'koishi'
 import { } from 'koishi-plugin-puppeteer'
 import { Klotsk } from './puzzle'
 export const name = 'puzzle'
-
+export const usage = `
+## 注意事项
+> 原游戏 <a href="http://tapsss.com">扫雷联萌</a>
+本插件仅供学习参考，请勿用于商业行为
+对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-puzzle 概不负责。
+如果有更多文本内容想要修改，可以在<a href="/locales">本地化</a>中修改 zh 内容
+`
 declare module 'koishi' {
   interface Tables {
     puzzle: Puzzle
@@ -16,8 +22,6 @@ export interface Puzzle {
   mode: number
   score: number
 }
-
-
 
 export interface Config {
   maxConcurrency: number
@@ -57,9 +61,6 @@ export const replace_n = (s: string) => {
 }
 const globalTasks: object = {}
 const drctn_list: string[] = ['U', 'D', 'L', 'R']
-// const trsn_dist: object = {'U':'L', 'D':'R', 'L':'U', 'R':'D'} 
-
-
 
 export const game = async (gid: string, opration: string, uid: string, ctx: Context) => {     //游戏逻辑
   const ktk = globalTasks[gid]
