@@ -1,0 +1,6 @@
+commands:
+  dvc:
+    description: 达芬奇-3语言模型ai
+    messages:
+      no-prompt: 你好！很高兴认识你！
+      thinking: 思考中……
