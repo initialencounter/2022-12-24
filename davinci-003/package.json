@@ -1,0 +1,33 @@
+{
+  "name": "koishi-plugin-davinci-003",
+  "description": "[openai-davinci](https://beta.openai.com/)模型(勤俭持家版)",
+  "version": "1.2.2",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "MIT",
+  "author": "initencounter <2911583893@qq.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/blob/main/davinci-003#readme.md",
+  "scripts": {},
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.10.10"
+  },
+  "dependencies": {
+    "openai": "^3.1.0"
+  }
+}
