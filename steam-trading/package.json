@@ -1,0 +1,42 @@
+{
+  "name": "koishi-plugin-steam-trading",
+  "description": "steam挂刀行情",
+  "version": "1.1.0",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "MIT",
+  "author": "initencounter <2911583893@qq.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/blob/main/steam-trading#readme.md",
+  "scripts": {},
+  "koishi": {
+    "browser": true,
+    "service": {
+      "optional": [
+        "puppeteer"
+      ]
+    }
+  },
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "steam trading"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.11.1"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.12"
+  }
+}
