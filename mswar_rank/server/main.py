@@ -21,3 +21,8 @@ async def send_rank():                                     # 发送群排名
     with open('./database.txt','r') as f:
         text += f.read()
     return text
+
+
+
+#usage 
+#uvicorn main:app --reload --host 0.0.0.0 --port 8080
