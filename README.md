@@ -2,7 +2,7 @@
 
 一些自己写的koishi插件
 
-QQ群399899914
+反馈群399899914
 
 [作者b站](https://space.bilibili.com/225995995)
 
@@ -106,7 +106,7 @@ tl  -u 1 <图片>
 ## 数字华容道 --[puzzle](puzzle)
 
 ### 描述
-数字华容道游戏，原游戏![alt 扫雷联萌](http://tapsss.com)
+数字华容道游戏，原游戏[扫雷联萌](http://tapsss.com)
 [nonebot-plugin-puzzle](https://github.com/initialencounter/nonebot-plugin-puzzle)重写版
 ### 使用用法
 启动游戏：pz
