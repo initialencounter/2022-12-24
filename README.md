@@ -23,7 +23,7 @@ QQ群399899914
 * 扫雷联萌排行榜 --[mswar-acyive-rank](https://github.com/initialencounter/mykoishi/mswar-acyive-rank)
 
 对对子 --[couplet](https://github.com/initialencounter/mykoishi/couplet)
-## 扫雷工具箱 --[stnb](./stnb)
+## 扫雷工具箱 --[stnb](stnb)
 ### 描述
 计算扫雷游戏的参数
 ### 使用用法
