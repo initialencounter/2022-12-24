@@ -6,23 +6,23 @@ QQ群399899914
 
 [作者b站](https://space.bilibili.com/225995995)
 
-* 扫雷工具箱 --[stnb](https://github.com/initialencounter/mykoishi/stnb)
+* 扫雷工具箱 --[stnb](stnb)
 
 * 颜值评分 --[facercg](https://github.com/initialencounter/koishi-plugin-facercg)
 
 * AI绘图 --[sd-taylor](https://github.com/initialencounter/koishi-plugin-sd-taylor)
 
-* 数字华容道 --[puzzle](https://github.com/initialencounter/mykoishi/puzzle)
+* 数字华容道 --[puzzle](puzzle)
 
-* 魔方 --[cube](https://github.com/initialencounter/mykoishi/cube)
+* 魔方 --[cube](cube)
 
-* 黑名单 --[blacklist](https://github.com/initialencounter/mykoishi/blacklist)
+* 黑名单 --[blacklist](blacklist)
 
-* steam挂刀行情 --[steam-trading](https://github.com/initialencounter/mykoishi/steam-trading)
+* steam挂刀行情 --[steam-trading](steam-trading)
 
-* 扫雷联萌排行榜 --[mswar-acyive-rank](https://github.com/initialencounter/mykoishi/mswar-acyive-rank)
+* 扫雷联萌排行榜 --[mswar-acyive-rank](smwar-rank)
 
-对对子 --[couplet](https://github.com/initialencounter/mykoishi/couplet)
+对对子 --[couplet](couplet)
 ## 扫雷工具箱 --[stnb](stnb)
 ### 描述
 计算扫雷游戏的参数
@@ -33,7 +33,7 @@ stnb 60 3 3
 第三个参数3代表扫雷的模式，可用选项为［1:初级,2:中级,3:高级]
 ### 示例
 ![alt 示例1](./screenshot/1.png)
-## 达芬奇3语言模型 --[davinci-003](https://github.com/initialencounter/mykoishi/davinci-003)
+## 达芬奇3语言模型 --[davinci-003](davinci-003)
 ### 描述
 OpenAI的聊天插件
 ### 使用用法
@@ -52,7 +52,7 @@ face <含有人脸的图片>
 ### 多人识别
 ![alt 结果](./screenshot/3-2.jpeg)
 
-## 自动回复 --[auto-reply](https://github.com/initialencounter/mykoishi/auto-reply)
+## 自动回复 --[auto-reply](auto-reply)
 
 ### 描述
 设置自动回复的词库
@@ -103,7 +103,7 @@ tl  -u 1 <图片>
 ![alt 超分辨率](./screenshot/5-4.jpeg)
 
 
-## 数字华容道 --[puzzle](https://github.com/initialencounter/mykoishi/puzzle)
+## 数字华容道 --[puzzle](puzzle)
 
 ### 描述
 数字华容道游戏，原游戏![alt 扫雷联萌](http://tapsss.com)
@@ -116,7 +116,7 @@ tl  -u 1 <图片>
 ### 示例
 ![alt 示例6](./screenshot/6.jpg)
 
-## 魔方 --[cube](https://github.com/initialencounter/mykoishi/cube)
+## 魔方 --[cube](cube)
 
 ### 描述
 三阶魔方
@@ -128,7 +128,7 @@ cube <方向命令>
 ### 示例
 ![alt 示例7](./screenshot/7.jpg)
 
-## 黑名单 --[blacklist](https://github.com/initialencounter/mykoishi/blacklist)
+## 黑名单 --[blacklist](blacklist)
 
 ### 描述
 拉黑发送带有违禁词命令的用户
@@ -137,7 +137,7 @@ cube <方向命令>
 ### 示例
 ![alt 示例8](./screenshot/8.png)
 
-## steam挂刀行情 --[steam-trading](https://github.com/initialencounter/mykoishi/steam-trading)
+## steam挂刀行情 --[steam-trading](steam-trading)
 
 ### 描述
 获取steam虚拟商品交易平台信息
@@ -147,7 +147,7 @@ trad
 ![alt 示例10](./screenshot/10.png)
 
 
-## 扫雷联萌排行榜 --[mswar-acyive-rank](https://github.com/initialencounter/mykoishi/mswar-acyive-rank)
+## 扫雷联萌排行榜 --[mswar-acyive-rank](smwar-rank)
 
 ### 描述
 使用获取扫雷联萌app中的排名
