@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-hok-rank?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-hok-rank)
 
-王者荣耀巅峰榜
+王者荣耀qq区巅峰榜推送
 
 支持自建服务器
 反馈群399899914
@@ -22,31 +22,31 @@
 
 
 
-1.在服务器安装nodejs
+* 1.在服务器安装nodejs
 
-2.将server-express.js,package.json上传至服务器
+* 2.将server-express.js,server/package.json上传至服务器
 
-3.安装package.json的依赖
+* 3.安装package.json的依赖
 
-4.启动server-express.js
+* 4.启动server-express.js
 
 
 ### 手机端部署
 
 
 
-1.安装王者营地和autojs
+* 1.安装王者营地和autojs
 
-2.登录营地账号
+* 2.登录营地账号
 
-3.将uploader.js导入autojs
+* 3.将uploader.js导入autojs
 
-4.修改uploader.js的端口号
+* 4.修改uploader.js的url和点击坐标
 
-4.给予autojs root权限
+* 4.授予autojs root权限
 
-5.运行uploader.js
+* 5.运行uploader.js
 
-#### 修改插件api-hostname
+#### 修改插件配置项的api-hostname
 
 
