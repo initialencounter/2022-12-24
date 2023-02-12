@@ -1,9 +1,8 @@
 import { Context, Schema, Time } from 'koishi'
-
 export const name = 'hok-rank'
 export const usage = `
 ## 注意事项
-> 建议使用前玩一局[扫雷联萌](http://tapsss.com)
+作者服务器经常掉线，支持<a href=https://github.com/initialencounter/mykoishi/hok-rank">自建服务器</a>
 本插件只用于体现 Koishi 部署者意志”。
 对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-hok-rank 概不负责。
 如果有更多文本内容想要修改，可以在<a href="/locales">本地化</a>中修改 zh 内容
@@ -28,6 +27,7 @@ export const Rule: Schema<Rule> = Schema.object({
   selfId: Schema.string().description('机器人 ID。'),
 })
 export interface Config {
+  api_hostname: string
   rules: Rule[]
   interval: number
   background_img: string
@@ -35,6 +35,7 @@ export interface Config {
 }
 
 export const Config: Schema<Config> = Schema.object({
+  api_hostname:Schema.string().description('自建服务器地址').default('http://116.205.167.54:5140'),
   rules: Schema.array(Rule).description('推送规则。'),
   interval: Schema.number().default(Time.minute * 30).description('轮询间隔 (毫秒)。'),
   background_img: Schema.string().default('https://img0.baidu.com/it/u=2013803511,2814800709&fm=253&fmt=auto&app=138&f=JPEG?w=889&h=500').description('背景图片url,http开头:'),
@@ -46,11 +47,11 @@ export function apply(ctx: Context, config: Config) {
   if (!v.test(config.background_img)) {
     bgd_img = 'https://img0.baidu.com/it/u=2013803511,2814800709&fm=253&fmt=auto&app=138&f=JPEG?w=889&h=500'
   }
-  ctx.command('巅峰赛').alias('巅峰榜').action(async () => {
-    const json_res: Rank = await ctx.http.get('http://116.205.167.54:5140/get-hok')
+  ctx.command('巅峰赛').alias('巅峰榜','hok-rank').action(async () => {
+    const json_res: Rank = await ctx.http.get(`${config.api_hostname}/get-hok`)
     const rank_IOS = json_res.rank_IOS
     const rank_Android = json_res.rank_Android
-    const item1: any[] = [<div>王者荣耀IOS-qq区巅峰榜</div>, <br></br>]
+    const item1: any[] = [<div>{json_res.update_time}</div>,<div>王者荣耀IOS-qq区巅峰榜</div>, <br></br>]
     console.log(rank_IOS)
     rank_IOS.forEach((i, id) => {
       item1.push(<div>{i[0]}. 【{i[3].split(' ')[0]}】^{i[3].split(' ')[1]} {i[2].split('|')[0]}</div>)
@@ -67,10 +68,10 @@ export function apply(ctx: Context, config: Config) {
   })
   ctx.on('ready', async () => {
     ctx.setInterval(async () => {
-      const json_res: Rank = await ctx.http.get('http://116.205.167.54:5140/get-hok')
+      const json_res: Rank = await ctx.http.get(`${config.api_hostname}/get-hok`)
       const rank_IOS = json_res.rank_IOS
       const rank_Android = json_res.rank_Android
-      const item1: any[] = [<div>王者荣耀IOS-qq区巅峰榜</div>, <br></br>]
+      const item1: any[] = [<div>{json_res.update_time}</div>,<div>王者荣耀IOS-qq区巅峰榜</div>, <br></br>]
       console.log(rank_IOS)
       rank_IOS.forEach((i, id) => {
         item1.push(<div>{i[0]}. 【{i[3].split(' ')[0]}】^{i[3].split(' ')[1]} {i[2].split('|')[0]}</div>)
