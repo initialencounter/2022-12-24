@@ -49,7 +49,7 @@
 * steam挂刀行情 --[steam-trading](steam-trading) [![npm](https://img.shields.io/npm/v/koishi-plugin-steam-trading?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-steam-trading)
 
 
-* 扫雷联萌排行榜 --[mswar-acyive-rank](smwar-rank) [![npm](https://img.shields.io/npm/v/koishi-plugin-mswar-active-rank?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-mswar-active-rank)
+* 扫雷联萌排行榜 --[mswar-active-rank](smear-rank) [![npm](https://img.shields.io/npm/v/koishi-plugin-mswar-active-rank?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-mswar-active-rank)
 
 * 对对子 --[couplet](couplet)[![npm](https://img.shields.io/npm/v/koishi-plugin-couplet?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-couplet)
 
@@ -224,7 +224,7 @@ trad
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## 扫雷联萌排行榜 --[mswar-active-rank](smwar-rank)
+## 扫雷联萌排行榜 --[mswar-active-rank](smear-rank)
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-mswar-active-rank?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-mswar-active-rank)
 
