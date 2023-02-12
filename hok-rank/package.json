@@ -1,0 +1,30 @@
+{
+  "name": "koishi-plugin-hok-rank",
+  "description": "王者荣耀qq区巅峰榜",
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "MIT",
+  "scripts": {},
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "王者荣耀"
+  ],
+  "peerDependencies": {
+    "koishi": "4.11.5"
+  },
+  "koishi": {
+    "description":"王者荣耀qq区巅峰榜",
+    "service": {
+      "optional": [
+        "puppeteer"
+      ]
+    }
+  }
+}
