@@ -5,6 +5,10 @@
 王者荣耀巅峰榜
 
 支持自建服务器
+反馈群399899914
+
+[作者b站](https://space.bilibili.com/225995995)
+
 ## 自建服务器教程
 
 ## 要求
@@ -16,6 +20,8 @@
 
 ### 服务端部署
 
+
+
 1.在服务器安装nodejs
 
 2.将server-express.js,package.json上传至服务器
@@ -24,7 +30,10 @@
 
 4.启动server-express.js
 
+
 ### 手机端部署
+
+
 
 1.安装王者营地和autojs
 
