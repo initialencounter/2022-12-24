@@ -209,8 +209,11 @@ cube <方向命令>
 
 ### 示例
 ![alt 示例7](./screenshot/7.jpg)
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 ![alt 示例7-1](./screenshot/7-1.jpg)
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 ![alt 示例7-2](./screenshot/7-2.jpg)
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 ![alt 示例7-3](./screenshot/7-3.jpg)
 
 ### 感谢
