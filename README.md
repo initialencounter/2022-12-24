@@ -42,7 +42,7 @@
 
 * AI绘图 --[sd-taylor](https://github.com/initialencounter/koishi-plugin-sd-taylor) [![npm](https://img.shields.io/npm/v/koishi-plugin-sd-taylor?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-sd-taylor)
 
-![alt 示例2](./screenshot/3-2-1.jpeg)
+
 * 数字华容道 --[puzzle](https://github.com/initialencounter/mykoishi/puzzle) [![npm](https://img.shields.io/npm/v/koishi-plugin-puzzle?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-puzzle)
 
 * 魔方 --[cube](https://github.com/initialencounter/mykoishi/cube) [![npm](https://img.shields.io/npm/v/koishi-plugin-cube?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-cube)
