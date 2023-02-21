@@ -30,7 +30,7 @@
 
 
 
-
+* 老色批 --[lsp](https://github.com/initialencounter/mykoishi/lsp) [![npm](https://img.shields.io/npm/v/koishi-plugin-lsp?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-lsp)
 
 * 扫雷工具箱 --[stnb](https://github.com/initialencounter/mykoishi/stnb) [![npm](https://img.shields.io/npm/v/koishi-plugin-stnb?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-stnb)
 
