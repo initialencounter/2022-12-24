@@ -1,0 +1,10 @@
+commands:
+  lsp:
+    description: 好康的
+    messages:
+      saved: 
+        <random>
+          <>好耶，存了……</>
+          <>不够，再来</>
+          <>我还要</>
+        </random>
