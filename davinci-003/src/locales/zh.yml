@@ -1,6 +1,8 @@
 commands:
   dvc:
-    description: 达芬奇-3语言模型ai
+    description: OpenAi,新增记忆功能、人格设置、余额查询
     messages:
       no-prompt: 你好！很高兴认识你！
       thinking: 思考中……
+      err: 寄！
+      total_available: 滴！当前账户的余额为${0}
