@@ -1,14 +1,14 @@
 {
   "name": "koishi-plugin-davinci-003",
-  "description": "[openai-davinci](https://beta.openai.com/)模型(勤俭持家版)",
-  "version": "1.2.2",
+  "description": "新增记忆功能、人格设置、余额查询",
+  "version": "1.3.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
     "lib",
     "dist"
   ],
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "author": "initencounter <2911583893@qq.com>",
   "repository": {
     "type": "git",
@@ -22,12 +22,10 @@
   "keywords": [
     "chatbot",
     "koishi",
-    "plugin"
+    "plugin",
+    "OpenAi-Api"
   ],
   "peerDependencies": {
-    "koishi": "^4.10.10"
-  },
-  "dependencies": {
-    "openai": "^3.1.0"
+    "koishi": "^4.11.7"
   }
 }
