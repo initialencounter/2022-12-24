@@ -1,6 +1,6 @@
 {
     "openai": {
-         "api_key": "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",
+         "api_key": "你的openai的api—key",
          "img_size": "1024x1024"
     },
     "chatgpt": {
