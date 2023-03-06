@@ -18,7 +18,7 @@ session_config = {
 }
 
 sessions = {}
-
+#gpt后端参考自<a href="https://lucent.blog/?p=118">Lucent</a>，非官方api谨慎使用
 openai.api_base = "https://chat-gpt.aurorax.cloud/v1"
 
 def chat_with_gpt(messages):
