@@ -10,7 +10,6 @@ from pydantic import BaseModel
 with open("config.json", "r",
           encoding='utf-8') as jsonfile:
     config_data = json.load(jsonfile)
-    qq_no = config_data['qq_bot']['qq_no']
 
 session_config = {
     'msg': [
