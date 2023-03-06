@@ -18,7 +18,7 @@ GPT-3.5turbo后端参考自<a style="color:yellow" href="https://lucent.blog/?p=
 api_key已封装成请求体，只需在客户端填写，服务端无需填写
 
 
-* 下载server目录
+* [下载server](https://github.com/initialencounter/mykoishi/releases/tag/davinci-003)目录
 
 * 双击安装依赖.bat
 
