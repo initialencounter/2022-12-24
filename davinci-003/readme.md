@@ -7,8 +7,6 @@
 
 * 下载server目录
 
-* 打开全局代理
-
 * 双击安装依赖.bat
 
 * 修改config.json的api
