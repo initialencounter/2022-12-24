@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-davinci-003",
-  "description": "新增记忆功能、人格设置、余额查询",
-  "version": "1.3.0",
+  "description": "新增gpt3.5-turbo人格设置、余额查询、人格触发命令、严格会话隔离",
+  "version": "1.3.2",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -27,5 +27,14 @@
   ],
   "peerDependencies": {
     "koishi": "^4.11.7"
+  },
+  "koishi": {
+    "description": "自定义人格gpt3.5-turbo+davinci",
+    "browser": true,
+    "service": {
+      "optional": [
+        "puppeteer"
+      ]
+    }
   }
 }
