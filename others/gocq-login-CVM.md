@@ -13,7 +13,9 @@
 
 * QQ扫码工具--[Tim](https://tim.qq.com/mobile/index.html?adtag=index)
 <p align="right"><a href="#readme-top">back to top</a></p>
+
 # 操作步骤
+
 <a href="#a">1. 启动Linux容器</a><br>
 
 <a href="#b">2. 安装gocq</a><br>
@@ -26,7 +28,9 @@
 
 <a href="#f">6. 启动服务器gocq</a><br>
 <a name="a"></a>
+
 # 具体操作
+
 <p align="right"><a href="#readme-top">back to top</a></p>
 ## 1.启动Linux容器
 
@@ -38,6 +42,7 @@
 ./centos-arm64.sh
 ```
 <p align="right"><a href="#readme-top">back to top</a></p>
+
 ## 2.安装gocq
 
 1. 下载wget
@@ -62,6 +67,7 @@ yum install tar -y
 tar -xf go-cqhttp_linux_arm64.tar.gz
 ```
 <p align="right"><a href="#readme-top">back to top</a></p>
+
 ## 3.修改配置文件
 
 1. 生成配置文件config.yml和device.json（已有可跳过）
@@ -77,6 +83,7 @@ tar -xf go-cqhttp_linux_arm64.tar.gz
 3. 修改device.json
 使用vi将device.json里的 "protocol":5 改成 "protocol":2
 <p align="right"><a href="#readme-top">back to top</a></p>
+
 ## 4.扫码登录
 
 
@@ -91,6 +98,7 @@ tar -xf go-cqhttp_linux_arm64.tar.gz
 3. 打开Tim登录QQ扫码
 
 <p align="right"><a href="#readme-top">back to top</a></p>
+
 ## 5.上传配置文件到服务器
 
 
@@ -102,6 +110,7 @@ tar -xf go-cqhttp_linux_arm64.tar.gz
 
 2. 使用Mt管理器ftp登录服务器，将session.token，device.json，congfig.json，上传至云服务器
 <p align="right"><a href="#readme-top">back to top</a></p>
+
 ## 6.云服务器启动gocq
 
 将session.token，device.json，congfig.json，与go-cqhttp可执行文件放到同一目录，切换到该目录
