@@ -85,6 +85,18 @@ def chat(msg, sessionid,api_key):
         return {"msg":[{"role":"","content":{str('异常: ' + str(error))}}],"id":1}
 
 
+def get_openai_image(des,size,key):
+    openai.api_key = key
+    response = openai.Image.create(
+        prompt=des,
+        n=1,
+        size=size
+    )
+    image_url = response['data'][0]['url']
+    print('图像已生成')
+    print(image_url)
+    return {"msg":[{"role":"","content":image_url}],"id":1}
+
 class Item(BaseModel):
     msg: str
     id: str
@@ -94,6 +106,11 @@ app = FastAPI()
 @app.post("/chat")
 def create_item(item:Item):
     msg = chat(item.msg,item.id,item.api_key)
+    print(sessions)
+    return msg
+@app.post("/img")
+def create_item(item:Item):
+    msg = get_openai_image(item.msg,item.id,item.api_key)
     print(sessions)
     return msg
 
