@@ -1,8 +1,37 @@
 commands:
   dvc:
-    description: OpenAi,新增记忆功能、人格设置、余额查询
+    description: |-
+                      gpt3.5-turbo或davinci-003
+                      
+
+    usage: |-
+      <>
+        <message forward>
+          <message id=1> gpt3.5后端参考自Lucent,https://lucent.blog/?p=118 </message>
+          <message id=2>自建gpt后端https://github.com/initialencounter/mykoishi/blob/main/davinci-003#readme.md </message>
+          <message id=3>对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-davinci-003 概不负责</message>
+          <message id=4>指令如下：</message>
+          <message id=5>1.[重置会话] 请发送 "ai 重置会话"</message>
+          <message id=6>2.[设置人格] 请发送 "ai 设置人格+人格描述"</message>
+          <message id=7>3.[重置人格] 请发送 "ai 重置人格"</message>
+          <message id=8>注意：重置会话不会清空人格,重置人格会重置会话!</message>
+          <message id=9>设置人格后人格将一直存在，除非重置人格或重启逻辑端!</message>
+        </message>
+      </>
     messages:
+      censor: 不合规，请检查输入内容是否含有违禁词
       no-prompt: 你好！很高兴认识你！
       thinking: 思考中……
       err: 寄！
       total_available: 滴！当前账户的余额为${0}
+      toolong: 滋滋..猪脑过载
+      switch: 当前存在人格{0}请输入编号
+      switch-err: 不存在人格可切换
+      get: 查询中...
+  dvc.su:
+    description: |-
+                      超级用户专用命令
+                      
+          
+  dvc.img:
+    description: chat-gpt图片功能
