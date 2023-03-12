@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-davinci-003",
-  "description": "新增gpt3.5-turbo人格设置、余额查询、人格触发命令、严格会话隔离",
-  "version": "1.3.2",
+  "description": "新增gpt3.5超级节俭模式,优化了代码结构,实现了dvc服务",
+  "version": "1.4.2",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -17,23 +17,31 @@
   "bugs": {
     "url": "https://github.com/initialencounter/mykoishi/issues"
   },
-  "homepage": "https://github.com/initialencounter/mykoishi/blob/main/davinci-003#readme.md",
+  "homepage": "https://github.com/initialencounter/mykoishi#readme.md",
   "scripts": {},
   "keywords": [
     "chatbot",
     "koishi",
     "plugin",
-    "OpenAi-Api"
+    "OpenAi-Api",
+    "davinci",
+    "chatgpt"
   ],
   "peerDependencies": {
-    "koishi": "^4.11.7"
+    "koishi": "^4.11.9"
   },
   "koishi": {
-    "description": "自定义人格gpt3.5-turbo+davinci",
+    "description": "新增gpt3.5超级节俭模式,优化了代码结构",
     "browser": true,
     "service": {
       "optional": [
         "puppeteer"
+      ],
+      "required": [
+        "rate-limit"
+      ],
+      "implements": [
+        "dvc"
       ]
     }
   }
