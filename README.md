@@ -29,35 +29,44 @@
 
 
 
-
-* 老色批 --[lsp](https://github.com/initialencounter/mykoishi/lsp) [![npm](https://img.shields.io/npm/v/koishi-plugin-lsp?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-lsp)
-
-* 扫雷工具箱 --[stnb](https://github.com/initialencounter/mykoishi/stnb) [![npm](https://img.shields.io/npm/v/koishi-plugin-stnb?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-stnb)
-
 * 颜值评分 --[facercg](https://github.com/initialencounter/koishi-plugin-facercg)[![npm](https://img.shields.io/npm/v/koishi-plugin-facercg?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-facercg)
 
-* 达芬奇3语言模型 --[davinci-003](https://github.com/initialencounter/mykoishi/davinci-003) [![npm](https://img.shields.io/npm/v/koishi-plugin-davinci-003?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-davinci-003)
 
-* 自动回复 --[auto-reply](https://github.com/initialencounter/mykoishi/auto-reply) [![npm](https://img.shields.io/npm/v/koishi-plugin-auto-reply?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-auto-reply)
+* 达芬奇3语言模型 --[davinci-003](https://github.com/initialencounter/mykoishi/tree/main/davinci-003) [![npm](https://img.shields.io/npm/v/koishi-plugin-davinci-003?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-davinci-003)
+
+
+* 数字华容道 --[puzzle](https://github.com/initialencounter/mykoishi/tree/main/puzzle) [![npm](https://img.shields.io/npm/v/koishi-plugin-puzzle?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-puzzle)
+
+
+* 魔方 --[cube](https://github.com/initialencounter/mykoishi/tree/main/cube) [![npm](https://img.shields.io/npm/v/koishi-plugin-cube?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-cube)
+
+
+* 黑名单 --[blacklist](https://github.com/initialencounter/mykoishi/tree/main/blacklist) [![npm](https://img.shields.io/npm/v/koishi-plugin-blacklist?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-blacklist)
+
+
+* steam挂刀行情 --[steam-trading](https://github.com/initialencounter/mykoishi/tree/main/steam-trading) [![npm](https://img.shields.io/npm/v/koishi-plugin-steam-trading?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-steam-trading)
+
+
+* 对对子 --[couplet](https://github.com/initialencounter/mykoishi/tree/main/couplet)[![npm](https://img.shields.io/npm/v/koishi-plugin-couplet?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-couplet)
+
 
 * AI绘图 --[sd-taylor](https://github.com/initialencounter/koishi-plugin-sd-taylor) [![npm](https://img.shields.io/npm/v/koishi-plugin-sd-taylor?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-sd-taylor)
 
 
-* 数字华容道 --[puzzle](https://github.com/initialencounter/mykoishi/puzzle) [![npm](https://img.shields.io/npm/v/koishi-plugin-puzzle?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-puzzle)
-
-* 魔方 --[cube](https://github.com/initialencounter/mykoishi/cube) [![npm](https://img.shields.io/npm/v/koishi-plugin-cube?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-cube)
-
-* 黑名单 --[blacklist](https://github.com/initialencounter/mykoishi/blacklist) [![npm](https://img.shields.io/npm/v/koishi-plugin-blacklist?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-blacklist)
-
-* steam挂刀行情 --[steam-trading](https://github.com/initialencounter/mykoishi/steam-trading) [![npm](https://img.shields.io/npm/v/koishi-plugin-steam-trading?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-steam-trading)
+* 老色批 --[lsp](https://github.com/initialencounter/mykoishi/tree/main/lsp) [![npm](https://img.shields.io/npm/v/koishi-plugin-lsp?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-lsp)
 
 
-* 扫雷联萌排行榜 --[mswar-active-rank](https://github.com/initialencounter/mykoishi/smear_rank) [![npm](https://img.shields.io/npm/v/koishi-plugin-mswar-active-rank?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-mswar-active-rank)
-
-* 对对子 --[couplet](https://github.com/initialencounter/mykoishi/couplet)[![npm](https://img.shields.io/npm/v/koishi-plugin-couplet?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-couplet)
+* 扫雷工具箱 --[stnb](https://github.com/initialencounter/mykoishi/tree/main/stnb) [![npm](https://img.shields.io/npm/v/koishi-plugin-stnb?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-stnb)
 
 
-* 王者荣耀巅峰赛推送 --[hok-rank](https://github.com/initialencounter/mykoishi/hok-rank) [![npm](https://img.shields.io/npm/v/koishi-plugin-hok-rank?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-hok-rank)
+* 自动回复 --[auto-reply](https://github.com/initialencounter/mykoishi/tree/main/auto-reply) [![npm](https://img.shields.io/npm/v/koishi-plugin-auto-reply?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-auto-reply)
+(有bug）
+
+* ~~王者荣耀巅峰赛推送 --[hok-rank](https://github.com/initialencounter/mykoishi/tree/main/hok-rank) [![npm](https://img.shields.io/npm/v/koishi-plugin-hok-rank?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-hok-rank)~~
+(不再维护）
+
+* ~~扫雷联萌排行榜 --[mswar-active-rank](https://github.com/initialencounter/mykoishi/tree/main/smear_rank) [![npm](https://img.shields.io/npm/v/koishi-plugin-mswar-active-rank?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-mswar-active-rank)~~
+(不再维护）
 
 
 # 具体信息
