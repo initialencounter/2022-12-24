@@ -31,12 +31,14 @@ class Dvc extends Service {
   reg: RegExp;
   openai: OpenAI;
   access_token: string;
+  ifgettoken: boolean;
   constructor(ctx: Context, private config: Dvc.Config) {
     super(ctx, 'dvc', true)
     this.openai = new OpenAI(config.key, ctx);
     this.reg = new RegExp(config.reg);
     this.sessions_cmd = {};
     this.sessions = {};
+    this.access_token = ''
     this.session_config = {
       'msg': [
         { "role": "system", "content": config.preset }
@@ -94,6 +96,7 @@ class Dvc extends Service {
    * @returns 百度审核令牌
    */
   async get_token() {
+    this.ifgettoken = true
     if (this.config.AK && this.config.SK) {
       try {
         let options = {
@@ -105,8 +108,10 @@ class Dvc extends Service {
       }
       catch (e) {
         logger.warn(e.toString())
-        return false
+        return ''
       }
+    }else{
+      return ''
     }
   }
 
@@ -134,6 +139,13 @@ class Dvc extends Service {
       return `${session.text('commands.dvc.messages.err')}${String(err)}`
     }
   }
+
+/**
+ * 对话主要逻辑
+ */
+
+
+
   async dvc(session: Session, prompt: string) {
     if (!prompt) {
       return session.text('commands.dvc.messages.no-prompt')
@@ -145,9 +157,14 @@ class Dvc extends Service {
       session.send(session.text('commands.dvc.messages.thinking'))
     }
     let msg: string = prompt
-    const censor_text: boolean = await this.censor_request(session.content)
-    if (!censor_text) {
-      return session.text('commands.dvc.messages.censor')
+    if(!this.ifgettoken){
+      this.access_token = await this.get_token()
+    }
+    if (!(this.access_token=='')){
+      const censor_text: boolean = await this.censor_request(session.content)
+      if (censor_text==false) {
+        return session.text('commands.dvc.messages.censor')
+      }
     }
     const session_id_string: string = session.userId
     if (this.config.superusr.indexOf(session_id_string) == -1) {
@@ -304,27 +321,23 @@ class Dvc extends Service {
    */
 
   async censor_request(text: string) {
-
-    const token = await this.get_token()
     try {
-      if (token) {
-        const option = {
-          'method': 'POST',
-          'url': 'https://aip.baidubce.com/rest/2.0/solution/v1/text_censor/v2/user_defined?access_token=' + token,
-          'headers': {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept': 'application/json'
-          },
-          data: {
-            'text': text
-          }
+      const option = {
+        'method': 'POST',
+        'url': 'https://aip.baidubce.com/rest/2.0/solution/v1/text_censor/v2/user_defined?access_token=' + this.access_token,
+        'headers': {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json'
+        },
+        data: {
+          'text': text
         }
-        const resp = await this.ctx.http.axios(option)
-        if (resp.data.conclusion == '不合规') {
-          return false
-        } else {
-          return true
-        }
+      }
+      const resp = await this.ctx.http.axios(option)
+      if (resp.data.conclusion == '不合规') {
+        return false
+      } else {
+        return true
       }
     } catch (e) {
       logger.warn(String(e))
