@@ -27,6 +27,8 @@
 </div>
 
 
+* 意间AI绘画 --[arcadia](https://github.com/initialencounter/mykoishi/tree/main/arcadia)[![npm](https://img.shields.io/npm/v/koishi-plugin-arcadia?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-arcadia)
+
 
 
 * 颜值评分 --[facercg](https://github.com/initialencounter/koishi-plugin-facercg)[![npm](https://img.shields.io/npm/v/koishi-plugin-facercg?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-facercg)
