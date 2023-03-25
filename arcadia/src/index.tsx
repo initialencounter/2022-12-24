@@ -33,8 +33,10 @@ class Arcadia extends Service {
     charMap: any;
     g_voice_name: string;
     opt: Arcadia.Req
+    style: string
     constructor(ctx: Context, private config: Arcadia.Config) {
         super(ctx, 'arcadia', true)
+        this.style = this.config.style
         this.opt = {
             apikey: this.config.apikey,
             prompt: '测试',
@@ -54,37 +56,44 @@ class Arcadia extends Service {
             authority: this.config.authority,
             maxUsage: this.config.usage,
             usageName: 'ai'
-        }).alias(this.config.cmd,'arca','yjai').action(({ session }, prompt) => this.PostOpenApi(session, prompt))
+        }).alias(this.config.cmd,'arca','yjai').action(({ session }, prompt) => this.PostOpenApi(session, {
+            apikey: this.config.apikey,
+            prompt: prompt,
+            engine: this.config.engine,
+            style: this.style,
+            guidence_scale: this.config.guidence_scale}))
         ctx.command('arcadia.style <type:string>', '切换arcadia的风格画家').action(async ({ session }, type) => this.switch_style(session, type));
 
     }
-    async PostOpenApi(sesssion: Session, prompt: string) {
+    async PostOpenApi(sesssion: Session, payload:Arcadia.Req) {
         const now: string = `${Math.floor(Date.now() / 1000)}`;
-        this.opt['timestamp'] = now
-        this.opt["prompt"] = prompt
+        payload['timestamp'] = now
         // 得到签名
-        const sign = this.getSign();
+        const sign = this.getSign(payload);
         const headers: Record<string, string> = {
             "sign": sign,
             "Content-Type": "application/x-www-form-urlencoded"
         };
         // 超时时间
         const timeout: number = 10 * 1000;
-        const res: string = (await this.ctx.http.axios({
+        const res:Arcadia.Response = (await this.ctx.http.axios({
             url: this.config.api_path,
             method: 'POST',
             headers: headers,
-            data: this.opt,
+            data: payload,
             timeout: timeout
-        })).data.data.Uuid
-        if (!res) {
-            return '未知错误'
+        })).data
+        console.log(res)
+        const Uuid:string = res.data.Uuid
+        if (!Uuid) {
+            return res.reason
         }
-        sesssion.send(`任务uuid: ${res}`)
-        let image: string | segment = await this.show_complete_tasks(sesssion, res)
+        sesssion.send(`任务uuid: ${res.data.Uuid}`)
+        return '1'
+        let image: string | segment = await this.show_complete_tasks(sesssion, res.data.Uuid)
         let count: number = 0
         while (image == '未画好，请稍后发送 "show <uuid>" 查看' || count < 5) {
-            image = await this.show_complete_tasks(sesssion, res)
+            image = await this.show_complete_tasks(sesssion, res.data.Uuid)
             count++
         }
         return image
@@ -94,7 +103,7 @@ class Arcadia extends Service {
         const url = "http://api.yjai.art:8080/painting-open-api/site/show_task_detail";
         // 请求时的时间戳秒数
         const now: string = `${Math.floor(Date.now() / 1000)}`;
-        this.opt = {
+        const payload = {
             apikey: this.config.apikey,
             uuid: uuid,
             timestamp: now
@@ -103,10 +112,10 @@ class Arcadia extends Service {
             method: 'POST',
             url: url,
             headers: {
-                sign: this.getSign(),
+                sign: this.getSign(payload),
                 "Content-Type": "application/x-www-form-urlencoded"
             },
-            data: this.opt
+            data: payload
         }
         const image_path: string = await (await this.ctx.http.axios(config)).data.data.ImagePath;
         if (!image_path) {
@@ -118,23 +127,22 @@ class Arcadia extends Service {
     async switch_style(session: Session, type: string) {
         const type_arr: string[] = [
             '新海诚',
-            // '经典动漫',
-            // '油画',
             '水彩绘画',
-            // '中国画',
-            // '蒸汽波',
-            // '莫奈',
-            // '二次元色彩大师',
             '真实感照片',
             '剪纸艺术',
-            // '赛博朋克',
             '保罗·塞尚',
-            // '托马斯·科尔',
-            // '莫比乌斯',
             '村上隆',
             '穆夏',
             "毕加索",
-            // "梵高",
+            "梵高",
+            '托马斯·科尔',
+            '赛博朋克',
+            '中国画',
+            '蒸汽波',
+            '莫奈',
+            '二次元色彩大师',
+            '经典动漫',
+            '油画'
         ]
         if (!type) {
             let type_str: string = '\n'
@@ -146,12 +154,12 @@ class Arcadia extends Service {
             if (!input || Number.isNaN(+input)) return '请输入正确的序号。'
             const index: number = parseInt(input) - 1
             if (0 > index && index > type_arr.length - 1) return '请输入正确的序号。'
-            this.opt['style'] = type_arr[index]
-            return '风格画家切换成功: ' + this.opt['style']
+            this.style = type_arr[index]
+            return '风格画家切换成功: ' + this.style
         } else {
             if (type_arr.includes(type)) {
-                this.opt['style'] = type
-                return '风格画家切换成功: ' + this.opt['style']
+                this.style = type
+                return '风格画家切换成功: ' + this.style
             } else {
                 let type_str: string = '\n'
                 type_arr.forEach((i, id) => {
@@ -163,23 +171,23 @@ class Arcadia extends Service {
                 const index: number = parseInt(input) - 1
 
                 if (0 > index && index > type_arr.length - 1) return '请输入正确的序号。'
-                this.opt['style'] = type_arr[index]
-                return '风格画家切换成功: ' + this.opt['style']
+                this.style = type_arr[index]
+                return '风格画家切换成功: ' + this.style
             }
         }
 
     }
-    getSign() {
-        this.opt['apisecret'] = this.config.apisecret;
+    getSign(payload:Arcadia.Req) {
+        payload['apisecret'] = this.config.apisecret;
         const keys = [];
-        Object.keys(this.opt).forEach((key, _) => keys.push(key));
+        Object.keys(payload).forEach((key, _) => keys.push(key));
         keys.sort();
         const tmp = [];
         keys.forEach((key) => {
-            tmp.push(`${key}=${this.opt[key]}`);
+            tmp.push(`${key}=${payload[key]}`);
         });
         const sign = this.Md5V(tmp.join('&'));
-        delete this.opt.apisecret;
+        delete payload.apisecret;
         return sign;
     }
 
@@ -193,7 +201,7 @@ class Arcadia extends Service {
 namespace Arcadia {
     export const usage = `
 ##注意事项 
-> 使用前在 < a style = "color:blue" href = "http://open.yjai.art/openai-painting" > yjart </a> 中获取apikey及apisecret<br>
+> 使用前请前往 <a style = "color:blue" href ="http://open.yjai.art/openai-painting"> yjart </a> 中获取apikey及apisecret<br>
 对于部署者行为及所产生的任何纠纷， Koishi 及 <a style="color:blue" href="https:/ / github.com / initialencounter / mykoishi ">koishi-plugin-${name}</a>概不负责。<br>
 如果有更多文本内容想要修改，可以在<a style="color: blue " href=" / locales ">本地化</a>中修改 zh 内容</br>
 发送arcadia.style,即可切换风格
@@ -220,9 +228,9 @@ namespace Arcadia {
     }
 
     export interface Response {
-        Status: number;
-        Reason: string;
-        Data: any;
+        status: number;
+        reason: string;
+        data: any;
     }
     export interface Config {
         api_path: string
@@ -264,19 +272,18 @@ namespace Arcadia {
         // ratio: Schema.number().description('ratio').default(0),
         style: Schema.union([
             Schema.const('新海诚').description('新海诚'),
-            // Schema.const('经典动漫').description('经典动漫'),
-            // Schema.const('油画').description('油画'),
+            Schema.const('经典动漫').description('经典动漫'),
+            Schema.const('油画').description('油画'),
             Schema.const('水彩绘画').description('水彩绘画'),
-            // Schema.const('中国画').description('中国画'),
-            // Schema.const('蒸汽波').description('蒸汽波'),
-            // Schema.const('莫奈').description('莫奈'),
-            // Schema.const('二次元色彩大师').description('二次元色彩大师'),
+            Schema.const('中国画').description('中国画'),
+            Schema.const('蒸汽波').description('蒸汽波'),
+            Schema.const('莫奈').description('莫奈'),
+            Schema.const('二次元色彩大师').description('二次元色彩大师'),
             Schema.const('真实感照片').description('真实感照片'),
             Schema.const('剪纸艺术').description('剪纸艺术'),
-            // Schema.const('赛博朋克').description('赛博朋克'),
+            Schema.const('赛博朋克').description('赛博朋克'),
             Schema.const('保罗·塞尚').description('保罗·塞尚'),
-            // Schema.const('托马斯·科尔').description('托马斯·科尔'),
-            // Schema.const('莫比乌斯').description('莫比乌斯'),
+            Schema.const('托马斯·科尔').description('托马斯·科尔'),
             Schema.const('村上隆').description('村上隆'),
             Schema.const('穆夏').description('穆夏'),
             Schema.const('毕加索').description('毕加索')
