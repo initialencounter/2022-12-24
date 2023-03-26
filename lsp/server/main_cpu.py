@@ -2,7 +2,7 @@ import uvicorn
 from transformers import ViTForImageClassification
 from transformers import ViTImageProcessor
 import numpy as np
-from requests import req_get
+from requests import get as req_get
 import io
 from PIL import Image
 from fastapi import FastAPI
