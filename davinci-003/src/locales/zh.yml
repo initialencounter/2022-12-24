@@ -1,7 +1,6 @@
 commands:
   dvc:
-    description: |-
-                      gpt3.5-turbo或davinci-003
+    description: AI聊天
                       
 
     usage: |-
@@ -11,11 +10,13 @@ commands:
           <message id=2>自建gpt后端https://github.com/initialencounter/mykoishi/blob/main/davinci-003#readme.md </message>
           <message id=3>对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-davinci-003 概不负责</message>
           <message id=4>指令如下：</message>
-          <message id=5>1.[重置会话] 请发送 "ai 重置会话"</message>
-          <message id=6>2.[设置人格] 请发送 "ai 设置人格+人格描述"</message>
-          <message id=7>3.[重置人格] 请发送 "ai 重置人格"</message>
-          <message id=8>注意：重置会话不会清空人格,重置人格会重置会话!</message>
-          <message id=9>设置人格后人格将一直存在，除非重置人格或重启逻辑端!</message>
+          <message id=5>1.[重置会话] 请发送 "dvc.重置会话"</message>
+          <message id=6>2.[设置人格] 请发送 "dvc.设置人格+人格描述"</message>
+          <message id=7>3.[清空所有回话] 请发送 "dvc.clear"</message>
+          <message id=8>4.[切换人格] 请发送 "dvc.切换人格"</message>
+          <message id=9>5.[查询余额] 请发送 "dvc.credit"</message>
+          <message id=10>[切换输出模式] 请发送 "dvc.output"</message>
+          <message id=11>[切换角色声音] 请发送 "dvc.gvc 甘雨"</message>
         </message>
       </>
     messages:
@@ -26,9 +27,11 @@ commands:
       total_available: 滴！当前账户的余额为${0}
       toolong: 滋滋..猪脑过载
       switch: 当前存在人格{0}请输入编号
+      switch-output: 当前存在模式{0}请输入编号
       switch-err: 不存在人格可切换
       get: 查询中...
       clean: 舒服了
+      set-personality: 设置失败，请重新触发指令，示例：dvc.人格设置 你的名字叫“派蒙”，.....
   count:
     description: 减少dvc的使用次数
                 
