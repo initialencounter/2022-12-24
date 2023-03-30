@@ -1,7 +1,3 @@
-# koishi-plugin-davinci-003
-
-[![npm](https://img.shields.io/npm/v/koishi-plugin-davinci-003?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-davinci-003)
-
 # 注意事项
 > 使用前在 <a style="color:yellow" href="https://beta.openai.com/account/api-keys">beta.openai.com</a> 中获取api-key<br>
 如需使用内容审查,请前往<a style="color:yellow" href="https://ai.baidu.com/solution/censoring?hmsr=aibanner&hmpl=censoring">百度智能云</a> 获取AK和SK</br>
@@ -12,7 +8,51 @@
 GPT-3.5turbo后端参考自<a style="color:yellow" href="https://lucent.blog">Lucent佬(呆呆木)</a><br>
 反代api使用的是lucent佬(呆呆木)的，再次感谢！
 
+# koishi-plugin-davinci-003
+
+[![npm](https://img.shields.io/npm/v/koishi-plugin-davinci-003?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-davinci-003)
+
 # 更新日志
+
+## v1.5.1
+>
+将人格管理做成了子命令
+
+## v1.5.1
+>
+修复js推荐模式思考中，优化回话管理，限制10条回话
+dvc.clear权限由2下调为1
+修复图片模式显示异常
+移除图片模式背景图，加速回复
+
+## v1.4.9
+>
+删除里lib里面的图片，dvc.clear权限由5下调为2
+
+## v1.4.8
+>
+修复超级用户无法接收消息的问题。
+
+## v1.4.7
+>
+修复无法发送空格
+修复调用限制无效
+优化图片模式，加快了回复速度
+
+## v1.4.6
+>
+新增艾特触发，私聊触发
+新增模式选择菜单
+## v1.4.5
+>
+新增语音模式,仅支持原神语音（抄袭自genshin-voice
+新增输出模式切换指令
+## v1.4.4
+>
+优化审核的逻辑，加速审核
+## v1.4.3
+>
+修复未填写AK和SK情况下，不合规的bug
 ## v1.4.2 
 >
 实现了dvc服务，其他插件可以使用以下服务

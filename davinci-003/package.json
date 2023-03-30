@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-davinci-003",
-  "description": "新增gpt3.5超级节俭模式,优化了代码结构,实现了dvc服务",
-  "version": "1.4.2",
+  "description": "AI聊天，无需代理，支持DAVINCI、GPT3.5等多个模型",
+  "version": "1.5.3",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -31,14 +31,11 @@
     "koishi": "^4.11.9"
   },
   "koishi": {
-    "description": "新增gpt3.5超级节俭模式,优化了代码结构",
+    "description": "AI聊天，无需代理，支持DAVINCI、GPT3.5等多个模型",
     "browser": true,
     "service": {
       "optional": [
         "puppeteer"
-      ],
-      "required": [
-        "rate-limit"
       ],
       "implements": [
         "dvc"
