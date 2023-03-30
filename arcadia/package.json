@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-arcadia",
   "description": "意间Ai绘画(yjart),支持100多个模型",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
