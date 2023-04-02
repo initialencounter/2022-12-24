@@ -45,7 +45,6 @@ class Dvc extends Service {
     this.g_voice_name = config.g_voice_name
     this.proxy_reverse = config.proxy_reverse
     this.type = config.type
-    // Shrink the number of lines of the following expression
     this.aliasMap = {
       埃洛伊: [],
       安柏: [],

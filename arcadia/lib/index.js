@@ -84,7 +84,7 @@ class Arcadia extends koishi_1.Service {
         ctx.command('arca.engine <type:string>', '切换arcadia的绘画引擎').action(async ({ session }, type) => this.switch_engine(session, type));
         ctx.command('arca.score', '查寻积分').action(async ({ session }) => this.get_score(session));
         ctx.command('arca.all', '查寻10个任务').action(async ({ session }) => this.get_complete_tasks(session));
-        ctx.command('arca.output', '查寻10个任务').action(async ({ session }, type) => this.switch_output(session, type));
+        ctx.command('arca.output', '切换输出模式').action(async ({ session }, type) => this.switch_output(session, type));
     }
     async PostOpenApi(sesssion, payload) {
         sesssion.send(waiting_text[Math.floor((Math.random() * waiting_text.length))]);
