@@ -1,0 +1,45 @@
+{
+  "name": "koishi-plugin-davinci-003",
+  "description": "AI聊天，支持GPT3.5，DAVINCI、等多个模型",
+  "version": "1.5.7",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "AGPL-3.0",
+  "author": "initencounter <2911583893@qq.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi#readme.md",
+  "scripts": {},
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "OpenAi-Api",
+    "davinci",
+    "chatgpt"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.11.9"
+  },
+  "koishi": {
+    "description": "AI聊天，支持GPT3.5，DAVINCI、等多个模型",
+    "browser": true,
+    "service": {
+      "optional": [
+        "puppeteer"
+      ],
+      "implements": [
+        "dvc"
+      ]
+    }
+  }
+}

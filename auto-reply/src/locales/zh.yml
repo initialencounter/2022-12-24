@@ -1,0 +1,8 @@
+commands:
+  ar:
+    description: 消息自定义回复
+
+    messages:
+      bad-rule: 设置规则错误，示例：权志龙{0}谁找权志龙?
+      success: 添加成功
+      failure: 未成功，信息：{0}

@@ -1,0 +1,7 @@
+commands:
+  对对联:
+    description: 对对联,seq2seq-couplet-model
+
+    messages:
+      noargs: 缺少上联,请重试
+      running: 思考中
