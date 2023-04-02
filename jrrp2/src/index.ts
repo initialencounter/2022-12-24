@@ -1,4 +1,4 @@
-import { Context, Schema, Session } from 'koishi'
+import { Context, Schema} from 'koishi'
 
 export const name = 'jrrp'
 

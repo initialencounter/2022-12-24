@@ -1,7 +1,0 @@
-commands:
-  stnb:
-    description: 扫雷stnb计算~
-    messages:
-      notime: 缺少参数bvs, 示例stnb 60 3 3
-      nobvs: 缺少参数bvs. 示例stnb 60 3 3
-      nomode: 缺少参数mode, 示例stnb 60 3 3
