@@ -446,7 +446,7 @@ class Dvc extends Service {
       try {
         const text = await this.chat_with_gpt([{ 'role': 'user', 'content': prompt }])
         const resp = { 'msg': [{ "role": "user", "content": prompt }, { "role": "assistant", "content": text }], 'id': 0 }
-        return await this.getContent(session.userId, resp)
+        return await this.getContent(session.userId, resp,session.messageId)
       }
       catch (err) {
         logger.warn(err);
@@ -466,7 +466,7 @@ class Dvc extends Service {
       try {
         const text: string = await this.openai.complete(opts);
         const resp: Dvc.Resp = { 'msg': [{ "role": "user", "content": prompt }, { "role": "assistant", "content": text }], 'id': 0 }
-        return await this.getContent(session.userId, resp)
+        return await this.getContent(session.userId, resp,session.messageId)
       }
       catch (err) {
         logger.warn(err);
@@ -606,14 +606,15 @@ class Dvc extends Service {
    * @param resp gpt返回的json
    * @returns 文字，图片或聊天记录
    */
-  async getContent(userId: string, resp: Dvc.Resp) {
+  async getContent(userId: string, resp: Dvc.Resp,messageId:string) {
 
     if (this.output_type == 'voice') {
       const data = await this.ctx.http.get(`https://ai-api.baimianxiao.cn/api/${this.encode(this.g_voice_name)}/${this.encode(resp.msg[resp.msg.length - 1].content)}/0.4/0.6/1.12/${this.encode(Math.floor(Date.now() / 1000).toString())}.ai`, { responseType: 'arraybuffer' });
       return h.audio(data, 'audio/x-wav');
     }
     if (this.output_type == 'minimal') {
-      return resp.msg[resp.msg.length - 1].content
+      return h('quote', { id: messageId })+resp.msg[resp.msg.length - 1].content
+      
     } else if (this.output_type == 'default') {
       const result = segment('figure')
       for (var msg of resp.msg) {
@@ -779,7 +780,7 @@ class Dvc extends Service {
       console.log("会话ID: " + sessionid)
       console.log("ChatGPT返回内容: ")
       console.log(message)
-      return await this.getContent(sessionid, session)
+      return await this.getContent(sessionid, session,sender.messageId)
 
     }
     catch (error) {
