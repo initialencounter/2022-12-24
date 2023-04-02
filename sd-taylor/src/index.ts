@@ -1,5 +1,5 @@
 import { Context, Schema, Session, segment, Dict, Logger,h } from 'koishi'
-
+import {} from 'koishi-plugin-davinci-003'
 export const name = 'sd-taylor'
 
 const headers: object = {
@@ -13,15 +13,21 @@ class Taylor {
   constructor(private ctx: Context, private config: Taylor.Config) {
     this.task = 0
     this.output = config.output
-    ctx.command('tl <prompt:text>', { authority: config.min_auth })
+    ctx.command('tl <prompt:text>','文字绘图', { authority: config.min_auth })
       .option('step', '--st <step:number>', { fallback: config.step })
       .option('denoising_strength', '-d <denoising_strength:number>', { fallback: config.denoising_strength })
       .option('seed', '--sd <seed:number>', { fallback: config.seed })
       .option('negative_prompt', '-n <negative_prompt:string>', { fallback: config.negative_prompt })
       .option('resolution', '-r <resolution:string>', { fallback: config.resolution })
       .option('cfg_scale', '-c <cfg_scale:number>', { fallback: config.cfg_scale })
-      .option('output', '-o', { type: ['minimal', 'default', 'verbose'], fallback: config.output })
+      .option('output', '-o <output:string>', { fallback: config.output })
       .action(async ({ session, options }, prompt) => {
+        if(this.isChinese(prompt)&&ctx.dvc&&config.gpt_translate){
+          prompt = await this.ctx.dvc.translate('英语',prompt)
+        }else if(this.isChinese(prompt)&&!ctx.dvc&&config.gpt_translate){
+          session.send(session.text('commands.tl.messages.no-dvc'))
+          return session.text('commands.tl.messages.latin-only')
+        }
         const [width, height] = (options.resolution ? options.resolution : this.config.resolution).split('x').map(x => { return parseInt(x) })
         const payload: Taylor.Payload = {
           "steps": options.step ? options.step : config.step,
@@ -33,18 +39,19 @@ class Taylor {
           "denoising_strength": options.denoising_strength ? options.denoising_strength : config.denoising_strength,
           "prompt": prompt + ', ' + config.defaut_prompt
         }
-        this.output = options.output ? options.output : this.output
+        if (['minimal', 'default', 'verbose'].includes(options.output)){
+          this.output = options.output ? options.output : this.output
+        }
         return await this.txt2img(session, payload)
       })
-    ctx.command('tl.st <prompt:text>', { authority: config.min_auth })
+    ctx.command('tl.txt <prompt:text>','sd识图', { authority: config.min_auth })
       .option('model', '-m <model:string>', { fallback: config.model })
-      .option('output', '-o', { type: ['minimal', 'default', 'verbose'], fallback: config.output })
+      .option('output', '-o <output:string>', { type: ['minimal', 'default', 'verbose'], fallback: config.output })
       .action(async ({ session, options }, prompt) => {
-
         this.output = options.output
-        return await this.interrogate(session)
+        return h('quote', { id: session.messageId })+await this.interrogate(session)
       })
-    ctx.command('tl.img <prompt:text>', { authority: config.min_auth })
+    ctx.command('tl.img <prompt:text>','以图绘图', { authority: config.min_auth })
       .option('step', '--st <step:number>', { fallback: config.step })
       .option('denoising_strength', '-d <denoising_strength:number>', { fallback: config.denoising_strength })
       .option('seed', '--sd <seed:number>', { fallback: config.seed })
@@ -56,8 +63,14 @@ class Taylor {
       .option('upscaler2', '-2 <upscaler2>', { fallback: 'None' })
       .option('visibility', '-v <visibility:number>', { fallback: 1 })
       .option('upscaleFirst', '-f', { fallback: false })
-      .option('output', '-o', { type: ['minimal', 'default', 'verbose'], fallback: config.output })
+      .option('output', '-o <output:string>', {fallback: config.output })
       .action(async ({ session, options }, prompt) => {
+        if(this.isChinese(prompt)&&ctx.dvc&&config.gpt_translate){
+          prompt = await this.ctx.dvc.translate('英语',prompt)
+        }else if(this.isChinese(prompt)&&!ctx.dvc&&config.gpt_translate){
+          session.send(session.text('commands.tl.messages.no-dvc'))
+          return session.text('commands.tl.messages.latin-only')
+        }
         const [width, height] = (options.resolution ? options.resolution : this.config.resolution).split('x').map(x => { return parseInt(x) })
         const payload: Taylor.Payload = {
           "steps": options.step,
@@ -69,10 +82,12 @@ class Taylor {
           "denoising_strength": options.denoising_strength,
           "prompt": prompt + ', ' + config.defaut_prompt
         }
-        this.output = options.output
+        if (['minimal', 'default', 'verbose'].includes(options.output)){
+          this.output = options.output ? options.output : this.output
+        }
         return await this.img2img(session, payload)
       })
-    ctx.command('tl.ex <prompt:text>', { authority: config.min_auth })
+    ctx.command('tl.ext <prompt:text>','图片超分辨率', { authority: config.min_auth })
       .option('step', '--st <step:number>', { fallback: config.step })
       .option('denoising_strength', '-d <denoising_strength:number>', { fallback: config.denoising_strength })
       .option('seed', '--sd <seed:number>', { fallback: config.seed })
@@ -84,8 +99,10 @@ class Taylor {
       .option('upscaler2', '-2 <upscaler2>', { fallback: 'None' })
       .option('visibility', '-v <visibility:number>', { fallback: 1 })
       .option('upscaleFirst', '-f', { fallback: false })
-      .option('output', '-o', { type: ['minimal', 'default', 'verbose'], fallback: config.output })
       .action(async ({ session, options }, prompt) => {
+        if(this.isChinese(session.content)){
+          return session.text('commands.tl.messages.latin-only')
+        }
         const [width, height] = (options.resolution ? options.resolution : this.config.resolution).split('x').map(x => { return parseInt(x) })
         const payload: Taylor.Payload = {
           "steps": options.step,
@@ -97,18 +114,20 @@ class Taylor {
           "denoising_strength": options.denoising_strength,
           "prompt": prompt + ', ' + config.defaut_prompt
         }
-        this.output = options.output
-        return await this.extras(session, payload)
+        return await this.extras(session, payload,options)
 
       })
+    ctx.command('tl.dvc <prompt:text>','gpt识图').action(async({session},prompt)=>{
+      if(!ctx.dvc) return session.text('commands.tl.messages.no-dvc')
+      const img_info:string = await this.interrogate(session)
+      return await ctx.dvc.chat_with_gpt([{role:'user',content:img_info+prompt}])
+    })
   }
 
   async txt2img(session: Session, payload: Taylor.Payload) {
     this.task += 1
     const path: string = '/sdapi/v1/txt2img'
     session.send(session.text('commands.tl.messages.waiting'))
-    // 调用sdweb-ui的api
-    // console.log(`${config.api_path}${api}`)
     const api: string = `${this.config.api_path}${path}`
     console.log(api)
     try {
@@ -132,20 +151,17 @@ class Taylor {
     console.log(api)
     const image = segment.select(session.content, "image")[0];
     const img_url = image?.attrs?.url
-    session.send(session.text('.waiting'))
+    session.send(session.text('commands.tl.messages.waiting'))
     const base64: string = await this.img2base64(this.ctx, img_url)
     // 设置payload
     payload["init_images"] = ["data:image/png;base64," + base64]
     try {
       const resp = await this.ctx.http.post(api, payload, headers)
-      // const args = session.text('.args', [prompt_text, width, height, options.step, findInfo(resp.info, 'Seed'), options.cfg_scale])
       const info = resp.info
       const init_img = "data:image/png;base64," + base64
       const res_img = 'data:image/png;base64,' + resp.images[0]
-      // logger.warn(res_img)
       this.cleanUp()
       const parms: Taylor.Parameters = resp['parameters']
-      // return '1'
       return this.getContent(session, parms,res_img)
     }
     catch (err) {
@@ -166,7 +182,7 @@ class Taylor {
       const resp:string = (await this.ctx.http.post(`${this.config.api_path}${path}`, { "image": "data:image/png;base64," + base64 })).caption
       this.cleanUp()
       console.log(resp)
-      return h('quote', { id: session.messageId })+resp
+      return resp
     }
     catch (err) {
       logger.warn(err)
@@ -174,8 +190,9 @@ class Taylor {
       return String(err)
     }
   }
-  async extras(session: Session, payload: Taylor.Payload) {
+  async extras(session: Session, payload: Taylor.Payload,options:any) {
     this.task += 1
+    session.send(session.text('commands.tl.messages.waiting'))
     const path: string = '/sdapi/v1/extra-single-image'
     const image = segment.select(session.content, "image")[0];
     const img_url = image?.attrs?.url
@@ -185,23 +202,20 @@ class Taylor {
       "resize_mode": 1,
       "show_extras_results": true,
       "upscaling_resize": 2,
-      "upscaling_resize_w": payload.width,
-      "upscaling_resize_h": payload.height,
-      // "upscaling_crop": options.crop,
-      // "upscaler_1": options.upscaler,
-      // "upscaler_2": options.upscaler2,
-      // "extras_upscaler_2_visibility": options.visibility,
-      // "upscale_first": options.upscaleFirst,
+      "upscaling_resize_w": 1080,
+      "upscaling_resize_h": 780,
+      "upscaling_crop": options.crop,
+      "upscaler_1": options.upscaler,
+      "upscaler_2": options.upscaler2,
+      "extras_upscaler_2_visibility": options.visibility,
+      "upscale_first": options.upscaleFirst,
 
     }
     try {
       const resp = await this.ctx.http.post(`${this.config.api_path}${path}`, payload_extras)
       const res_img = 'data:image/png;base64,' + resp.image
-      const args = resp.html_info
-      const info = ' '
-      const init_img = 'data:image/png;base64,' + base64
-      this.cleanUp()
-      // return this.getContent(options.output, session, args, info, res_img, init_img)
+      console.log(resp)
+      return segment.image(res_img)
     }
     catch (err) {
       logger.warn(err)
@@ -228,7 +242,7 @@ class Taylor {
       userId: session.userId,
       nickname: session.author?.nickname || session.username,
     }
-    const parms_default = `描述词:${parms.prompt}\ndenoising_strength:${parms.denoising_strength}\n种子:${parms.seed}\ncfg_scale:${parms.cfg_scale}`
+    const parms_default = `描述词: ${parms.prompt}\n去噪强度:${parms.denoising_strength}\n种子:   ${parms.seed}\n描述词服从度:${parms.cfg_scale}\步数:   ${parms.steps}`
     const result = segment('figure')
     result.children.push(segment('message', attrs, parms_default))
 
@@ -238,16 +252,6 @@ class Taylor {
     result.children.push(segment.image(image,attrs))
 
     return result
-  }
-  prompt_parse(s: string) {
-    if (s.indexOf('<image file="') != -1) {
-      const id1: number = s.indexOf('<image file="')
-      const id2: number = s.indexOf('"/>')
-      const imgstr: string = s.slice(id1, id2 + 3)
-      const res: string = s.replace(imgstr, '')
-      return res
-    }
-    return s
   }
   cleanUp() {
     this.task -= 1
@@ -259,6 +263,16 @@ class Taylor {
   }
 }
 namespace Taylor {
+  export const usage = `
+## 注意事项
+> 
+如需使用gpt识图或gpt翻译，请启用更新davinci-003插件至v1.5.9,并启用
+对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-sd-taylor 概不负责。<br>
+如果有更多文本内容想要修改，可以在<a style="color:blue" href="/locales">本地化</a>中修改 zh 内容</br>
+## 使用方法
+gpt识图: tl.dvc 问题+图片
+问题反馈群:399899914
+`
   export interface Parameters {
     enable_hr?: boolean
     denoising_strength: number
@@ -343,9 +357,11 @@ namespace Taylor {
     cfg_scale: number
     output: string
     model: string
+    gpt_translate: boolean
   }
   export const Config: Schema<Config> = Schema.object({
     api_path: Schema.string().description('服务器地址').required(),
+    gpt_translate: Schema.boolean().description('是否启用gpt翻译').default(true),
     min_auth: Schema.number().description('最低使用权限').default(1),
     step: Schema.number().default(20).description('采样步数0-100'),
     denoising_strength: Schema.number().default(0.5).description('改变强度0-1'),
@@ -360,14 +376,11 @@ namespace Taylor {
       Schema.const('minimal').description('只发送图片'),
       Schema.const('default').description('发送图片和关键信息'),
       Schema.const('verbose').description('发送全部信息'),
-    ]).description('输出方式。').default('default')
+    ]).description('输出方式。').default('default'),
 
   })
 
 }
-
-
-
 
 
 export default Taylor

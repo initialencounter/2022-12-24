@@ -38,6 +38,7 @@ commands:
       interrogate: 识别中～
       pending: 已加入列队，前面还有 {0} 个任务……
       bad-steep: 步数不能大于100(>﹏<)
+      no-dvc: 未启用dvc服务，无法使用该指令
       args: |-
         描述词: {0}
         比例: {1}x{2}

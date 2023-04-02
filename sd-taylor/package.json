@@ -1,20 +1,37 @@
 {
   "name": "koishi-plugin-sd-taylor",
-  "description": "[stabe_diffusion](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/API)绘图插件,[github](https://github.com/initialencounter/koishi-plugin-sd-taylor)源码",
-  "version": "1.2.2",
+  "description": "[stabe_diffusion](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/API)绘图插件,添加chat翻译",
+  "version": "1.2.3",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
     "lib",
     "dist"
   ],
-  "license": "MIT",
+  "license": "AGPL-3.0",
+  "author": "initencounter <2911583893@qq.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/blob/master/steam-trading#readme.md",
   "scripts": {},
   "keywords": [
     "chatbot",
     "koishi",
     "plugin"
   ],
+  "koishi":{
+    "service": {
+      "optional": [
+        "puppeteer"
+      ]
+    },
+    "description": "stabe_diffusion"
+  },
   "peerDependencies": {
     "koishi": "^4.10.10"
   }
