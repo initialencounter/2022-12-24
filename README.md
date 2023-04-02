@@ -30,7 +30,6 @@
 * 意间AI绘画 --[arcadia](https://github.com/initialencounter/mykoishi/tree/main/arcadia)[![npm](https://img.shields.io/npm/v/koishi-plugin-arcadia?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-arcadia)
 
 
-
 * 颜值评分 --[facercg](https://github.com/initialencounter/koishi-plugin-facercg)[![npm](https://img.shields.io/npm/v/koishi-plugin-facercg?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-facercg)
 
 
@@ -285,55 +284,6 @@ cpl <对子>
 ### 示例
 ![alt 示例12](./screenshot/12.png)
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-## 王者荣耀巅峰赛推送 --[hok-rank](https://github.com/initialencounter/mykoishi/hok-rank)
-
-[![npm](https://img.shields.io/npm/v/koishi-plugin-hok-rank?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-hok-rank)
-
-王者荣耀qq区巅峰榜推送
-
-支持自建服务器
-
-### 自建服务器教程
-
-### 要求
-* 一台拥有root权限的安卓手机
-* 一个王者营地账号
-* 一台服务器
-
-### 方法
-
-### 服务端部署
-
-
-
-* 1.在服务器安装nodejs
-
-* 2.将server-express.js,server/package.json上传至服务器
-
-* 3.安装package.json的依赖
-
-* 4.启动server-express.js
-
-
-### 手机端部署
-
-
-
-* 1.安装王者营地和autojs
-
-* 2.登录营地账号
-
-* 3.将uploader.js导入autojs
-
-* 4.修改uploader.js的url和点击坐标
-
-* 4.授予autojs root权限
-
-* 5.运行uploader.js
-
-#### 修改插件配置项的api-hostname
 
 <!-- LICENSE -->
 ## License
