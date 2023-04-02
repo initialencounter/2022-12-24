@@ -128,12 +128,6 @@ class Dvc extends Service {
     if (!ctx.puppeteer && config.output == 'verbose') {
       logger.warn('未启用puppter,将无法发送图片');
     }
-
-    let num: number = 1;
-    while (config.alias.length < 5) {
-      config.alias.push(`davinci${num}`);
-      num++;
-    }
     try {
       JSON.parse(fs.readFileSync('./davinci-003-data.json').toString());
     } catch (e) {
@@ -147,16 +141,17 @@ class Dvc extends Service {
     ctx.middleware(async (session, next) => this.middleware1(session, next));
 
     //主要逻辑
-    ctx.command('dvc <prompt:text>', { authority: config.authority })
+    ctx.command('dvc <text:text>', { authority: config.authority,})
       .option('output', '-o <output:string>')
-      .alias(config.alias[0], config.alias[1], config.alias[2], config.alias[3], config.alias[4])
-      .action(async ({ session, options }, prompt) => this.sli(session, prompt, options))
+      .alias(...config.alias)
+      // .action(async ({ session, options }, text) =>  this.sli(session, text, options))
+      .action(async ({ session, options }) => this.sli(session, session.content.slice(session.content.indexOf(' '),session.content.length), options))
 
     //统计次数的工具人
     ctx.command('dvc.count <prompt:text>', '统计次数的工具人', {
       maxUsage: config.usage,
       usageName: 'ai'
-    }).action(({ session }, prompt) => this.dvc(session, prompt))
+    }).action(({ session }) => this.dvc(session, session.content.slice(session.content.indexOf(' '))))
 
     //清空所有会话及人格
     ctx.command('dvc.clear', '清空所有会话及人格', {

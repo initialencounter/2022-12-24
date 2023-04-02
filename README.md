@@ -36,6 +36,9 @@
 * 达芬奇3语言模型 --[davinci-003](https://github.com/initialencounter/mykoishi/tree/main/davinci-003) [![npm](https://img.shields.io/npm/v/koishi-plugin-davinci-003?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-davinci-003)
 
 
+* AI绘图 --[sd-taylor](https://github.com/initialencounter/koishi-plugin-sd-taylor) [![npm](https://img.shields.io/npm/v/koishi-plugin-sd-taylor?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-sd-taylor)
+
+
 * 数字华容道 --[puzzle](https://github.com/initialencounter/mykoishi/tree/main/puzzle) [![npm](https://img.shields.io/npm/v/koishi-plugin-puzzle?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-puzzle)
 
 
@@ -51,16 +54,13 @@
 * 对对子 --[couplet](https://github.com/initialencounter/mykoishi/tree/main/couplet)[![npm](https://img.shields.io/npm/v/koishi-plugin-couplet?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-couplet)
 
 
-* AI绘图 --[sd-taylor](https://github.com/initialencounter/koishi-plugin-sd-taylor) [![npm](https://img.shields.io/npm/v/koishi-plugin-sd-taylor?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-sd-taylor)
-
-
 * 老色批 --[lsp](https://github.com/initialencounter/mykoishi/tree/main/lsp) [![npm](https://img.shields.io/npm/v/koishi-plugin-lsp?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-lsp)
 
 
 * 扫雷工具箱 --[stnb](https://github.com/initialencounter/mykoishi/tree/main/stnb) [![npm](https://img.shields.io/npm/v/koishi-plugin-stnb?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-stnb)
 
 
-* 自动回复 --[auto-reply](https://github.com/initialencounter/mykoishi/tree/main/auto-reply) [![npm](https://img.shields.io/npm/v/koishi-plugin-auto-reply?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-auto-reply)
+* ~~自动回复 --[auto-reply](https://github.com/initialencounter/mykoishi/tree/main/auto-reply) [![npm](https://img.shields.io/npm/v/koishi-plugin-auto-reply?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-auto-reply)~~
 (有bug）
 
 * ~~王者荣耀巅峰赛推送 --[hok-rank](https://github.com/initialencounter/mykoishi/tree/main/hok-rank) [![npm](https://img.shields.io/npm/v/koishi-plugin-hok-rank?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-hok-rank)~~
@@ -74,23 +74,11 @@
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## 扫雷工具箱 --[stnb](https://github.com/initialencounter/mykoishi/stnb)
-
-[![npm](https://img.shields.io/npm/v/koishi-plugin-stnb?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-stnb)
-
 ### 描述
-计算扫雷游戏的参数
+意间AI的绘图插件
 ### 使用用法
-* stnb 60 3 3
-
-* 第一个参数60代表扫雷的时间单位是秒
-
-* 第二个参数3代表扫雷的3bv/s单位是1
-
-* 第三个参数3代表扫雷的模式，可用选项为［1:初级,2:中级,3:高级]
-
-### 示例
-![alt 示例1](./screenshot/1.png)
+arca -h
+![alt 示例2](./screenshot/2.png)
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -124,20 +112,6 @@ face <含有人脸的图片>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## 自动回复 --[auto-reply](https://github.com/initialencounter/mykoishi/auto-reply)
-
-[![npm](https://img.shields.io/npm/v/koishi-plugin-auto-reply?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-auto-reply)
-
-
-### 描述
-设置自动回复的词库
-### 使用用法
-ar <触发词>#<回复词>
-
-### 示例
-![alt 示例4](./screenshot/4.png)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## AI绘图 --[sd-taylor](https://github.com/initialencounter/koishi-plugin-sd-taylor)
 
@@ -157,7 +131,7 @@ tl <图片>
 #### 图片转超分辨率
 tl  -u 1 <图片>
 
-本插件抄自novelai和rryth，感谢此二插件作者的包容
+本插件抄自novelai和rryth
 
 
 ## 感谢
@@ -262,17 +236,6 @@ trad
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## 扫雷联萌排行榜 --[mswar-active-rank](https://github.com/initialencounter/mykoishi/smear_rank)
-
-[![npm](https://img.shields.io/npm/v/koishi-plugin-mswar-active-rank?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-mswar-active-rank)
-
-### 描述
-使用获取扫雷联萌app中的排名
-### 使用用法
-ms-ac
-### 示例
-![alt 示例11](./screenshot/11.png)
-
 ## 对对子 --[couplet](couplet)
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-couplet?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-couplet)
@@ -284,6 +247,24 @@ cpl <对子>
 ### 示例
 ![alt 示例12](./screenshot/12.png)
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## 扫雷工具箱 --[stnb](https://github.com/initialencounter/mykoishi/stnb)
+
+[![npm](https://img.shields.io/npm/v/koishi-plugin-stnb?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-stnb)
+
+### 描述
+计算扫雷游戏的参数
+### 使用用法
+* stnb 60 3 3
+
+* 第一个参数60代表扫雷的时间单位是秒
+
+* 第二个参数3代表扫雷的3bv/s单位是1
+
+* 第三个参数3代表扫雷的模式，可用选项为［1:初级,2:中级,3:高级]
+
+### 示例
+![alt 示例1](./screenshot/1.png)
 
 <!-- LICENSE -->
 ## License
