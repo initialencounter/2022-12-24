@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-steam-trading",
   "description": "[steam挂刀行情](http://www.iflow.work)",
-  "version": "1.2.1",
+  "version": "1.2.4",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -20,6 +20,7 @@
   "homepage": "https://github.com/initialencounter/mykoishi/blob/main/steam-trading#readme.md",
   "scripts": {},
   "koishi": {
+    "description": "[steam挂刀行情]",
     "browser": true,
     "service": {
       "optional": [
@@ -37,6 +38,8 @@
     "koishi": "^4.11.1"
   },
   "dependencies": {
-    "cheerio": "^1.0.0-rc.12"
+    "puppeteer-core": "^19.8.1",
+    "sharp": "^0.32.0",
+    "pngjs": "^7.0.0"
   }
 }

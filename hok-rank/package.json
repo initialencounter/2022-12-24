@@ -26,7 +26,7 @@
     "王者荣耀"
   ],
   "peerDependencies": {
-    "koishi": "4.11.5"
+    "koishi": "^4.11.9"
   },
   "koishi": {
     "description":"王者荣耀qq区巅峰榜推送",

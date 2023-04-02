@@ -14,9 +14,9 @@ GPT-3.5turbo后端参考自<a style="color:yellow" href="https://lucent.blog">Lu
 
 # 更新日志
 
-## v1.5.7
+## v1.5.8
 >
-
+修复无法识别空格的bug
 增加了GPT生成图片
 
 ## v1.5.7
