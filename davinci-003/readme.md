@@ -14,6 +14,9 @@ GPT-3.5turbo后端参考自<a style="color:yellow" href="https://lucent.blog">Lu
 
 # 更新日志
 
+## v1.6.0
+>
+新增翻译服务
 ## v1.5.9
 >
 新增引用回复

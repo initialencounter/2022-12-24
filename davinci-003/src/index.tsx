@@ -8,6 +8,7 @@ export const logger = new Logger(name);
 /**
  * chat_with_gpt|message: [{role:'user',content:<text>}] 
  * get_credit | 获取余额
+ * translate | 翻译 lang:目标语言 prompt：文字
  */
 
 declare module 'koishi' {
@@ -17,6 +18,7 @@ declare module 'koishi' {
   interface Dvc {
     chat_with_gpt(message: Dvc.Msg[]): Promise<string>
     get_credit(session: Session): Promise<string>
+    translate(lang:string,prompt:string):Promise<string>
   }
 
 }
@@ -202,6 +204,12 @@ class Dvc extends Service {
         options.img_number ? options.img_number : 1,
         options.resolution ? options.resolution : this.config.resolution
       ))
+    ctx.command('dvc.翻译 <prompt:text>').option('lang','-l <lang:t=string>',{fallback:config.lang}).action(async ({session,options},prompt)=>{
+      return h('quote', { id: session.messageId })+ (await this.translate(options.lang,prompt))
+    })
+  }
+  async translate(lang:string,prompt:string){
+    return this.chat_with_gpt([{role:'system',content:'我是你的的专业翻译官，精通多种语言'},{role:'user',content:`请帮我我将如下文字翻译成${lang},“${prompt}”`}])
   }
   async paint(session: Session, prompt: string, n: number, size: string) {
     session.send(session.text('commands.dvc.messages.painting'))
@@ -845,6 +853,7 @@ namespace Dvc {
     g_voice_name: string
     if_private: boolean
     proxy_reverse: string
+    lang:string
   }
 
   export const Config = Schema.intersect([
@@ -879,6 +888,7 @@ namespace Dvc {
       key: Schema.string().description('api_key').required(),
       AK: Schema.string().description('内容审核AK'),
       SK: Schema.string().description('内容审核SK,百度智能云防止api-key被封'),
+      lang: Schema.string().description('要翻译的目标语言').default('英文'),
       selfid: Schema.string().description('聊天记录头像的QQ号').default('3118087750'),
       preset: Schema.string().description('预设人格').default("你是提瓦特大陆最优秀的旅行向导，名字叫“派蒙”,爱好是美食，我是来自异世界旅行者。你将为我的旅程提供向导。"),
       reg: Schema.string().default('名字[是|叫]“[^,]+”').description('匹配人格的正则表达式'),

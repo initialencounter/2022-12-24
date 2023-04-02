@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-davinci-003",
   "description": "AI聊天，支持GPT3.5，DAVINCI、等多个模型",
-  "version": "1.5.9",
+  "version": "1.6.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
