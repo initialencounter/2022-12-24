@@ -1,20 +1,38 @@
 # 注意事项
-> 使用前在 <a style="color:yellow" href="https://beta.openai.com/account/api-keys">beta.openai.com</a> 中获取api-key<br>
-如需使用内容审查,请前往<a style="color:yellow" href="https://ai.baidu.com/solution/censoring?hmsr=aibanner&hmpl=censoring">百度智能云</a> 获取AK和SK</br>
-后端模式下，无需代理，服务端需要同步更新至3月8日2点后的版本，否则会报错<br>
-<a style="color:yellow" href="https://github.com/initialencounter/mykoishi/blob/main/davinci-003#readme.md">GPT-3.5turbo自建后端教程</a><br>
-对于部署者行为及所产生的任何纠纷， Koishi 及 <a style="color:yellow" href="https://github.com/initialencounter/mykoishi">koishi-plugin-davinci-003</a>概不负责。<br>
-如果有更多文本内容想要修改，可以在<a style="color:yellow" href="/locales">本地化</a>中修改 zh 内容</br>
-GPT-3.5turbo后端参考自<a style="color:yellow" href="https://lucent.blog">Lucent佬(呆呆木)</a><br>
-反代api使用的是lucent佬(呆呆木)的，再次感谢！
+
+> 使用前在 <a style="color:blue" href="https://beta.openai.com/account/api-keys">beta.openai.com</a> 中获取api-key<br>
+如需使用内容审查,请前往<a style="color:blue" href="https://ai.baidu.com/solution/censoring?hmsr=aibanner&hmpl=censoring">百度智能云</a> 获取AK和SK</br>
+对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-davinci-003 概不负责。<br>
+如果有更多文本内容想要修改，可以在<a style="color:blue" href="/locales">本地化</a>中修改 zh 内容</br>
+若出现TypeError: expected { type?: "gpt3.5-unit" } | { type?: "gpt3.5-js" }报错
+请修改koishi.yml将davinci-003字段删除<br>
+
+## 添加人格的方法
+* 在聊天中发送“dvc.设置人格 xxx”可以自动保存人格
+* 在koishi根目录找到davinci-003-data.json文件,修改里面的人格即可
+问题反馈群:399899914
+
+## 感谢
+> 逻辑端参考自<a href="https://lucent.blog/#blog" title="前往 Lucent's Blog 的主页" class="blog-button"><img src="https://img-1251540275.cos.ap-shanghai.myqcloud.com/blog/IMG_1140(20200328-104456)_1591776646572.JPG" width="25" alt="Lucent's Blog logo" class="panel-cover__logo logo logo1"></a>
+<a class="panel-cover__title panel-title"><a href="https://lucent.blog/#blog" title="link to homepage for Lucent's Blog" class="blog-button">Lucent's Blog(呆呆木）</a></a><br>
+反代使用的也是呆呆木的！再次感谢！<br>
 
 # koishi-plugin-davinci-003
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-davinci-003?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-davinci-003)
 
 # 更新日志
+
+## v3.0.0
+>
+修复私聊接收消息不完整
+修复切换人格识别
+添加预设人格数量
+添加明日香、艾莉希雅等人格
+
 ## v2.0.0
->兼容配置文件,修复删除python后端导致炸掉koishi的bug
+>
+兼容配置文件,修复删除python后端导致炸掉koishi的bug
 ## v1.6.0
 >
 新增翻译服务

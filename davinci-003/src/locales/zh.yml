@@ -47,8 +47,10 @@ commands:
     description: 切换现有的人格
   dvc.重置会话:
     description: 清空个人的会话
-  dvc.切换模式:
-    description: 切换为节约模式
+  dvc.切换引擎:
+    description: 切换引擎
   dvc.paint:
     description: GPT生成图片
+  dvc.翻译:
+    description: AI翻译
     
