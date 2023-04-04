@@ -251,7 +251,7 @@ class Dvc extends Service {
 
 
   switch_type() {
-    this.type = (this.type == 'gpt3.5-js') ? 'gtp3.5-unit' : 'gpt3.5-js'
+    this.type = (this.type == 'gpt3.5-js'||this.type == 'gpt3.5') ? 'gtp3.5-unit' : 'gpt3.5-js'
     return `模式切换成功:${this.type}`
   }
 
@@ -439,7 +439,7 @@ class Dvc extends Service {
       }
     }
     const session_id_string: string = session.userId
-    if (this.type == 'gpt3.5-js') {
+    if (this.type == 'gpt3.5-js'||this.type=="gpt3.5") {
       try {
         const resp = await this.chat(msg, session_id_string, session)
         return resp
@@ -862,9 +862,13 @@ namespace Dvc {
         Schema.const('gpt3.5-js' as const).description('GPT-3.5turbo-js,推荐模式'),
         Schema.const('gpt3.5-unit' as const).description('GPT-3.5turbo-unit,超级节俭模式'),
         Schema.const('davinci-003' as const).description('DAVINCI等旧模型'),
-      ] as const).default('gpt3.5-unit').description('模型选择'),
+        Schema.const('gpt3.5' as const).description('也是GPT-3.5turbo-js,极不推荐'),
+      ] as const).default('gpt3.5-js').description('模型选择'),
     }).description('基础设置'),
     Schema.union([
+      Schema.object({
+        type: Schema.const('gpt3.5'),
+      }),
       Schema.object({
         type: Schema.const('gpt3.5-unit'),
       }),

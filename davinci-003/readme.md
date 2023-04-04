@@ -13,7 +13,8 @@ GPT-3.5turbo后端参考自<a style="color:yellow" href="https://lucent.blog">Lu
 [![npm](https://img.shields.io/npm/v/koishi-plugin-davinci-003?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-davinci-003)
 
 # 更新日志
-
+## v2.0.0
+>兼容配置文件,修复删除python后端导致炸掉koishi的bug
 ## v1.6.0
 >
 新增翻译服务

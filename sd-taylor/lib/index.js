@@ -262,7 +262,7 @@ class Taylor {
     Taylor.usage = `
 ## 注意事项
 > 
-如需使用gpt识图或gpt翻译，请启用更新davinci-003插件至v1.5.9,并启用
+如需使用gpt识图或gpt翻译，请启用更新davinci-003插件至v1.6.0,并启用
 对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-sd-taylor 概不负责。<br>
 如果有更多文本内容想要修改，可以在<a style="color:blue" href="/locales">本地化</a>中修改 zh 内容</br>
 ## 使用方法
