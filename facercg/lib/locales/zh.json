@@ -1,1 +1,0 @@
-{"commands":{"facercg":{"description":"人脸识别,百度api","messages":{"noimg":"缺少图片,请重试","running":"正在预测","noface":"未从图片中发现人脸"}}}}

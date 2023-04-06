@@ -1,1 +1,0 @@
-{"commands":{"puzzle":{"description":"数字华容道","options":{"mode":"模式,示例：pz -m 5","ranke":"排行榜,示例 pz - r 5","size":"图片大小，单位：px，示例：pz -s 100"},"messages":{"bad-mode":"模式不支持,仅支持(3-5阶)","gameover":"游戏结束","notFound":"游戏不存在"}},"def":{"description":"自定义华容道","messages":{"bad-mode":"模式不支持,仅支持(3-5阶)"}}}}

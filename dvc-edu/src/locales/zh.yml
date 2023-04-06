@@ -1,0 +1,37 @@
+commands:
+  dvc:
+    description: GTP插件教育版，人工智能在教学中的辅助作用探究
+    usage: |-
+      <>
+        <message forward>
+          <message id=1> 逻辑端参考自Lucent,https://lucent.blog/?p=118 </message>
+          <message id=2>项目地址https://github.com/initialencounter/mykoishi/blob/main/davinci-003#readme.md </message>
+          <message id=3>对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-davinci-003 概不负责</message>
+        </message>
+      </>
+    messages:
+      censor: 不合规，请检查输入内容是否含有违禁词
+      no-prompt: 你好！很高兴认识你！
+      thinking: 思考中……
+      err: 寄！
+      total_available: 滴！当前账户的余额为${0}
+      toolong: 滋滋..猪脑过载
+      switch-output: 当前存在模式{0}请输入编号
+      get: 查询中...
+      clean: 已初始化
+      painting: 传送中...
+  dvc.count:
+    description: 减少dvc的使用次数
+  dvc.clear:
+    description: 清空所有人的会话
+  dvc.credit:
+    description: 查看余额
+  重置会话:
+    description: 清空个人的会话
+  切换引擎:
+    description: 切换引擎
+  传送门:
+    description: GPT生成图片
+  翻译:
+    description: AI翻译
+    

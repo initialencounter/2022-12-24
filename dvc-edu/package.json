@@ -1,0 +1,33 @@
+{
+  "name": "koishi-plugin-dvc-edu",
+  "description": "GTP教育版，人工智能在教学中的辅助作用探究",
+  "version": "0.0.2",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "AGPL-3.0",
+  "author": "initencounter <2911583893@qq.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/dvc-edu#readme",
+  "scripts": {},
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin"
+  ],
+  "koishi": {
+    "description": "GTP插件教育版，人工智能在教学中的辅助作用探究"
+  },
+  "peerDependencies": {
+    "koishi": "^4.12.3"
+  }
+}
