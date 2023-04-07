@@ -124,7 +124,7 @@ class Dvc extends Service {
     this.access_token = ''
     this.session_config = {
       'msg': [
-        { "role": "system", "content": config.preset[0] }
+        { "role": "system", "content": "你是我的全能AI助理" }
       ]
     }
     if ((!ctx.puppeteer) && config.output == 'verbose') {
@@ -136,7 +136,7 @@ class Dvc extends Service {
     try {
       fs.readFileSync('./davinci-003-data.json').toString();
     } catch (e) {
-      fs.writeFileSync('./davinci-003-data.json', `{"预设人格":"${config.preset}"}`);
+      fs.writeFileSync('./davinci-003-data.json', `{"预设人格":"你是我的全能AI助理"}`);
     }
 
     this.personality = JSON.parse(fs.readFileSync('./davinci-003-data.json').toString());
@@ -161,7 +161,7 @@ class Dvc extends Service {
     ctx.command('dvc.count <prompt:text>', '统计次数的工具人', {
       maxUsage: config.usage,
       usageName: 'ai'
-    }).action(({ session }) => this.dvc(session, session.content.slice(session.content.indexOf(' '))))
+    }).action(({ session }) => this.dvc(session, session.content.replace("dvc.count ",'')))
 
     //清空所有会话及人格
     ctx.command('dvc.clear', '清空所有会话及人格', {
@@ -194,7 +194,7 @@ class Dvc extends Service {
     }).alias('dvc.模式切换').action(async () => this.switch_type())
 
     //生图
-    ctx.command('dvc.paint, <prompt:text>', '生成图片', {
+    ctx.command('dvc.paint <prompt:text>', '生成图片', {
       authority: 1,
       usageName: 'ai',
       maxUsage: config.usage
@@ -213,7 +213,7 @@ class Dvc extends Service {
         options.resolution ? options.resolution : this.config.resolution
       ))
     ctx.command('dvc.翻译 <prompt:text>','AI翻译').option('lang', '-l <lang:t=string>', { fallback: config.lang }).action(async ({ session, options }, prompt) => {
-      return h('quote', { id: session.messageId }) + (await this.translate(options.lang, prompt))
+        return await this.getContent(session.userId, {'msg':[{ "role": "assistant", "content": (await this.translate(options.lang, prompt)) }],id:1}, session.messageId)
     })
 
   }
@@ -314,7 +314,7 @@ class Dvc extends Service {
 
   reset(session: Session) {
     let seession_json = this.get_chat_session(session.userId)
-    seession_json['msg'] = [{ "role": "system", "content": this.config.preset }]
+    seession_json['msg'] = [{ "role": "system", "content": "你是我的全能AI助理" }]
     this.sessions[session.userId] = seession_json
     delete this.sessions_cmd[session.userId]
     return '重置成功'
@@ -421,7 +421,7 @@ class Dvc extends Service {
     }
     const session_id_string: string = session.userId
     if (this.config.superusr.indexOf(session_id_string) == -1) {
-      session.execute(`dvc.count ${prompt}`)
+      await session.execute(`dvc.count ${prompt}`)
     } else {
       return this.dvc(session, prompt)
     }
@@ -432,8 +432,10 @@ class Dvc extends Service {
    */
 
 
-
   async dvc(session: Session, prompt: string) {
+    if(this.config.blockuser.includes(session.userId)||this.config.blockchannel.includes(session.channelId)){
+      return
+    }
     if (this.config.waiting) {
       session.send(session.text('commands.dvc.messages.thinking'))
     }
@@ -460,7 +462,7 @@ class Dvc extends Service {
     }
     else if (this.type == 'gpt3.5-unit') {
       try {
-        const text = await this.chat_with_gpt([{ 'role': 'user', 'content': prompt }])
+        const text:string = await this.chat_with_gpt([{ 'role': 'user', 'content': prompt }])
         const resp = { 'msg': [{ "role": "user", "content": prompt }, { "role": "assistant", "content": text }], 'id': 0 }
         return await this.getContent(session.userId, resp, session.messageId)
       }
@@ -512,21 +514,19 @@ class Dvc extends Service {
     if (Object.keys(this.sessions_cmd).indexOf(session_id_string) == -1) {
       return next()
     }
-    Object.keys(this.sessions_cmd).forEach((i, _id) => {
+    Object.keys(this.sessions_cmd).forEach(async (i, _id) => {
       if (i == session_id_string && (session.content.indexOf(this.sessions_cmd[i]) > -1)) {
         if (session.content.length == this.sessions_cmd[i].length) {
-          session.execute('dvc')
-          return next()
+          return await session.execute('dvc')
         } else {
-          session.execute(`dvc ${session.content.replace(this.sessions_cmd[i], '')}`)
-          return next()
+          return await session.execute(`dvc ${session.content.replace(this.sessions_cmd[i], '')}`)
         }
       }
     })
     return next()
   }
   async switch_output(session: Session, type: string) {
-    const type_arr: string[] = ['voice', 'default', 'verbose', 'minimal']
+    const type_arr: string[] = ['voice', 'quote','default', 'verbose', 'minimal']
     if (!type) {
       let type_str: string = '\n'
       type_arr.forEach((i, id) => {
@@ -625,8 +625,11 @@ class Dvc extends Service {
       const data = await this.ctx.http.get(`https://ai-api.baimianxiao.cn/api/${this.encode(this.g_voice_name)}/${this.encode(resp.msg[resp.msg.length - 1].content)}/0.4/0.6/1.12/${this.encode(Math.floor(Date.now() / 1000).toString())}.ai`, { responseType: 'arraybuffer' });
       return h.audio(data, 'audio/x-wav');
     }
-    if (this.output_type == 'minimal') {
+    if (this.output_type == "quote"){
       return h('quote', { id: messageId }) + resp.msg[resp.msg.length - 1].content
+    }
+    if (this.output_type == 'minimal') {
+      return resp.msg[resp.msg.length - 1].content
 
     } else if (this.output_type == 'default') {
       const result = segment('figure')
@@ -674,7 +677,7 @@ class Dvc extends Service {
           <p style="color:#723b8d">ChatGPT3.5-Turbo</p>
           {elements}
         </div>
-        <div style='position: absolute;top:10px;'>create by koishi-plugin-davinci-003_v3.0.0</div>
+        <div style='position: absolute;top:10px;'>create by koishi-plugin-davinci-003_v3.0.2</div>
       </html>
     }
   }
@@ -732,7 +735,7 @@ class Dvc extends Service {
     }
     catch (error) {
       logger.error(error.toString())
-      return { "msg": [{ "role": "", "content": String(error) }], "id": 1 }
+      return String(error)
     }
   }
 
@@ -758,37 +761,38 @@ class Dvc extends Service {
    * @returns json消息
    */
 
-  async chat(msg: string, sessionid: string, sender: Session) {
+  async chat(msg: string, sessionid: string, session: Session) {
     ///逻辑段参考自<a style="color:blue" href="https://lucent.blog">Lucent佬</a><br></br>
     try {
       if (msg == '') {
         return '您好，我是人工智能助手，如果您有任何问题，请随时告诉我，我将尽力回答。\n如果您需要重置我们的会话，请回复`重置会话`'
       }
       // 获得对话session
-      let session = this.get_chat_session(sessionid)
+      let session_of_id = this.get_chat_session(sessionid)
       // 设置本次对话内容
-      session['msg'].push({ "role": "user", "content": msg })
-      let fix_msg = session['msg']
+      session_of_id['msg'].push({ "role": "user", "content": msg })
+      let fix_msg = session_of_id['msg']
       // 与ChatGPT交互获得对话内容
-      let message = await this.chat_with_gpt(fix_msg)
+      let message:string = await this.chat_with_gpt(fix_msg)
       // 查看是否出错
       if (message.indexOf("This model's maximum context length is 4096 token") > -1) {
-        sender.send('会话过长，已自动重置会话')
-        if (session['msg'].length == 2) {
-          return '会话过长, 已return'
+        session.send('会话过长，已自动重置会话')
+        if (session_of_id['msg'].length == 2) {
+          this.sessions[sessionid] = session_of_id['msg'][0]
+          return '会话过长, 已退出'
         }
         // 出错就清理
-        session['msg'] = [{ "role": "system", "content": this.config.preset }, { "role": "user", "content": msg }]
+        session_of_id['msg'] = [session_of_id['msg'][0], { "role": "user", "content": msg }]
         // 重新交互
-        message = await this.chat(msg, sessionid, sender)
+        message = await this.chat_with_gpt(session_of_id['msg'])
       }
       // 记录上下文
-      session['msg'].push({ "role": "assistant", "content": message })
-      this.sessions[sessionid] = session
+      session_of_id['msg'].push({ "role": "assistant", "content": message })
+      this.sessions[sessionid] = session_of_id
       logger.info("会话ID: " + sessionid)
       logger.info("ChatGPT返回内容: ")
       logger.info(message)
-      return await this.getContent(sessionid, session, sender.messageId)
+      return await this.getContent(sessionid, session_of_id, session.messageId)
 
     }
     catch (error) {
@@ -806,14 +810,10 @@ namespace Dvc {
 如需使用内容审查,请前往<a style="color:blue" href="https://ai.baidu.com/solution/censoring?hmsr=aibanner&hmpl=censoring">百度智能云</a> 获取AK和SK</br>
 对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-davinci-003 概不负责。<br>
 如果有更多文本内容想要修改，可以在<a style="color:blue" href="/locales">本地化</a>中修改 zh 内容</br>
-若出现TypeError: expected { type?: "gpt3.5-unit" } | { type?: "gpt3.5-js" }报错
-请修改koishi.yml将davinci-003字段删除<br>
-
 ## 添加人格的方法
 * 在聊天中发送“dvc.设置人格 xxx”可以自动保存人格
 * 在koishi根目录找到davinci-003-data.json文件,修改里面的人格即可
 问题反馈群:399899914
-
 ## 感谢
 > 逻辑端参考自<a href="https://lucent.blog/#blog" title="前往 Lucent's Blog 的主页" class="blog-button"><img src="https://img-1251540275.cos.ap-shanghai.myqcloud.com/blog/IMG_1140(20200328-104456)_1591776646572.JPG" width="25" alt="Lucent's Blog logo" class="panel-cover__logo logo logo1"></a>
 <a class="panel-cover__title panel-title"><a href="https://lucent.blog/#blog" title="link to homepage for Lucent's Blog" class="blog-button">Lucent's Blog(呆呆木）</a></a><br>
@@ -862,6 +862,8 @@ namespace Dvc {
     if_private: boolean
     proxy_reverse: string
     lang: string
+    blockuser: string[]
+    blockchannel: string[]
   }
 
   export const Config = Schema.intersect([
@@ -963,13 +965,18 @@ namespace Dvc {
       ]).default('1024x1024').description('生成图像的默认比例'),
       output: Schema.union([
         Schema.const('minimal').description('只发送文字消息'),
+        Schema.const('quote').description('引用消息'),
         Schema.const('default').description('以聊天记录形式发送'),
         Schema.const('verbose').description('将对话转成图片'),
         Schema.const('voice').description('发送语音')
       ]).description('输出方式。').default('minimal'),
       if_private: Schema.boolean().default(true).description('开启后私聊可触发ai'),
       proxy_reverse: Schema.string().default('https://gpt.lucent.blog').description('反向代理地址')
-    }).description('进阶设置')
+    }).description('进阶设置'),
+    Schema.object({
+      blockuser: Schema.array(String).default([]).description('屏蔽的用户'),
+      blockchannel: Schema.array(String).default([]).description('屏蔽的频道')
+    }).description('过滤器')
   ])
 
 }

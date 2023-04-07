@@ -56,7 +56,7 @@ class Dvc {
     ctx.command('dvc.count <prompt:text>', '统计次数的工具人', {
       maxUsage: config.usage,
       usageName: 'ai'
-    }).action(({ session }) => this.dvc(session, session.content.slice(session.content.indexOf(' '))))
+    }).action(({ session }) => this.dvc(session, session.content.replace("dvc.count ",'')))
 
     //清空所有会话及人格
     ctx.command('清空会话', '重置所有用户的会话', {
@@ -268,7 +268,7 @@ class Dvc {
   async middleware1(session: Session, next) {
     if (session.subtype === 'private') {
       if (this.config.if_private) {
-        return this.sli(session, session.content, {})
+        return this.sli(session, `ai ${session.content}`, {})
       }
     }
     if (session.parsed.appel) {
@@ -485,7 +485,7 @@ class Dvc {
     }
     catch (error) {
       logger.error(error.toString())
-      return { "msg": [{ "role": "", "content": String(error) }], "id": 1 }
+      return String(error)
     }
   }
 

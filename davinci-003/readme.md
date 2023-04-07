@@ -22,6 +22,14 @@
 [![npm](https://img.shields.io/npm/v/koishi-plugin-davinci-003?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-davinci-003)
 
 # 更新日志
+## v3.0.2
+>
+修复会话过长导致的400报错
+新增过滤器
+
+## v3.0.1
+>
+修复会话过长导致的400报错
 
 ## v3.0.0
 >

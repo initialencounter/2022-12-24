@@ -15,6 +15,7 @@ commands:
           <message id=9>5.[查询余额] 请发送 "dvc.credit"</message>
           <message id=10>[切换输出模式] 请发送 "dvc.output"</message>
           <message id=11>[切换角色声音] 请发送 "dvc.gvc 甘雨"</message>
+          <message id=12>若出现400报错，请发送dvc.clear</message>
         </message>
       </>
     messages:

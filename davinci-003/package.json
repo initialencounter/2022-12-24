@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-davinci-003",
-  "description": "AI聊天,新增明日香、艾莉希雅等人格",
-  "version": "3.0.0",
+  "description": "AI聊天,更新之前请务必停止插件！！！",
+  "version": "3.0.1",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -31,7 +31,7 @@
     "koishi": "^4.11.9"
   },
   "koishi": {
-    "description": "AI聊天，支持GPT3.5，DAVINCI、等多个模型",
+    "description": "AI聊天，更新之前请务必停止插件！！！",
     "browser": true,
     "service": {
       "optional": [
