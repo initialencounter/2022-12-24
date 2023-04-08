@@ -22,6 +22,12 @@
 [![npm](https://img.shields.io/npm/v/koishi-plugin-davinci-003?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-davinci-003)
 
 # 更新日志
+
+## v3.0.2
+>
+更换切换人格的方式
+优化代码结构
+
 ## v3.0.2
 >
 修复会话过长导致的400报错
