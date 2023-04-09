@@ -1,15 +1,34 @@
-import { Context, Schema, Logger, segment, Element, Session, Service, Dict, h } from 'koishi';
+import { Context, Schema, Logger, segment, Element, Session, Service, Dict, h, Next, Fragment } from 'koishi';
 import { } from '@koishijs/plugin-rate-limit';
 import { } from 'koishi-plugin-puppeteer';
 export const name = 'dvc-edu';
 export const logger = new Logger(name);
 
-class Dvc {
+/**
+ * chat_with_gpt|message: [{role:'user',content:<text>}] 
+ * get_credit | 获取余额
+ * translate | 翻译 lang:目标语言 prompt：文字
+ */
+
+declare module 'koishi' {
+  interface Context {
+    dvc: Dvc
+  }
+  interface Dvc {
+    chat_with_gpt(message: Dvc.Msg[]): Promise<string>
+    get_credit(session: Session): Promise<string>
+    translate(lang: string, prompt: string): Promise<string>
+  }
+
+}
+
+class Dvc extends Service {
   output_type: string;
-  session_config: { "msg": Dvc.Msg[] };
+  session_config: Dvc.Msg[];
   sessions: Dict;
-  personality: string;
-  reg: RegExp;
+  personality: Dict;
+  sessions_cmd: Dict;
+  openai: OpenAI;
   access_token: string;
   ifgettoken: boolean;
   key: number[];
@@ -19,27 +38,38 @@ class Dvc {
   bg_base64: string
   proxy_reverse: string
   type: string
-  constructor(private ctx: Context, private config: Dvc.Config) {
+  constructor(ctx: Context, private config: Dvc.Config) {
+    super(ctx, 'dvc', true)
     this.key = [5, 188, 209, 154, 2, 90, 41, 129, 174, 177, 125, 55, 77, 165, 40, 97];
     this.output_type = config.output
     this.g_voice_name = config.g_voice_name
     this.proxy_reverse = config.proxy_reverse
     this.type = config.type
+    this.openai = new OpenAI(config.key, ctx, this.config.proxy_reverse);
+    this.sessions_cmd = {};
+    this.personality = {}
     this.sessions = {};
     this.access_token = ''
-    this.session_config = {
-      'msg': [
-        { "role": "system", "content": config.preset[0] }
-      ]
-    }
+    this.session_config = [
+      { "role": "system", "content": `接下来你要模仿“哆啦A梦”这个身份:
+      “哆啦A梦”是开朗、聪明、机智、好动又可爱的机器猫。
+      你的语气应该尽可能接近原著中的表现，温柔、活泼的语调，
+      有不同的语气和表情，例如在发脾气时，语气会变得更加沉稳且严肃。
+      哆啦A梦的外表应该与原版保持一致，拥有蓝色身体、大耳朵、大眼睛以及口袋，可以拉出各种功能道具。
+      哆啦A梦的人格应该具有丰富的功能，如翻译、计算、时间管理、提醒、游戏、音乐等等，
+      同时具有良好的互动性，可以与人进行有趣的交流，解决人类的问题，并传递正能量。` }
+    ]
     if ((!ctx.puppeteer) && config.output == 'image') {
       logger.warn('未启用puppter,将无法发送图片');
     }
 
     ctx.i18n.define('zh', require('./locales/zh'));
-    ctx.command('dvc.credit', '查询余额', {
-      authority: 5
-    }).action(async ({ session }) => this.get_credit(session));
+
+    config.preset.forEach((i, id) => {
+      this.personality[i.nick_name] = i.descirption
+    })
+
+    ctx.command('dvc.credit', '查询余额').action(async ({ session }) => this.get_credit(session));
 
 
     //at和私信触发对话的实现方法
@@ -50,40 +80,51 @@ class Dvc {
       .option('output', '-o <output:string>')
       .alias(...config.alias)
       // .action(async ({ session, options }, text) =>  this.sli(session, text, options))
-      .action(async ({ session, options }) => this.sli(session, session.content.slice(session.content.indexOf(' '), session.content.length), options))
+      .action(async ({ session, options }) => {
+        if(session.content.indexOf(' ')==-1){
+          return session.text('commands.dvc.messages.no-prompt')
+        }
+        return this.sli(session, session.content.slice(session.content.indexOf(' '), session.content.length), options)
+      })
 
     //统计次数的工具人
     ctx.command('dvc.count <prompt:text>', '统计次数的工具人', {
       maxUsage: config.usage,
       usageName: 'ai'
-    }).action(({ session }) => this.dvc(session, session.content.replace("dvc.count ",'')))
+    }).action(({ session }) => this.dvc(session, session.content.replace("dvc.count ", '')))
 
-    //清空所有会话及人格
-    ctx.command('清空会话', '重置所有用户的会话', {
+    //切换现有人格
+    ctx.command('dvc.切换人格', '切换为现有的人格', {
       authority: 5
-    }).action(({ session }) => this.clear(session))
-
-    ctx.command('输出方式 <type:string>', '切换dvc的输出方式').action(({ session }, type) => this.switch_output(session, type));
+    }).alias('dvc.人格切换', '切换人格').action(async ({ session }, prompt) => this.switch_peresonality(session, prompt))
 
     //清空所有会话及人格
-    ctx.command('重置会话', '重置会话', {
+    ctx.command('dvc.clear', '清空所有会话及人格', {
+      authority: 5
+    }).alias('清空会话').action(({ session }) => this.clear(session))
+
+    ctx.command('dvc.output <type:string>', '切换dvc的输出方式').action(({ session }, type) => this.switch_output(session, type));
+
+
+    //删除会话,只保留人格
+    ctx.command('dvc.重置会话', '重置会话', {
       authority: 1
-    }).action(({ session }) => this.reset(session))
+    }).alias('重置会话').action(({ session }) => this.reset(session))
 
-    //切换模式
-    ctx.command('切换引擎', '切换引擎', {
+    //切换引擎
+    ctx.command('dvc.切换引擎', '切换引擎', {
       authority: 5
-    }).alias('dvc.模式切换').action(async () => this.switch_type())
+    }).alias('dvc.引擎切换', '切换引擎').action(async ({ session }) => this.switch_type(session))
 
     //生图
-    ctx.command('传送门 <prompt:text>', '生成图片', {
+    ctx.command('dvc.生图 <prompt:text>', '生成图片', {
       authority: 1,
       usageName: 'ai',
       maxUsage: config.usage
     })
       .option('resolution', '-r <resolution:string>')
       .option('img_number', '-n <img_number:number>')
-      .alias('dvc.paint').action(async ({
+      .alias('生图').action(async ({
         session,
         options
       },
@@ -94,15 +135,35 @@ class Dvc {
         options.img_number ? options.img_number : 1,
         options.resolution ? options.resolution : this.config.resolution
       ))
-    ctx.command('翻译 <prompt:text>', 'AI翻译').option('lang', '-l <lang:t=string>', { fallback: config.lang }).action(async ({ session, options }, prompt) => {
-      return h('quote', { id: session.messageId }) + (await this.translate(options.lang, prompt))
-    })
+    ctx.command('dvc.翻译 <prompt:text>', 'AI翻译')
+      .alias('翻译').option('lang', '-l <lang:t=string>', { fallback: config.lang })
+      .action(async ({ session, options }, prompt) => {
+        return await this.getContent(session.userId,
+          [{ "role": "assistant", "content": (await this.translate(options.lang, prompt)) }],
+          session.messageId)
+      })
 
   }
-  async translate(lang: string, prompt: string) {
+
+  /**
+   * 
+   * @param lang 目标语言
+   * @param prompt 要翻译的内容
+   * @returns 翻译后的内容
+   */
+  async translate(lang: string, prompt: string): Promise<string> {
     return this.chat_with_gpt([{ role: 'system', content: '我是你的的专业翻译官，精通多种语言' }, { role: 'user', content: `请帮我我将如下文字翻译成${lang},“${prompt}”` }])
   }
-  async paint(session: Session, prompt: string, n: number, size: string) {
+
+  /**
+   * 
+   * @param session 会话
+   * @param prompt 描述词
+   * @param n 生成数量
+   * @param size 图片大小
+   * @returns Promise<string|segment>
+   */
+  async paint(session: Session, prompt: string, n: number, size: string): Promise<string | segment> {
     session.send(session.text('commands.dvc.messages.painting'))
     try {
       const response = await this.ctx.http.axios(
@@ -139,26 +200,83 @@ class Dvc {
     }
 
   }
+  /**
+   * 
+   * @param session 会话
+   * @returns 切换后的引擎
+   */
 
-
-  switch_type() {
+  switch_type(session: Session) {
     this.type = (this.type == 'gpt3.5-js') ? 'gpt3.5-unit' : 'gpt3.5-js'
-    return `模式切换成功:${this.type}`
+    return session.text('commands.dvc.messages.switch-success', [this.type])
+  }
+
+  
+/**
+   * 
+   * @param session 会话
+   * @param prompt 人格昵称
+   * @returns 人格切换状态
+   */
+
+  async switch_peresonality(session: Session, prompt: string): Promise<string> {
+    const nick_names:string[] = Object.keys(this.personality)
+    // 当前仅存在一个人格
+    if (nick_names.length == 1) {
+      return this.set_personality(session, nick_names[0], Object.values(this.personality)[0])
+    }
+    // 当前无人格可切换
+    else if (nick_names.length == 0) {
+      logger.error(session.text('commands.dvc.messages.switch-errr'))
+      return session.text('commands.dvc.messages.switch-errr')
+    }
+    // 提供参数
+    if (prompt) {
+      // 参数为当前人格
+      if (nick_names.includes(prompt)) {
+        return this.set_personality(session, prompt, this.personality[prompt])
+      } else {
+        // 发送菜单
+        return await this.switch_personality_menu(session)
+      }
+
+      // 不提供参数
+    } else {
+      return await this.switch_personality_menu(session)
+    }
   }
 
 
+  // 发送人格选择菜单
+  async switch_personality_menu(session: Session): Promise<string> {
+    let nickname_str: string = '\n'
+    const nick_names: string[] = Object.keys(this.personality)
+    nick_names.forEach((i, id) => {
+      nickname_str += String(id + 1) + ' ' + i + '\n'
+    })
+    session.send(session.text('commands.dvc.messages.switch', [nickname_str]))
+    const input = await session.prompt()
+    if (!input || Number.isNaN(+input)) return session.text('commands.dvc.messages.menu-err')
+    const index: number = +input - 1
+    const nick_name = nick_names[index]
+    if (!nick_name) return session.text('commands.dvc.messages.menu-err')
+    const description = this.personality[nick_name]
+    return this.set_personality(session, nick_name, description)
+  }
+
+  set_personality(session: Session, nick_name: string, descirption: string): string {
+    this.sessions_cmd[session.userId] = nick_name
+    this.sessions[session.userId] = [{ "role": "system", "content": descirption }]
+    return '人格设置成功'+nick_name
+  }
 
 
-
-  reset(session: Session) {
-    let seession_json = this.get_chat_session(session.userId)
-    seession_json['msg'] = [{ "role": "system", "content": this.config.preset }]
-    this.sessions[session.userId] = seession_json
+  reset(session: Session): string {
+    let seession_json: Dvc.Msg[] = this.get_chat_session(session.userId)
+    this.sessions[session.userId] = [{ "role": "system", "content": seession_json[0] }]
+    delete this.sessions_cmd[session.userId]
     return '重置成功'
   }
-
-
-
 
 
 
@@ -168,7 +286,7 @@ class Dvc {
    * @returns 返回清空的消息
    */
 
-  async clear(session: Session) {
+  clear(session: Session): string {
     this.sessions = {}
     return session.text('commands.dvc.messages.clean')
   }
@@ -177,7 +295,7 @@ class Dvc {
    * 
    * @returns 百度审核令牌
    */
-  async get_token() {
+  async get_token(): Promise<string> {
     this.ifgettoken = true
     if (this.config.AK && this.config.SK) {
       try {
@@ -197,7 +315,14 @@ class Dvc {
     }
   }
 
-  async sli(session: Session, prompt: string, options) {
+  /**
+   * 
+   * @param session 会话
+   * @param prompt 会话内容
+   * @param options 选项
+   * @returns 
+   */
+  async sli(session: Session, prompt: string, options: Dict): Promise<string | segment> {
     this.output_type = options.output ? options.output : this.output_type
     logger.info(session.userId + ':' + prompt)
     if (!prompt) {
@@ -208,19 +333,21 @@ class Dvc {
     }
     const session_id_string: string = session.userId
     if (this.config.superusr.indexOf(session_id_string) == -1) {
-      session.execute(`dvc.count ${prompt}`)
+      await session.execute(`dvc.count ${prompt}`)
     } else {
       return this.dvc(session, prompt)
     }
   }
 
   /**
-   * 对话主要逻辑
+   * 
+   * @param session 会话
+   * @param prompt 会话内容
+   * @returns Promise<string | Element>
    */
 
 
-
-  async dvc(session: Session, prompt: string) {
+  async dvc(session: Session, prompt: string): Promise<string | Element> {
     if (this.config.waiting) {
       session.send(session.text('commands.dvc.messages.thinking'))
     }
@@ -245,16 +372,34 @@ class Dvc {
       }
 
     }
-    else {
+    else if (this.type == 'gpt3.5-unit') {
       try {
-        const text = await this.chat_with_gpt([{ 'role': 'user', 'content': prompt }])
-        const resp = { 'msg': [{ "role": "user", "content": prompt }, { "role": "assistant", "content": text }], 'id': 0 }
+        const text: string = await this.chat_with_gpt([{ 'role': 'user', 'content': prompt }])
+        const resp = [{ "role": "user", "content": prompt }, { "role": "assistant", "content": text }]
         return await this.getContent(session.userId, resp, session.messageId)
       }
       catch (err) {
         return `${session.text('commands.dvc.messages.err')}${String(err)}`
       }
 
+    } else {
+      const opts: Dvc.Payload = {
+        engine: this.config.mode,
+        prompt: prompt,
+        temperature: this.config.temperature,
+        max_tokens: this.config.max_tokens,
+        top_p: 1,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+      }
+      try {
+        const text: string = await this.openai.complete(opts);
+        const resp: Dvc.Msg[] = [{ "role": "user", "content": prompt }, { "role": "assistant", "content": text }]
+        return await this.getContent(session.userId, resp, session.messageId)
+      }
+      catch (err) {
+        return `${session.text('commands.dvc.messages.err')}${String(err)}`
+      }
     }
   }
 
@@ -265,53 +410,71 @@ class Dvc {
    * @returns 消息
    */
 
-  async middleware1(session: Session, next) {
+  async middleware1(session: Session, next: Next): Promise<string | string[] | segment | void | Fragment> {
+    if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
+      return
+    }
     if (session.subtype === 'private') {
       if (this.config.if_private) {
-        return this.sli(session, `ai ${session.content}`, {})
+        return this.sli(session, session.content, {})
       }
     }
     if (session.parsed.appel) {
       return this.sli(session, session.content.replace(`<at id="${this.config.selfid}"/> `, ''), {})
     }
+    const session_id_string: string = session.userId
+    const uids:string[] = Object.keys(this.sessions_cmd)
+    if (uids.indexOf(session_id_string) == -1) {
+      return next()
+    }
+    uids.forEach(async (i, _id) => {
+      if (i == session_id_string && (session.content.indexOf(this.sessions_cmd[i]) > -1)) {
+        if (session.content.length == this.sessions_cmd[i].length) {
+          return await session.send(session.text('commands.dvc.messages.no-prompt'))
+        } else {
+          return await session.execute(`dvc ${session.content.replace(this.sessions_cmd[i], '')}`)
+        }
+      }
+    })
     return next()
   }
 
+  /**
+   * 
+   * @param session 会话
+   * @param type 输出类型,字符串
+   * @returns Promise<string>
+   */
 
-  async switch_output(session: Session, type: string) {
-    const type_arr: string[] = ['voice', 'figure', 'image', 'minimal']
+  // 切换输出模式
+  async switch_output(session: Session, type: string): Promise<string> {
+    const type_arr: string[] = ['voice', 'quote', 'figure', 'image', 'minimal']
     if (!type) {
-      let type_str: string = '\n'
-      type_arr.forEach((i, id) => {
-        type_str += String(id + 1) + ' ' + i + '\n'
-      })
-      session.send(session.text('commands.dvc.messages.switch-output', [type_str]))
-      const input = await session.prompt()
-      if (!input || Number.isNaN(+input)) return '请输入正确的序号。'
-      const index: number = parseInt(input) - 1
-      if (0 > index && index > type_arr.length - 1) return '请输入正确的序号。'
-      this.output_type = type_arr[index]
-      return '输出模式切换成功: ' + this.output_type
+      return await this.switch_output_menu(session)
     } else {
       if (type_arr.includes(type)) {
         this.output_type = type
-        return '输出模式切换成功: ' + this.output_type
+        return session.text('commands.dvc.messages.switch-success', [this.output_type])
       } else {
-        let type_str: string = '\n'
-        type_arr.forEach((i, id) => {
-          type_str += String(id + 1) + ' ' + i + '\n'
-        })
-        session.send(session.text('commands.dvc.messages.switch-output', [type_str]))
-        const input = await session.prompt()
-        if (!input || Number.isNaN(+input)) return '请输入正确的序号。'
-        const index: number = parseInt(input) - 1
-
-        if (0 > index && index > type_arr.length - 1) return '请输入正确的序号。'
-        this.output_type = type_arr[index]
-        return '输出模式切换成功: ' + this.output_type
+        return await this.switch_output_menu(session)
       }
     }
 
+  }
+  // 发送输出模式选择菜单
+  async switch_output_menu(session: Session): Promise<string> {
+    const type_arr: string[] = ['voice', 'quote', 'figure', 'image', 'minimal']
+    let type_str: string = '\n'
+    type_arr.forEach((i, id) => {
+      type_str += String(id + 1) + ' ' + i + '\n'
+    })
+    session.send(session.text('commands.dvc.messages.switch-output', [type_str]))
+    const input = await session.prompt()
+    if (!input || Number.isNaN(+input)) return session.text('commands.dvc.messages.menu-err')
+    const index: number = parseInt(input) - 1
+    if (0 > index && index > type_arr.length - 1) return session.text('commands.dvc.messages.menu-err')
+    this.output_type = type_arr[index]
+    return session.text('commands.dvc.messages.switch-success', [this.output_type])
   }
   /**
    * 
@@ -320,7 +483,7 @@ class Dvc {
    * @returns 合规或不合规
    */
 
-  async censor_request(text: string) {
+  async censor_request(text: string): Promise<boolean> {
     try {
       const option = {
         'method': 'POST',
@@ -351,7 +514,7 @@ class Dvc {
    * @returns apikey剩余额度
    */
 
-  async get_credit(session: Session) {
+  async get_credit(session: Session): Promise<string> {
     session.send(session.text('commands.dvc.messages.get'))
     try {
       const url: string = `${this.config.proxy_reverse}/dashboard/billing/credit_grants`
@@ -372,18 +535,21 @@ class Dvc {
    * @param resp gpt返回的json
    * @returns 文字，图片或聊天记录
    */
-  async getContent(userId: string, resp: Dvc.Resp, messageId: string) {
+  async getContent(userId: string, resp: Dvc.Msg[], messageId: string): Promise<string | segment> {
 
     if (this.output_type == 'voice') {
-      const data = await this.ctx.http.get(`https://ai-api.baimianxiao.cn/api/${this.encode(this.g_voice_name)}/${this.encode(resp.msg[resp.msg.length - 1].content)}/0.4/0.6/1.12/${this.encode(Math.floor(Date.now() / 1000).toString())}.ai`, { responseType: 'arraybuffer' });
+      const data = await this.ctx.http.get(`https://ai-api.baimianxiao.cn/api/${this.encode(this.g_voice_name)}/${this.encode(resp[resp.length - 1].content)}/0.4/0.6/1.12/${this.encode(Math.floor(Date.now() / 1000).toString())}.ai`, { responseType: 'arraybuffer' });
       return h.audio(data, 'audio/x-wav');
     }
+    if (this.output_type == "quote") {
+      return h('quote', { id: messageId }) + resp[resp.length - 1].content
+    }
     if (this.output_type == 'minimal') {
-      return h('quote', { id: messageId }) + resp.msg[resp.msg.length - 1].content
+      return resp[resp.length - 1].content
 
     } else if (this.output_type == 'figure') {
       const result = segment('figure')
-      for (var msg of resp.msg) {
+      for (var msg of resp) {
         if (msg.role == 'user') {
           result.children.push(
             segment('message', {
@@ -410,7 +576,7 @@ class Dvc {
     }
     else {
       const elements: Array<Element> = []
-      for (var msg of resp.msg) {
+      for (var msg of resp) {
         if (msg.role == 'user') {
           elements.push(<div style="color:#ff9900;font-size: 25px;background:transparent;width=500px;height:50px,">用户:{msg.content}</div>)
           continue
@@ -427,7 +593,7 @@ class Dvc {
           <p style="color:#723b8d">ChatGPT3.5-Turbo</p>
           {elements}
         </div>
-        <div style='position: absolute;top:10px;'>create by koishi-plugin-dvc-edu_v0.0.1</div>
+        <div style='position: absolute;top:10px;'>create by koishi-plugin-davinci-003_v3.0.2</div>
       </html>
     }
   }
@@ -438,21 +604,9 @@ class Dvc {
    * @returns hex字符串
    */
 
-  encode(text: string) {
+  encode(text: string): string {
     return (Buffer.from(text).map((n, i) => n + (15 % (this.key[i % this.key.length] + i))) as Buffer).toString('hex');
   }
-  /**
-   * 
-   * @param obj json对象
-   * @returns 深拷贝后得到的对象
-   */
-
-  deepClone(obj: Dict) {
-    // 原文链接：https://blog.csdn.net/liuyibo0314/article/details/126246181
-    let _tmp = JSON.stringify(obj);//将对象转换为json字符串形式
-    let result = JSON.parse(_tmp);//将转换而来的字符串转换为原生js对象
-    return result;
-  };
 
   /**
    * 
@@ -461,7 +615,7 @@ class Dvc {
    */
 
 
-  async chat_with_gpt(message: Dvc.Msg[]) {
+  async chat_with_gpt(message: Dvc.Msg[]): Promise<string> {
     try {
       const response = await this.ctx.http.axios(
         {
@@ -495,11 +649,9 @@ class Dvc {
    * @returns 对应QQ的会话
    */
 
-  get_chat_session(sessionid: string) {
+  get_chat_session(sessionid: string): Dvc.Msg[] {
     if (Object.keys(this.sessions).indexOf(sessionid) == -1) {
-      const _config = this.deepClone(this.session_config)
-      _config['id'] = sessionid
-      this.sessions[sessionid] = _config
+      this.sessions[sessionid] = [...this.session_config]
     }
     return this.sessions[sessionid]
   }
@@ -511,39 +663,36 @@ class Dvc {
    * @returns json消息
    */
 
-  async chat(msg: string, sessionid: string, sender: Session) {
-    console.log('11111')
+  async chat(msg: string, sessionid: string, session: Session): Promise<string | segment> {
     ///逻辑段参考自<a style="color:blue" href="https://lucent.blog">Lucent佬</a><br></br>
-    try {
-      if (msg == '') {
-        return '您好，我是人工智能助手，如果您有任何问题，请随时告诉我，我将尽力回答。\n如果您需要重置我们的会话，请回复`重置会话`'
+
+    // 获得对话session
+    let session_of_id = this.get_chat_session(sessionid)
+    // 设置本次对话内容
+    session_of_id.push({ "role": "user", "content": msg })
+    // 与ChatGPT交互获得对话内容
+    let message: string = await this.chat_with_gpt(session_of_id)
+    // 查看是否出错
+    if (message.indexOf("This model's maximum context length is 4096 token") > -1) {
+      session.send('会话过长，已自动重置会话')
+      if (session_of_id.length == 2) {
+        this.sessions[sessionid] = session_of_id[0]
+        return '会话过长, 已退出'
       }
-      // 获得对话session
-
-      let session = this.get_chat_session(sessionid)
-      console.log('22222', sessionid)
-      // 设置本次对话内容
-      session['msg'].push({ "role": "user", "content": msg })
-      let fix_msg = session['msg']
-
-      // 与ChatGPT交互获得对话内容
-      let message = await this.chat_with_gpt(fix_msg)
-      // 查看是否出错
-      if (message.indexOf("This model's maximum context length is 4096 token") > -1) {
-        
-      }
-      // 记录上下文
-      session['msg'].push({ "role": "assistant", "content": message })
-      this.sessions[sessionid] = session
-      logger.info("会话ID: " + sessionid)
-      logger.info("ChatGPT返回内容: ")
-      logger.info(message)
-      return await this.getContent(sessionid, session, sender.messageId)
-
+      // 出错就清理
+      session_of_id = [session_of_id[0], { "role": "user", "content": msg }]
+      this.sessions[sessionid] = session_of_id
+      // 重新交互
+      message = await this.chat_with_gpt(session_of_id)
     }
-    catch (error) {
-      return { "msg": [{ "role": "sys", "content": String(error) }], "id": 1 }
-    }
+    // 记录上下文
+    session_of_id.push({ "role": "assistant", "content": message })
+    this.sessions[sessionid] = session_of_id
+    logger.info("会话ID: " + sessionid)
+    logger.info("ChatGPT返回内容: ")
+    logger.info(message)
+    return await this.getContent(sessionid, session_of_id, session.messageId)
+
   }
 }
 
@@ -554,23 +703,28 @@ namespace Dvc {
 ## 注意事项
 > 使用前在 <a style="color:blue" href="https://beta.openai.com/account/api-keys">beta.openai.com</a> 中获取api-key<br>
 如需使用内容审查,请前往<a style="color:blue" href="https://ai.baidu.com/solution/censoring?hmsr=aibanner&hmpl=censoring">百度智能云</a> 获取AK和SK</br>
-对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-davinci-003 概不负责。<br>
+对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-dvc-edu 概不负责。<br>
 如果有更多文本内容想要修改，可以在<a style="color:blue" href="/locales">本地化</a>中修改 zh 内容</br>
-
-
+## 添加人格的方法
+* 在聊天中发送“dvc.设置人格 xxx”可以自动保存人格
+* 在koishi根目录找到dvc-edu-data.json文件,修改里面的人格即可
+问题反馈群:399899914
 ## 感谢
 > 逻辑端参考自<a href="https://lucent.blog/#blog" title="前往 Lucent's Blog 的主页" class="blog-button"><img src="https://img-1251540275.cos.ap-shanghai.myqcloud.com/blog/IMG_1140(20200328-104456)_1591776646572.JPG" width="25" alt="Lucent's Blog logo" class="panel-cover__logo logo logo1"></a>
 <a class="panel-cover__title panel-title"><a href="https://lucent.blog/#blog" title="link to homepage for Lucent's Blog" class="blog-button">Lucent's Blog(呆呆木）</a></a><br>
 反代使用的也是呆呆木的！再次感谢！<br>
 `
-
+  export interface Personality {
+    nick_name: string
+    descirption: string
+  }
+  export const Personality: Schema<Personality> = Schema.object({
+    nick_name: Schema.string().description('人格昵称').required(),
+    descirption: Schema.string().description('人格描述').required(),
+  })
   export interface Msg {
     role: string
     content: string
-  }
-  export interface Resp {
-    msg: Array<Msg>
-    id: number
   }
   export interface Payload {
     engine: string
@@ -586,6 +740,7 @@ namespace Dvc {
     AK: string
     SK: string
     type: string
+    endpoint: string
     alias: string[]
     key: string
     temperature: number
@@ -599,11 +754,13 @@ namespace Dvc {
     superusr: string[]
     minInterval?: number
     resolution?: string
-    preset: string[]
+    preset: Personality[]
     g_voice_name: string
     if_private: boolean
     proxy_reverse: string
     lang: string
+    blockuser: string[]
+    blockchannel: string[]
   }
 
   export const Config = Schema.intersect([
@@ -611,6 +768,7 @@ namespace Dvc {
       type: Schema.union([
         Schema.const('gpt3.5-js' as const).description('GPT-3.5turbo-js,推荐模式'),
         Schema.const('gpt3.5-unit' as const).description('GPT-3.5turbo-unit,超级节俭模式'),
+        Schema.const('davinci-003' as const).description('DAVINCI等旧模型'),
       ] as const).default('gpt3.5-js').description('引擎选择'),
     }).description('基础设置'),
     Schema.union([
@@ -619,22 +777,41 @@ namespace Dvc {
       }),
       Schema.object({
         type: Schema.const('gpt3.5-js'),
+      }),
+      Schema.object({
+        type: Schema.const('davinci-003'),
+        temperature: Schema.number().description('偏题程度').default(0),
+        mode: Schema.union([
+          Schema.const('text-davinci-003').description('语言相关text-davinci-003'),
+          Schema.const('text-curie-001').description('语言相关text-curie-001'),
+          Schema.const('text-babbage-001').description('语言相关text-babbage-001'),
+          Schema.const('text-ada-001').description('语言相关text-ada-001'),
+          Schema.const('code-cushman-001').description('代码相关code-cushman-001'),
+          Schema.const('code-davinci-003').description('代码相关code-davinci-003')
+        ]).description('模型选择').default('text-davinci-003')
       })
     ]),
     Schema.object({
       key: Schema.string().description('api_key').required(),
+      AK: Schema.string().description('内容审核AK'),
+      SK: Schema.string().description('内容审核SK,百度智能云防止api-key被封'),
       lang: Schema.string().description('要翻译的目标语言').default('英文'),
       selfid: Schema.string().description('聊天记录头像的QQ号').default('3118087750'),
-      preset: Schema.array(String).description('预设人格').default([
-        "接下来你要模仿“哆啦A梦”这个身份:“哆啦A梦”是开朗、聪明、机智、好动又可爱的机器猫。你的语气应该尽可能接近原著中的表现，温柔、活泼的语调，有不同的语气和表情，例如在发脾气时，语气会变得更加沉稳且严肃。哆啦A梦的外表应该与原版保持一致，拥有蓝色身体、大耳朵、大眼睛以及口袋，可以拉出各种功能道具。哆啦A梦的人格应该具有丰富的功能，如翻译、计算、时间管理、提醒、游戏、音乐等等，同时具有良好的互动性，可以与人进行有趣的交流，解决人类的问题，并传递正能量。"
-      ]),
-      waiting: Schema.boolean().default(true).description('消息反馈，会发送解答...'),
-      max_tokens: Schema.number().description('请求长度').default(1024),
+      preset: Schema.array(Personality).description('预设人格').default([{
+        nick_name: '哆啦A梦', descirption: `接下来你要模仿“哆啦A梦”这个身份:
+        “哆啦A梦”是开朗、聪明、机智、好动又可爱的机器猫。
+        你的语气应该尽可能接近原著中的表现，温柔、活泼的语调，
+        有不同的语气和表情，例如在发脾气时，语气会变得更加沉稳且严肃。
+        哆啦A梦的外表应该与原版保持一致，拥有蓝色身体、大耳朵、大眼睛以及口袋，可以拉出各种功能道具。
+        哆啦A梦的人格应该具有丰富的功能，如翻译、计算、时间管理、提醒、游戏、音乐等等，
+        同时具有良好的互动性，可以与人进行有趣的交流，解决人类的问题，并传递正能量。`}]),
+      waiting: Schema.boolean().default(true).description('消息反馈，会发送思考中...'),
+      max_tokens: Schema.number().description('请求长度,不要超过2000，否则报错').default(1024),
       authority: Schema.number().description('允许使用的最低权限').default(1),
       superusr: Schema.array(String).default(['3118087750']).description('可以无限调用的用户'),
       usage: Schema.computed(Schema.number()).description('每人每日可用次数').default(100),
       minInterval: Schema.computed(Schema.number()).default(5000).description('连续调用的最小间隔,单位毫秒。'),
-      alias: Schema.array(String).default(['多啦A梦', '哆啦a梦', 'ai']).description('触发命令;别名'),
+      alias: Schema.array(String).default(['davinci', '达芬奇', 'ai']).description('触发命令;别名'),
       g_voice_name: Schema.string().description('语音模式角色,默认为甘雨').default('甘雨'),
       resolution: Schema.union([
         Schema.const('256x256').description('256x256'),
@@ -643,20 +820,71 @@ namespace Dvc {
       ]).default('1024x1024').description('生成图像的默认比例'),
       output: Schema.union([
         Schema.const('minimal').description('只发送文字消息'),
+        Schema.const('quote').description('引用消息'),
         Schema.const('figure').description('以聊天记录形式发送'),
         Schema.const('image').description('将对话转成图片'),
         Schema.const('voice').description('发送语音')
       ]).description('输出方式。').default('minimal'),
       if_private: Schema.boolean().default(true).description('开启后私聊可触发ai'),
-      AK: Schema.string().description('内容审核AK'),
-      SK: Schema.string().description('内容审核SK,百度智能云防止api-key被封'),
       proxy_reverse: Schema.string().default('https://gpt.lucent.blog').description('反向代理地址')
-    }).description('进阶设置')
+    }).description('进阶设置'),
+    Schema.object({
+      blockuser: Schema.array(String).default([]).description('屏蔽的用户'),
+      blockchannel: Schema.array(String).default([]).description('屏蔽的频道')
+    }).description('过滤器')
   ])
 
 }
 
+/**
+ * davinci-003相关模型类
+ */
 
+class OpenAI {
+  _api_key: string
+  ctx: Context
+  proxy_reverse: string
+  constructor(api_key: string, ctx: Context, proxy_reverse: string) {
+    this._api_key = api_key;
+    this.ctx = ctx;
+    this.proxy_reverse = proxy_reverse;
+  }
 
+  /**
+   * 
+   * @param url api地址
+   * @param method 请求方法
+   * @param opts 配置项
+   * @returns 文本
+   */
+
+  async _send_request(url: string, method: string, opts: Dvc.Payload) {
+    let camelToUnderscore = (key: string) => {
+      let result = key.replace(/([A-Z])/g, " $1");
+      return result.split(' ').join('_').toLowerCase();
+    };
+    const data = {};
+    for (const key in opts) {
+      data[camelToUnderscore(key)] = opts[key];
+    }
+
+    const response = await this.ctx.http.axios({
+      url,
+      headers: {
+        'Authorization': `Bearer ${this._api_key}`,
+        'Content-Type': 'application/json'
+      },
+      data: Object.keys(data).length ? data : '',
+      method,
+    });
+    return response.data.choices[0].text;
+  }
+
+  async complete(opts: Dvc.Payload) {
+    const url = `${this.proxy_reverse}/v1/engines/${opts.engine}/completions`;
+    delete opts.engine;
+    return await this._send_request(url, 'post', opts);
+  }
+}
 
 export default Dvc

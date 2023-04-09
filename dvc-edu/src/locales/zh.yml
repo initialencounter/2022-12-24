@@ -1,37 +1,56 @@
 commands:
   dvc:
-    description: GTP插件教育版，人工智能在教学中的辅助作用探究
+    description: AI聊天
     usage: |-
       <>
         <message forward>
-          <message id=1> 逻辑端参考自Lucent,https://lucent.blog/?p=118 </message>
-          <message id=2>项目地址https://github.com/initialencounter/mykoishi/blob/main/davinci-003#readme.md </message>
-          <message id=3>对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-davinci-003 概不负责</message>
+          <message id=1> 逻辑端参考自Lucent,https://lucent.blog/ </message>
+          <message id=2>项目地址https://github.com/initialencounter/mykoishi/blob/main/dvc-edu#readme.md </message>
+          <message id=3>对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-davc-edu 概不负责</message>
+          <message id=4>指令如下：</message>
+          <message id=5>1.[重置会话] 请发送 "dvc.重置会话"</message>
+          <message id=6>2.[清空所有回话] 请发送 "dvc.clear"</message>
+          <message id=7>3.[查询余额] 请发送 "dvc.credit"</message>
+          <message id=8>4.[切换输出模式] 请发送 "dvc.output"</message>
+          <message id=9>5.[切换人格] 请发送 "dvc.切换人格"</message>
+          <message id=10>6.若出现400报错，请发送dvc.clear</message>
         </message>
       </>
     messages:
-      censor: 不合规，请检查输入内容是否含有违禁词
+      censor: 不合规，请检查输入内容是否含有违禁词。
       no-prompt: 你好！很高兴认识你！
       thinking: 思考中……
       err: 寄！
-      total_available: 滴！当前账户的余额为${0}
-      toolong: 滋滋..猪脑过载
-      switch-output: 当前存在模式{0}请输入编号
+      total_available: 滴！当前账户的余额为${0}。
+      toolong: 滋滋..猪脑过载。
+      switch: 当前存在人格{0}请输入编号。
+      switch-output: 当前存在模式{0}请输入编号。
       get: 查询中...
-      clean: 已初始化
-      painting: 传送中...
-  dvc.count:
+      clean: 舒服了
+      set-personality: 设置失败，请重新触发指令，示例：dvc.添加设置 明日香 你的名字叫...
+      painting: GPT生成图片中...
+      menu-err: 请输入正确的序号。
+      switch-success: 切换成功:{0}
+  count:
     description: 减少dvc的使用次数
   dvc.clear:
     description: 清空所有人的会话
   dvc.credit:
     description: 查看余额
-  重置会话:
+  dvc.output:
+    description: 切换输出模式
+  dvc.gvc:
+    description: 切换语音
+  dvc.设置人格:
+    description: 设置人格, AI的人格会发生改变
+  dvc.切换人格:
+    description: 切换现有的人格
+  dvc.重置会话:
     description: 清空个人的会话
-  切换引擎:
+  dvc.切换引擎:
     description: 切换引擎
-  传送门:
+  dvc.paint:
     description: GPT生成图片
-  翻译:
+  dvc.翻译:
     description: AI翻译
     
