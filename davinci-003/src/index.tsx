@@ -162,7 +162,7 @@ class Dvc extends Service {
     ctx.command('dvc.count <prompt:text>', '统计次数的工具人', {
       maxUsage: config.usage,
       usageName: 'ai'
-    }).action(({ session }) => this.dvc(session, session.content.replace("dvc.count ", '')))
+    }).action(({ session },prompt) => this.dvc(session,prompt))
 
     //清空所有会话及人格
     ctx.command('dvc.clear', '清空所有会话及人格', {
@@ -860,13 +860,14 @@ namespace Dvc {
 对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-davinci-003 概不负责。<br>
 如果有更多文本内容想要修改，可以在<a style="color:blue" href="/locales">本地化</a>中修改 zh 内容</br>
 ## 添加人格的方法
-* 在聊天中发送“dvc.设置人格 xxx”可以自动保存人格
-* 在koishi根目录找到davinci-003-data.json文件,修改里面的人格即可
-问题反馈群:399899914
+* 方法1 在聊天中发送“dvc.添加人格 人格名称 人格描述”可以自动保存人格
+* 方法2 在koishi根目录找到davinci-003-data.json文件,修改里面的人格即可
 ## 感谢
 > 逻辑端参考自<a href="https://lucent.blog/#blog" title="前往 Lucent's Blog 的主页" class="blog-button"><img src="https://img-1251540275.cos.ap-shanghai.myqcloud.com/blog/IMG_1140(20200328-104456)_1591776646572.JPG" width="25" alt="Lucent's Blog logo" class="panel-cover__logo logo logo1"></a>
 <a class="panel-cover__title panel-title"><a href="https://lucent.blog/#blog" title="link to homepage for Lucent's Blog" class="blog-button">Lucent's Blog(呆呆木）</a></a><br>
 反代使用的也是呆呆木的！再次感谢！<br>
+## 问题反馈群: 
+399899914
 `
   export interface Personality {
     nick_name: string

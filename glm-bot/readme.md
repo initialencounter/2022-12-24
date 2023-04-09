@@ -1,5 +1,2 @@
-# koishi-plugin-glm-bot
-
-[![npm](https://img.shields.io/npm/v/koishi-plugin-glm-bot?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-glm-bot)
-
-glm-testbot的稳定版
+# glm-bot
+koishi插件，支持自建后端的chatglm智能机器人
