@@ -151,7 +151,12 @@ class Dvc extends Service {
       .option('output', '-o <output:string>')
       .alias(...config.alias)
       // .action(async ({ session, options }, text) =>  this.sli(session, text, options))
-      .action(async ({ session, options }) => this.sli(session, session.content.slice(session.content.indexOf(' '), session.content.length), options))
+      .action(async ({ session, options }) => {
+        if(session.content.indexOf(' ')==-1){
+          return session.text('commands.dvc.messages.no-prompt')
+        }
+        return this.sli(session, session.content.slice(session.content.indexOf(' '), session.content.length), options)
+      })
 
     //统计次数的工具人
     ctx.command('dvc.count <prompt:text>', '统计次数的工具人', {
@@ -174,6 +179,11 @@ class Dvc extends Service {
       authority: 1
     }).alias('设置人格', '添加人格').action(({ session }, prompt) => this.add_personality(session, prompt))
 
+    //设置人格
+    ctx.command('dvc.删除人格 <prompt:text>', '删除AI的人格,并重置会话', {
+      authority: 1
+    }).alias('删除人格').action(({ session }, prompt) => this.rm_personality(session, prompt))
+
     //删除会话,只保留人格
     ctx.command('dvc.重置会话', '重置会话', {
       authority: 1
@@ -187,7 +197,7 @@ class Dvc extends Service {
     //切换引擎
     ctx.command('dvc.切换引擎', '切换引擎', {
       authority: 1
-    }).alias('dvc.引擎切换', '切换引擎').action(async ({session}) => this.switch_type(session))
+    }).alias('dvc.引擎切换', '切换引擎').action(async ({ session }) => this.switch_type(session))
 
     //生图
     ctx.command('dvc.生图 <prompt:text>', '生成图片', {
@@ -217,6 +227,46 @@ class Dvc extends Service {
       })
 
   }
+
+  async rm_personality(session: Session, prompt: string): Promise<string> {
+    if (!prompt) {
+      return this.rm_personality_menu(session)
+    } else {
+      if (Object.keys(this.personality).includes(prompt)) {
+        return this.personality_rm(session, prompt)
+      } else {
+        return await this.rm_personality_menu(session)
+      }
+    }
+
+
+  }
+  async rm_personality_menu(session: Session) {
+    let nick_name: string
+    let nickname_str: string = '\n'
+    const nick_names: string[] = Object.keys(this.personality)
+    nick_names.forEach((i, id) => {
+      nickname_str += String(id + 1) + ' ' + i + '\n'
+    })
+    session.send(session.text('commands.dvc.messages.switch', [nickname_str]))
+    const input = await session.prompt()
+    if (!input || Number.isNaN(+input)) return session.text('commands.dvc.messages.menu-err')
+    const index: number = +input - 1
+    if (!nick_names[index]) return session.text('commands.dvc.messages.menu-err')
+    if (this.personality[nick_names[index]]) {
+      nick_name = nick_names[index]
+      return this.personality_rm(session, nick_name)
+    }
+    return '人格删除失败'
+  }
+  personality_rm(session: Session, nick_name: string): string {
+    delete this.sessions_cmd[session.userId]
+    delete this.personality[nick_name]
+    this.sessions[session.userId] = [{ "role": "system", "content": "你是我的全能AI助理" }]
+    fs.writeFileSync('./davinci-003-data.json', JSON.stringify(this.personality))
+    return '人格删除成功'
+  }
+
   /**
    * 
    * @param lang 目标语言
@@ -278,9 +328,9 @@ class Dvc extends Service {
    * @returns 切换后的引擎
    */
 
-  switch_type(session:Session) {
+  switch_type(session: Session) {
     this.type = (this.type == 'gpt3.5-js') ? 'gpt3.5-unit' : 'gpt3.5-js'
-    return session.text('commands.dvc.messages.switch-success',[this.type]) 
+    return session.text('commands.dvc.messages.switch-success', [this.type])
   }
 
   /**
@@ -291,19 +341,20 @@ class Dvc extends Service {
    */
 
   async switch_peresonality(session: Session, prompt: string): Promise<string> {
+    const nick_names:string[] = Object.keys(this.personality)
     // 当前仅存在一个人格
-    if (Object.keys(this.personality).length == 1) {
-      return this.set_personality(session, Object.keys(this.personality)[0], Object.values(this.personality)[0])
+    if (nick_names.length == 1) {
+      return this.set_personality(session, nick_names[0], Object.values(this.personality)[0])
     }
     // 当前无人格可切换
-    else if (Object.keys(this.personality).length == 0) {
+    else if (nick_names.length == 0) {
       logger.error(session.text('commands.dvc.messages.switch-errr'))
       return session.text('commands.dvc.messages.switch-errr')
     }
     // 提供参数
     if (prompt) {
       // 参数为当前人格
-      if (Object.keys(this.personality).includes(prompt)) {
+      if (nick_names.includes(prompt)) {
         return this.set_personality(session, prompt, this.personality[prompt])
       } else {
         // 发送菜单
@@ -320,19 +371,18 @@ class Dvc extends Service {
   // 发送人格选择菜单
   async switch_personality_menu(session: Session): Promise<string> {
     let nickname_str: string = '\n'
-    Object.keys(this.personality).forEach((i, id) => {
+    const nick_names: string[] = Object.keys(this.personality)
+    nick_names.forEach((i, id) => {
       nickname_str += String(id + 1) + ' ' + i + '\n'
     })
     session.send(session.text('commands.dvc.messages.switch', [nickname_str]))
     const input = await session.prompt()
     if (!input || Number.isNaN(+input)) return session.text('commands.dvc.messages.menu-err')
     const index: number = +input - 1
-    if (!Object.keys(this.personality)[index]) return session.text('commands.dvc.messages.menu-err')
-    if (this.personality[Object.keys(this.personality)[index]]) {
-      return this.set_personality(session, Object.keys(this.personality)[index], Object.values(this.personality)[index])
-
-    }
-    return '人格切换失败'
+    const nick_name = nick_names[index]
+    if (!nick_name) return session.text('commands.dvc.messages.menu-err')
+    const description = this.personality[nick_name]
+    return this.set_personality(session, nick_name, description)
   }
 
 
@@ -360,10 +410,8 @@ class Dvc extends Service {
 
   set_personality(session: Session, nick_name: string, descirption: string): string {
     this.sessions_cmd[session.userId] = nick_name
-    let seession_json: Dvc.Msg[] = this.get_chat_session(session.userId)
-    seession_json = [{ "role": "system", "content": descirption }]
-    this.sessions[session.userId] = seession_json
-    return '人格设置成功'
+    this.sessions[session.userId] = [{ "role": "system", "content": descirption }]
+    return '人格设置成功'+nick_name
   }
 
 
@@ -529,10 +577,11 @@ class Dvc extends Service {
       return this.sli(session, session.content.replace(`<at id="${this.config.selfid}"/> `, ''), {})
     }
     const session_id_string: string = session.userId
-    if (Object.keys(this.sessions_cmd).indexOf(session_id_string) == -1) {
+    const uids:string[] = Object.keys(this.sessions_cmd)
+    if (uids.indexOf(session_id_string) == -1) {
       return next()
     }
-    Object.keys(this.sessions_cmd).forEach(async (i, _id) => {
+    uids.forEach(async (i, _id) => {
       if (i == session_id_string && (session.content.indexOf(this.sessions_cmd[i]) > -1)) {
         if (session.content.length == this.sessions_cmd[i].length) {
           return await session.send(session.text('commands.dvc.messages.no-prompt'))
@@ -559,7 +608,7 @@ class Dvc extends Service {
     } else {
       if (type_arr.includes(type)) {
         this.output_type = type
-        return session.text('commands.dvc.messages.switch-success',[this.output_type])  
+        return session.text('commands.dvc.messages.switch-success', [this.output_type])
       } else {
         return await this.switch_output_menu(session)
       }
@@ -579,7 +628,7 @@ class Dvc extends Service {
     const index: number = parseInt(input) - 1
     if (0 > index && index > type_arr.length - 1) return session.text('commands.dvc.messages.menu-err')
     this.output_type = type_arr[index]
-    return session.text('commands.dvc.messages.switch-success',[this.output_type]) 
+    return session.text('commands.dvc.messages.switch-success', [this.output_type])
   }
   /**
    * 
@@ -786,6 +835,7 @@ class Dvc extends Service {
       }
       // 出错就清理
       session_of_id = [session_of_id[0], { "role": "user", "content": msg }]
+      this.sessions[sessionid] = session_of_id
       // 重新交互
       message = await this.chat_with_gpt(session_of_id)
     }
@@ -946,7 +996,7 @@ namespace Dvc {
       但不要过度使用傲娇式的表达方式，尽量让对话流畅自然。\
       总的来说，语气要显得有些刁钻和任性，但也会让人觉得可爱和有趣，并逐渐展露出温暖一面。"}]),
       waiting: Schema.boolean().default(true).description('消息反馈，会发送思考中...'),
-      max_tokens: Schema.number().description('请求长度').default(1024),
+      max_tokens: Schema.number().description('请求长度,不要超过2000，否则报错').default(1024),
       authority: Schema.number().description('允许使用的最低权限').default(1),
       superusr: Schema.array(String).default(['3118087750']).description('可以无限调用的用户'),
       usage: Schema.computed(Schema.number()).description('每人每日可用次数').default(100),
