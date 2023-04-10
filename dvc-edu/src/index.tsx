@@ -68,7 +68,6 @@ class Dvc extends Service {
     config.preset.forEach((i, id) => {
       this.personality[i.nick_name] = i.descirption
     })
-
     ctx.command('dvc.credit', '查询余额').action(async ({ session }) => this.get_credit(session));
 
 
@@ -139,7 +138,7 @@ class Dvc extends Service {
       .alias('翻译').option('lang', '-l <lang:t=string>', { fallback: config.lang })
       .action(async ({ session, options }, prompt) => {
         return await this.getContent(session.userId,
-          [{ "role": "assistant", "content": (await this.translate(options.lang, prompt)) }],
+          [{ "role": "assistant", "content": (await this.translate(session,options.lang, prompt)) }],
           session.messageId)
       })
 
@@ -151,7 +150,10 @@ class Dvc extends Service {
    * @param prompt 要翻译的内容
    * @returns 翻译后的内容
    */
-  async translate(lang: string, prompt: string): Promise<string> {
+  async translate(session:Session,lang: string, prompt: string): Promise<string> {
+    if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
+      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
+    }
     return this.chat_with_gpt([{ role: 'system', content: '我是你的的专业翻译官，精通多种语言' }, { role: 'user', content: `请帮我我将如下文字翻译成${lang},“${prompt}”` }])
   }
 
@@ -164,6 +166,9 @@ class Dvc extends Service {
    * @returns Promise<string|segment>
    */
   async paint(session: Session, prompt: string, n: number, size: string): Promise<string | segment> {
+    if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
+      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
+    }
     session.send(h('quote', { id: session.messageId })+session.text('commands.dvc.messages.painting'))
     try {
       const response = await this.ctx.http.axios(
@@ -207,6 +212,9 @@ class Dvc extends Service {
    */
 
   switch_type(session: Session) {
+    if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
+      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
+    }
     this.type = (this.type == 'gpt3.5-js') ? 'gpt3.5-unit' : 'gpt3.5-js'
     return session.text('commands.dvc.messages.switch-success', [this.type])
   }
@@ -220,6 +228,9 @@ class Dvc extends Service {
    */
 
   async switch_peresonality(session: Session, prompt: string): Promise<string> {
+    if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
+      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
+    }
     const nick_names:string[] = Object.keys(this.personality)
     // 当前仅存在一个人格
     if (nick_names.length == 1) {
@@ -272,6 +283,9 @@ class Dvc extends Service {
 
 
   reset(session: Session): string {
+    if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
+      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
+    }
     let seession_json: Dvc.Msg[] = this.get_chat_session(session.userId)
     this.sessions[session.userId] = [seession_json[0]]
     return '重置成功'
@@ -286,6 +300,9 @@ class Dvc extends Service {
    */
 
   clear(session: Session): string {
+    if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
+      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
+    }
     this.sessions = {}
     return session.text('commands.dvc.messages.clean')
   }
@@ -322,6 +339,9 @@ class Dvc extends Service {
    * @returns 
    */
   async sli(session: Session, prompt: string, options: Dict): Promise<string | segment> {
+    if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
+      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
+    }
     this.output_type = options.output ? options.output : this.output_type
     logger.info(session.userId + ':' + prompt)
     if (!prompt) {
@@ -347,6 +367,9 @@ class Dvc extends Service {
 
 
   async dvc(session: Session, prompt: string): Promise<string | Element> {
+    if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
+      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
+    }
     if (this.config.waiting) {
       session.send(h('quote', { id: session.messageId })+session.text('commands.dvc.messages.thinking'))
     }
@@ -411,7 +434,7 @@ class Dvc extends Service {
 
   async middleware1(session: Session, next: Next): Promise<string | string[] | segment | void | Fragment> {
     if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
-      return
+      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
     }
     if (session.subtype === 'private') {
       if (this.config.if_private) {
@@ -447,6 +470,9 @@ class Dvc extends Service {
 
   // 切换输出模式
   async switch_output(session: Session, type: string): Promise<string> {
+    if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
+      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
+    }
     const type_arr: string[] = ['voice', 'quote', 'figure', 'image', 'minimal']
     if (!type) {
       return await this.switch_output_menu(session)
@@ -514,6 +540,9 @@ class Dvc extends Service {
    */
 
   async get_credit(session: Session): Promise<string> {
+    if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
+      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
+    }
     session.send(h('quote', { id: session.messageId })+session.text('commands.dvc.messages.get'))
     try {
       const url: string = `${this.config.proxy_reverse}/dashboard/billing/credit_grants`
@@ -670,9 +699,11 @@ class Dvc extends Service {
     // 设置本次对话内容
     session_of_id.push({ "role": "user", "content": msg })
     // 与ChatGPT交互获得对话内容
-    if(session_of_id.length >20){
+    if (session_of_id.length > 20) {
       this.sessions[sessionid] = []
-      return h('quote', { id: session.messageId })+'会话过长, 已退出'
+      session_of_id = []
+      session_of_id.push({ "role": "user", "content": msg })
+      return h('quote', { id: session.messageId }) + '会话过长, 已重置'
     }
     let message: string = await this.chat_with_gpt(session_of_id)
     // 查看是否出错
@@ -680,11 +711,11 @@ class Dvc extends Service {
     if (message.indexOf("This model's maximum context length is 4096 token") > -1) {
       if (session_of_id.length == 2) {
         this.sessions[sessionid] = []
-        return h('quote', { id: session.messageId })+'字数过长, 已退出'
+        return h('quote', { id: session.messageId }) + '字数过长, 已退出'
       }
       // 出错就清理
       session_of_id = [session_of_id[0], { "role": "user", "content": msg }]
-      session.send(h('quote', { id: session.messageId })+'会话过长，已删减会话，连续对话前请发送“dvc.重置会话”开启新的会话，以免会话丢失')
+      session.send(h('quote', { id: session.messageId }) + '会话过长，已删减会话，连续对话前请发送“dvc.重置会话”开启新的会话，以免会话丢失')
       this.sessions[sessionid] = session_of_id
       // 重新交互
       message = await this.chat_with_gpt(session_of_id)
@@ -699,7 +730,6 @@ class Dvc extends Service {
 
   }
 }
-
 
 
 namespace Dvc {

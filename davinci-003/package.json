@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-davinci-003",
   "description": "AI聊天,更新之前请务必停止插件！！！",
-  "version": "3.0.7",
+  "version": "3.1.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [

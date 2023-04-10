@@ -31,6 +31,7 @@ commands:
       painting: GPT生成图片中...
       menu-err: 请输入正确的序号。
       switch-success: 切换成功:{0}
+      block: 您已被block
   count:
     description: 减少dvc的使用次数
   dvc.clear:
