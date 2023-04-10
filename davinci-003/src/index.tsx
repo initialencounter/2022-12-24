@@ -248,7 +248,7 @@ class Dvc extends Service {
     nick_names.forEach((i, id) => {
       nickname_str += String(id + 1) + ' ' + i + '\n'
     })
-    session.send(session.text('commands.dvc.messages.switch', [nickname_str]))
+    session.send(h('quote', { id: session.messageId })+session.text('commands.dvc.messages.switch', [nickname_str]))
     const input = await session.prompt()
     if (!input || Number.isNaN(+input)) return session.text('commands.dvc.messages.menu-err')
     const index: number = +input - 1
@@ -286,7 +286,7 @@ class Dvc extends Service {
    * @returns Promise<string|segment>
    */
   async paint(session: Session, prompt: string, n: number, size: string): Promise<string | segment> {
-    session.send(session.text('commands.dvc.messages.painting'))
+    session.send(h('quote', { id: session.messageId })+session.text('commands.dvc.messages.painting'))
     try {
       const response = await this.ctx.http.axios(
         {
@@ -375,7 +375,7 @@ class Dvc extends Service {
     nick_names.forEach((i, id) => {
       nickname_str += String(id + 1) + ' ' + i + '\n'
     })
-    session.send(session.text('commands.dvc.messages.switch', [nickname_str]))
+    session.send(h('quote', { id: session.messageId })+session.text('commands.dvc.messages.switch', [nickname_str]))
     const input = await session.prompt()
     if (!input || Number.isNaN(+input)) return session.text('commands.dvc.messages.menu-err')
     const index: number = +input - 1
@@ -388,8 +388,7 @@ class Dvc extends Service {
 
   reset(session: Session): string {
     let seession_json: Dvc.Msg[] = this.get_chat_session(session.userId)
-    this.sessions[session.userId] = [{ "role": "system", "content": seession_json[0] }]
-    delete this.sessions_cmd[session.userId]
+    this.sessions[session.userId] = [{ "role": "system", "content": seession_json[0].content }]
     return '重置成功'
   }
 
@@ -503,7 +502,7 @@ class Dvc extends Service {
 
   async dvc(session: Session, prompt: string): Promise<string | Element> {
     if (this.config.waiting) {
-      session.send(session.text('commands.dvc.messages.thinking'))
+      session.send(h('quote', { id: session.messageId })+session.text('commands.dvc.messages.thinking'))
     }
     let msg: string = prompt
     if (!this.ifgettoken && this.config.AK && this.config.SK) {
@@ -584,7 +583,7 @@ class Dvc extends Service {
     uids.forEach(async (i, _id) => {
       if (i == session_id_string && (session.content.indexOf(this.sessions_cmd[i]) > -1)) {
         if (session.content.length == this.sessions_cmd[i].length) {
-          return await session.send(session.text('commands.dvc.messages.no-prompt'))
+          return await session.send(h('quote', { id: session.messageId })+session.text('commands.dvc.messages.no-prompt'))
         } else {
           return await session.execute(`dvc ${session.content.replace(this.sessions_cmd[i], '')}`)
         }
@@ -622,7 +621,7 @@ class Dvc extends Service {
     type_arr.forEach((i, id) => {
       type_str += String(id + 1) + ' ' + i + '\n'
     })
-    session.send(session.text('commands.dvc.messages.switch-output', [type_str]))
+    session.send(h('quote', { id: session.messageId })+session.text('commands.dvc.messages.switch-output', [type_str]))
     const input = await session.prompt()
     if (!input || Number.isNaN(+input)) return session.text('commands.dvc.messages.menu-err')
     const index: number = parseInt(input) - 1
@@ -669,7 +668,7 @@ class Dvc extends Service {
    */
 
   async get_credit(session: Session): Promise<string> {
-    session.send(session.text('commands.dvc.messages.get'))
+    session.send(h('quote', { id: session.messageId })+session.text('commands.dvc.messages.get'))
     try {
       const url: string = `${this.config.proxy_reverse}/dashboard/billing/credit_grants`
       const res = await this.ctx.http.get(url, {
@@ -825,16 +824,21 @@ class Dvc extends Service {
     // 设置本次对话内容
     session_of_id.push({ "role": "user", "content": msg })
     // 与ChatGPT交互获得对话内容
+    if(session_of_id.length >20){
+      this.sessions[sessionid] = []
+      return h('quote', { id: session.messageId })+'会话过长, 已退出'
+    }
     let message: string = await this.chat_with_gpt(session_of_id)
     // 查看是否出错
+    
     if (message.indexOf("This model's maximum context length is 4096 token") > -1) {
-      session.send('会话过长，已自动重置会话')
       if (session_of_id.length == 2) {
-        this.sessions[sessionid] = session_of_id[0]
-        return '会话过长, 已退出'
+        this.sessions[sessionid] = []
+        return h('quote', { id: session.messageId })+'字数过长, 已退出'
       }
       // 出错就清理
       session_of_id = [session_of_id[0], { "role": "user", "content": msg }]
+      session.send(h('quote', { id: session.messageId })+'会话过长，已删减会话，连续对话前请发送“dvc.重置会话”开启新的会话，以免会话丢失')
       this.sessions[sessionid] = session_of_id
       // 重新交互
       message = await this.chat_with_gpt(session_of_id)
