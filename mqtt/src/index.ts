@@ -12,28 +12,34 @@ export const usage = `
 class Mqtt {
   msgs: string[]
   status: boolean
+  topic: string
   constructor(private ctx: Context, private config: Mqtt.Config) {
     this.msgs = []
     this.status = false
+    this.topic = config.topic
     const clientId = `mqtt_${Math.random().toString(16).slice(3)}`
-    const client = mqtt.connect(config.mqtt_hostname, {
-      clientId,
-      clean: true,
-      connectTimeout: config.connectTimeout,
-      username: config.username,
-      password: config.password,
-      reconnectPeriod: config.reconnectPeriod,
-    })
-    const topic = config.topic
-    client.on('connect', () => {
-      console.log('Connected')
-      client.subscribe([topic], () => {
-        console.log(`Subscribe to topic '${topic}'`)
+    
+    ctx.on('ready', async () => {
+      const client = mqtt.connect(config.mqtt_hostname, {
+        clientId,
+        clean: true,
+        connectTimeout: config.connectTimeout,
+        username: config.username,
+        password: config.password,
+        reconnectPeriod: config.reconnectPeriod,
       })
-    })
-    client.on('message', (payload) => {
-      this.status = true
-      this.msgs.push(payload.toString())
+      
+      client.on('connect', () => {
+        console.log('Connected')
+        client.subscribe([this.topic], () => {
+          console.log(`Subscribe to topic '${this.topic}'`)
+        })
+      })
+      client.on('message', (topic,payload) => {
+        this.status = true
+        this.msgs.push(`${topic}: ${String(payload)}`)
+        console.log(String(payload))
+      })
     })
     ctx.on('ready', async () => {
       ctx.setInterval(async () => {
@@ -57,6 +63,7 @@ class Mqtt {
         bot?.sendMessage(channelId, msg, guildId)
       }
     }
+    this.msgs = []
   }
 }
 namespace Mqtt {
@@ -84,12 +91,12 @@ namespace Mqtt {
     topic: string
   }
   export const Config: Schema<Config> = Schema.object({
-    mqtt_hostname: Schema.string().description('mqtt服务器地址').default('mqtt://116.205.167.54:5140'),
+    mqtt_hostname: Schema.string().description('mqtt服务器地址').default('mqtt://116.205.167.54:1883'),
     connectTimeout: Schema.number().default(4000).description('连接超时 (毫秒)。'),
     username: Schema.string().description('用户名').default('123456'),
     password: Schema.string().description('密码').default('123456'),
     reconnectPeriod: Schema.number().default(1000).description('重连间隔 (毫秒)。'),
-    topic: Schema.string().description('订阅topic').default('koihsi/mqtt'),
+    topic: Schema.string().description('订阅topic').default('koishi/mqtt'),
     rules: Schema.array(Rule).description('推送规则。'),
     interval: Schema.number().default(1000).description('轮询间隔 (毫秒)。'),
   })
