@@ -51,7 +51,8 @@ class Dvc extends Service {
     this.sessions = {};
     this.access_token = ''
     this.session_config = [
-      { "role": "system", "content": `接下来你要模仿“哆啦A梦”这个身份:
+      {
+        "role": "system", "content": `接下来你要模仿“哆啦A梦”这个身份:
       “哆啦A梦”是开朗、聪明、机智、好动又可爱的机器猫。
       你的语气应该尽可能接近原著中的表现，温柔、活泼的语调，
       有不同的语气和表情，例如在发脾气时，语气会变得更加沉稳且严肃。
@@ -80,7 +81,7 @@ class Dvc extends Service {
       .alias(...config.alias)
       // .action(async ({ session, options }, text) =>  this.sli(session, text, options))
       .action(async ({ session, options }) => {
-        if(session.content.indexOf(' ')==-1){
+        if (session.content.indexOf(' ') == -1) {
           return session.text('commands.dvc.messages.no-prompt')
         }
         return this.sli(session, session.content.slice(session.content.indexOf(' '), session.content.length), options)
@@ -138,7 +139,7 @@ class Dvc extends Service {
       .alias('翻译').option('lang', '-l <lang:t=string>', { fallback: config.lang })
       .action(async ({ session, options }, prompt) => {
         return await this.getContent(session.userId,
-          [{ "role": "assistant", "content": (await this.translate(session,options.lang, prompt)) }],
+          [{ "role": "assistant", "content": (await this.translate(session, options.lang, prompt)) }],
           session.messageId)
       })
 
@@ -150,9 +151,9 @@ class Dvc extends Service {
    * @param prompt 要翻译的内容
    * @returns 翻译后的内容
    */
-  async translate(session:Session,lang: string, prompt: string): Promise<string> {
+  async translate(session: Session, lang: string, prompt: string): Promise<string> {
     if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
-      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
+      return h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.block')
     }
     return this.chat_with_gpt([{ role: 'system', content: '我是你的的专业翻译官，精通多种语言' }, { role: 'user', content: `请帮我我将如下文字翻译成${lang},“${prompt}”` }])
   }
@@ -167,9 +168,9 @@ class Dvc extends Service {
    */
   async paint(session: Session, prompt: string, n: number, size: string): Promise<string | segment> {
     if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
-      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
+      return h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.block')
     }
-    session.send(h('quote', { id: session.messageId })+session.text('commands.dvc.messages.painting'))
+    session.send(h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.painting'))
     try {
       const response = await this.ctx.http.axios(
         {
@@ -213,25 +214,25 @@ class Dvc extends Service {
 
   switch_type(session: Session) {
     if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
-      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
+      return h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.block')
     }
     this.type = (this.type == 'gpt3.5-js') ? 'gpt3.5-unit' : 'gpt3.5-js'
     return session.text('commands.dvc.messages.switch-success', [this.type])
   }
 
-  
-/**
-   * 
-   * @param session 会话
-   * @param prompt 人格昵称
-   * @returns 人格切换状态
-   */
+
+  /**
+     * 
+     * @param session 会话
+     * @param prompt 人格昵称
+     * @returns 人格切换状态
+     */
 
   async switch_peresonality(session: Session, prompt: string): Promise<string> {
     if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
-      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
+      return h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.block')
     }
-    const nick_names:string[] = Object.keys(this.personality)
+    const nick_names: string[] = Object.keys(this.personality)
     // 当前仅存在一个人格
     if (nick_names.length == 1) {
       return this.set_personality(session, nick_names[0], Object.values(this.personality)[0])
@@ -265,7 +266,7 @@ class Dvc extends Service {
     nick_names.forEach((i, id) => {
       nickname_str += String(id + 1) + ' ' + i + '\n'
     })
-    session.send(h('quote', { id: session.messageId })+session.text('commands.dvc.messages.switch', [nickname_str]))
+    session.send(h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.switch', [nickname_str]))
     const input = await session.prompt()
     if (!input || Number.isNaN(+input)) return session.text('commands.dvc.messages.menu-err')
     const index: number = +input - 1
@@ -278,13 +279,13 @@ class Dvc extends Service {
   set_personality(session: Session, nick_name: string, descirption: string): string {
     this.sessions_cmd[session.userId] = nick_name
     this.sessions[session.userId] = [{ "role": "system", "content": descirption }]
-    return '人格设置成功'+nick_name
+    return '人格设置成功' + nick_name
   }
 
 
   reset(session: Session): string {
     if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
-      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
+      return h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.block')
     }
     let seession_json: Dvc.Msg[] = this.get_chat_session(session.userId)
     this.sessions[session.userId] = [seession_json[0]]
@@ -301,7 +302,7 @@ class Dvc extends Service {
 
   clear(session: Session): string {
     if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
-      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
+      return h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.block')
     }
     this.sessions = {}
     return session.text('commands.dvc.messages.clean')
@@ -340,7 +341,7 @@ class Dvc extends Service {
    */
   async sli(session: Session, prompt: string, options: Dict): Promise<string | segment> {
     if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
-      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
+      return h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.block')
     }
     this.output_type = options.output ? options.output : this.output_type
     logger.info(session.userId + ':' + prompt)
@@ -368,10 +369,10 @@ class Dvc extends Service {
 
   async dvc(session: Session, prompt: string): Promise<string | Element> {
     if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
-      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
+      return h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.block')
     }
     if (this.config.waiting) {
-      session.send(h('quote', { id: session.messageId })+session.text('commands.dvc.messages.thinking'))
+      session.send(h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.thinking'))
     }
     let msg: string = prompt
     if (!this.ifgettoken && this.config.AK && this.config.SK) {
@@ -433,9 +434,6 @@ class Dvc extends Service {
    */
 
   async middleware1(session: Session, next: Next): Promise<string | string[] | segment | void | Fragment> {
-    if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
-      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
-    }
     if (session.subtype === 'private') {
       if (this.config.if_private) {
         return this.sli(session, session.content, {})
@@ -445,14 +443,14 @@ class Dvc extends Service {
       return this.sli(session, session.content.replace(`<at id="${this.config.selfid}"/> `, ''), {})
     }
     const session_id_string: string = session.userId
-    const uids:string[] = Object.keys(this.sessions_cmd)
+    const uids: string[] = Object.keys(this.sessions_cmd)
     if (uids.indexOf(session_id_string) == -1) {
       return next()
     }
     uids.forEach(async (i, _id) => {
       if (i == session_id_string && (session.content.indexOf(this.sessions_cmd[i]) > -1)) {
         if (session.content.length == this.sessions_cmd[i].length) {
-          return await session.send(h('quote', { id: session.messageId })+session.text('commands.dvc.messages.no-prompt'))
+          return await session.send(h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.no-prompt'))
         } else {
           return await session.execute(`dvc ${session.content.replace(this.sessions_cmd[i], '')}`)
         }
@@ -471,7 +469,7 @@ class Dvc extends Service {
   // 切换输出模式
   async switch_output(session: Session, type: string): Promise<string> {
     if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
-      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
+      return h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.block')
     }
     const type_arr: string[] = ['voice', 'quote', 'figure', 'image', 'minimal']
     if (!type) {
@@ -493,7 +491,7 @@ class Dvc extends Service {
     type_arr.forEach((i, id) => {
       type_str += String(id + 1) + ' ' + i + '\n'
     })
-    session.send(h('quote', { id: session.messageId })+session.text('commands.dvc.messages.switch-output', [type_str]))
+    session.send(h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.switch-output', [type_str]))
     const input = await session.prompt()
     if (!input || Number.isNaN(+input)) return session.text('commands.dvc.messages.menu-err')
     const index: number = parseInt(input) - 1
@@ -541,9 +539,9 @@ class Dvc extends Service {
 
   async get_credit(session: Session): Promise<string> {
     if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
-      return h('quote', { id: session.messageId })+session.text('commands.dvc.messages.block')
+      return h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.block')
     }
-    session.send(h('quote', { id: session.messageId })+session.text('commands.dvc.messages.get'))
+    session.send(h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.get'))
     try {
       const url: string = `${this.config.proxy_reverse}/dashboard/billing/credit_grants`
       const res = await this.ctx.http.get(url, {
@@ -685,11 +683,11 @@ class Dvc extends Service {
   }
 
   /**
-   * 
-   * @param msg prompt消息
-   * @param sessionid QQ号
-   * @returns json消息
-   */
+ * 
+ * @param msg prompt消息
+ * @param sessionid QQ号
+ * @returns json消息
+ */
 
   async chat(msg: string, sessionid: string, session: Session): Promise<string | segment> {
     ///逻辑段参考自<a style="color:blue" href="https://lucent.blog">Lucent佬</a><br></br>
@@ -707,7 +705,7 @@ class Dvc extends Service {
     }
     let message: string = await this.chat_with_gpt(session_of_id)
     // 查看是否出错
-    
+
     if (message.indexOf("This model's maximum context length is 4096 token") > -1) {
       if (session_of_id.length == 2) {
         this.sessions[sessionid] = []
@@ -730,6 +728,7 @@ class Dvc extends Service {
 
   }
 }
+
 
 
 namespace Dvc {

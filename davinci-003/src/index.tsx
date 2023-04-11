@@ -606,9 +606,6 @@ class Dvc extends Service {
 
   async middleware1(session: Session, next: Next): Promise<string | string[] | segment | void | Fragment> {
     if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
-      return h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.block')
-    }
-    if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
       return
     }
     if (session.subtype === 'private') {
