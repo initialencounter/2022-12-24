@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-mqtt",
   "description": "mqtt订阅推送",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -31,9 +31,18 @@
     "subscribe"
   ],
   "koishi": {
-    "description": "mqtt订阅推送"
+    "description": "mqtt订阅推送",
+    "service": {
+      "implements": [
+        "mqtt"
+      ]
+    }
+
   },
   "peerDependencies": {
     "koishi": "^4.11.9"
+  },
+  "dependencies": {
+    "mqtt": "^4.3.7"
   }
 }
