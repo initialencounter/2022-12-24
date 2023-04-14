@@ -296,9 +296,9 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-反馈群399899914
+QQ群399899914
 
-[作者b站](https://space.bilibili.com/225995995)
+[bilibili](https://space.bilibili.com/225995995)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -307,8 +307,9 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
-* []()
-* []()
-* []()
+* [koishi开发者们](https://koishi.chat/)
+* [houko(小莫)](https://github.com/houko)
+* [xhmily(呆呆木)](https://lucent.blog/)
+* [inisis](https://github.com/inisis)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
