@@ -36,7 +36,7 @@
 * 颜值评分 --[facercg](https://github.com/initialencounter/koishi-plugin-facercg)[![npm](https://img.shields.io/npm/v/koishi-plugin-facercg?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-facercg)
 
 
-* 达芬奇3语言模型 --[davinci-003](https://github.com/initialencounter/mykoishi/tree/master/davinci-003) [![npm](https://img.shields.io/npm/v/koishi-plugin-davinci-003?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-davinci-003)
+* AI聊天 --[davinci-003](https://github.com/initialencounter/mykoishi/tree/master/davinci-003) [![npm](https://img.shields.io/npm/v/koishi-plugin-davinci-003?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-davinci-003)
 
 
 * AI绘图 --[sd-taylor](https://github.com/initialencounter/koishi-plugin-sd-taylor) [![npm](https://img.shields.io/npm/v/koishi-plugin-sd-taylor?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-sd-taylor)
@@ -101,7 +101,7 @@ arca -h
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## 达芬奇3语言模型 --[davinci-003](https://github.com/initialencounter/mykoishi/davinci-003)
+## AI聊天 --[davinci-003](https://github.com/initialencounter/mykoishi/davinci-003)
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-davinci-003?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-davinci-003)
 
