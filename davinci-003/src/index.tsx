@@ -4,7 +4,7 @@ import { } from '@koishijs/plugin-rate-limit';
 import { } from 'koishi-plugin-puppeteer';
 export const name = 'davinci-003';
 export const logger = new Logger(name);
-
+export const using = ['gpt'] as const
 /**
  * chat_with_gpt|message: [{role:'user',content:<text>}] 
  * get_credit | 获取余额
