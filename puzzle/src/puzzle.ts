@@ -1,4 +1,6 @@
-const log = console.log
+import { Logger } from 'koishi'
+export const name: string = 'puzzle'
+export const logger = new Logger(name)
 export class Klotsk {
     cmd_strs: string;
     theme: object[]
@@ -79,11 +81,11 @@ export class Klotsk {
         this.cmd_strs = ''
         const sqnc_arr = sqnc.split('')
         for (var i in sqnc_arr) {
-            var com_str = this.move(sqnc_arr[i])
+            var com_str: string = this.move(sqnc_arr[i])
             this.cmd_strs += com_str
             if (this.check()) {
                 const dt = this.duration()
-                log(`已还原,用时${dt}`)
+                logger.info(`已还原,用时${dt}`)
                 this.logf()
                 return true
             }
@@ -92,19 +94,19 @@ export class Klotsk {
     }
     shfl() {
         for (let i = 0; i < 1000; i++) {     // 打乱puzzle
-            const rd = (Math.random() * 3).toFixed(0)
+            const rd: string = (Math.random() * 3).toFixed(0)
             this.move(this.drctn_list[rd])
         }
     }
 
     logf() {
         for (var i in this.klotsk) {
-            log(this.klotsk[i])
+            logger.info(this.klotsk[i])
         }
     }
     duration() {                  //计时方法
-        const time = new Date().getTime()
-        const dt = time - this.start_time
+        const time: number = new Date().getTime()
+        const dt: number = time - this.start_time
         return this.strftime(dt)
     }
     strftime(num_time: number) {   //时间转换

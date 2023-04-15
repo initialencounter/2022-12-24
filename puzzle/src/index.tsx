@@ -1,263 +1,361 @@
-import { Context, Schema } from 'koishi'
+import { Context, Dict, Schema, Session, Element, Logger } from 'koishi'
 import { } from 'koishi-plugin-puppeteer'
 import { Klotsk } from './puzzle'
-export const name = 'puzzle'
-export const usage = `
+export const name: string = 'puzzle'
+export const logger = new Logger(name)
+
+export const theme = [['#FFFFFF', '#707070', '#707070', '#707070', '#707070',],
+['#707070', '#444444', '#00C91A', '#00C91A', '#00C91A',],
+['#00C91A', '#444444', '#008314', '#006FFF', '#006FFF',],
+['#006FFF', '#444444', '#008314', '#001EE1', '#FF0000',],
+['#FF0000', '#444444', '#008314', '#001EE1', '#BB0000',]]
+export const drctn_list: string[] = ['U', 'D', 'L', 'R']
+
+declare module 'koishi' {
+  interface Tables {
+    puzzle: Pz.Puzzle
+  }
+}
+
+
+class Pz {
+  session: Session
+  options: Dict
+  prompt: string
+  mode: number
+  globalTasks: Dict
+  game_info: string
+  game_data: number[][]
+  game_img: Element[] | Element
+  game_img_size: number
+  wait: number
+  players: string[]
+  done: boolean
+  constructor(private ctx: Context, private config: Pz.Config) {
+    this.globalTasks = {}
+    this.mode = config.mode
+    this.players = []
+    this.done = false
+    // this.wait = new Date().getSeconds()
+    ctx.i18n.define('zh', require('./locales/zh'))
+    ctx.model.extend('puzzle', {
+      // 各字段类型
+      id: 'unsigned',
+      gid: 'string',
+      uid: 'string',
+      mode: 'integer',
+      score: 'integer'
+    }, {
+      // 使用自增的主键值
+      autoInc: true,
+    })
+    ctx.middleware(async (session, next) => {
+      if (this.players.indexOf(session.userId) == -1) {
+        return next()
+      }
+      this.session = session
+      this.game_img_size = config.size
+      this.prompt = session.content ? session.content : ''
+      if (!Object.keys(this.globalTasks).includes(this.session.channelId)) {
+        return next()
+      }
+      return await this.puzzle()
+    })
+    ctx.command('pz.stop', '结束puzzle').alias('结束华容道').action(({ session }) => {
+      this.session = session
+      return this.stop()
+    })
+
+    ctx.command('pz.join', '加入puzzle').alias('加入pz').action(({ session }) => {
+      this.players.push(session.userId)
+    })
+
+    ctx.command('pz.quit', '退出puzzle').alias('退出pz').action(({ session }) => {
+      const index: number = this.players.indexOf(session.userId)
+      if (index == -1) {
+        return session.text('commands.pz.messages.not-player')
+      } else {
+        this.players.splice(index)
+        return session.text('commands.pz.messages.quit')
+      }
+    })
+
+    ctx.command('pz.rank <prompt:number>', '查看puzzle排行榜').alias('华容排行榜')
+      .action(({ session }, prompt) => {
+        this.session = session
+        return this.get_rank(prompt ? prompt : config.mode)
+      })
+
+
+    ctx.command('pz <prompt:string>', '开始puzzle')
+      .alias('puzzle')
+      .option('mode', '-m <mode:number>', { fallback: config.mode })
+      .option('size', '-s <size:number>', { fallback: config.size })
+      .action(async ({ session, options }, prompt) => {
+        if (options.mode > 5) {
+          return this.session.text('commands.pz.messages.bad-mode')
+        }
+        if (Object.keys(this.globalTasks).indexOf(session.channelId) !== -1) {
+          session.send(session.text('commands.pz.messages.ifreset'))
+          const input: string = await session.prompt()
+          if (input.toUpperCase() == 'Y') {
+            delete this.globalTasks[session.channelId]
+            session.send(session.text('commands.pz.messages.newgame'))
+          }
+        }
+        this.mode = options.mode
+        this.players.push(session.userId)
+        this.game_img_size = options.size
+        this.session = session
+        this.prompt = ''
+        return await this.puzzle(options)
+      })
+    ctx.command('pz.def <prompt:text>', '自定义puzzle')       //自定义画puzzle
+      .option('size', '-s <size:number>', { fallback: config.size })
+      .action(({ session, options }, prompt) => {
+        if (!prompt) {
+          return session.send(session.text('commands.pz.messages.nodata'))
+        }
+        this.session = session
+        this.prompt = prompt
+        return this.def(options)
+      })
+  }
+  async puzzle(options: Dict = {}) {
+    await this.add_score()
+    const pass_score: Pz.Rankls[] = await this.ctx.database.get('puzzle', { mode: [4] }, ["uid", "score"])
+    if (Object.keys(this.globalTasks).includes(this.session.channelId)) {
+      await this.game() //更新游戏进度
+      this.draw_img() //更新游戏图片
+      const rec_klotsk: Klotsk = this.globalTasks[this.session.channelId]
+      if (this.done) {
+        delete this.globalTasks[this.session.channelId]
+        this.done = false
+      }
+      return <html>
+        <div style={{
+          width: rec_klotsk.mode * this.game_img_size + 'px',
+          height: rec_klotsk.mode * this.game_img_size + 60 + 'px',
+          background: 'transparent',
+        }}></div>
+        {this.game_img}
+      </html>
+    } else {
+      if (this.config.maxConcurrency) {
+        if (Object.keys(this.globalTasks).length >= this.config.maxConcurrency) {
+          return this.session.text('commands.pz.messages.concurrent-jobs')
+        } else {
+          const new_klotsk: Klotsk = new Klotsk(options.mode ? options.mode : 5)
+          this.globalTasks[this.session.channelId] = new_klotsk
+          await this.game()
+          this.draw_img()
+          return <html>
+            <div style={{
+              width: new_klotsk.mode * this.game_img_size + 'px',
+              height: new_klotsk.mode * this.game_img_size + 60 + 'px',
+              background: "transparent",
+            }}></div>
+            {this.game_img}
+          </html>
+        }
+      }
+    }
+
+  }
+  quickSort(arr: Pz.Rankls[]) {
+    //基础结束条件：数组长度为1时，不用再作比较，直接返回
+    if (arr.length < 2) return arr
+    let pivot = arr[0].score //基准值
+    let left = []
+    let right = []
+    for (let i = 1; i < arr.length; i++) {
+      if (arr[i].score > pivot) {
+        left.push(arr[i])
+      } else {
+        right.push(arr[i])
+      }
+    }
+    return this.quickSort(left).concat([arr[0]]).concat(this.quickSort(right))
+  }
+  async game() {     //游戏逻辑
+    const ktk = this.globalTasks[this.session.channelId]
+    const upper_str: string = this.prompt.toUpperCase()
+    const str_list: string[] = upper_str.split('')
+    let op_str: string = ''
+    str_list.forEach((i) => {
+      if (drctn_list.includes(i)) {
+        op_str += i
+      }
+    })
+    this.game_data = [].concat(ktk.klotsk)
+
+    if (ktk.move_sqnc(op_str)) {
+      await this.add_score()
+      this.game_info = this.session.text('commands.pz.messages.done', [op_str, ktk.duration()])
+      this.done = true
+    } else {
+      this.game_info = this.session.text('commands.pz.messages.info', [op_str, ktk.duration()])
+    }
+  }
+  draw_img(data: number[][] = this.game_data, type: number = 1) {
+    if (this.ctx.puppeteer) {
+      const ofs: number = 8
+      const size = this.config.size
+      const res: Element[] = []
+      for (let i = 0; i < data.length; i++) {                          // 生成数组
+        for (let j = 0; j < data.length; j++) {
+          const num: number = data[i][j]
+          var style_str: string = `position: absolute;font-size: ${size / 1.7}px;text-align: center;width: ${size}px;height: ${size}px;left: ${j * size + ofs}px;top: ${i * size + ofs}px;background: ${this.find_color(num)}`
+          res.push(<div style={style_str}>{num}</div>)
+        }
+      }
+      if (type == 1) {
+        res.push(<p style={`position: absolute;text-align: center;font-size: ${size / 3}px;width: ${size * data.length}px;height: ${size / 4}px;left: ${ofs}px;top: ${data.length * size + ofs}px`}>{this.game_info}</p>)
+      }
+
+      this.game_img = res
+    } else {
+      var msg_str = ''
+      for (let i = 0; i < data.length; i++) {                          //未安装ppt时
+        for (let j = 0; j < data.length; j++) {
+          msg_str += data[i][j] + ' '
+        }
+        msg_str += '\n'
+      }
+      msg_str += this.game_info
+      this.game_img = <p>{msg_str}</p>
+    }
+  }
+  find_color(num: number) {
+    var cr_num: number = 0
+    for (let i = 0; i < 5; i++) {                          // 生成数组
+      for (let j = 0; j < 5; j++) {
+        if (num == cr_num) {
+          return theme[i][j]
+        }
+        cr_num++
+      }
+    }
+
+  }
+  async add_score() {
+    const pass_score: Pz.Rankls[] = await this.ctx.database.get('puzzle', {
+      mode: [this.mode],
+      uid: [this.session.userId]
+    }, ["uid", "score"])
+    if (pass_score.length == 0) {
+      await this.ctx.database.create('puzzle', { gid: this.session.channelId, uid: this.session.userId, mode: this.mode, score: 1 })
+    } else {
+      await this.ctx.database.set('puzzle', {
+        mode: [this.mode],
+        uid: [this.session.userId]
+      }, { score: (pass_score[0]["score"] + 1) })
+    }
+  }
+  replace_n(s: string) {
+    if (s.indexOf('\n') == -1) {
+      return s
+    } else {
+      var ss: string = s.replace('\n', ' ')
+      return this.replace_n(ss)
+    }
+
+  }
+  async get_rank(mode: number) {
+    const rank_arr: Pz.Rankls[] = await this.ctx.database.get('puzzle', { mode: [mode] }, ["uid", "score"])
+    if (rank_arr.length < 1) {
+      return this.session.text('commands.pz.messages.no-rank', [mode])
+    }
+    const sorted_arr: Pz.Rankls[] = this.quickSort(rank_arr)
+    const rank_div: any[] = []
+    for (var itm of sorted_arr) {
+      rank_div.push(<div style="font-size:40px;width:200px;height:50px">{`${itm.uid}:${itm.score}`}</div>)
+    }
+    rank_div.push(<div style="font-size:20px;width:200px;height:50px">----------------------</div>, <div style="font-size:20px;width:200px;height:50px">{`${mode}x${mode}排行榜`}</div>)
+    return <html>
+      <div style={{
+        width: 600 + 'px',
+        height: (rank_arr.length + 1) * 50 + 30 + 'px',
+        background: "transparent",
+      }}></div>
+      {rank_div}
+    </html>
+  }
+
+
+  stop() {
+    if (Object.keys(this.globalTasks).includes(this.session.channelId)) {
+      delete this.globalTasks[this.session.channelId]
+      return this.session.text('commands.pz.messages.gameover')
+    } else {
+      return this.session.text('commands.pz.messages.notFound')
+    }
+  }
+
+  def(options: Dict) {
+    const filt_data: string = this.replace_n(this.prompt)
+    const filt_arr: string[] = filt_data.split(' ')
+    const def_mode: number = Math.sqrt(filt_arr.length)
+    if (def_mode > 5) {
+      return this.session.text('commands.pz.messages.bad-mode')
+    }
+    const def_koi: number[][] = []
+    var count: number = 0
+    for (let i = 0; i < def_mode; i++) {                          // 生成数组
+      var temp = []
+      for (let j = 0; j < def_mode; j++) {
+        temp.push(parseInt(filt_arr[count]))
+        count++
+      }
+      def_koi.push(temp)
+    }
+    this.draw_img(def_koi, 2)
+    return <html>
+      <div style={{
+        width: def_mode * options.size + 'px',
+        height: def_mode * options.size + 100 + 'px',
+        background: 'transparent',
+      }}></div>
+      {this.game_img}
+    </html>
+  }
+
+
+}
+namespace Pz {
+  export const usage = `
 ## 注意事项
 > 原游戏 <a href="http://tapsss.com">扫雷联萌</a>
 本插件仅供学习参考，请勿用于商业行为
 对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-puzzle 概不负责。
 如果有更多文本内容想要修改，可以在<a href="/locales">本地化</a>中修改 zh 内容
 `
-declare module 'koishi' {
-  interface Tables {
-    puzzle: Puzzle
+  export interface Rankls {
+    uid: string
+    score: number
   }
-}
-
-export interface Puzzle {
-  id: number
-  gid: string
-  uid: string
-  mode: number
-  score: number
-}
-
-export interface Config {
-  maxConcurrency: number
-  size: number
-}
-export const log = console.log
-export const Config: Schema<Config> = Schema.object({
-  maxConcurrency: Schema.number().default(3).description('最大排队数'),
-  size: Schema.number().default(50).description('图片大小')
-})
-export const theme = [['#707070', '#707070', '#707070', '#707070', '#707070'],
-['#444444', '#00C91A', '#00C91A', '#00C91A', '#00C91A'],
-['#444444', '#008314', '#006FFF', '#006FFF', '#006FFF'],
-['#444444', '#008314', '#001EE1', '#FF0000', '#FF0000'],
-['#444444', '#008314', '#001EE1', '#BB0000', '#ED9512']]
-
-export const find_color = (num: number, mode: number) => {
-  var cr_num: number = 0
-  for (let i = 0; i < mode; i++) {                          // 生成数组
-    for (let j = 0; j < mode; j++) {
-      if (num == cr_num) {
-        return theme[i][j]
-      }
-      cr_num++
-    }
-  }
-}
-
-export const replace_n = (s: string) => {
-  if (s.indexOf('\n') == -1) {
-    return s
-  } else {
-    var ss: string = s.replace('\n', ' ')
-    return replace_n(ss)
+  export interface Puzzle {
+    id: number
+    gid: string
+    uid: string
+    mode: number
+    score: number
   }
 
-}
-const globalTasks: object = {}
-const drctn_list: string[] = ['U', 'D', 'L', 'R']
+  export interface Config {
+    mode: number
+    size: number
+    maxConcurrency: number
+  }
 
-export const game = async (gid: string, opration: string, uid: string, ctx: Context) => {     //游戏逻辑
-  const ktk = globalTasks[gid]
-  const upper_str: string = opration.toUpperCase()
-  const str_list: string[] = upper_str.split('')
-  let op_str: string = ''
-  str_list.forEach((i) => {
-    if (drctn_list.includes(i)) {
-      op_str += i
-    }
+  export const Config: Schema<Config> = Schema.object({
+    mode: Schema.union([
+      Schema.const(5).description('24p'),
+      Schema.const(4).description('15p'),
+      Schema.const(3).description('8p'),
+    ]).default(4).description('默认的游戏模式'),
+    maxConcurrency: Schema.number().default(50).description('最大存在游戏局数'),
+    size: Schema.number().default(50).description('图片大小')
   })
-  const ststus = ktk.move_sqnc(op_str)
-  if (ststus) {
-    const game_msg: string = `已还原,执行操作${op_str},\n用时${ktk.duration()}`
-    await add_scroe(ctx, gid, uid, ktk.mode)
-    const game_data: number[][] = [].concat(ktk.klotsk)
-    delete globalTasks[gid]
-    return [game_msg, game_data]
-  } else {
-    return [`执行操作${op_str},\n用时${ktk.duration()}`, ktk.klotsk]
-  }
 }
-
-
-export const add_scroe = async (ctx: Context, gid: string, uid: string, mode: number) => {
-  const pass_score: any[] = await ctx.database.get('puzzle', ["id", "score"])
-  if (pass_score.length = 0) {
-    await ctx.database.create('puzzle', { gid: gid, uid: uid, mode: mode, score: 1 })
-  } else {
-    await ctx.database.set('puzzle', [pass_score[0]["id"]], { score: pass_score[0]["score"] + 1 })
-  }
-}
-export function quickSort(arr: Puzzle[]) {
-  //基础结束条件：数组长度为1时，不用再作比较，直接返回
-  if (arr.length < 2) return arr
-  let pivot = arr[0].score //基准值
-  let left = []
-  let right = []
-  for (let i = 1; i < arr.length; i++) {
-    if (arr[i].score > pivot) {
-      left.push(arr[i])
-    } else {
-      right.push(arr[i])
-    }
-  }
-  return quickSort(left).concat([arr[0]]).concat(quickSort(right))
-}
-
-
-export const draw_img = (ctx: Context, data: number[][], size: number, msg: string) => {
-  if (ctx.puppeteer) {
-    const style_arr: any[] = []
-    const ofs: number = 8
-    for (let i = 0; i < data.length; i++) {                          // 生成数组
-      for (let j = 0; j < data.length; j++) {
-        var style_str: string = `position: absolute;font-size: ${size / 1.7}px;text-align: center;width: ${size}px;height: ${size}px;left: ${j * size + ofs}px;top: ${i * size + ofs}px;background: ${find_color(data[i][j], data.length)}`
-        style_arr.push([style_str, data[i][j]])
-      }
-    }
-
-    const res: any[] = style_arr.map((style) =>
-      <div style={style[0]}>{style[1]}</div>
-    )
-    res.push(<p style={`position: absolute;text-align: center;font-size: ${size / 3}px;width: ${size * data.length}px;height: ${size / 4}px;left: ${ofs}px;top: ${data.length * size + ofs}px`}>{msg}</p>)
-    return res
-  } else {
-    var msg_str = ''
-    for (let i = 0; i < data.length; i++) {                          //未安装ppt时
-      for (let j = 0; j < data.length; j++) {
-        msg_str += data[i][j] + ' '
-      }
-      msg_str += '\n'
-    }
-    msg_str += msg
-    return <p>{msg_str}</p>
-  }
-}
-
-export function apply(ctx: Context, config: Config) {
-
-  ctx.i18n.define('zh', require('./locales/zh'))
-
-  ctx.model.extend('puzzle', {
-    // 各字段类型
-    id: 'unsigned',
-    gid: 'string',
-    uid: 'string',
-    mode: 'integer',
-    score: 'integer'
-  }, {
-    // 使用自增的主键值
-    autoInc: true,
-  })
-  ctx.command('def <prompt:text>')       //自定义画puzzle
-    .option('size', '-s <size:number>')
-    .action(({ session, options }, prompt) => {
-      const size: number = options.size ? options.size : config.size
-      if (prompt) {
-        const def_data: string = prompt
-        const filt_data: string = replace_n(def_data)
-        const filt_arr: string[] = filt_data.split(' ')
-        const def_mode: number = Math.sqrt(filt_arr.length)
-        if (def_mode > 5) {
-          return session.text('.bad-mode')
-        }
-        const def_koi: number[][] = []
-        var count: number = 0
-        for (let i = 0; i < def_mode; i++) {                          // 生成数组
-          var temp = []
-          for (let j = 0; j < def_mode; j++) {
-            temp.push(parseInt(filt_arr[count]))
-            count++
-          }
-          def_koi.push(temp)
-        }
-        const game_img = draw_img(ctx, def_koi, size, prompt.slice(0, 12) + '\n' + prompt.slice(12, -1))
-        return <html>
-          <div style={{
-            width: def_mode * size + 'px',
-            height: def_mode * size + 100 + 'px',
-            background: 'transparent',
-          }}></div>
-          {game_img}
-        </html>
-      }
-    })
-  ctx.command('puzzle <prompt:string>')
-    .alias('pz')
-    .option('mode', '-m <mode:number>')
-    .option('opt', '-o <opt:string>')
-    .option('size', '-s <size:number>')
-    .option('rank', '-r <rank:number>')
-    .action(async ({ session, options }, prompt) => {
-      const gid: string = session.channelId
-      const uid: string = session.userId
-      if (options.rank) {
-        const rank_arr: any[] = await ctx.database.get('puzzle', { mode: [options.rank] }, ["uid", "score"])
-        const sorted_arr: Puzzle = quickSort(rank_arr)
-        const rank_div: any[] = []
-        for (var i in sorted_arr) {
-          var itm: Puzzle = sorted_arr[i]
-          rank_div.push(<div style="font-size:40px;width:200px;height:50px">{`${itm.uid}:${itm.score}`}</div>)
-        }
-        rank_div.push(<div style="font-size:20px;width:200px;height:50px">----------------------</div>)
-        rank_div.push(<div style="font-size:20px;width:200px;height:50px">{`${options.rank}x${options.rank}排行榜`}</div>)
-        return <html>
-          <div style={{
-            width: 200 + 'px',
-            height: (rank_arr.length + 1) * 50 + 30 + 'px',
-            background: "transparent",
-          }}></div>
-          {rank_div}
-        </html>
-      }
-
-      if (options.mode > 5) {
-        return session.text('.bad-mode')
-      }
-      if (options.opt == 'stop') {
-        if (Object.keys(globalTasks).includes(gid)) {
-          delete globalTasks[gid]
-          return session.text('.gameover')
-        } else {
-          return session.text('.notFound')
-        }
-      }
-      if (Object.keys(globalTasks).includes(gid)) {
-        const game_info = await game(gid, prompt ? prompt : '', uid, ctx)
-        const game_img = draw_img(ctx, game_info[1], options.size ? options.size : config.size, game_info[0])
-        var rec_klotsk = globalTasks[gid]
-        return <html>
-          <div style={{
-            width: rec_klotsk.mode * config.size + 'px',
-            height: rec_klotsk.mode * config.size + 60 + 'px',
-            background: 'transparent',
-          }}></div>
-          {game_img}
-        </html>
-      } else {
-        if (config.maxConcurrency) {
-          if (Object.keys(globalTasks).length >= config.maxConcurrency) {
-            return session.text('.concurrent-jobs')
-          } else {
-            const new_klotsk = new Klotsk(options.mode ? options.mode : 5)
-            globalTasks[gid] = new_klotsk
-            const game_info = await game(gid, prompt ? prompt : '', uid, ctx)
-            const game_img = draw_img(ctx, game_info[1], options.size ? options.size : config.size, game_info[0])
-            return <html>
-              <div style={{
-                width: new_klotsk.mode * config.size + 'px',
-                height: new_klotsk.mode * config.size + 60 + 'px',
-                background: "transparent",
-              }}></div>
-              {game_img}
-            </html>
-          }
-        }
-      }
-    })
-}
+export default Pz
