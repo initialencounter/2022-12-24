@@ -190,7 +190,11 @@ tl  -u 1 <图片>
 在方形区域内移动方块，将所有方块从左到右、从上到下按、从小到大的顺序排列，通过![alt u:上,d:下,l:左,r:右]命令移动黑色方块。
 
 ### 示例
-![alt 示例6](./screenshot/6.jpg)
+![alt 数字华容道](./screenshot/6-1.png)
+
+![alt 自定义华容道](./screenshot/6-2.png)
+
+![alt 排行榜](./screenshot/6-3.png)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

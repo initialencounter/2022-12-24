@@ -26,6 +26,7 @@
     "puzzle"
   ],
   "koishi": {
+    "description": "拼图游戏，数字华容道",
     "browser": true,
     "service": {
       "optional": [
