@@ -1,6 +1,7 @@
 import { Context, Schema, Logger, segment, Element, Session, Service, Dict, h, Next, Fragment } from 'koishi';
 import { } from '@koishijs/plugin-rate-limit';
 import { } from 'koishi-plugin-puppeteer';
+import { } from 'koishi-plugin-open-vits';
 export const name = 'dvc-edu';
 export const logger = new Logger(name);
 
@@ -34,15 +35,12 @@ class Dvc extends Service {
   key: number[];
   aliasMap: any;
   charMap: any;
-  g_voice_name: string;
   bg_base64: string
   proxy_reverse: string
   type: string
   constructor(ctx: Context, private config: Dvc.Config) {
     super(ctx, 'dvc', true)
-    this.key = [5, 188, 209, 154, 2, 90, 41, 129, 174, 177, 125, 55, 77, 165, 40, 97];
     this.output_type = config.output
-    this.g_voice_name = config.g_voice_name
     this.proxy_reverse = config.proxy_reverse
     this.type = config.type
     this.openai = new OpenAI(config.key, ctx, this.config.proxy_reverse);
@@ -563,9 +561,8 @@ class Dvc extends Service {
    */
   async getContent(userId: string, resp: Dvc.Msg[], messageId: string): Promise<string | segment> {
 
-    if (this.output_type == 'voice') {
-      const data = await this.ctx.http.get(`https://ai-api.baimianxiao.cn/api/${this.encode(this.g_voice_name)}/${this.encode(resp[resp.length - 1].content)}/0.4/0.6/1.12/${this.encode(Math.floor(Date.now() / 1000).toString())}.ai`, { responseType: 'arraybuffer' });
-      return h.audio(data, 'audio/x-wav');
+    if (this.output_type == 'voice'&&this.ctx.vits) {
+      return this.ctx.vits.say(resp[resp.length - 1].content)
     }
     if (this.output_type == "quote") {
       return h('quote', { id: messageId }) + resp[resp.length - 1].content
@@ -788,7 +785,6 @@ namespace Dvc {
     minInterval?: number
     resolution?: string
     preset: Personality[]
-    g_voice_name: string
     if_private: boolean
     proxy_reverse: string
     lang: string

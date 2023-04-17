@@ -2,9 +2,9 @@ import { Context, Schema, Logger, segment, Element, Session, Service, Dict, h, N
 import fs from 'fs';
 import { } from '@koishijs/plugin-rate-limit';
 import { } from 'koishi-plugin-puppeteer';
+import { } from 'koishi-plugin-open-vits'
 export const name = 'davinci-003';
 export const logger = new Logger(name);
-export const using = ['gpt'] as const
 /**
  * chat_with_gpt|message: [{role:'user',content:<text>}] 
  * get_credit | 获取余额
@@ -35,87 +35,15 @@ class Dvc extends Service {
   key: number[];
   aliasMap: any;
   charMap: any;
-  g_voice_name: string;
   bg_base64: string
   proxy_reverse: string
   type: string
+  temp_msg: string
   constructor(ctx: Context, private config: Dvc.Config) {
     super(ctx, 'dvc', true)
-    this.key = [5, 188, 209, 154, 2, 90, 41, 129, 174, 177, 125, 55, 77, 165, 40, 97];
     this.output_type = config.output
-    this.g_voice_name = config.g_voice_name
     this.proxy_reverse = config.proxy_reverse
     this.type = config.type
-    this.aliasMap = {
-      埃洛伊: [],
-      安柏: [],
-      丽莎: [],
-      菲谢尔: ['皇女'],
-      凯亚: [],
-      迪卢克: ['卢姥爷', '姥爷'],
-      琴: [],
-      诺艾尔: ['女仆'],
-      芭芭拉: [],
-      阿贝多: [],
-      班尼特: ['班尼哥'],
-      迪奥娜: [],
-      罗莎莉亚: [],
-      莫娜: [],
-      砂糖: [],
-      雷泽: [],
-      温迪: ['巴巴托斯', '风神'],
-      优菈: [],
-      可莉: [],
-      重云: [],
-      七七: [],
-      烟绯: [],
-      甘雨: [],
-      香菱: [],
-      北斗: [],
-      辛焱: [],
-      行秋: [],
-      胡桃: [],
-      刻晴: [],
-      凝光: [],
-      云堇: [],
-      钟离: ['岩神'],
-      夜兰: [],
-      申鹤: [],
-      达达利亚: ['公子', '鸭鸦'],
-      魈: [],
-      宵宫: [],
-      托马: [],
-      早柚: [],
-      五郎: [],
-      久岐忍: ['97忍', '97'],
-      九条裟罗: ['裟罗'],
-      枫原万叶: ['万叶'],
-      雷电将军: ['雷神'],
-      神里绫华: ['绫华'],
-      神里绫人: ['绫人'],
-      珊瑚宫心海: ['心海'],
-      鹿野院平藏: ['平藏', '小鹿'],
-      荒泷一斗: ['一斗'],
-      八重神子: ['神子'],
-      提纳里: [],
-      赛诺: [],
-      柯莱: [],
-      多莉: [],
-      坎蒂丝: [],
-      妮露: [],
-      珐露珊: [],
-      莱依拉: [],
-      纳西妲: ['草神'],
-      流浪者: ['散兵'],
-    };
-    this.charMap = {};
-    for (const name of Object.keys(this.aliasMap)) {
-      this.charMap[name] = name;
-      for (const item of this.aliasMap[name]) {
-        this.charMap[item] = name;
-      }
-    }
-
     this.openai = new OpenAI(config.key, ctx, this.config.proxy_reverse);
     this.sessions_cmd = {};
     this.sessions = {};
@@ -126,9 +54,14 @@ class Dvc extends Service {
     if ((!ctx.puppeteer) && config.output == 'image') {
       logger.warn('未启用puppter,将无法发送图片');
     }
-
+    this.temp_msg = ''
     ctx.i18n.define('zh', require('./locales/zh'));
-
+    ctx.on('send', (session) => {
+      this.temp_msg = session.messageId
+      if(this.config.recall_all){
+        this.recall(session,session.messageId,config.recall_all_time)
+      }
+    })
     try {
       this.personality = JSON.parse(fs.readFileSync('./davinci-003-data.json').toString());
     } catch (e) {
@@ -168,11 +101,6 @@ class Dvc extends Service {
       authority: 1
     }).action(({ session }) => this.clear(session))
 
-    //切换语言输出的音色
-    ctx.command('dvc.gvc <name>', '切换dvc的原神语音角色')
-      .action(async (_, name) => this.switch_gvc(name));
-    ctx.command('dvc.output <type:string>', '切换dvc的输出方式').action(({ session }, type) => this.switch_output(session, type));
-
     //设置人格
     ctx.command('dvc.添加人格 <prompt:text>', '更改AI的人格,并重置会话', {
       authority: 1
@@ -188,6 +116,9 @@ class Dvc extends Service {
       authority: 1
     }).alias('重置会话').action(({ session }) => this.reset(session))
 
+    //切换dvc的输出方式
+    ctx.command('dvc.output <type:string>', '切换dvc的输出方式').action(({ session }, type) => this.switch_output(session, type));
+    
     //切换现有人格
     ctx.command('dvc.切换人格', '切换为现有的人格', {
       authority: 1
@@ -227,6 +158,13 @@ class Dvc extends Service {
 
   }
 
+  async recall(session: Session, messageId: string,time:number) {
+    new Promise(resolve => setTimeout(() => {
+      session.bot.deleteMessage(session.channelId, messageId)
+    }
+      ,time ));
+
+  }
   async rm_personality(session: Session, prompt: string): Promise<string> {
     if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
       return h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.block')
@@ -446,24 +384,6 @@ class Dvc extends Service {
   }
 
 
-  /**
-   * 
-   * @param name 角色昵称
-   * @returns 角色名字
-   */
-
-
-  switch_gvc(name: string): string {
-    if (!name)
-      return '请输入角色名。';
-    name = this.charMap[name];
-    if (!name)
-      return '无法识别角色名。';
-    this.g_voice_name = name
-    this.output_type = 'voice'
-    return `更换${name}声音成功！`;
-
-  }
 
   /**
    * 
@@ -543,7 +463,11 @@ class Dvc extends Service {
       return h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.block')
     }
     if (this.config.waiting) {
-      session.send(h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.thinking'))
+      await session.send(h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.thinking'))
+      if(this.config.recall&&(!this.config.recall_all)){
+        await this.recall(session, this.temp_msg,this.config.recall_time)
+      }
+      
     }
     let msg: string = prompt
     if (!this.ifgettoken && this.config.AK && this.config.SK) {
@@ -645,7 +569,7 @@ class Dvc extends Service {
     if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
       return h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.block')
     }
-    const type_arr: string[] = ['voice', 'quote', 'figure', 'image', 'minimal']
+    const type_arr: string[] = ['quote', 'figure', 'image', 'minimal', 'voice']
     if (!type) {
       return await this.switch_output_menu(session)
     } else {
@@ -663,7 +587,7 @@ class Dvc extends Service {
     if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
       return h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.block')
     }
-    const type_arr: string[] = ['voice', 'quote', 'figure', 'image', 'minimal']
+    const type_arr: string[] = ['quote', 'figure', 'image', 'minimal','voice']
     let type_str: string = '\n'
     type_arr.forEach((i, id) => {
       type_str += String(id + 1) + ' ' + i + '\n'
@@ -739,10 +663,8 @@ class Dvc extends Service {
    * @returns 文字，图片或聊天记录
    */
   async getContent(userId: string, resp: Dvc.Msg[], messageId: string): Promise<string | segment> {
-
-    if (this.output_type == 'voice') {
-      const data = await this.ctx.http.get(`https://ai-api.baimianxiao.cn/api/${this.encode(this.g_voice_name)}/${this.encode(resp[resp.length - 1].content)}/0.4/0.6/1.12/${this.encode(Math.floor(Date.now() / 1000).toString())}.ai`, { responseType: 'arraybuffer' });
-      return h.audio(data, 'audio/x-wav');
+    if (this.output_type == 'voice'&&this.ctx.vits) {
+      return this.ctx.vits.say(resp[resp.length - 1].content)
     }
     if (this.output_type == "quote") {
       return h('quote', { id: messageId }) + resp[resp.length - 1].content
@@ -882,7 +804,7 @@ class Dvc extends Service {
     }
     let message: string = await this.chat_with_gpt(session_of_id)
     // 查看是否出错
-    
+
     if (message.indexOf("This model's maximum context length is 4096 token") > -1) {
       if (session_of_id.length == 2) {
         this.sessions[sessionid] = []
@@ -966,12 +888,15 @@ namespace Dvc {
     minInterval?: number
     resolution?: string
     preset: Personality[]
-    g_voice_name: string
     if_private: boolean
     proxy_reverse: string
     lang: string
     blockuser: string[]
     blockchannel: string[]
+    recall: boolean
+    recall_time: number
+    recall_all: boolean
+    recall_all_time: number
   }
 
   export const Config = Schema.intersect([
@@ -1003,6 +928,11 @@ namespace Dvc {
       })
     ]),
     Schema.object({
+      waiting: Schema.boolean().default(true).description('消息反馈，会发送思考中...'),
+      recall: Schema.boolean().default(true).description('一段时间后会撤回“思考中”'),
+      recall_time: Schema.computed(Schema.number()).default(5000).description('撤回的时间'),
+      recall_all: Schema.boolean().default(false).description('一段时间后会撤回所有消息'),
+      recall_all_time: Schema.computed(Schema.number()).default(5000).description('撤回所有消息的时间'),
       key: Schema.string().description('api_key').required(),
       AK: Schema.string().description('内容审核AK'),
       SK: Schema.string().description('内容审核SK,百度智能云防止api-key被封'),
@@ -1052,14 +982,13 @@ namespace Dvc {
       用一些傲娇式的表达方式，比如反问、挑衅等，来表达自己的态度和情感。\
       但不要过度使用傲娇式的表达方式，尽量让对话流畅自然。\
       总的来说，语气要显得有些刁钻和任性，但也会让人觉得可爱和有趣，并逐渐展露出温暖一面。"}]),
-      waiting: Schema.boolean().default(true).description('消息反馈，会发送思考中...'),
+      
       max_tokens: Schema.number().description('请求长度,不要超过2000，否则报错').default(1024),
       authority: Schema.number().description('允许使用的最低权限').default(1),
       superusr: Schema.array(String).default(['3118087750']).description('可以无限调用的用户'),
       usage: Schema.computed(Schema.number()).description('每人每日可用次数').default(100),
       minInterval: Schema.computed(Schema.number()).default(5000).description('连续调用的最小间隔,单位毫秒。'),
       alias: Schema.array(String).default(['davinci', '达芬奇', 'ai']).description('触发命令;别名'),
-      g_voice_name: Schema.string().description('语音模式角色,默认为甘雨').default('甘雨'),
       resolution: Schema.union([
         Schema.const('256x256').description('256x256'),
         Schema.const('512x512').description('512x512'),
@@ -1078,9 +1007,9 @@ namespace Dvc {
     Schema.object({
       blockuser: Schema.array(String).default([]).description('屏蔽的用户'),
       blockchannel: Schema.array(String).default([]).description('屏蔽的频道')
-    }).description('过滤器')
-  ])
+    }).description('过滤器'),
 
+])
 }
 
 /**
