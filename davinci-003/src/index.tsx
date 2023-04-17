@@ -58,8 +58,8 @@ class Dvc extends Service {
     ctx.i18n.define('zh', require('./locales/zh'));
     ctx.on('send', (session) => {
       this.temp_msg = session.messageId
-      if(this.config.recall_all){
-        this.recall(session,session.messageId,config.recall_all_time)
+      if (this.config.recall_all) {
+        this.recall(session, session.messageId, config.recall_all_time)
       }
     })
     try {
@@ -118,7 +118,7 @@ class Dvc extends Service {
 
     //切换dvc的输出方式
     ctx.command('dvc.output <type:string>', '切换dvc的输出方式').action(({ session }, type) => this.switch_output(session, type));
-    
+
     //切换现有人格
     ctx.command('dvc.切换人格', '切换为现有的人格', {
       authority: 1
@@ -158,11 +158,11 @@ class Dvc extends Service {
 
   }
 
-  async recall(session: Session, messageId: string,time:number) {
+  async recall(session: Session, messageId: string, time: number) {
     new Promise(resolve => setTimeout(() => {
       session.bot.deleteMessage(session.channelId, messageId)
     }
-      ,time ));
+      , time));
 
   }
   async rm_personality(session: Session, prompt: string): Promise<string> {
@@ -464,10 +464,10 @@ class Dvc extends Service {
     }
     if (this.config.waiting) {
       await session.send(h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.thinking'))
-      if(this.config.recall&&(!this.config.recall_all)){
-        await this.recall(session, this.temp_msg,this.config.recall_time)
+      if (this.config.recall && (!this.config.recall_all)) {
+        await this.recall(session, this.temp_msg, this.config.recall_time)
       }
-      
+
     }
     let msg: string = prompt
     if (!this.ifgettoken && this.config.AK && this.config.SK) {
@@ -537,7 +537,7 @@ class Dvc extends Service {
         return this.sli(session, session.content, {})
       }
     }
-    if (session.parsed.appel) {
+    if (session.parsed.appel && this.config.if_at) {
       return this.sli(session, session.content.replace(`<at id="${this.config.selfid}"/> `, ''), {})
     }
     const session_id_string: string = session.userId
@@ -587,7 +587,7 @@ class Dvc extends Service {
     if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
       return h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.block')
     }
-    const type_arr: string[] = ['quote', 'figure', 'image', 'minimal','voice']
+    const type_arr: string[] = ['quote', 'figure', 'image', 'minimal', 'voice']
     let type_str: string = '\n'
     type_arr.forEach((i, id) => {
       type_str += String(id + 1) + ' ' + i + '\n'
@@ -663,7 +663,7 @@ class Dvc extends Service {
    * @returns 文字，图片或聊天记录
    */
   async getContent(userId: string, resp: Dvc.Msg[], messageId: string): Promise<string | segment> {
-    if (this.output_type == 'voice'&&this.ctx.vits) {
+    if (this.output_type == 'voice' && this.ctx.vits) {
       return this.ctx.vits.say(resp[resp.length - 1].content)
     }
     if (this.output_type == "quote") {
@@ -889,6 +889,7 @@ namespace Dvc {
     resolution?: string
     preset: Personality[]
     if_private: boolean
+    if_at: boolean
     proxy_reverse: string
     lang: string
     blockuser: string[]
@@ -982,7 +983,7 @@ namespace Dvc {
       用一些傲娇式的表达方式，比如反问、挑衅等，来表达自己的态度和情感。\
       但不要过度使用傲娇式的表达方式，尽量让对话流畅自然。\
       总的来说，语气要显得有些刁钻和任性，但也会让人觉得可爱和有趣，并逐渐展露出温暖一面。"}]),
-      
+
       max_tokens: Schema.number().description('请求长度,不要超过2000，否则报错').default(1024),
       authority: Schema.number().description('允许使用的最低权限').default(1),
       superusr: Schema.array(String).default(['3118087750']).description('可以无限调用的用户'),
@@ -1002,6 +1003,7 @@ namespace Dvc {
         Schema.const('voice').description('发送语音')
       ]).description('输出方式。').default('minimal'),
       if_private: Schema.boolean().default(true).description('开启后私聊可触发ai'),
+      if_at: Schema.boolean().default(true).description('开启后被提及(at/引用)可触发ai'),
       proxy_reverse: Schema.string().default('https://gpt.lucent.blog').description('反向代理地址')
     }).description('进阶设置'),
     Schema.object({
@@ -1009,7 +1011,7 @@ namespace Dvc {
       blockchannel: Schema.array(String).default([]).description('屏蔽的频道')
     }).description('过滤器'),
 
-])
+  ])
 }
 
 /**
