@@ -436,8 +436,8 @@ export class Cube{
 
     }
 
-    re_do(msg:string){
-        for(var plain_text of msg.split(" ")){
+    re_do(msg:string[]){
+        for(var plain_text of msg){
             eval(`this.${plain_text}()`)
             if(this.check()){
                 return true

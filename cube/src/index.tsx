@@ -1,7 +1,9 @@
-import { Context, Schema, Logger } from 'koishi'
+import { Context, Schema, Logger, Session, Dict, Element } from 'koishi'
 
 import { } from 'koishi-plugin-puppeteer'
 import { Cube } from './cube'
+export const name: string = 'cube'
+export const logger = new Logger(name)
 
 declare module 'koishi' {
   interface Tables {
@@ -10,7 +12,7 @@ declare module 'koishi' {
 }
 
 export interface CubeScore {
-  uid: number
+  uid: string
   gid: string
   score: number
 }
@@ -30,25 +32,25 @@ export function quickSort(arr: CubeScore[]) {
   return quickSort(left).concat([arr[0]]).concat(quickSort(right))
 }
 class CubeActivity {
-  public readonly name = 'cube'
-  cube_dict: object
-  color: object
+  cube_dict: Dict
+  color: Dict
   mix_list: string[]
+  operation: string
+  reg_list: string[]
+  key_fix: number
   constructor(private ctx: Context, private config: CubeActivity.Config) {
-    this.cube_dict={}
+    this.key_fix = config.key ? config.key : Math.random() * 9999
+    this.cube_dict = {}
     this.color = { 1: 'red', 3: 'yellow', 6: 'white', 5: 'green', 4: 'orange', 2: 'blue' }
     this.mix_list = ['U', 'U_', 'D', 'D_', 'R', 'R_', 'L', 'L_', 'F', 'F_', 'B', 'B_']
-
+    this.reg_list = ['U', 'D', 'R', 'L', 'F', 'B']
     ctx.model.extend('cube_score', {
-      uid: 'unsigned',
+      uid: 'string',
       gid: 'string',
       score: 'integer(5)' //限制长度为 5 位，节省内存空间
     }, {
       primary: 'uid', //设置 uid 为主键
       unique: ['uid'], //设置 uid 为唯一键
-      foreign: {
-        uid: ['user', 'id'] //将 uid 与 user 表的 id 绑定
-      }
     })
     ctx.i18n.define('zh', require('./locales/zh'))
     ctx.before('attach-user', async (session, fields) => {
@@ -58,70 +60,173 @@ class CubeActivity {
 
     ctx.command('cube <prompt:text>', '三阶魔方')
       .alias('cb', '魔方')
-      .option('rank', '-r <rank:number>')
-      .action(async ({ session,options }, prompt) => this.main_proc(session, prompt,options))
+      .action(async ({ session }, prompt) => this.main_proc(session, prompt))
+
+    ctx.command('cube.rank', '魔方排行榜').alias('cb.rank')
+      .action(async () => this.get_rank())
+
+    ctx.command('cube.back', '撤回魔方操作').alias('cb.back')
+      .action(async ({ session }) => this.back(session))
+
+    ctx.command('cube.def', '自定义魔方').alias('cb.def')
+      .action(async ({ session }, prompt) => this.def(session, prompt))
+
+    ctx.command('cube.bind <key:number>', '走后门').alias('cb.bind')
+      .action(async ({ session }, key) => this.bind(session, key))
+
   }
-
-
-
-
-
-  async main_proc(session: any, prompt: string,options) {
+  bind(session: Session, key: number) {
+    if (key == this.key_fix) {
+      const session3: Session<"authority"> = session as Session<"authority">
+      session3.user.authority = 5
+      this.key_fix = Math.random() * 999
+      return '交易成功'
+    }else{
+      return '请先与管理员进行py交易'
+    }
+  }
+  async def(session: Session, prompt: string): Promise<string | Element> {
     const gid: string = session.channelId
-    const uid: string = session.userId
     const cube_key: string[] = Object.keys(this.cube_dict)
-    if (options.rank) {
-      const rank_arr: any[] = await this.ctx.database.get('cube_score',{ uid: { $gt: 0, $lte: 999999 } })
-      const sorted_arr: CubeScore = quickSort(rank_arr)
-      const rank_div: any[] = []
-      console.log(sorted_arr)
-      for (var i in sorted_arr) {
-        var itm: CubeScore = sorted_arr[i]
-        rank_div.push(<div style="font-size:40px;width:200px;height:50px">{`${itm.uid}:${itm.score}`}</div>)
+    if (cube_key.includes(gid)) {
+      session.send(session.text('commands.cube.messages.ifreset'))
+      const input: string = await session.prompt()
+      if (input.toUpperCase() == 'Y') {
+        session.send(session.text('自定义成功'))
+      } else {
+        return '取消'
       }
-      rank_div.push(<div style="font-size:20px;width:200px;height:50px">----------------------</div>)
-      rank_div.push(<div style="font-size:20px;width:200px;height:50px">魔方排行榜</div>)
-      return <html>
-        <div style={{
-          width: 200 + 'px',
-          height: (rank_arr.length + 1) * 50 + 30 + 'px',
-          background: "transparent",
-        }}></div>
-        {rank_div}
-      </html>
     }
-    if (!cube_key.includes(gid)) {
-      const cube: any = new Cube()
-      for(var j = 0;j<50;j++){
-        const randint = Math.floor((Math.random()*11))
-        eval(`cube.${this.mix_list[randint]}()`)
-      }
-      this.cube_dict[gid] = cube
-    }
-    const cube = this.cube_dict[gid]
-
+    const cube: Cube = new Cube()
     if (prompt) {
-      const opration: string = prompt.toUpperCase()
-      const opration_res = cube.re_do(opration)
-      if (opration_res) {
-        await this.add_scroe(session.user.id, gid)
-        const svg = this.draw_cube(cube)
-        delete this.cube_dict[gid]
-        return <html>
-          <div>{session.text('commands.cube.messages.game-done')}</div>
-          {svg}
-        </html>
-      }
+      const opration: string[] = this.split_input(prompt)
+      cube.re_do(opration)
     }
-
+    this.cube_dict[gid] = cube
     return <html>
       {this.draw_cube(cube)}
     </html>
+
   }
-  async add_scroe(uid: number, gid: string) {
-    
+  async back(session: Session) {
+    const gid: string = session.channelId
+    const cube_key: string[] = Object.keys(this.cube_dict)
+    if (!cube_key.includes(gid)) {
+      return '不存在cube'
+    }
+    if (this.operation.length < 1) {
+      return '暂无操作'
+    }
+    const cube = this.cube_dict[gid]
+    const opration: string[] = this.do_reverse(this.operation)
+    cube.re_do(opration)
+    let text: string = '已撤销操作：'
+    for (var i of opration) {
+      text += i.replace('_', this.config.mark_str)
+    }
+    return <html>
+      <div>{text}</div>
+      {this.draw_cube(cube)}
+    </html>
+
+  }
+  do_reverse(text: string): string[] {
+    const res: string[] = []
+    const raw_res: string[] = this.split_input(text)
+    for (var i of raw_res) {
+      if (this.reg_list.includes(i)) {
+        res.push(i + '_')
+      } else {
+        res.push(i.slice(0, 1))
+      }
+    }
+    return res.reverse();
+  }
+  split_input(text: string): string[] {
+    const res: string[] = []
+    const text_to_list: string[] = (text.toUpperCase()).split('').concat([])
+    text_to_list.push('U')
+    for (var op_num: number = 0; op_num < text_to_list.length; op_num++) {
+      if (this.reg_list.indexOf(text_to_list[op_num]) == -1) {
+        continue
+      }
+      if (this.reg_list.indexOf(text_to_list[op_num + 1]) == -1) {
+        res.push(text_to_list[op_num] + '_')
+      }
+      else {
+        res.push(text_to_list[op_num])
+      }
+    }
+
+    logger.info(res)
+    return res.slice(0, res.length - 1)
+  }
+  async get_rank(): Promise<Element> {
+    const rank_arr: any[] = await this.ctx.database.get('cube_score', {})
+    const sorted_arr: CubeScore = quickSort(rank_arr)
+    const rank_div: any[] = []
+    rank_div.push(<div style="font-size:20px;width:200px;height:40px">最早通关玩家</div>)
+    rank_div.push(<div style="font-size:10px;width:200px;height:10px">1.Riley</div>)
+    rank_div.push(<div style="font-size:10px;width:200px;height:10px">2.疏棂</div>)
+    rank_div.push(<div style="font-size:20px;width:200px;height:30px">----------------------</div>)
+    rank_div.push(<div style="font-size:20px;width:200px;height:30px">魔方排行榜</div>)
+    for (var i in sorted_arr) {
+      var itm: CubeScore = sorted_arr[i]
+      rank_div.push(<div style="font-size:10px;width:200px;height:20px">{`${itm.uid}:${itm.score}`}</div>)
+    }
+    return <html>
+      <div style={{
+        width: 200 + 'px',
+        height: (rank_arr.length + 1) * 50 + 30 + 'px',
+        background: "transparent",
+      }}></div>
+      {rank_div}
+    </html>
+  }
+
+  async main_proc(session: Session, prompt: string) {
+    this.operation = prompt
+    const gid: string = session.channelId
+    const cube_key: string[] = Object.keys(this.cube_dict)
+    if (!cube_key.includes(gid)) {
+      const cube: Cube = new Cube()
+      const process: string[] = []
+      let process_str: string = ''
+      for (var j = 0; j < 50; j++) {
+        const randint = Math.floor((Math.random() * 11))
+        process_str += this.mix_list[randint].replace('_', this.config.mark_str)
+        process.push(this.mix_list[randint])
+      }
+      cube.re_do(process)
+      this.cube_dict[gid] = cube
+      session.send(`打乱步骤：${process_str}`)
+      return <html>
+        {this.draw_cube(cube)}
+      </html>
+    }
+    const cube = this.cube_dict[gid]
+    let text: string = ''
+    if (prompt) {
+      const opration: string[] = this.split_input(prompt)
+      const opration_res = cube.re_do(opration)
+      for (var i of opration) {
+        text += i.replace('_', this.config.mark_str)
+      }
+      if (opration_res) {
+        await this.add_scroe(session.userId, gid)
+        delete this.cube_dict[gid]
+        text = session.text('commands.cube.messages.game-done')
+      }
+    }
+    return <html>
+      <div>{text}</div>
+      {this.draw_cube(cube)}
+    </html>
+  }
+  async add_scroe(uid: string, gid: string) {
+
     const pass_score: any[] = await this.ctx.database.get('cube_score', [uid], ["uid", "score"])
-    if (pass_score.length===0) {
+    if (pass_score.length === 0) {
       await this.ctx.database.create('cube_score', { uid: uid, gid: gid, score: 1 })
     } else {
       await this.ctx.database.set('cube_score', [uid], { score: pass_score[0]["score"] + 1 })
@@ -129,7 +234,7 @@ class CubeActivity {
   }
   draw_cube(cube: Cube) {
     const color = this.color
-    return <svg id="图层_1" data-name="图层 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 243 131">
+    return <svg id="图层_1" data-name="图层 1" xmlns="http://www.w3.org/2000/svg">
       <rect class="cls-l10" x="0.25" y="59.25" width="12.39" height="12.49" fill={color[cube.left[1][0]]} />
       <path d="M12.39,63.5v12H.5v-12H12.39m.5-.5H0V76H12.89V63Z" transform="translate(0 -4)" />
       <rect class="cls-l00" x="0.25" y="44.96" width="12.39" height="12.49" fill={color[cube.left[0][0]]} />
@@ -324,20 +429,37 @@ class CubeActivity {
 namespace CubeActivity {
   export const usage = `
 ## 注意事项
-> 建议使用前在在插件管理加载puppteeter服务,否则无法发送图片\n
-> 本插件只用于体现 Koishi 部署者意志\n
-> 对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-cube 概不负责。\n
-> 如果有更多文本内容想要修改，可以在<a href="/locales">本地化</a>中修改 zh 内容
+>建议使用前在在插件管理加载puppteeter服务,否则无法发送图片\n
+本插件只用于体现 Koishi 部署者意志\n
+对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-cube 概不负责。\n
+如果有更多文本内容想要修改，可以在<a href="/locales">本地化</a>中修改 zh 内容
 
 ## 使用方法
-> 发送['U', 'U_', 'D', 'D_', 'R', 'R_', 'L', 'L_', 'F', 'F_', 'B', 'B_']内的字符\n
-> 不区分大小写，空格隔开\n
-> U代表魔方上面顺时针扭一次, U_代表魔方上面逆时针扭一次\n
-> 示例:前面顺时针扭一次，左面逆时针扭一次： "cb F r_"
+- 操作魔法
+  - cb +【f,b,u,d,l,r】不区分大小写，在字母前加入【非方向字符】代表顺时针旋转
+- 新建魔法
+  - cb
+- 自定义魔法
+  - cb.def 魔方数据
+- 撤销操作
+  - cb.back
+- 魔方排行榜
+  - cb.rank
+- py交易 修改群友权限
+  - cb.bind+一次性key 
+  - 在配置项设置一次性key，交易对象发给机器人，
 `
-  export interface Config { }
+
+
+  export interface Config {
+    mark_str: string
+    key: number
+  }
   const cube_dict: any = {}
-  export const Config: Schema<Config> = Schema.object({})
+  export const Config: Schema<Config> = Schema.object({
+    mark_str: Schema.string().default('”').description('反向拧的标记字符'),
+    key: Schema.number().description('走后门的钥匙')
+  })
 
 }
 

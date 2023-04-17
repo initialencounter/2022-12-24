@@ -214,19 +214,19 @@ cube <方向命令>
 方向命令:![alt f,b,u,d,l,r,f_,b_,u_,d_,l_,r_]前后上下左右的英文首字母，不区分大小写，无下划线代表顺时针旋转，有下划线代表逆时针旋转。
 
 ### 示例
-![alt 示例7](./screenshot/7.jpg)
+![alt 示例7](./screenshot/7.png)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-![alt 示例](./screenshot/7-1.jpg)
+![alt 示例](./screenshot/7-1.png)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-![alt 示例](./screenshot/7-2.jpg)
+![alt 示例](./screenshot/7-2.png)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-![alt 示例](./screenshot/7-3.jpg)
+![alt 示例](./screenshot/7-3.png)
 
 ### 感谢
 ## cube.js参考b站--[神闪避的雪亲王](https://space.bilibili.com/16355723)
