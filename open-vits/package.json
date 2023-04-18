@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-open-vits",
   "description": "一个基于vits-simple-api的koishi插件，支持语音合成，默认使用api来自t4wefan",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -21,7 +21,7 @@
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.12.3"
+    "koishi": "^4.11.9"
   },
   "koishi": {
     "description": "一个基于vits-simple-api的koishi插件，支持语音合成，默认使用api来自t4wefan",
