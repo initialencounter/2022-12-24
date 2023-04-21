@@ -57,8 +57,6 @@
 * 对对子 --[couplet](https://github.com/initialencounter/mykoishi/tree/master/couplet)[![npm](https://img.shields.io/npm/v/koishi-plugin-couplet?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-couplet)
 
 
-* 老色批 --[lsp](https://github.com/initialencounter/mykoishi/tree/master/lsp) [![npm](https://img.shields.io/npm/v/koishi-plugin-lsp?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-lsp)
-
 
 * 扫雷工具箱 --[stnb](https://github.com/initialencounter/mykoishi/tree/master/stnb) [![npm](https://img.shields.io/npm/v/koishi-plugin-stnb?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-stnb)
 
