@@ -1,0 +1,5 @@
+commands:
+  loader:
+    description: 安装所有插件
+    messages:
+      info: 新增：{0}，更新：{1}
