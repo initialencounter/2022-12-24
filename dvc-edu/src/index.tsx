@@ -437,8 +437,10 @@ class Dvc extends Service {
         return this.sli(session, session.content, {})
       }
     }
-    if (session.parsed.appel) {
-      return this.sli(session, session.content.replace(`<at id="${this.config.selfid}"/> `, ''), {})
+    if (session.parsed.appel && this.config.if_at) {
+      const msg1:string = String(session.content)
+      const msg:string = msg1.replace(`<at id="${session.bot.selfId}"/> `,'')
+      return this.sli(session, msg, {})
     }
     const session_id_string: string = session.userId
     const uids: string[] = Object.keys(this.sessions_cmd)
@@ -790,6 +792,7 @@ namespace Dvc {
     lang: string
     blockuser: string[]
     blockchannel: string[]
+    if_at: boolean
   }
 
   export const Config = Schema.intersect([
@@ -826,6 +829,7 @@ namespace Dvc {
       SK: Schema.string().description('内容审核SK,百度智能云防止api-key被封'),
       lang: Schema.string().description('要翻译的目标语言').default('英文'),
       selfid: Schema.string().description('聊天记录头像的QQ号').default('3118087750'),
+      if_at: Schema.boolean().default(true).description('开启后被提及(at/引用)可触发ai'),
       preset: Schema.array(Personality).description('预设人格').default([{
         nick_name: '哆啦A梦', descirption: `接下来你要模仿“哆啦A梦”这个身份:
         “哆啦A梦”是开朗、聪明、机智、好动又可爱的机器猫。

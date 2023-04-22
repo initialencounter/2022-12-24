@@ -14,7 +14,7 @@
 
 ## 感谢
 > 逻辑端参考自<a href="https://lucent.blog/#blog" title="前往 Lucent's Blog 的主页" class="blog-button"><img src="https://img-1251540275.cos.ap-shanghai.myqcloud.com/blog/IMG_1140(20200328-104456)_1591776646572.JPG" width="25" alt="Lucent's Blog logo" class="panel-cover__logo logo logo1"></a>
-<a class="panel-cover__title panel-title"><a href="https://lucent.blog/#blog" title="link to homepage for Lucent's Blog" class="blog-button">Lucent's Blog(呆呆木）</a></a><br>
+<a class="panel-cover__title panel-title"><a href="https://lucent.blog/#blog" title="link to homepage for Lucent's Blog" class="blog-button">Lucent's Blog(呆呆木)</a></a><br>
 反代使用的也是呆呆木的！再次感谢！<br>
 
 # koishi-plugin-davinci-003
@@ -22,6 +22,10 @@
 [![npm](https://img.shields.io/npm/v/koishi-plugin-davinci-003?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-davinci-003)
 
 # 更新日志
+
+## v3.1.4
+更新bot.selfid的获取方式
+
 
 ## v3.1.3
 新增被提及触发指令选项
@@ -200,16 +204,4 @@ ctx.command('call').action(async ({session})=>{
 >
 更换davinci-003的流量，可以走koishi代理
 
-
-# 后端搭建
-## 参考自<a href="https://lucent.blog/?p=118">Lucent</a>，感谢Lucent佬的慷慨
-
-api_key已封装成请求体，只需在客户端填写，服务端无需填写
-
-
-* 下载server目录
-
-* 双击安装依赖.bat
-
-* 双击启动服务.bat
 

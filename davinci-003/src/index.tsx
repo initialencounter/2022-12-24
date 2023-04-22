@@ -538,7 +538,9 @@ class Dvc extends Service {
       }
     }
     if (session.parsed.appel && this.config.if_at) {
-      return this.sli(session, session.content.replace(`<at id="${this.config.selfid}"/> `, ''), {})
+      const msg1:string = String(session.content)
+      const msg:string = msg1.replace(`<at id="${session.bot.selfId}"/> `,'')
+      return this.sli(session, msg, {})
     }
     const session_id_string: string = session.userId
     const uids: string[] = Object.keys(this.sessions_cmd)

@@ -70,9 +70,9 @@ class Mqtt extends Service{
 
     // 引用触发
     ctx.middleware(async (session, next) =>{
-      const {selfId} = this.config.rules[0]
       if (session.parsed.appel) {
-        const msg:string = session.content.replace(`<at id="${selfId}"/> `,'')
+        const msg1:string = String(session.content)
+        const msg:string = msg1.replace(`<at id="${session.bot.selfId}"/> `,'')
         return this.publish(msg, {topic:config.publish_topic})
       }
       return next()
@@ -193,3 +193,5 @@ QQ群: 399899914
 
 
 export default Mqtt
+
+

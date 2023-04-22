@@ -7,6 +7,9 @@ mqtt订阅推送
 
 #更新日志
 
+v1.0.1
+- 更新bot.selfid的获取方式
+
 v1.0.0
 - 实现了mqtt服务
 - 新增引用发布at机器人或引用机器人消息即可发布到publish_topic

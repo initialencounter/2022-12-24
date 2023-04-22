@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-open-vits",
   "description": "一个基于vits-simple-api的koishi插件，支持语音合成，默认使用api来自t4wefan",
-  "version": "0.0.4",
+  "version": "1.0.2",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -14,11 +14,21 @@
     "t4wefan <guanghoushi@gmail.com@qq.com>",
     "initencounter <2911583893@qq.com>"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/koishi-plugin-open-vits.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/koishi-plugin-open-vits/issues"
+  },
+  "homepage": "https://github.com/initialencounter/koishi-plugin-open-vits#readme",
   "scripts": {},
   "keywords": [
     "chatbot",
     "koishi",
-    "plugin"
+    "plugin",
+    "vits",
+    "service"
   ],
   "peerDependencies": {
     "koishi": "^4.11.9"

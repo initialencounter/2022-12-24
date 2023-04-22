@@ -22,7 +22,7 @@ class Vits extends Service {
     ctx.on('send', (session) => {
       this.temp_msg = session.messageId
     })
-    ctx.command('say <prompt:text>', 'vits文字转语音')
+    ctx.command('say <prompt:text>', 'vits语音合成')
       .option('speaker', '-s <speaker:number>', { fallback: config.speaker_id })
       .action(async ({ session, options }, prompt) => {
         // 判断speaker_id是否合法
@@ -52,7 +52,9 @@ class Vits extends Service {
    */
   async say(prompt: string, speaker_id: number = this.config.max_speakers): Promise<string | h> {
     if (prompt.length > this.config.max_length) {
-      return '文本过长'
+      return <>
+      <i18n path=".too-long" />
+    </>
     }
     try {
       const url: string = `${this.config.endpoint}/voice?text=${encodeURIComponent(prompt)}&id=${speaker_id}&format=ogg`
@@ -89,7 +91,7 @@ namespace Vits {
   }
   export const Config =
     Schema.object({
-      endpoint: Schema.string().required().description('vits服务器地址'),
+      endpoint: Schema.string().default('https://api.vits.t4wefan.pub').description('vits服务器地址'),
       speaker_id: Schema.number().default(3).description('speaker_id'),
       max_length: Schema.number().default(256).description('最大长度'),
       waiting: Schema.boolean().default(true).description('消息反馈，会发送思考中...'),
