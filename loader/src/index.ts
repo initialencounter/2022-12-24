@@ -1,23 +1,22 @@
 
-import { Context, Dict, Schema, Logger,Session } from 'koishi'
+import { Context, Dict, Schema, Logger, Session } from 'koishi'
 import { exec } from 'child_process'
 export const name = 'loader'
 const logger = new Logger(name)
 const fs = require('fs').promises;
-const yaml = require('js-yaml');
+import yaml from 'js-yaml';
 
 
 class Loader {
   mainfest: Loader.Mainfest
-  new_dependencies: Dict
   koishi_yml: Dict
   exits_plugins: string[]
   update_plugin: Dict
   constructor(private ctx: Context, private config: Loader.Config) {
     ctx.i18n.define('zh', require('./locales/zh'));
     ctx.on('ready', async () => this.initialize())
-    ctx.command('loader', '安装/更新插件市场所有插件', { authority: 5 })
-      .action(async ({session}) => this.main(session))
+    ctx.command('loader', '更新所有插件', { authority: 5 })
+      .action(async ({ session }) => this.main(session))
   }
   async initialize() {
     const json_data: string = await fs.readFile('package.json', 'utf8');
@@ -27,12 +26,11 @@ class Loader {
     await fs.writeFile('./koishi.yml.bak', yaml_data, 'utf8');
     this.mainfest = JSON.parse(json_data)
     this.koishi_yml = yaml.load(yaml_data)
-    this.new_dependencies = JSON.parse(JSON.stringify(this.mainfest.dependencies))
     this.update_plugin = JSON.parse(JSON.stringify(this.mainfest.dependencies))
     this.exits_plugins = this.get_plugins(this.koishi_yml.plugins)
   }
-  async main(session:Session) {
-    let count_add = 0
+  async main(session: Session) {
+    session.send(session.text('commands.loader.messages.waiting'))
     let count_update = 0
     const packages: Loader.Package[] = (await this.ctx.http.get('https://registry.koishi.chat/index.json'))['objects']
     for (var i of packages) {
@@ -46,28 +44,13 @@ class Loader {
           this.update_plugin[full_name] = i.package.version
           count_update++
         }
-      } else {
-        count_add++
-        this.koishi_yml.plugins[`~${name}`] = {}
       }
-      this.new_dependencies[full_name] = i.package.version
-    }
-
-    if(this.config.just_update){
-      await this.modifyJsonFile(this.update_plugin)
-      if (this.config.auto_install) {
-        exec('npm i')
-      }
-      return session.text('commands.loader.messages.info',[0,count_update])
     }
     await this.modifyJsonFile()
     if (this.config.auto_install) {
       exec('npm i')
     }
-    if (this.config.add_to_koishi_yml) {
-      await this.writeYamlFile()
-    }
-    return session.text('commands.loader.messages.info',[count_add,count_update])
+    return session.text('commands.loader.messages.info', [count_update])
 
   }
   get_plugins(obj: Dict = this.koishi_yml) {
@@ -96,15 +79,7 @@ class Loader {
     });
     return plugins;
   }
-  async writeYamlFile() {
-    try {
-      const yamlContent = yaml.dump(this.koishi_yml);
-      await fs.writeFile('koishi.yml', yamlContent, 'utf8');
-    } catch (error) {
-      console.error('Error writing YAML file:', error);
-    }
-  }
-  async modifyJsonFile(obj:Dict = this.new_dependencies) {
+  async modifyJsonFile(obj: Dict = this.update_plugin) {
     try {
       this.mainfest.dependencies = obj;
 
@@ -125,9 +100,13 @@ namespace Loader {
 ### 配置说明
 - backend: 自动备份koishi.yml和package.json
   - 备份的文件名称为koishi.yml.bak和package.json.bak
-- just_update: 只更新已添加的插件
-- add_to_koishi_yml: 自动添加到插件列表,不会启用，非常安全
-- auto_install: 自动安装所有插件
+- auto_install: 自动安装所有插件，默认关闭，非常安全
+
+### 使用说明
+- 发送loader即可更新package.json内的插件版本
+- 如果未开启自动安装，则需要手动安装
+  - 手动安装命令 npm i|yarn
+  - 可使用spawn的exec命令 示例 exec npm i
 
 ### 问题反馈
 QQ群：399899914<br>
@@ -163,8 +142,6 @@ QQ群：399899914<br>
     ignored: boolean
   }
   export interface Config {
-    add_to_koishi_yml: boolean
-    just_update: boolean
     auto_install: boolean
     backend: boolean
 
@@ -172,8 +149,6 @@ QQ群：399899914<br>
 
   export const Config: Schema<Config> = Schema.object({
     backend: Schema.boolean().default(true).description('自动备份文件'),
-    just_update: Schema.boolean().default(false).description('只更新已添加的插件'),
-    add_to_koishi_yml: Schema.boolean().default(true).description('自动添加到插件列表'),
     auto_install: Schema.boolean().default(false).description('自动安装所有插件')
   })
 }

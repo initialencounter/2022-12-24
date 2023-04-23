@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-loader",
-  "description": "安装所有koishi插件",
-  "version": "0.0.1",
+  "description": "更新所有插件",
+  "version": "0.0.2",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -29,7 +29,7 @@
     "koishi": "^4.11.9"
   },
   "koishi": {
-    "description": "安装所有koishi插件"
+    "description": "更新所有插件"
   },
   "dependencies": {
     "js-yaml": "^4.1.0"
