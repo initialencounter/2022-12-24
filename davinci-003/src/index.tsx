@@ -833,20 +833,35 @@ class Dvc extends Service {
 
 namespace Dvc {
   export const usage = `
+
 ## 注意事项
+
 > 使用前在 <a style="color:blue" href="https://beta.openai.com/account/api-keys">beta.openai.com</a> 中获取api-key<br>
 如需使用内容审查,请前往<a style="color:blue" href="https://ai.baidu.com/solution/censoring?hmsr=aibanner&hmpl=censoring">百度智能云</a> 获取AK和SK</br>
 对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-davinci-003 概不负责。<br>
 如果有更多文本内容想要修改，可以在<a style="color:blue" href="/locales">本地化</a>中修改 zh 内容</br>
+## 使用方法
+
+| 功能 | 指令 |
+|  ----  | ----  |
+| 重置会话 | dvc.重置会话 |
+| 添加人格 | dvc.添加人格+人格名称+人格描述 |
+| 清空所有回话 | dvc.clear |
+| 切换人格 | dvc.切换人格 |
+| 查询余额 | dvc.credit |
+| 切换输出模式 | dvc.output |
+
+
+### 若出现400报错dvc.clear
+      
 ## 添加人格的方法
-* 方法1 在聊天中发送“dvc.添加人格 人格名称 人格描述”可以自动保存人格
-* 方法2 在koishi根目录找到davinci-003-data.json文件,修改里面的人格即可
-## 感谢
-> 逻辑端参考自<a href="https://lucent.blog/#blog" title="前往 Lucent's Blog 的主页" class="blog-button"><img src="https://img-1251540275.cos.ap-shanghai.myqcloud.com/blog/IMG_1140(20200328-104456)_1591776646572.JPG" width="25" alt="Lucent's Blog logo" class="panel-cover__logo logo logo1"></a>
-<a class="panel-cover__title panel-title"><a href="https://lucent.blog/#blog" title="link to homepage for Lucent's Blog" class="blog-button">Lucent's Blog(呆呆木）</a></a><br>
-反代使用的也是呆呆木的！再次感谢！<br>
-## 问题反馈群: 
-399899914
+* 在聊天中发送“dvc.添加人格 人格昵称 人格描述”可以自动保存人格
+* 在koishi根目录找到davinci-003-data.json文件,修改里面的人格即可
+
+## 问题反馈
+* QQ群：399899914<br>
+* 小伙伴如果遇到问题或者有新的想法，欢迎到[这里](https://github.com/initialencounter/mykoishi/issues)反馈哦~
+
 `
   export interface Personality {
     nick_name: string
