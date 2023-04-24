@@ -1,4 +1,4 @@
-import { Context, Schema, Session, Logger,Service } from 'koishi'
+import { Context, Schema, Session, Logger, Service } from 'koishi'
 import { Client, connect, QoS } from 'mqtt';
 export const name = 'mqtt'
 export const logger = new Logger(name)
@@ -9,13 +9,14 @@ declare module 'koishi' {
   }
 }
 
-class Mqtt extends Service{
+class Mqtt extends Service {
   msgs: string[]
   status: boolean
   topic: string
   client: Client
+  temp_msg: string
   constructor(ctx: Context, private config: Mqtt.Config) {
-    super(ctx,'mqtt',true)
+    super(ctx, 'mqtt', true)
     this.msgs = []
     this.status = false
     this.topic = config.topic
@@ -40,16 +41,22 @@ class Mqtt extends Service{
     })
     this.client.on('message', (topic, payload) => {
       this.status = true
-      let mark_topic:string = ''
-      if(config.mark_topic){
-        mark_topic+= `${topic}: `
+      let mark_topic: string = ''
+      if (config.mark_topic) {
+        mark_topic += `${topic}: `
       }
-      const msg:string = `${mark_topic}${String(payload)}`
+      const msg: string = `${mark_topic}${String(payload)}`
       this.msgs.push(msg)
       logger.info(msg)
     })
 
     ctx.i18n.define('zh', require('./locales/zh'));
+
+    // 监听信息发送
+    ctx.on('send', (session) => {
+      if (session.content == '发送成功！')
+        this.recall(session, session.messageId, this.config.recall_time)
+    })
     // 推送
     ctx.on('ready', async () => {
       ctx.setInterval(async () => {
@@ -65,20 +72,30 @@ class Mqtt extends Service{
       .alias('mq')
       .option('topic', '-t <topic:string>', { fallback: config.publish_topic })
       .action(({ session, options }, prompt) => {
-        return this.publish(prompt, options)
+        return this.publish(session, prompt, options)
       })
 
-    // 引用触发
-    ctx.middleware(async (session, next) =>{
-      if (session.parsed.appel) {
-        const msg1:string = String(session.content)
-        const msg:string = msg1.replace(`<at id="${session.bot.selfId}"/> `,'')
-        return this.publish(msg, {topic:config.publish_topic})
+    // 引用及私聊发布mqtt的实现方式
+    ctx.middleware(async (session, next) => {
+      if (session.subtype === 'private' && this.config.if_private) {
+        return this.publish(session, String(session.content), { topic: config.publish_topic })
+      }
+      if (session.parsed.appel && this.config.if_at) {
+        let msg: string = String(session.content)
+        msg= msg.replace(`<at id="${session.bot.selfId}"/> `, '')
+        msg= msg.replace(`<at id="${session.bot.selfId}"/> `, '')
+        return this.publish(session, msg, { topic: config.publish_topic })
       }
       return next()
     })
   }
+  async recall(session: Session, messageId: string, time: number) {
+    new Promise(resolve => setTimeout(() => {
+      session.bot.deleteMessage(session.channelId, messageId)
+    }
+      , time));
 
+  }
   /**
    * publish msg form platform
    * @param prompt msg
@@ -86,15 +103,24 @@ class Mqtt extends Service{
    * @returns status_string
    */
 
-  async publish(prompt: string | Buffer, options: Mqtt.Options): Promise<string> {
+  async publish(session: Session, prompt: string | Buffer, options: Mqtt.Options): Promise<string> {
+    if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
+      return
+    }
     this.client.publish(options.topic, prompt, {
       qos: this.config.qos,
       retain: this.config.retain
     }, (e) => {
-      logger.error(String(e))
-      return `发送错误:${String(e)}！`
+      if (e) {
+        console.log('eeer')
+        logger.error(String(e))
+        return `发送错误:${String(e)}！`
+      }
     })
+
     return `发送成功！`
+    
+
   }
 
   /**
@@ -102,7 +128,7 @@ class Mqtt extends Service{
    * @param msgs msg array
    * @returns void
    */
-  async send(msgs:string[]) {
+  async send(msgs: string[]) {
     for (var msg of msgs) {
       for (let { channelId, platform, selfId, guildId } of this.config.rules) {
         if (!selfId) {
@@ -156,6 +182,12 @@ QQ群: 399899914
   export interface Config {
     mqtt_hostname: string
     rules: Rule[]
+    if_private: boolean
+    if_at: boolean
+    blockuser: string[]
+    blockchannel: string[]
+    recall: boolean
+    recall_time: number
     interval: number
     connectTimeout: number
     username: string
@@ -177,6 +209,12 @@ QQ群: 399899914
       rules: Schema.array(Rule).description('推送规则。'),
     }).description('基础设置'),
     Schema.object({
+      if_private: Schema.boolean().default(true).description('开启后私聊发布'),
+      if_at: Schema.boolean().default(false).description('开启后被提及(at/引用)发布消息'),
+      waiting: Schema.boolean().default(true).description('消息反馈，发送成功'),
+      recall: Schema.boolean().default(true).description('一段时间后会撤回“发送成功”'),
+      recall_time: Schema.computed(Schema.number()).default(5000).description('撤回的时间'),
+      recall_all: Schema.boolean().default(false).description('一段时间后会撤回所有消息'),
       mark_topic: Schema.boolean().default(false).description('推送消息时会标注topic'),
       connectTimeout: Schema.number().default(4000).description('连接超时 (毫秒)。'),
       reconnectPeriod: Schema.number().default(1000).description('重连间隔 (毫秒)。'),
@@ -187,7 +225,11 @@ QQ群: 399899914
         Schema.const(2).description('高级'),
       ]).default(0).description('服务质量，MQTT支持3个级别的QoS，分别为0、1、2。QoS用于确保消息的可靠传递，包括消息是否被传递成功以及传递的顺序是否正确等。QoS级别越高，消息的可靠性越高，但是网络传输的开销也越大。'),
       retain: Schema.boolean().default(false).description('当一个客户端发布一条保留消息到MQTT服务器后，服务器会保留这条消息，直到有其他客户端订阅了这个主题。'),
-    }).description('进阶设置')
+    }).description('进阶设置'),
+    Schema.object({
+      blockuser: Schema.array(String).default([]).description('屏蔽的用户'),
+      blockchannel: Schema.array(String).default([]).description('屏蔽的频道')
+    }).description('过滤器'),
   ])
 }
 

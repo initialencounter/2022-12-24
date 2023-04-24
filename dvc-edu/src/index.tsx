@@ -438,8 +438,9 @@ class Dvc extends Service {
       }
     }
     if (session.parsed.appel && this.config.if_at) {
-      const msg1:string = String(session.content)
-      const msg:string = msg1.replace(`<at id="${session.bot.selfId}"/> `,'')
+      let msg: string = String(session.content)
+      msg = msg.replace(`<at id="${session.bot.selfId}"/> `, '')
+      msg = msg.replace(`<at id="${session.bot.selfId}"/> `, '')
       return this.sli(session, msg, {})
     }
     const session_id_string: string = session.userId
@@ -563,7 +564,7 @@ class Dvc extends Service {
    */
   async getContent(userId: string, resp: Dvc.Msg[], messageId: string): Promise<string | segment> {
 
-    if (this.output_type == 'voice'&&this.ctx.vits) {
+    if (this.output_type == 'voice' && this.ctx.vits) {
       return this.ctx.vits.say(resp[resp.length - 1].content)
     }
     if (this.output_type == "quote") {

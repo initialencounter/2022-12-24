@@ -532,14 +532,13 @@ class Dvc extends Service {
     if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
       return
     }
-    if (session.subtype === 'private') {
-      if (this.config.if_private) {
-        return this.sli(session, session.content, {})
-      }
+    if (session.subtype === 'private' && this.config.if_private) {
+      return this.sli(session, session.content, {})
     }
     if (session.parsed.appel && this.config.if_at) {
-      const msg1:string = String(session.content)
-      const msg:string = msg1.replace(`<at id="${session.bot.selfId}"/> `,'')
+      let msg: string = String(session.content)
+      msg = msg.replace(`<at id="${session.bot.selfId}"/> `, '')
+      msg = msg.replace(`<at id="${session.bot.selfId}"/> `, '')
       return this.sli(session, msg, {})
     }
     const session_id_string: string = session.userId
