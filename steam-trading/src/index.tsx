@@ -151,10 +151,6 @@ export function apply(ctx: Context, config: Config) {
         upperHalfPng.data = upperHalfPixels;
         buffer = PNG.sync.write(upperHalfPng);
         return h.image(buffer, 'image/png')
-        // const image = sharp(buffer);
-        // const height = Math.floor(config.text_len * 100 + 850);
-        // const metadata = await image.metadata()
-        // const topHalfBuffer = await image.extract({ left: 0, top: 0, width: metadata.width, height }).toBuffer();
       }, (error) => {
         logger.info(String(error))
         return '截图失败。'
