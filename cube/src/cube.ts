@@ -1,4 +1,3 @@
-const log = console.log
 export const rot = (arr: number[][], derect: boolean) => {
     const res = []
     for (var i = 0; i < arr[0].length; i++) {

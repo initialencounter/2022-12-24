@@ -4,64 +4,70 @@ import { exec } from 'child_process'
 export const name = 'loader'
 const logger = new Logger(name)
 const fs = require('fs').promises;
-import yaml from 'js-yaml';
-
+import {load as yaml_load} from './js-yaml/yaml'
 
 class Loader {
   mainfest: Loader.Mainfest
-  koishi_yml: Dict
-  exits_plugins: string[]
-  update_plugin: Dict
+  installed_plugin: Dict
+  added_plugin: string[]
+  update_plugin: string[]
   constructor(private ctx: Context, private config: Loader.Config) {
     ctx.i18n.define('zh', require('./locales/zh'));
-    ctx.on('ready', async () => this.initialize())
+    ctx.on('ready', async () => await this.initialize())
     ctx.command('loader', '更新所有插件', { authority: 5 })
-      .action(async ({ session }) => this.main(session))
+      .action(async ({ session }) => await this.main(session))
   }
-  async initialize() {
+  private async initialize(): Promise<void> {
     const json_data: string = await fs.readFile('package.json', 'utf8');
-    const yaml_data: Dict = await fs.readFile('koishi.yml', 'utf8');
+    const yaml_data: string = await fs.readFile('koishi.yml', 'utf8');
     // 备份
     await fs.writeFile('./package.json.bak', json_data, 'utf8');
     await fs.writeFile('./koishi.yml.bak', yaml_data, 'utf8');
-    this.mainfest = JSON.parse(json_data)
-    this.koishi_yml = yaml.load(yaml_data)
-    this.update_plugin = JSON.parse(JSON.stringify(this.mainfest.dependencies))
-    this.exits_plugins = this.get_plugins(this.koishi_yml.plugins)
+    // 解析插件
+    this.mainfest = await JSON.parse(json_data)
+    this.added_plugin = await this.get_plugins((await yaml_load(yaml_data)).plugins)
+    this.installed_plugin = await JSON.parse(JSON.stringify(this.mainfest.dependencies))
+    if(this.config.just_added){
+      this.update_plugin = this.added_plugin
+    }else{
+      this.update_plugin = Object.keys(this.installed_plugin)
+    }
   }
-  async main(session: Session) {
+  private async main(session: Session): Promise<string> {
     session.send(session.text('commands.loader.messages.waiting'))
-    let count_update = 0
     const packages: Loader.Package[] = (await this.ctx.http.get('https://registry.koishi.chat/index.json'))['objects']
+    const update_list: string[] = []
     for (var i of packages) {
       if (i.ignored) {
         continue
       }
       const full_name: string = i.package.name
       const name: string = full_name.replace(/(koishi-|^@koishijs\/)plugin-/, '')
-      if (this.exits_plugins.includes(name)) {
-        if (!(this.mainfest[full_name] == i.package.version)) {
-          this.update_plugin[full_name] = i.package.version
-          count_update++
-        }
+      if ((this.update_plugin.includes(name) || this.update_plugin.includes(full_name)) && !(this.installed_plugin[full_name]==i.package.version)) {
+        update_list.push(`${name}: ${this.installed_plugin[full_name]} --> ${i.package.version}`)
+        this.installed_plugin[full_name] = i.package.version
       }
     }
     await this.modifyJsonFile()
     if (this.config.auto_install) {
       exec('npm i')
     }
-    return session.text('commands.loader.messages.info', [count_update])
+    let msg: string = session.text('commands.loader.messages.info', [update_list.length])+'\n'
+    if(this.config.update_list){
+      msg += update_list.join('\n')
+    }
+    return msg
 
   }
-  get_plugins(obj: Dict = this.koishi_yml) {
+  private async get_plugins(obj: Dict): Promise<string[]> {
     if (!obj) {
       return null;
     }
     const keys: string[] = Object.keys(obj);
     const plugins: string[] = [];
-    keys.forEach((i) => {
+    keys.forEach(async (i) => {
       if (i.startsWith('group:')) {
-        const child_plugin = this.get_plugins(obj[i]);
+        const child_plugin = await this.get_plugins(obj[i]);
         child_plugin.forEach((i) => {
           plugins.push(i);
         });
@@ -79,15 +85,15 @@ class Loader {
     });
     return plugins;
   }
-  async modifyJsonFile(obj: Dict = this.update_plugin) {
+  private async modifyJsonFile():Promise<void> {
     try {
-      this.mainfest.dependencies = obj;
+      this.mainfest.dependencies = this.installed_plugin;
 
       // 将 JSON 对象转换回字符串
       const updatedJson = JSON.stringify(this.mainfest, null, 2);
+
       // 将修改后的内容写回文件
       await fs.writeFile('package.json', updatedJson, 'utf8');
-
       logger.info('JSON 文件已成功更新');
     } catch (err) {
       logger.error('处理文件时出错:', err);
@@ -97,10 +103,15 @@ class Loader {
 }
 namespace Loader {
   export const usage = `
+### 注意事项
+- 如用于开发环境,请先关闭just_added选项!!!
+
 ### 配置说明
 - backend: 自动备份koishi.yml和package.json
   - 备份的文件名称为koishi.yml.bak和package.json.bak
 - auto_install: 自动安装所有插件，默认关闭，非常安全
+- updata_list: 更新时会发送更新清单
+- just_added: 只更新已添加的插件（koishi.yml内的插件）,开发环境可以关闭此项，以免影响开发环境
 
 ### 使用说明
 - 发送loader即可更新package.json内的插件版本
@@ -142,14 +153,18 @@ QQ群：399899914<br>
     ignored: boolean
   }
   export interface Config {
+    update_list: boolean
     auto_install: boolean
     backend: boolean
+    just_added: boolean
 
   }
 
   export const Config: Schema<Config> = Schema.object({
     backend: Schema.boolean().default(true).description('自动备份文件'),
-    auto_install: Schema.boolean().default(false).description('自动安装所有插件')
+    just_added: Schema.boolean().default(true).description('只安装已添加的插件（koishi.yml内的插件),开发环境下建议关闭,否则会改变开发环境'),
+    auto_install: Schema.boolean().default(false).description('自动安装所有插件'),
+    update_list: Schema.boolean().default(true).description('发送更新清单'),
   })
 }
 export default Loader
