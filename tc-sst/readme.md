@@ -10,3 +10,6 @@
 只适配了QQ平台,其他平台兼容性未知
 ![alt 示例1](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/14.png)
 
+## 更新日志
+- v0.0.3
+    - 新增sleep等待

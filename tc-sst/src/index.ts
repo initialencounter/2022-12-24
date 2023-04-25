@@ -65,6 +65,7 @@ class Sst extends Service {
     };
     let res: Sst.Task_result = await this.client.DescribeTaskStatus(params)
     while (res.Data.StatusStr == 'waiting' || res.Data.StatusStr == 'doing') {
+      await this.sleep(618)
       res = await this.client.DescribeTaskStatus(params)
     }
     const segment_text: string[] = (res.Data.Result + '\n').split('\n')
@@ -77,6 +78,9 @@ class Sst extends Service {
     }
     return text
 
+  }
+  private sleep(ms:number) {
+    return new Promise(resolve=>setTimeout(resolve, ms))
   }
   private async create_task(url: string): Promise<string> {
     const params = {
