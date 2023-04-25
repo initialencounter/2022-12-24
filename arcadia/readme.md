@@ -5,7 +5,7 @@
 意间Ai绘画(yjart),支持100多个模型
 因为懒只写了9个，后面会加上
 
-
+![alt 示例2](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/13.png)
 ## 注意事项 
 > 使用前在 < a style = "color:blue" href = "http://open.yjai.art/openai-painting" > yjart </a> 中获取apikey及apisecret<br>
 对于部署者行为及所产生的任何纠纷， Koishi 及 <a style="color:blue" href="https:/ / github.com / initialencounter / mykoishi ">koishi-plugin-arcadia</a>概不负责。<br>

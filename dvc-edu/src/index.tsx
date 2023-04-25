@@ -4,7 +4,8 @@ import { } from 'koishi-plugin-puppeteer';
 import { } from 'koishi-plugin-open-vits';
 export const name = 'dvc-edu';
 export const logger = new Logger(name);
-
+const tencentcloud = require("tencentcloud-sdk-nodejs-asr");
+const AsrClient = tencentcloud.asr.v20190614.Client;
 /**
  * chat_with_gpt|message: [{role:'user',content:<text>}] 
  * get_credit | 获取余额
@@ -15,12 +16,6 @@ declare module 'koishi' {
   interface Context {
     dvc: Dvc
   }
-  interface Dvc {
-    chat_with_gpt(message: Dvc.Msg[]): Promise<string>
-    get_credit(session: Session): Promise<string>
-    translate(lang: string, prompt: string): Promise<string>
-  }
-
 }
 
 class Dvc extends Service {
@@ -38,8 +33,26 @@ class Dvc extends Service {
   bg_base64: string
   proxy_reverse: string
   type: string
+  client: any
   constructor(ctx: Context, private config: Dvc.Config) {
     super(ctx, 'dvc', true)
+    const clientConfig: any = {
+      "credential": {
+        "secretId": this.config.AK_W,
+        "secretKey": this.config.SK_W,
+      },
+      "region": "ap-guangzhou",
+      "profile": {
+        "httpProfile": {
+          "endpoint": "asr.tencentcloudapi.com",
+        },
+      },
+    };
+    // 实例化要请求产品的client对象,clientProfile是可选的
+    if (this.config.AK_W && this.config.SK_W && this.config.whisper) {
+      this.client = new AsrClient(clientConfig);
+    }
+
     this.output_type = config.output
     this.proxy_reverse = config.proxy_reverse
     this.type = config.type
@@ -50,13 +63,7 @@ class Dvc extends Service {
     this.access_token = ''
     this.session_config = [
       {
-        "role": "system", "content": `接下来你要模仿“哆啦A梦”这个身份:
-      “哆啦A梦”是开朗、聪明、机智、好动又可爱的机器猫。
-      你的语气应该尽可能接近原著中的表现，温柔、活泼的语调，
-      有不同的语气和表情，例如在发脾气时，语气会变得更加沉稳且严肃。
-      哆啦A梦的外表应该与原版保持一致，拥有蓝色身体、大耳朵、大眼睛以及口袋，可以拉出各种功能道具。
-      哆啦A梦的人格应该具有丰富的功能，如翻译、计算、时间管理、提醒、游戏、音乐等等，
-      同时具有良好的互动性，可以与人进行有趣的交流，解决人类的问题，并传递正能量。` }
+        "role": "system", "content": this.config.preset[0].descirption }
     ]
     if ((!ctx.puppeteer) && config.output == 'image') {
       logger.warn('未启用puppter,将无法发送图片');
@@ -432,6 +439,16 @@ class Dvc extends Service {
    */
 
   async middleware1(session: Session, next: Next): Promise<string | string[] | segment | void | Fragment> {
+    // 五重保障，防止报错
+    if (session.elements[0].type == "audio" && this.config.AK_W && this.config.SK_W && this.config.whisper && this.client) {
+      const url: string = session.elements[0]["attrs"].url
+      const taskid = await this.create_task(url)
+      const text: string = await this.get_res(taskid)
+      if(text == ''){
+        return session.text('commands.dvc.messages.louder')
+      }
+      return this.sli(session, text, {})
+    }
     if (session.subtype === 'private') {
       if (this.config.if_private) {
         return this.sli(session, session.content, {})
@@ -460,6 +477,46 @@ class Dvc extends Service {
     return next()
   }
 
+
+  async get_res(taskid) {
+    const params = {
+        "TaskId": taskid
+    };
+    let res = await this.client.DescribeTaskStatus(params)
+    while(res.Data.StatusStr == 'waiting'||res.Data.StatusStr == 'doing'){
+      res = await this.client.DescribeTaskStatus(params)
+    }
+    const segment_text: string[] = (res.Data.Result+'\n').split('\n')
+    let text: string = ''
+    for(var i of segment_text){
+      const id = i.indexOf(' ')
+      if(id>-1){
+        text += i.slice(id,i.length)
+      }
+    }
+    return text
+    
+  }
+  async create_task(url?:string){
+    const params = {
+      "EngineModelType": "16k_zh",
+      "ChannelNum": 1,
+      "ResTextFormat": 0,
+      "SourceType": 0,
+      "Url": url?url:"http://grouptalk.c2c.qq.com/?ver=0&rkey=3062020101045b30590201010201010204b9791595042439387a4f586a4d5f74434853236f347530386f4742314c344530777a3636514646324e570204644793f9041f0000000866696c6574797065000000013100000005636f64656300000001300400&filetype=1&voice_codec=0",
+      "ConvertNumMode": 1,
+      "FilterDirty": 0
+  };
+    const res =  (await this.client.CreateRecTask(params)).Data.TaskId
+    return res
+  }
+  async recall(session: Session, messageId: string, time: number) {
+    new Promise(resolve => setTimeout(() => {
+      session.bot.deleteMessage(session.channelId, messageId)
+    }
+      , time));
+
+  }
   /**
    * 
    * @param session 会话
@@ -735,6 +792,8 @@ namespace Dvc {
   export const usage = `
 ## 注意事项
 > 使用前在 <a style="color:blue" href="https://beta.openai.com/account/api-keys">beta.openai.com</a> 中获取api-key<br>
+如果需要语音输入，可前往官网控制台 <a style="color:blue" href="https://console.cloud.tencent.com/cam/capi">腾讯云</a> 进行获取密钥
+只适配了QQ平台，其他平台兼容性未知,
 如需使用内容审查,请前往<a style="color:blue" href="https://ai.baidu.com/solution/censoring?hmsr=aibanner&hmpl=censoring">百度智能云</a> 获取AK和SK</br>
 对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-dvc-edu 概不负责。<br>
 如果有更多文本内容想要修改，可以在<a style="color:blue" href="/locales">本地化</a>中修改 zh 内容</br>
@@ -797,6 +856,9 @@ namespace Dvc {
     blockuser: string[]
     blockchannel: string[]
     if_at: boolean
+    whisper: boolean
+    AK_W: string
+    SK_W: string
   }
 
   export const Config = Schema.intersect([
@@ -828,7 +890,10 @@ namespace Dvc {
       })
     ]),
     Schema.object({
-      key: Schema.string().description('api_key').required(),
+      key: Schema.string().description('api_key'),
+      whisper: Schema.boolean().default(true).description('语音输入功能'),
+      AK_W: Schema.string().description('语音识别AK'),
+      SK_W: Schema.string().description('语音识别SK'),
       AK: Schema.string().description('内容审核AK'),
       SK: Schema.string().description('内容审核SK,百度智能云防止api-key被封'),
       lang: Schema.string().description('要翻译的目标语言').default('英文'),

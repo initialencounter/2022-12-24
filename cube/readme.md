@@ -3,6 +3,20 @@
 [![npm](https://img.shields.io/npm/v/koishi-plugin-cube?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-cube)
 
 三阶魔方
+![alt 示例7](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/7.jpg)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+![alt 示例](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/7-1.jpg)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+![alt 示例](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/7-2.jpg)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+![alt 示例](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/7-3.jpg)
+
 
 ## 命令
 |  方法  | 命令  |

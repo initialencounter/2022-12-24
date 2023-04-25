@@ -1,0 +1,24 @@
+{
+  "name": "koishi-plugin-tc-sst",
+  "description": "语音识别",
+  "version": "0.0.1",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "MIT",
+  "scripts": {},
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.12.3"
+  },
+  "dependencies": {
+    "tencentcloud-sdk-nodejs-asr": "^4.0.3"
+  }
+}

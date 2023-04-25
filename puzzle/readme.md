@@ -5,6 +5,7 @@
 拼图游戏，数字华容道
 
 在QQ群里面玩华容
+![alt 示例6](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/6.jpg)
 
 ## 指令
 <br>
