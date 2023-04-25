@@ -1,0 +1,4 @@
+sst:
+  description: 腾讯云语音识别
+  messages:
+    louder: 听不清

@@ -3,8 +3,8 @@ import fs from 'fs';
 import { } from '@koishijs/plugin-rate-limit';
 import { } from 'koishi-plugin-puppeteer';
 import { } from 'koishi-plugin-open-vits'
-const tencentcloud = require("tencentcloud-sdk-nodejs-asr");
-const AsrClient = tencentcloud.asr.v20190614.Client;
+import { } from 'koishi-plugin-tc-sst'
+export const using = ['puppeteer','vits','sst']
 const name = 'davinci-003';
 const logger = new Logger(name);
 /**
@@ -35,27 +35,8 @@ class Dvc extends Service {
   proxy_reverse: string
   type: string
   temp_msg: string
-  client: any
   constructor(ctx: Context, private config: Dvc.Config) {
     super(ctx, 'dvc', true)
-    const clientConfig: any = {
-      "credential": {
-        "secretId": this.config.AK_W,
-        "secretKey": this.config.SK_W,
-      },
-      "region": "ap-guangzhou",
-      "profile": {
-        "httpProfile": {
-          "endpoint": "asr.tencentcloudapi.com",
-        },
-      },
-    };
-    // 实例化要请求产品的client对象,clientProfile是可选的
-    if (this.config.AK_W && this.config.SK_W && this.config.whisper) {
-      this.client = new AsrClient(clientConfig);
-    }
-
-
     this.output_type = config.output
     this.proxy_reverse = config.proxy_reverse
     this.type = config.type
@@ -172,51 +153,7 @@ class Dvc extends Service {
       })
   }
 
-  /**
-   * 查询语音转文字的结果
-   * @param taskid 任务id
-   * @returns 文本
-   */
-  async get_res(taskid) {
-    const params = {
-      "TaskId": taskid
-    };
-    let res = await this.client.DescribeTaskStatus(params)
-    while (res.Data.StatusStr == 'waiting' || res.Data.StatusStr == 'doing') {
-      res = await this.client.DescribeTaskStatus(params)
-    }
-    const segment_text: string[] = (res.Data.Result + '\n').split('\n')
-    let text: string = ''
-    for (var i of segment_text) {
-      const id = i.indexOf(' ')
-      if (id > -1) {
-        text += i.slice(id, i.length)
-      }
-    }
-    return text
-
-  }
-
-
-  /**
-   * 创建语音转文字任务
-   * @param url 语音url
-   * @returns 任务id
-   */
-
-  async create_task(url?: string) {
-    const params = {
-      "EngineModelType": "16k_zh",
-      "ChannelNum": 1,
-      "ResTextFormat": 0,
-      "SourceType": 0,
-      "Url": url ? url : "http://grouptalk.c2c.qq.com/?ver=0&rkey=3062020101045b30590201010201010204b9791595042439387a4f586a4d5f74434853236f347530386f4742314c344530777a3636514646324e570204644793f9041f0000000866696c6574797065000000013100000005636f64656300000001300400&filetype=1&voice_codec=0",
-      "ConvertNumMode": 1,
-      "FilterDirty": 0
-    };
-    const res = (await this.client.CreateRecTask(params)).Data.TaskId
-    return res
-  }
+  
   async recall(session: Session, messageId: string, time: number) {
     new Promise(resolve => setTimeout(() => {
       session.bot.deleteMessage(session.channelId, messageId)
@@ -588,10 +525,8 @@ class Dvc extends Service {
 
   async middleware1(session: Session, next: Next): Promise<string | string[] | segment | void | Fragment> {
     // 五重保障，防止报错
-    if (session.elements[0].type == "audio" && this.config.AK_W && this.config.SK_W && this.config.whisper && this.client) {
-      const url: string = session.elements[0]["attrs"].url
-      const taskid = await this.create_task(url)
-      const text: string = await this.get_res(taskid)
+    if (session.elements[0].type == "audio" && this.ctx.sst) {
+      const text: string = await this.ctx.sst.audio2text(session)
       if (text == '') {
         return session.text('commands.dvc.messages.louder')
       }
@@ -905,8 +840,7 @@ namespace Dvc {
 ## 注意事项
 
 > 使用前在 <a style="color:blue" href="https://beta.openai.com/account/api-keys">beta.openai.com</a> 中获取api-key<br>
-如果需要语音输入，可前往官网控制台 <a style="color:blue" href="https://console.cloud.tencent.com/cam/capi">腾讯云</a> 进行获取密钥
-只适配了QQ平台，其他平台兼容性未知,
+语音输入只适配了QQ平台，其他平台兼容性未知,
 如需使用内容审查,请前往<a style="color:blue" href="https://ai.baidu.com/solution/censoring?hmsr=aibanner&hmpl=censoring">百度智能云</a> 获取AK和SK</br>
 对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-davinci-003 概不负责。<br>
 如果有更多文本内容想要修改，可以在<a style="color:blue" href="/locales">本地化</a>中修改 zh 内容</br>
@@ -1019,9 +953,7 @@ namespace Dvc {
     ]),
     Schema.object({
       key: Schema.string().description('api_key'),
-      whisper: Schema.boolean().default(true).description('语音输入功能'),
-      AK_W: Schema.string().description('语音识别AK'),
-      SK_W: Schema.string().description('语音识别SK'),
+      whisper: Schema.boolean().default(false).description('语音输入功能,需要加载sst服务,启用插件tc-sst即可实现'),
       waiting: Schema.boolean().default(true).description('消息反馈，会发送思考中...'),
       recall: Schema.boolean().default(true).description('一段时间后会撤回“思考中”'),
       recall_time: Schema.computed(Schema.number()).default(5000).description('撤回的时间'),

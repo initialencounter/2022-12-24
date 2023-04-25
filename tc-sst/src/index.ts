@@ -1,88 +1,106 @@
-import { Context, Schema, Logger } from 'koishi'
-// Depends on tencentcloud-sdk-nodejs version 4.0.3 or higher
-const tencentcloud  = require("tencentcloud-sdk-nodejs-asr");
+import { Context, Schema, Logger, Session, Service, h } from 'koishi'
+const tencentcloud = require("tencentcloud-sdk-nodejs-asr");
 const AsrClient = tencentcloud.asr.v20190614.Client;
-// 实例化一个认证对象，入参需要传入腾讯云账户 SecretId 和 SecretKey，此处还需注意密钥对的保密
-// 代码泄露可能会导致 SecretId 和 SecretKey 泄露，并威胁账号下所有资源的安全性。以下代码示例仅供参考，建议采用更安全的方式来使用密钥，请参见：https://cloud.tencent.com/document/product/1278/85305
-// 密钥可前往官网控制台 https://console.cloud.tencent.com/cam/capi 进行获取
 
-
+declare module 'koishi' {
+  interface Context {
+    sst: Sst
+  }
+  class Sst {
+    audio2text(sessin: Session): Promise<string>
+  }
+}
 
 export const name = 'tc-sst'
 export const logger = new Logger(name)
 
-class Sst {
+class Sst extends Service {
   if_whisper_gettoken: boolean
   whisper_token: string
   len: number
-  client : any
-  constructor(private ctx: Context, private config: Sst.Config) {
+  client: any
+  constructor(ctx: Context, private config: Sst.Config) {
+    super(ctx, 'sst', true)
     const clientConfig = {
       credential: {
-        secretId: "",
-        secretKey: "",
+        secretId: this.config.AK_W,
+        secretKey: this.config.SK_W,
       },
-      region: "ap-guangzhou",
+      region: this.config.region,
       profile: {
         httpProfile: {
-          endpoint: "asr.tencentcloudapi.com",
+          endpoint: this.config.endpoint,
         },
       },
     };
     // 实例化要请求产品的client对象,clientProfile是可选的
     this.client = new AsrClient(clientConfig);
     this.if_whisper_gettoken = false
-    ctx.on('ready', async () => {
-      logger.info('ready')
-    })
+    ctx.i18n.define('zh', require('./locales/zh'));
+    if (config.auto_rcg) {
+      ctx.middleware(async (session, next) => {
+        if (session.elements[0].type == "audio") {
+          let text: string = await this.audio2text(session)
+          if (text == '') {
+            text = session.text('sst.messages.louder')
+          }
+          return h('quote', { id: session.messageId }) + text
+        }
+      })
+    }
 
-    ctx.middleware(async (session, next) => {
-      if (session.elements[0].type == "audio") {
-        const url: string = session.elements[0]["attrs"].url
-        const taskid = await this.create_task(url)
-        const text = await this.get_res(taskid)
-        return text
-      }
-    })
   }
-  async initialize() {
-    if (this.config.AK_W && this.config.SK_W && this.config.whisper) {
-      
+  async audio2text(session: Session): Promise<string> {
+    if (session.elements[0].type == "audio") {
+      const url: string = session.elements[0]["attrs"].url
+      const taskid: string = await this.create_task(url)
+      const text: string = await this.get_res(taskid)
+      return text
     }
-    if (!this.client) {
-      this.config.whisper = false
-    }
+    return 'Not a audio'
   }
-  async get_res(taskid) {
+  private async get_res(taskid: string): Promise<string> {
     const params = {
-        "TaskId": taskid
+      "TaskId": taskid
     };
-    let res = await this.client.DescribeTaskStatus(params)
-    while(res.Data.StatusStr == 'waiting'||res.Data.StatusStr == 'doing'){
+    let res: Sst.Task_result = await this.client.DescribeTaskStatus(params)
+    while (res.Data.StatusStr == 'waiting' || res.Data.StatusStr == 'doing') {
       res = await this.client.DescribeTaskStatus(params)
     }
-    console.log(res)
-    return res.Data.Result
-    
+    const segment_text: string[] = (res.Data.Result + '\n').split('\n')
+    let text: string = ''
+    for (var i of segment_text) {
+      const id: number = i.indexOf(' ')
+      if (id > -1) {
+        text += i.slice(id, i.length)
+      }
+    }
+    return text
+
   }
-  async create_task(url?:string){
+  private async create_task(url: string): Promise<string> {
     const params = {
       "EngineModelType": "16k_zh",
       "ChannelNum": 1,
       "ResTextFormat": 0,
       "SourceType": 0,
-      "Url": url?url:"http://grouptalk.c2c.qq.com/?ver=0&rkey=3062020101045b30590201010201010204b9791595042439387a4f586a4d5f74434853236f347530386f4742314c344530777a3636514646324e570204644793f9041f0000000866696c6574797065000000013100000005636f64656300000001300400&filetype=1&voice_codec=0",
+      "Url": url,
       "ConvertNumMode": 1,
       "FilterDirty": 0
-  };
-    const res =  (await this.client.CreateRecTask(params)).Data.TaskId
+    };
+    const res = (await this.client.CreateRecTask(params)).Data.TaskId
     return res
   }
-  
-  
+
+
 }
 namespace Sst {
-  export interface Task_result{
+  export const usage = `
+## 使用说明
+启用前请前往 <a style="color:blue" href="https://console.cloud.tencent.com/cam/capi">腾讯云官网控制台</a> 进行获取密钥
+只适配了QQ平台,其他平台兼容性未知
+`
+  export interface Task_result {
     RequestId: string
     Data: {
       TaskId: number
@@ -97,13 +115,17 @@ namespace Sst {
   export interface Config {
     AK_W: string
     SK_W: string
-    whisper: boolean
+    endpoint: string
+    region: string
+    auto_rcg: boolean
   }
 
   export const Config: Schema<Config> = Schema.object({
     AK_W: Schema.string().description('语音识别AK'),
     SK_W: Schema.string().description('语音识别SK'),
-    whisper: Schema.boolean().default(true).description('语音输入功能'),
+    auto_rcg: Schema.boolean().default(false).description('自动语音转文字,作为服务启用时建议关闭'),
+    endpoint: Schema.string().default('asr.tencentcloudapi.com').description('腾讯云域名'),
+    region: Schema.string().default('ap-guangzhou').description('区域')
   })
 
 }
