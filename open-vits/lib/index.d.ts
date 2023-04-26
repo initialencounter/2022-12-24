@@ -1,4 +1,4 @@
-import { Context, Schema, h, Service, Session, Logger } from 'koishi';
+import { Context, Schema, h, Service, Session, Logger, Dict } from 'koishi';
 export declare const name: string;
 export declare const logger: Logger;
 declare module 'koishi' {
@@ -13,6 +13,9 @@ declare class Vits extends Service {
     private config;
     temp_msg: string;
     speaker: number;
+    speaker_list: Dict[];
+    max_speakers: number;
+    speaker_dict: Dict;
     constructor(ctx: Context, config: Vits.Config);
     recall(session: Session, messageId: string): Promise<void>;
     /**
@@ -29,30 +32,27 @@ declare namespace Vits {
         endpoint: string;
         max_length: number;
         waiting: boolean;
-        waiting_text: string;
         recall: boolean;
         recall_time: number;
-        speaker_id: number;
-        max_speakers: number;
+        speaker_id: string;
+        translator: boolean;
     }
     const Config: Schema<Schemastery.ObjectS<{
         endpoint: Schema<string, string>;
-        speaker_id: Schema<number, number>;
+        speaker_id: Schema<string, string>;
         max_length: Schema<number, number>;
         waiting: Schema<boolean, boolean>;
-        waiting_text: Schema<string, string>;
         recall: Schema<boolean, boolean>;
         recall_time: Schema<number, number>;
-        max_speakers: Schema<number, number>;
+        translator: Schema<boolean, boolean>;
     }>, Schemastery.ObjectT<{
         endpoint: Schema<string, string>;
-        speaker_id: Schema<number, number>;
+        speaker_id: Schema<string, string>;
         max_length: Schema<number, number>;
         waiting: Schema<boolean, boolean>;
-        waiting_text: Schema<string, string>;
         recall: Schema<boolean, boolean>;
         recall_time: Schema<number, number>;
-        max_speakers: Schema<number, number>;
+        translator: Schema<boolean, boolean>;
     }>>;
 }
 export default Vits;

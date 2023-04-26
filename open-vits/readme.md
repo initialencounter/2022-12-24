@@ -13,6 +13,8 @@
 
 
 ## 更新日志
+
+* V1.2.0 新增翻译服务
 * V1.0.2 修复无法启用的bug
 * V0.0.4 修复空格bug，新增encodeURIComponent编码
 * v0.0.3 添加usage, 作者信息

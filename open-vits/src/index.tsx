@@ -1,4 +1,5 @@
-import { Context, Schema, h, Service, Session, Logger } from 'koishi'
+import { Context, Schema, h, Service, Session, Logger, Dict } from 'koishi'
+import {} from '@koishijs/translator';
 export const name: string = 'open-vits'
 export const logger: Logger = new Logger(name)
 declare module 'koishi' {
@@ -8,30 +9,72 @@ declare module 'koishi' {
   interface Vits {
     say(prompt: string, speaker_id?: number): Promise<string | h>
   }
-
 }
 class Vits extends Service {
   temp_msg: string
   speaker: number
+  speaker_list: Dict[]
+  max_speakers: number
+  speaker_dict: Dict
   constructor(ctx: Context, private config: Vits.Config) {
     super(ctx, 'vits', true)
-    this.speaker = 3
+    this.speaker_dict = {}
     ctx.i18n.define('zh', require('./locales/zh'));
-
+    ctx.on('ready', async () => {
+      this.speaker_list = (await this.ctx.http.get('http://api.t4wefan.pub:60254/voice/speakers'))['VITS']
+      this.max_speakers = this.speaker_list.length - 1
+      this.speaker_list.forEach((i,id)=>{
+        let speaker_name: string =  Object.values(i)[0]
+        const tail_id: number = Object.values(i)[0].indexOf('（') 
+        if(tail_id>-1){
+          speaker_name = speaker_name.slice(0,tail_id)
+        }
+        this.speaker_dict[String(id)] = speaker_name
+      })
+    })
     // 记录发送消息的messageid
     ctx.on('send', (session) => {
       this.temp_msg = session.messageId
     })
     ctx.command('say <prompt:text>', 'vits语音合成')
-      .option('speaker', '-s <speaker:number>', { fallback: config.speaker_id })
+      .option('speaker', '-s <speaker:string>', { fallback: config.speaker_id })
+      .option('lang', '-l <lang:string>')
       .action(async ({ session, options }, prompt) => {
-        // 判断speaker_id是否合法
-        this.speaker = options.speaker ? options.speaker : config.speaker_id
-        this.speaker = (this.speaker < this.config.max_speakers && this.speaker > 0) ? this.speaker : 3
-        await session.send(config.waiting_text)
+        await session.send((String(await ctx.http.get('https://drive.t4wefan.pub/d/blockly/open-vits/help/waiting.txt', { responseType: "text" })) + String(options.lang ? options.lang : 'zh')));
         // 判断是否需要撤回
         if (config.recall) {
           this.recall(session, this.temp_msg)
+        }
+        if (!prompt) {
+          return (String(h('at', { id: (session.userId) })) + String(await ctx.http.get('https://drive.t4wefan.pub/d/koishi/vits/help.txt', { responseType: "text" })));
+        }
+
+        if (prompt.length > config.max_length) {
+          return String(h('at', { id: (session.userId) })) + (String(await this.ctx.http.get('https://drive.t4wefan.pub/d/koishi/vits/error_too_long.txt', { responseType: "text" })));
+        }
+        // 判断speaker_id是否合法
+        const reg: RegExp = /^\d+(\d+)?$/
+        if ((!reg.test(options.speaker)) && Object.values(this.speaker_dict).indexOf(options.speaker)>-1) {
+          this.speaker = Object.values(this.speaker_dict).indexOf(options.speaker)
+        }else{
+          this.speaker = options.speaker ? Number(options.speaker) : Number(config.speaker_id)
+          this.speaker = (this.speaker < this.max_speakers && this.speaker > 0) ? this.speaker : 3
+        }
+        const languageCodes = ['zh', 'en', 'fr', 'jp', 'ru', 'de']
+        if (options.lang) {
+          if ((languageCodes.indexOf(options.lang)>-1) && config.translator && ctx.translator) {
+            const zhPromptMap: string[] = prompt.match(/[\u4e00-\u9fa5]+/g)
+            if (zhPromptMap?.length > 0) {
+              try {
+                const translatedMap = (await ctx.translator.translate({ input: zhPromptMap.join(','), target: options.lang })).toLocaleLowerCase().split(',')
+                zhPromptMap.forEach((t, i) => {
+                  prompt = prompt.replace(t, translatedMap[i]).replace('，', ',')
+                })
+              } catch (err) {
+                logger.warn(err)
+              }
+            }
+          }
         }
         return await this.say(prompt, this.speaker)
       })
@@ -50,11 +93,9 @@ class Vits extends Service {
    * @param speaker_id 音色id，可选
    * @returns 
    */
-  async say(prompt: string, speaker_id: number = this.config.max_speakers): Promise<string | h> {
+  async say(prompt: string, speaker_id: number = this.speaker): Promise<string | h> {
     if (prompt.length > this.config.max_length) {
-      return <>
-      <i18n path=".too-long" />
-    </>
+      return (String(await this.ctx.http.get('https://drive.t4wefan.pub/d/koishi/vits/error_too_long.txt', { responseType: "text" })));
     }
     try {
       const url: string = `${this.config.endpoint}/voice?text=${encodeURIComponent(prompt)}&id=${speaker_id}&format=ogg`
@@ -83,22 +124,20 @@ namespace Vits {
     endpoint: string
     max_length: number
     waiting: boolean
-    waiting_text: string
     recall: boolean
     recall_time: number
-    speaker_id: number
-    max_speakers: number
+    speaker_id: string
+    translator: boolean
   }
   export const Config =
     Schema.object({
       endpoint: Schema.string().default('https://api.vits.t4wefan.pub').description('vits服务器地址'),
-      speaker_id: Schema.number().default(3).description('speaker_id'),
+      speaker_id: Schema.string().default('3').description('speaker_id'),
       max_length: Schema.number().default(256).description('最大长度'),
       waiting: Schema.boolean().default(true).description('消息反馈，会发送思考中...'),
-      waiting_text: Schema.string().default('思考中...').description('等待时发送的文本'),
       recall: Schema.boolean().default(true).description('会撤回思考中'),
       recall_time: Schema.number().default(5000).description('撤回的时间'),
-      max_speakers: Schema.number().default(3).description('max_speakers')
+      translator: Schema.boolean().default(true).description('将启用翻译'),
     })
 
 }
