@@ -1,11 +1,11 @@
 import { Context, Schema, Logger, segment, Element, Session, Service, Dict, h, Next, Fragment } from 'koishi';
 import { } from '@koishijs/plugin-rate-limit';
 import { } from 'koishi-plugin-puppeteer';
-import { } from 'koishi-plugin-open-vits';
+import { } from 'koishi-plugin-open-vits'
+import { } from 'koishi-plugin-tc-sst'
+export const using = ['puppeteer','vits','sst']
 export const name = 'dvc-edu';
 export const logger = new Logger(name);
-const tencentcloud = require("tencentcloud-sdk-nodejs-asr");
-const AsrClient = tencentcloud.asr.v20190614.Client;
 /**
  * chat_with_gpt|message: [{role:'user',content:<text>}] 
  * get_credit | 获取余额
@@ -33,26 +33,8 @@ class Dvc extends Service {
   bg_base64: string
   proxy_reverse: string
   type: string
-  client: any
   constructor(ctx: Context, private config: Dvc.Config) {
     super(ctx, 'dvc', true)
-    const clientConfig: any = {
-      "credential": {
-        "secretId": this.config.AK_W,
-        "secretKey": this.config.SK_W,
-      },
-      "region": "ap-guangzhou",
-      "profile": {
-        "httpProfile": {
-          "endpoint": "asr.tencentcloudapi.com",
-        },
-      },
-    };
-    // 实例化要请求产品的client对象,clientProfile是可选的
-    if (this.config.AK_W && this.config.SK_W && this.config.whisper) {
-      this.client = new AsrClient(clientConfig);
-    }
-
     this.output_type = config.output
     this.proxy_reverse = config.proxy_reverse
     this.type = config.type
@@ -440,11 +422,10 @@ class Dvc extends Service {
 
   async middleware1(session: Session, next: Next): Promise<string | string[] | segment | void | Fragment> {
     // 五重保障，防止报错
-    if (session.elements[0].type == "audio" && this.config.AK_W && this.config.SK_W && this.config.whisper && this.client) {
-      const url: string = session.elements[0]["attrs"].url
-      const taskid = await this.create_task(url)
-      const text: string = await this.get_res(taskid)
-      if(text == ''){
+    // 五重保障，防止报错
+    if (session.elements[0].type == "audio" && this.ctx.sst) {
+      const text: string = await this.ctx.sst.audio2text(session)
+      if (text == '') {
         return session.text('commands.dvc.messages.louder')
       }
       return this.sli(session, text, {})
@@ -477,39 +458,6 @@ class Dvc extends Service {
     return next()
   }
 
-
-  async get_res(taskid) {
-    const params = {
-        "TaskId": taskid
-    };
-    let res = await this.client.DescribeTaskStatus(params)
-    while(res.Data.StatusStr == 'waiting'||res.Data.StatusStr == 'doing'){
-      res = await this.client.DescribeTaskStatus(params)
-    }
-    const segment_text: string[] = (res.Data.Result+'\n').split('\n')
-    let text: string = ''
-    for(var i of segment_text){
-      const id = i.indexOf(' ')
-      if(id>-1){
-        text += i.slice(id,i.length)
-      }
-    }
-    return text
-    
-  }
-  async create_task(url?:string){
-    const params = {
-      "EngineModelType": "16k_zh",
-      "ChannelNum": 1,
-      "ResTextFormat": 0,
-      "SourceType": 0,
-      "Url": url?url:"http://grouptalk.c2c.qq.com/?ver=0&rkey=3062020101045b30590201010201010204b9791595042439387a4f586a4d5f74434853236f347530386f4742314c344530777a3636514646324e570204644793f9041f0000000866696c6574797065000000013100000005636f64656300000001300400&filetype=1&voice_codec=0",
-      "ConvertNumMode": 1,
-      "FilterDirty": 0
-  };
-    const res =  (await this.client.CreateRecTask(params)).Data.TaskId
-    return res
-  }
   async recall(session: Session, messageId: string, time: number) {
     new Promise(resolve => setTimeout(() => {
       session.bot.deleteMessage(session.channelId, messageId)
@@ -857,8 +805,6 @@ namespace Dvc {
     blockchannel: string[]
     if_at: boolean
     whisper: boolean
-    AK_W: string
-    SK_W: string
   }
 
   export const Config = Schema.intersect([
@@ -892,8 +838,6 @@ namespace Dvc {
     Schema.object({
       key: Schema.string().description('api_key'),
       whisper: Schema.boolean().default(true).description('语音输入功能'),
-      AK_W: Schema.string().description('语音识别AK'),
-      SK_W: Schema.string().description('语音识别SK'),
       AK: Schema.string().description('内容审核AK'),
       SK: Schema.string().description('内容审核SK,百度智能云防止api-key被封'),
       lang: Schema.string().description('要翻译的目标语言').default('英文'),

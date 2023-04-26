@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-dvc-edu",
   "description": "GPT教育版，人工智能在教学中的辅助作用探究",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -33,14 +33,12 @@
     "service": {
       "optional": [
         "puppeteer",
-        "vits"
+        "vits",
+        "sst"
       ],
       "implements": [
         "dvc"
       ]
     }
-  },
-  "dependencies": {
-    "tencentcloud-sdk-nodejs-asr": "^4.0.3"
   }
 }
