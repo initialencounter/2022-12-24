@@ -1,4 +1,4 @@
-import { Context, Schema, h, Service, Session, Logger, Dict } from 'koishi'
+import { Context, Schema, h, Session, Logger, Dict } from 'koishi'
 import { } from '@koishijs/translator';
 import Vits from '@initencounter/vits'
 export const name: string = 'open-vits'
@@ -39,7 +39,7 @@ class OpenVits extends Vits {
       this.temp_msg = session.messageId
     })
     ctx.command('say <input:text>', 'vits语音合成')
-      .option('speaker', '-p <speaker:string>', { fallback: config.speaker_id })
+      .option('speaker', '-s <speaker:string>', { fallback: config.speaker_id })
       .option('lang', '-l <lang:string>')
       .action(async ({ session, options }, input) => {
         await session.send((String(await ctx.http.get('https://drive.t4wefan.pub/d/blockly/open-vits/help/waiting.txt', { responseType: "text" })) + String(options.lang ? options.lang : 'zh')));
@@ -79,7 +79,7 @@ class OpenVits extends Vits {
           }
         }
         const speaker_id: number = this.speaker
-        const result: OpenVits.Result = {input,speaker_id}
+        const result: OpenVits.Result = { input, speaker_id }
         result.output = await this.say(result)
         return result.output
       })
@@ -99,8 +99,8 @@ class OpenVits extends Vits {
    * @returns 
    */
   async say(option: OpenVits.Result): Promise<h> {
-    let {input,speaker_id} = option
-    if(!speaker_id){
+    let { input, speaker_id } = option
+    if (!speaker_id) {
       speaker_id = this.speaker
     }
     if (input.length > this.max_length) {
