@@ -1,0 +1,30 @@
+{
+  "name": "koishi-service-vits",
+  "description": "vits服务",
+  "version": "0.0.6",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "AGPL-3.0",
+  "author": "initencounter <2911583893@qq.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/vits#readme",
+  "scripts": {},
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "service"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.11.9"
+  }
+}

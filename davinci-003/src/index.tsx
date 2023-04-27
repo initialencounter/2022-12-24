@@ -2,7 +2,7 @@ import { Context, Schema, Logger, segment, Element, Session, Service, Dict, h, N
 import fs from 'fs';
 import { } from '@koishijs/plugin-rate-limit';
 import { } from 'koishi-plugin-puppeteer';
-import { } from 'koishi-plugin-open-vits'
+import {} from 'koishi-service-vits'
 import { } from 'koishi-plugin-tc-sst'
 export const using = ['puppeteer','vits','sst']
 const name = 'davinci-003';
@@ -668,7 +668,7 @@ class Dvc extends Service {
    */
   async getContent(userId: string, resp: Dvc.Msg[], messageId: string): Promise<string | segment> {
     if (this.output_type == 'voice' && this.ctx.vits) {
-      return this.ctx.vits.say(resp[resp.length - 1].content)
+      return this.ctx.vits.say({input:resp[resp.length - 1].content})
     }
     if (this.output_type == "quote") {
       return h('quote', { id: messageId }) + resp[resp.length - 1].content
@@ -757,7 +757,6 @@ class Dvc extends Service {
           data: {
             model: 'gpt-3.5-turbo',
             temperature: this.config.temperature,
-            max_tokens: this.config.max_tokens,
             top_p: 1,
             frequency_penalty: 0,
             presence_penalty: 0,
@@ -840,10 +839,10 @@ namespace Dvc {
 ## 注意事项
 
 > 使用前在 <a style="color:blue" href="https://beta.openai.com/account/api-keys">beta.openai.com</a> 中获取api-key<br>
-语音输入只适配了QQ平台，其他平台兼容性未知,
+语音输入只适配了QQ平台，其他平台兼容性未知<br>
 如需使用内容审查,请前往<a style="color:blue" href="https://ai.baidu.com/solution/censoring?hmsr=aibanner&hmpl=censoring">百度智能云</a> 获取AK和SK</br>
 对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-davinci-003 概不负责。<br>
-如果有更多文本内容想要修改，可以在<a style="color:blue" href="/locales">本地化</a>中修改 zh 内容</br>
+如果有更多文本内容想要修改，可以在<a style="color:blue" href="/locales">本地化</a>中修改 zh 内容<br>
 ## 使用方法
 
 | 功能 | 指令 |
@@ -883,7 +882,7 @@ namespace Dvc {
     engine: string
     prompt: string
     temperature: number
-    max_tokens: number
+    max_tokens?: number
     top_p: number
     frequency_penalty: number
     presence_penalty: number
