@@ -1,6 +1,6 @@
 {
-  "name": "@initencounter/vits",
-  "description": "vits服务",
+  "name": "koishi-plugin-tencent-tts",
+  "description": "腾讯语音合成服务",
   "version": "0.0.1",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -17,14 +17,29 @@
   "bugs": {
     "url": "https://github.com/initialencounter/mykoishi/issues"
   },
-  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/vits#readme",
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/tencent-tts#readme",
   "scripts": {},
   "keywords": [
     "chatbot",
     "koishi",
+    "plugin",
+    "tts",
+    "tencent",
     "service"
   ],
   "peerDependencies": {
     "koishi": "^4.11.9"
+  },
+  "dependencies": {
+    "tencentcloud-sdk-nodejs-tts": "^4.0.3",
+    "@initencounter/vits": "^0.0.2"
+  },
+  "koishi": {
+    "description": "腾讯语音合成服务",
+    "service": {
+      "implements": [
+        "vits"
+      ]
+    }
   }
 }

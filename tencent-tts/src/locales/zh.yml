@@ -1,0 +1,5 @@
+commands:
+  say:
+    description: 腾讯云语音合成
+    messages:
+      waiting: 等待中...
