@@ -1,28 +1,27 @@
-import { Context, Schema, Logger, Session, Service, h } from 'koishi'
-declare module 'koishi' {
-  interface Context {
-    sst: Sst
-  }
-  class Sst {
-    audio2text(sessin: Session): Promise<string>
-  }
-}
+import { Context, Schema, Logger, Session, h } from 'koishi'
+import Sst from '@initencounter/sst'
 
 export const name = 'baidu-sst'
 export const logger = new Logger(name)
 
-class Sst extends Service {
+class BaiduSst extends Sst {
   if_whisper_gettoken: boolean
   access_token: string
-  len: number
-  client: any
-  constructor(ctx: Context, private config: Sst.Config) {
-    super(ctx, 'sst', true)
+  AK: string
+  SK: string
+  constructor(ctx: Context, config: BaiduSst.Config) {
+    super(ctx)
+    this.AK = config.AK_W
+    this.SK = config.SK_W
+    this.if_whisper_gettoken = true
     // 获取access token
     ctx.on('ready',async()=>{
       this.access_token = await this.getAccessToken()
+      if(this.access_token==''){
+        this.if_whisper_gettoken = false
+      }
     })
-    this.if_whisper_gettoken = false
+    
     ctx.i18n.define('zh', require('./locales/zh'));
     if (config.auto_rcg) {
       ctx.middleware(async (session, next) => {
@@ -38,6 +37,9 @@ class Sst extends Service {
 
   }
   async audio2text(session: Session): Promise<string> {
+    if(!this.if_whisper_gettoken){
+      return 'AK 或 SK配置失败'
+    }
     if (session.elements[0].type == "audio") {
       const url: string = session.elements[0]["attrs"].url
       const taskid: string = await this.create_task(url)
@@ -104,15 +106,21 @@ class Sst extends Service {
 
     let options = {
       'method': 'POST',
-      'url': 'https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=' + this.config.AK_W + '&client_secret=' + this.config.SK_W,
+      'url': 'https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=' + this.AK + '&client_secret=' + this.SK,
     }
-    const res = await this.ctx.http.axios(options)
+    try{
+      const res = await this.ctx.http.axios(options)
     return res.data.access_token
+    }catch(e){
+      logger.error(e)
+      return ''
+    }
+    
   }
 
 
 }
-namespace Sst {
+namespace BaiduSst {
   export const usage = `
 ## 使用说明
 启用前请前往 <a style="color:blue" href="https://console.bce.baidu.com/ai/#/ai/speech/app/list">百度智能云官网控制台</a> 进行获取密钥
@@ -132,7 +140,7 @@ namespace Sst {
 
 }
 
-export default Sst
+export default BaiduSst
 
 
 
