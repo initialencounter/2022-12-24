@@ -1,6 +1,6 @@
 import { Context, Schema, h, Service, Session, Logger, Dict } from 'koishi'
 import { } from '@koishijs/translator';
-import Vits from 'koishi-service-vits'
+import Vits from '@initencounter/vits'
 export const name: string = 'open-vits'
 export const logger: Logger = new Logger(name)
 
@@ -14,7 +14,7 @@ class OpenVits extends Vits {
   max_length: number
   endpoint: string
   constructor(ctx: Context, config: OpenVits.Config) {
-    super(ctx,config)
+    super(ctx)
     this.speaker = Number(config.speaker_id)
     this.speaker = (this.speaker < this.max_speakers && this.speaker > 0) ? this.speaker : 172
     this.recall_time = config.recall_time

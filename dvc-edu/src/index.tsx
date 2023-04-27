@@ -1,9 +1,9 @@
 import { Context, Schema, Logger, segment, Element, Session, Service, Dict, h, Next, Fragment } from 'koishi';
 import { } from '@koishijs/plugin-rate-limit';
 import { } from 'koishi-plugin-puppeteer';
-import {} from 'koishi-service-vits'
-import { } from 'koishi-plugin-tc-sst'
-export const using = ['puppeteer','vits','sst']
+import { } from '@initencounter/vits'
+import { } from '@initencounter/sst'
+export const using = ['puppeteer', 'vits', 'sst']
 export const name = 'dvc-edu';
 export const logger = new Logger(name);
 /**
@@ -45,7 +45,8 @@ class Dvc extends Service {
     this.access_token = ''
     this.session_config = [
       {
-        "role": "system", "content": this.config.preset[0].descirption }
+        "role": "system", "content": this.config.preset[0].descirption
+      }
     ]
     if ((!ctx.puppeteer) && config.output == 'image') {
       logger.warn('未启用puppter,将无法发送图片');
@@ -569,7 +570,7 @@ class Dvc extends Service {
   async getContent(userId: string, resp: Dvc.Msg[], messageId: string): Promise<string | segment> {
 
     if (this.output_type == 'voice' && this.ctx.vits) {
-      return this.ctx.vits.say({input:resp[resp.length - 1].content})
+      return this.ctx.vits.say({ input: resp[resp.length - 1].content })
     }
     if (this.output_type == "quote") {
       return h('quote', { id: messageId }) + resp[resp.length - 1].content

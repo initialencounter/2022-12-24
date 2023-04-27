@@ -1,35 +1,27 @@
-import { Context, Schema, Logger, Session, Service, h } from 'koishi'
+import { Context, Schema, Logger, Session, h } from 'koishi'
+import Sst from '@initencounter/sst'
 const tencentcloud = require("tencentcloud-sdk-nodejs-asr");
 const AsrClient = tencentcloud.asr.v20190614.Client;
-
-declare module 'koishi' {
-  interface Context {
-    sst: Sst
-  }
-  class Sst {
-    audio2text(sessin: Session): Promise<string>
-  }
-}
 
 export const name = 'tc-sst'
 export const logger = new Logger(name)
 
-class Sst extends Service {
+class TcSst extends Sst {
   if_whisper_gettoken: boolean
   whisper_token: string
   len: number
   client: any
-  constructor(ctx: Context, private config: Sst.Config) {
-    super(ctx, 'sst', true)
+  constructor(ctx: Context, config: TcSst.Config) {
+    super(ctx)
     const clientConfig = {
       credential: {
-        secretId: this.config.AK_W,
-        secretKey: this.config.SK_W,
+        secretId: config.AK_W,
+        secretKey: config.SK_W,
       },
-      region: this.config.region,
+      region: config.region,
       profile: {
         httpProfile: {
-          endpoint: this.config.endpoint,
+          endpoint: config.endpoint,
         },
       },
     };
@@ -44,7 +36,7 @@ class Sst extends Service {
           if (text == '') {
             text = session.text('sst.messages.louder')
           }
-          return h('quote', { id: session.messageId }) + text
+          return text
         }
       })
     }
@@ -63,7 +55,7 @@ class Sst extends Service {
     const params = {
       "TaskId": taskid
     };
-    let res: Sst.Task_result = await this.client.DescribeTaskStatus(params)
+    let res: TcSst.Task_result = await this.client.DescribeTaskStatus(params)
     while (res.Data.StatusStr == 'waiting' || res.Data.StatusStr == 'doing') {
       await this.sleep(618)
       res = await this.client.DescribeTaskStatus(params)
@@ -79,8 +71,8 @@ class Sst extends Service {
     return text
 
   }
-  private sleep(ms:number) {
-    return new Promise(resolve=>setTimeout(resolve, ms))
+  private sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms))
   }
   private async create_task(url: string): Promise<string> {
     const params = {
@@ -98,12 +90,17 @@ class Sst extends Service {
 
 
 }
-namespace Sst {
+namespace TcSst {
   export const usage = `
 ## 使用说明
-启用前请前往 <a style="color:blue" href="https://console.cloud.tencent.com/cam/capi">腾讯云官网控制台</a> 进行获取密钥
+启用前请前往 <a style="color:blue" href="https://cloud.tencent.com/product/asr">腾讯云</a>创建应用，<br>
+再到<a style="color:blue" href="https://console.cloud.tencent.com/cam/capi">腾讯云控制台</a> 进行获取密钥
 只适配了QQ平台,其他平台兼容性未知
 `
+  export interface Result {
+    input: Session
+    output?: string
+  }
   export interface Task_result {
     RequestId: string
     Data: {
@@ -134,6 +131,6 @@ namespace Sst {
 
 }
 
-export default Sst
+export default TcSst
 
 

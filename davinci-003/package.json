@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-davinci-003",
   "description": "AI聊天,新增语音输入",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -28,8 +28,7 @@
     "chatgpt"
   ],
   "peerDependencies": {
-    "koishi": "^4.11.9",
-    "koishi-service-vits": "^0.0.6"
+    "koishi": "^4.11.9"
   },
   "koishi": {
     "description": "AI聊天",
@@ -44,5 +43,9 @@
         "dvc"
       ]
     }
+  },
+  "dependencies": {
+    "@initencounter/sst": "^0.0.1",
+    "@initencounter/vits": "^0.0.2"
   }
 }

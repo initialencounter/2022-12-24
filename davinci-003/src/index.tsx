@@ -2,9 +2,9 @@ import { Context, Schema, Logger, segment, Element, Session, Service, Dict, h, N
 import fs from 'fs';
 import { } from '@koishijs/plugin-rate-limit';
 import { } from 'koishi-plugin-puppeteer';
-import {} from 'koishi-service-vits'
-import { } from 'koishi-plugin-tc-sst'
-export const using = ['puppeteer','vits','sst']
+import { } from '@initencounter/vits'
+import { } from '@initencounter/sst'
+export const using = ['puppeteer', 'vits', 'sst']
 const name = 'davinci-003';
 const logger = new Logger(name);
 /**
@@ -153,7 +153,7 @@ class Dvc extends Service {
       })
   }
 
-  
+
   async recall(session: Session, messageId: string, time: number) {
     new Promise(resolve => setTimeout(() => {
       session.bot.deleteMessage(session.channelId, messageId)
@@ -668,7 +668,7 @@ class Dvc extends Service {
    */
   async getContent(userId: string, resp: Dvc.Msg[], messageId: string): Promise<string | segment> {
     if (this.output_type == 'voice' && this.ctx.vits) {
-      return this.ctx.vits.say({input:resp[resp.length - 1].content})
+      return this.ctx.vits.say({ input: resp[resp.length - 1].content })
     }
     if (this.output_type == "quote") {
       return h('quote', { id: messageId }) + resp[resp.length - 1].content
@@ -958,7 +958,7 @@ namespace Dvc {
       recall_time: Schema.computed(Schema.number()).default(5000).description('撤回的时间'),
       recall_all: Schema.boolean().default(false).description('一段时间后会撤回所有消息'),
       recall_all_time: Schema.computed(Schema.number()).default(5000).description('撤回所有消息的时间'),
-      
+
       AK: Schema.string().description('内容审核AK'),
       SK: Schema.string().description('内容审核SK,百度智能云防止api-key被封'),
       lang: Schema.string().description('要翻译的目标语言').default('英文'),

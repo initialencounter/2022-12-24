@@ -1,7 +1,7 @@
 {
-  "name": "@initencounter/vits",
-  "description": "vits服务",
-  "version": "0.0.2",
+  "name": "@initencounter/sst",
+  "description": "Sst语音识别服务",
+  "version": "0.0.1",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -17,7 +17,7 @@
   "bugs": {
     "url": "https://github.com/initialencounter/mykoishi/issues"
   },
-  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/vits#readme",
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/sst#readme",
   "scripts": {},
   "keywords": [
     "chatbot",

@@ -1,5 +1,5 @@
 import { Context, Schema, h, Session, Logger, Dict } from 'koishi';
-import Vits from 'koishi-service-vits';
+import Vits from '@initencounter/vits';
 export declare const name: string;
 export declare const logger: Logger;
 declare class OpenVits extends Vits {

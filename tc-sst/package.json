@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-tc-sst",
   "description": "语音识别服务",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -40,6 +40,7 @@
     }
   },
   "dependencies": {
-    "tencentcloud-sdk-nodejs-asr": "^4.0.3"
+    "tencentcloud-sdk-nodejs-asr": "^4.0.3",
+    "@initencounter/sst": "^0.0.1"
   }
 }

@@ -1,4 +1,4 @@
-export const name = 'vits'
+export const name = '@initencounter/vits'
 import { Context, Service, h } from 'koishi'
 declare module 'koishi' {
   interface Context {
@@ -9,7 +9,7 @@ abstract class Vits extends Service {
   constructor(ctx: Context) {
     super(ctx, 'vits', true)
   }
-  abstract say(options?: Vits.Result): Promise<h>
+  abstract say(options: Vits.Result): Promise<h>
 }
 namespace Vits {
   export interface Config { }
