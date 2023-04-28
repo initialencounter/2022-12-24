@@ -1,0 +1,44 @@
+{
+  "name": "koishi-plugin-whisper-asr",
+  "description": "[openai whisper-asr](https://github.com/ahmetoner/whisper-asr-webservice) 语音识别服务,支持一百多种语言",
+  "version": "0.0.1",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "AGPL-3.0",
+  "author": "initencounter <2911583893@qq.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/whisper-asr#readme",
+  "scripts": {},
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "openai",
+    "whisper",
+    "asr"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.11.9"
+  },
+  "dependencies": {
+    "@initencounter/sst": "^0.0.1"
+  },
+  "koishi": {
+    "description": "[openai whisper-asr](https://github.com/ahmetoner/whisper-asr-webservice) 语音识别服务,支持一百多种语言",
+    "service": {
+      "implements": [
+        "sst"
+      ]
+    }
+  }
+}
