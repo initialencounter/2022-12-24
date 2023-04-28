@@ -66,7 +66,7 @@ class BaiduTts extends Vits {
     try {
       const response = (await this.ctx.http.axios(payload))
       console.log(typeof(response.data))
-      await fs.writeFile('./test.wav',response.data)
+      // await fs.writeFile('./test.wav',response.data)
       console.log(response)
       // const response_buffer: Buffer = Buffer.from(response_base64, 'base64')
       return h.audio(response.data,'audio/mpeg')

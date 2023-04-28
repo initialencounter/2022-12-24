@@ -90,7 +90,6 @@ class WhisperAsr extends Sst {
   private async create_task(fileStream: Readable): Promise<string> {
     const form = new FormData();
     form.append('audio_file', fileStream);
-    const url: string = `${this.endpoint}/asr?method=${this.method}&task=${this.task}&language=${this.language}&encode=true&output=txt`
     try {
       const res = await this.ctx.http.post(`${this.endpoint}/asr`, form, {
         headers: {
@@ -123,6 +122,9 @@ namespace WhisperAsr {
 ## 使用方法
 * 直接发送语音即可转化或翻译为文本
 * asr 要转化/或翻译的语言url
+  - lang: 语言
+  - task: 是否切换为translate
+  - method: 是否切换为faster-whisper
 ## 问题反馈群: 
 399899914
 `
