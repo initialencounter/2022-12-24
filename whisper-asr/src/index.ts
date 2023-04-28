@@ -121,7 +121,8 @@ namespace WhisperAsr {
 自建后端教程<a style="color:blue" href="https://github.com/ahmetoner/whisper-asr-webservice">whisper-asr-webservice</a> 
 插件仓库<a style="color:blue" href="https://github.com/initialencounter/koishi-plugin-whisper-asr">插件仓库</a> 
 ## 使用方法
-* say 要转化的文本
+* 直接发送语音即可转化或翻译为文本
+* asr 要转化/或翻译的语言url
 ## 问题反馈群: 
 399899914
 `
@@ -260,7 +261,7 @@ namespace WhisperAsr {
       Schema.const('uk').description('Українська'),
       Schema.const('vi').description('Tiếng Việt'),
     ]).default('zh').description('支持一百多种语言'),
-    waiting: Schema.boolean().default(true).description('消息反馈，会发送思考中...'),
+    waiting: Schema.boolean().default(false).description('消息反馈，会发送思考中...'),
     recall: Schema.boolean().default(true).description('会撤回思考中'),
     recall_time: Schema.number().default(5000).description('撤回的时间'),
   })
