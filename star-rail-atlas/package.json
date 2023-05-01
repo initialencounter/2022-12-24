@@ -1,6 +1,6 @@
 {
-  "name": "@initencounter/vits",
-  "description": "vits服务",
+  "name": "koishi-plugin-star-rail-atlas",
+  "description": "星穹轨道图鉴",
   "version": "0.0.3",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -17,12 +17,18 @@
   "bugs": {
     "url": "https://github.com/initialencounter/mykoishi/issues"
   },
-  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/vits#readme",
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/star-rail-atlas#readme",
   "scripts": {},
   "keywords": [
     "chatbot",
     "koishi",
-    "service"
+    "plugin",
+    "星穹轨道",
+    "星穹铁道",
+    "图鉴",
+    "米哈游",
+    "崩坏",
+    "崩铁"
   ],
   "peerDependencies": {
     "koishi": "^4.11.9"

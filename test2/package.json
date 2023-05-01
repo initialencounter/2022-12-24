@@ -1,5 +1,5 @@
 {
-  "name": "koishi-plugin-test",
+  "name": "koishi-plugin-test2",
   "description": "",
   "version": "0.0.1",
   "main": "lib/index.js",
@@ -20,7 +20,7 @@
   },
   "koishi": {
     "service": {
-      "optional": [
+      "implements": [
         "translator"
       ]
     }
