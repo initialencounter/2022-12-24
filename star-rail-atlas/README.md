@@ -33,6 +33,10 @@ Star-Rail-Atlas是一个主要由[`米游社@听语惊花`](https://bbs.mihoyo.c
 * QQ群：399899914<br>
 * 小伙伴如果遇到问题或者有新的想法，欢迎到[这里](https://github.com/initialencounter/mykoishi/issues)反馈哦~
 
+## 感谢
+
+
+[`米游社@听语惊花`](https://bbs.mihoyo.com/ys/accountCenter/postList?id=289918413)
 ### 支持
 
 如果你支持本项目，可以给个star或者[爱发电](https://afdian.net/a/Nwflower)，你的支持不会获得额外内容，但会提高本项目的更新积极性

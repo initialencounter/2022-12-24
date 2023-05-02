@@ -79,20 +79,13 @@ namespace StarRail {
     }
     export const Config = Schema.intersect([
         Schema.object({
-            engine: Schema.boolean().default(true).description('是否使用在线资源'),
-        }).description('基础设置'),
-        Schema.union([
-            Schema.object({
-                engine: Schema.const(false),
-                src_path: Schema.string().default('../../../star-rail-atlas').description('资源文件的路径'),
-            }),
-            Schema.object({
-                engine: Schema.const(true),
-                repo: Schema.string().default('https://gitee.com/Nwflower/star-rail-atlas/raw/master').description('在线资源的地址'),
-            })
-        ]),
-        Schema.object({
             prefix: Schema.string().default('#').description('匹配命令的前缀字符'),
+            
+        }).description('基础设置'),
+        Schema.object({
+            engine: Schema.boolean().default(true).description('是否使用在线引擎'),
+            src_path: Schema.string().default('../../../star-rail-atlas').description('资源文件的路径'),
+            repo: Schema.string().default('https://gitee.com/Nwflower/star-rail-atlas/raw/master').description('gitee在线资源的地址'),
         }).description('进阶设置')
     ])
 }
