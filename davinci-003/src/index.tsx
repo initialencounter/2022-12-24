@@ -375,6 +375,9 @@ class Dvc extends Service {
     }
     this.sessions_cmd[session.userId] = nick_name
     this.sessions[session.userId] = [{ "role": "system", "content": descirption }]
+    if(this.config.preset_pro){
+      this.session_config = [{ "role": "system", "content": descirption }]
+    }
     return '人格设置成功' + nick_name
   }
 
@@ -796,6 +799,9 @@ class Dvc extends Service {
 
     // 获得对话session
     let session_of_id = this.get_chat_session(sessionid)
+    if(this.config.preset_pro){
+      session_of_id[0] = this.session_config[0]
+    }
     // 设置本次对话内容
     session_of_id.push({ "role": "user", "content": msg })
     // 与ChatGPT交互获得对话内容
@@ -920,6 +926,7 @@ namespace Dvc {
     whisper: boolean
     AK_W: string
     SK_W: string
+    preset_pro: boolean
   }
 
   export const Config = Schema.intersect([
@@ -952,6 +959,7 @@ namespace Dvc {
     ]),
     Schema.object({
       key: Schema.string().description('api_key'),
+      preset_pro: Schema.boolean().default(false).description('所有人共用一个人设'),
       whisper: Schema.boolean().default(false).description('语音输入功能,需要加载sst服务,启用插件tc-sst即可实现'),
       waiting: Schema.boolean().default(true).description('消息反馈，会发送思考中...'),
       recall: Schema.boolean().default(true).description('一段时间后会撤回“思考中”'),
