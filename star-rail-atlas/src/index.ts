@@ -1,23 +1,28 @@
-import { Context, Schema,Session, h, Dict } from 'koishi'
+import { Context, Schema, Session, h, Dict } from 'koishi'
 export const name = 'star-rail-atlas'
 import { resolve } from "path";
 import { pathToFileURL } from "url";
 import fs from 'fs';
 class StarRail {
+    path_data: Dict
     path_dict: Dict
-    relic_list: string[]
-    role_list: string[]
-    lightcone_list: string[]
-    material_list: string[]
     name_list: string[]
     constructor(private ctx: Context, private config: StarRail.Config) {
         ctx.on('ready', async () => {
-            this.path_dict = require('./path.json');
-            this.relic_list = Object.keys(this.path_dict.relic)
-            this.role_list = Object.keys(this.path_dict.role)
-            this.lightcone_list = Object.keys(this.path_dict.lightcone)
-            this.material_list = Object.keys(this.path_dict['material for role'])
-            this.name_list = [...this.relic_list, ...this.material_list, ...this.lightcone_list, ...this.role_list]
+            this.path_data = require('./path.json');
+            this.path_dict = {}
+            let keys = ['relic', 'role', 'lightcone', 'material for role'];
+            let keyMapping = {
+                'material for role': '材料'
+            };
+            this.name_list = [];
+            for (let key of keys) {
+                let list = Object.keys(this.path_data[key]);
+                list.map(i => {
+                    this.path_dict[i + (keyMapping[key] || '')] = this.path_data[key][i];
+                });
+                Array.prototype.push.apply(this.name_list, list);
+            }
         })
         ctx.middleware((session, next) => {
             const path = this.findpath(session.content);
@@ -30,23 +35,18 @@ class StarRail {
             }
             return h.image(img_url);
         })
-        ctx.command('update','更新图鉴索引').action(({session})=>this.update(session))
+        ctx.command('update', '更新图鉴索引').action(({ session }) => this.update(session))
     }
-    async update(session:Session){
-        const res = await this.ctx.http.get('https://gitee.com/Nwflower/star-rail-atlas/raw/master/path.json',{responseType:'arraybuffer'})
-        fs.writeFileSync('./node_modules/koishi-plugin-star-rail-atlas/lib/path.json',res)
+    async update(session: Session) {
+        const res = await this.ctx.http.get('https://gitee.com/Nwflower/star-rail-atlas/raw/master/path.json', { responseType: 'arraybuffer' })
+        fs.writeFileSync('./node_modules/koishi-plugin-star-rail-atlas/lib/path.json', res)
         return session.text('commands.update.messages.success')
     }
     findpath(cmd: string): string {
         if (!(cmd.startsWith(this.config.prefix))) return ""
         const name = cmd.replace(this.config.prefix, '')
-        if (name.endsWith('材料') && this.material_list.includes(name.replace('材料', ''))) return this.path_dict['material for role'][name.replace('材料', '')]
-        if (!(this.name_list.includes(name))) return "/role/希儿.png"
-        if (this.relic_list.includes(name)) return this.path_dict.relic[name]
-        else if (this.role_list.includes(name)) return this.path_dict.role[name]
-        else if (this.lightcone_list.includes(name)) return this.path_dict.lightcone[name]
-        else if (this.material_list.includes(name)) return this.path_dict['material for role'][name]
-        else return "/role/希儿.png"
+        const path = this.path_dict[name]
+        return path ? path : ""
     }
 }
 
@@ -80,7 +80,7 @@ namespace StarRail {
     export const Config = Schema.intersect([
         Schema.object({
             prefix: Schema.string().default('#').description('匹配命令的前缀字符'),
-            
+
         }).description('基础设置'),
         Schema.object({
             engine: Schema.boolean().default(true).description('是否使用在线引擎'),

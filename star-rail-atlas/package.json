@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-star-rail-atlas",
   "description": "星穹轨道图鉴",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [

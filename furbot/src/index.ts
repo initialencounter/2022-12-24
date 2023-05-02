@@ -1,4 +1,4 @@
-import { Context, Schema, Logger, segment, h, Session, Quester } from 'koishi'
+import { Context, Schema, Logger, segment, h, Session, Quester, Dict,Next } from 'koishi'
 const axios = require('axios')
 export const name = 'furbot'
 const logger = new Logger(name)
@@ -9,7 +9,9 @@ declare module 'koishi' {
   }
 }
 class FurBot {
+  message_box: Dict
   private constructor(private ctx: Context, config: FurBot.Config) {
+    this.message_box = {}
     ctx.i18n.define('zh', require('./locales/zh'))
     ctx.model.extend('account', {
       // 各字段类型
@@ -30,12 +32,18 @@ class FurBot {
     ctx.command('毛图', '随机毛图').alias('fur')
       .option('name', '-n <name:text>')
       .option('type', '-t <type:string>')
-      .action(async ({ options }) => {
+      .action(async ({ session,options }) => {
         const picture = await this.randomImg(options)
         let picture_url: string | boolean
         if (picture) picture_url = await this.get_url(picture)
-        if (picture_url) return segment('image', { url: picture_url })
+        if (picture_url) {
+          let msg_id:string[]
+          msg_id = await session.bot.sendMessage(session.channelId, segment('image', { url: picture_url }), session.guildId)
+          this.message_box[msg_id[0]] = picture
+        }
       })
+
+    ctx.middleware(async (session, next) => this.middleware(session, next));
     ctx.command('login')
       .option('account', '-a <account:string>')
       .option('password', '-p <password:string>')
@@ -45,7 +53,22 @@ class FurBot {
       })
     ctx.command('thumb')
   }
+ 
+  async middleware( session: Session, next: Next){
+    if (session.parsed.appel&&Object.keys(this.message_box).includes(session.quote.messageId)) {
+      return this.thumbs(session,session.quote.messageId)
+    }else{
+      return next()
+    }
+  }
+  
+  async recall(session: Session, messageId: string, time: number) {
+    new Promise(resolve => setTimeout(() => {
+      session.bot.deleteMessage(session.channelId, messageId)
+    }
+      , time));
 
+  }
   public async randomImg(option: FurBot.RondomImgOPT): Promise<string | boolean> {
     const name = encodeURIComponent(option.name ? option.name : '')
     const type = encodeURIComponent(option.type ? option.type : '')
@@ -60,7 +83,7 @@ class FurBot {
           'Content-Type': 'multipart/form-data',
         },
       })).data;
-      picture_name = response.picture.picture
+      picture_name = response.picture.name
       picture = response.picture.picture
       return picture
     } catch (e) {
@@ -90,10 +113,15 @@ class FurBot {
   }
 
 
-  public async thumbs(picture: string | boolean) {
+  public async thumbs(session:Session, picture?: string) {
+    const session_id: Session<"id"> = session as Session<"id">
+    let account:FurBot.Account = (await this.ctx.database.get('account',session_id.user.id))[0]
+    if(!account){
+      return session.text('messages.check.login.notlogin')
+    }
     let picture_url: string
     if (!picture) {
-      return false
+      return '点赞失败'
     }
     try {
       const response: FurBot.PictureRES = (await this.ctx.http.axios({
@@ -106,13 +134,13 @@ class FurBot {
       picture_url = response.url
     } catch (e) {
       logger.error(e);
-      return false
+      return String(e)
     }
-    return picture_url ? picture_url : false
+    return picture_url ? picture_url : '点赞失败'
   }
 
 
-  public async login(session: Session, option: FurBot.LoginOPT) {
+  public async login(session: Session, option: FurBot.LoginOPT){
     if (session.subtype !== 'private') {
       return '请私信登录'
     }
@@ -180,13 +208,12 @@ class FurBot {
 
 namespace FurBot {
   export interface Account {
-    id: number
-    uid: string
-    account: string
-    password: string
-    
-    token: string
-    cookies: string[]
+    id?: number
+    uid?: string
+    account?: string
+    password?: string
+    token?: string
+    cookies?: string[]
   }
   export interface LoginOPT {
     account?: string

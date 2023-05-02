@@ -4,3 +4,4 @@ messages:
     login:
       failure: 登录失败
       success: 登录成功
+      notlogin: 请先登录，发送fur.login
