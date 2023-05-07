@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-davinci-003",
   "description": "AI聊天,新增语音输入",
-  "version": "4.0.4-alpha",
+  "version": "4.0.4-beta",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [

@@ -31,10 +31,8 @@ class Dvc extends Service {
   key: number[];
   aliasMap: any;
   charMap: any;
-  bg_base64: string
   proxy_reverse: string
   type: string
-  temp_msg: string
   constructor(ctx: Context, private config: Dvc.Config) {
     super(ctx, 'dvc', true)
     this.output_type = config.output
@@ -50,10 +48,8 @@ class Dvc extends Service {
     if ((!ctx.puppeteer) && config.output == 'image') {
       logger.warn('未启用puppter,将无法发送图片');
     }
-    this.temp_msg = ''
     ctx.i18n.define('zh', require('./locales/zh'));
     ctx.on('send', (session) => {
-      this.temp_msg = session.messageId
       if (this.config.recall_all) {
         this.recall(session, session.messageId, config.recall_all_time)
       }
@@ -218,7 +214,7 @@ class Dvc extends Service {
     if (this.config.blockuser.includes(session.userId) || this.config.blockchannel.includes(session.channelId)) {
       return h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.block')
     }
-    return this.chat_with_gpt([{ role: 'system', content: '我是你的的专业翻译官，精通多种语言' }, { role: 'user', content: `请帮我我将如下文字翻译成${lang},“${prompt}”` }])
+    return this.chat_with_gpt([{ role: 'system', content: '你是一个翻译引擎，请将文本翻译为' + lang + '，只需要翻译不需要解释。当你从文本中检测到非' + lang + '文本时，请将它视作专有名词' }, { role: 'user', content: `请帮我我将如下文字翻译成${lang},“${prompt}”` }])
   }
 
   /**
@@ -375,7 +371,7 @@ class Dvc extends Service {
     }
     this.sessions_cmd[session.userId] = nick_name
     this.sessions[session.userId] = [{ "role": "system", "content": descirption }]
-    if(this.config.preset_pro){
+    if (this.config.preset_pro) {
       this.session_config = [{ "role": "system", "content": descirption }]
     }
     return '人格设置成功' + nick_name
@@ -461,11 +457,10 @@ class Dvc extends Service {
       return h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.block')
     }
     if (this.config.waiting) {
-      await session.send(h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.thinking'))
+      const msgid = (await session.bot.sendMessage(session.channelId, h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.thinking'), session.guildId))[0]
       if (this.config.recall && (!this.config.recall_all)) {
-        await this.recall(session, this.temp_msg, this.config.recall_time)
+        await this.recall(session, msgid, this.config.recall_time)
       }
-
     }
     let msg: string = prompt
     if (!this.ifgettoken && this.config.AK && this.config.SK) {
@@ -530,7 +525,7 @@ class Dvc extends Service {
     // 五重保障，防止报错
     if (session.elements[0].type == "audio" && this.ctx.sst) {
       const text: string = await this.ctx.sst.audio2text(session)
-      if (text == '') {
+      if (!text) {
         return session.text('commands.dvc.messages.louder')
       }
       return this.sli(session, text, {})
@@ -720,24 +715,14 @@ class Dvc extends Service {
         }
       }
       return <html>
-        <img style="-webkit-user-select: none; display: block; margin: auto; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); cursor: zoom-in;" src={this.bg_base64} width="600" height="1000"></img>
+        <img style="-webkit-user-select: none; display: block; margin: auto; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); cursor: zoom-in;" src='' width="600" height="1000"></img>
         <div style='position: absolute;top:20px;left:20px;width:600px;'>
           <p style="color:#723b8d">ChatGPT3.5-Turbo</p>
           {elements}
         </div>
-        <div style='position: absolute;top:10px;'>create by koishi-plugin-davinci-003_v3.0.2</div>
+        <div style='position: absolute;top:10px;'>create by koishi-plugin-davinci-003_v4.0.4-beta</div>
       </html>
     }
-  }
-
-  /**
-   * 
-   * @param text 要hex编码的文本
-   * @returns hex字符串
-   */
-
-  encode(text: string): string {
-    return (Buffer.from(text).map((n, i) => n + (15 % (this.key[i % this.key.length] + i))) as Buffer).toString('hex');
   }
 
   /**
@@ -799,35 +784,22 @@ class Dvc extends Service {
 
     // 获得对话session
     let session_of_id = this.get_chat_session(sessionid)
-    if(this.config.preset_pro){
+    if (this.config.preset_pro) {
       session_of_id[0] = this.session_config[0]
     }
     // 设置本次对话内容
     session_of_id.push({ "role": "user", "content": msg })
     // 与ChatGPT交互获得对话内容
-    if (session_of_id.length > 20) {
-      this.sessions[sessionid] = []
-      session_of_id = []
-      session_of_id.push({ "role": "user", "content": msg })
-      return h('quote', { id: session.messageId }) + '会话过长, 已重置'
-    }
-    let message: string = await this.chat_with_gpt(session_of_id)
-    // 查看是否出错
-
-    if (message.indexOf("This model's maximum context length is 4096 token") > -1) {
-      if (session_of_id.length == 2) {
-        this.sessions[sessionid] = []
-        return h('quote', { id: session.messageId }) + '字数过长, 已退出'
+    let message: string = await this.chat_with_gpt(session_of_id)  
+     // 记录上下文
+    session_of_id.push({ "role": "assistant", "content": message });
+    while (JSON.stringify(session_of_id).length > 3000) {
+      session_of_id.splice(1, 1);
+      if (session_of_id.length <= 1) {
+        break;
       }
-      // 出错就清理
-      session_of_id = [session_of_id[0], { "role": "user", "content": msg }]
-      session.send(h('quote', { id: session.messageId }) + '会话过长，已删减会话，连续对话前请发送“dvc.重置会话”开启新的会话，以免会话丢失')
-      this.sessions[sessionid] = session_of_id
-      // 重新交互
-      message = await this.chat_with_gpt(session_of_id)
     }
-    // 记录上下文
-    session_of_id.push({ "role": "assistant", "content": message })
+
     this.sessions[sessionid] = session_of_id
     logger.info("会话ID: " + sessionid)
     logger.info("ChatGPT返回内容: ")

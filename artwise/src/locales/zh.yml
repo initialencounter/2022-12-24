@@ -1,0 +1,5 @@
+commands:
+  mj:
+    description: Midjourney API
+    messages:
+      waiting: 运算中...
