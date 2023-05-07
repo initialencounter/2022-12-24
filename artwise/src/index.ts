@@ -1,5 +1,5 @@
 import { Context, Schema, Session, h, Dict, Next } from 'koishi'
-export const name = 'artiwise'
+export const name = 'artwise'
 export const midjourney_action_dict: Dict = {
   '1': 'upsample1',
   '2': 'upsample2',
@@ -142,7 +142,7 @@ namespace Zsy {
 ## 注意事项
 
 > 使用前在 <a style="color:blue" href="https://data.zhishuyun.com/documents">知数云</a> 中获取token<br>
-对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-artiwise 概不负责。<br>
+对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-artwise 概不负责。<br>
 ## 使用方法
 ![alt 示例](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/16.png)
 | 功能 | 指令 |

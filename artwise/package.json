@@ -1,5 +1,5 @@
 {
-  "name": "koishi-plugin-artiwise",
+  "name": "koishi-plugin-artwise",
   "description": "知数云接口包含ChatGPT4,midjourney,ChatGPT3.5",
   "version": "0.0.1",
   "main": "lib/index.js",
@@ -17,7 +17,7 @@
   "bugs": {
     "url": "https://github.com/initialencounter/mykoishi/issues"
   },
-  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/artiwise#readme",
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/artwise#readme",
   "scripts": {},
   "keywords": [
     "chatbot",
