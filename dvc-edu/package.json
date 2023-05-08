@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-dvc-edu",
   "description": "GPT教育版，人工智能在教学中的辅助作用探究",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
