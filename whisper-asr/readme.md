@@ -7,6 +7,7 @@
 
 ## 使用说明
 自建后端教程<a style="color:blue" href="https://github.com/ahmetoner/whisper-asr-webservice">whisper-asr-webservice</a> 
+如需接入微信，则要使用特定版本的wechaty适配器,并且修改后端源码，将app/webservice.py替换成本项目提供的webservice.py<br>
 插件仓库<a style="color:blue" href="https://github.com/initialencounter/koishi-plugin-whisper-asr">插件仓库</a> 
 ## 使用方法
 * 直接发送语音即可转化或翻译为文本
@@ -17,5 +18,12 @@
 ## 问题反馈群: 
 399899914
 
+
+## 更新日志
+- v1.0.2
+    - 上传webservice.py
+- v1.0.0
+    - 适配微信语音消息
 ## 感谢
 * [ahmetoner](https://github.com/ahmetoner)
+

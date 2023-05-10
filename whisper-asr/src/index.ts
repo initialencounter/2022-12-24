@@ -1,8 +1,7 @@
-import { Context, Schema, Logger, Session, h } from 'koishi'
-export const name = 'whisper-asr'
+import { Context, Schema, Logger, Session, h} from 'koishi'
+export const name = 'whisper'
 import Sst from '@initencounter/sst'
-import FormData from 'form-data';
-import { Readable } from 'stream';
+
 export const logger = new Logger(name)
 class WhisperAsr extends Sst {
   temp_msg: string
@@ -51,9 +50,10 @@ class WhisperAsr extends Sst {
         if (config.recall) {
           this.recall(session, this.temp_msg)
         }
-        const file: Readable = await this.get_file(input)
-        const text: string = await this.create_task(file)
-        return h('quote', { id: session.messageId }) + text
+        const buffer = Buffer.from((await this.get_file(input)))
+        const base64_str = buffer.toString('base64')
+        const text: string = await this.create_task(base64_str)
+        return text
       })
 
     // 记录发送消息的messageid
@@ -72,39 +72,39 @@ class WhisperAsr extends Sst {
   async audio2text(session: Session): Promise<string> {
     if (session.elements[0].type == "audio") {
       const url: string = session.elements[0]["attrs"].url
-      const file: Readable = await this.get_file(url)
-      const text: string = await this.create_task(file)
+      let base64_str:string
+      if(session.platform=='wechaty'){
+        base64_str = url.replace('data:audio/wav;base64,','')
+      }else{
+        const buffer = Buffer.from((await this.get_file(url)))
+        base64_str = buffer.toString('base64')
+      }
+      const text: string = await this.create_task(base64_str)
       return text
     }
     return 'Not a audio'
   }
-
-  private async get_file(url: string): Promise<Readable> {
+  private async get_file(url: string): Promise<ArrayBuffer> {
     const response = await this.ctx.http.axios({
       url,
       method: 'GET',
-      responseType: 'stream',
+      responseType: "arraybuffer",
     });
     return response.data;
   }
-  private async create_task(fileStream: Readable): Promise<string> {
-    const form = new FormData();
-    form.append('audio_file', fileStream);
+  private async create_task(base64: string): Promise<string> {
     try {
-      const res = await this.ctx.http.post(`${this.endpoint}/asr`, form, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'accept': 'application/json'
-        },
-        params: {
+      const res = await this.ctx.http.axios({
+        method: 'post',
+        url: `${this.endpoint}/asr`,
+        data: {
           method: this.method,
+          audio: base64,
           task: this.task,
-          language: this.language,
-          encode: 'true',
-          output: 'txt'
+          language: this.language
         }
       })
-      return res
+      return res.data
     } catch (e) {
       logger.info(String(e))
       return ''
@@ -267,7 +267,6 @@ namespace WhisperAsr {
     recall: Schema.boolean().default(true).description('会撤回思考中'),
     recall_time: Schema.number().default(5000).description('撤回的时间'),
   })
-
 }
 
 export default WhisperAsr
