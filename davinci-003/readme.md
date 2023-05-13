@@ -37,6 +37,9 @@ QQ群：399899914<br>
 
 
 # 更新日志
+- v4.0.6
+    - 支持GPT-4了
+    - 移除text-davinci-003等模型（或许早该这么做了
 - v4.0.5
     - 修复400报错
 - v4.0.4-alpha
@@ -216,6 +219,4 @@ QQ群：399899914<br>
 
 
 # 感谢
-> 逻辑端参考自<a href="https://lucent.blog/#blog" title="前往 Lucent's Blog 的主页" class="blog-button"><img src="https://img-1251540275.cos.ap-shanghai.myqcloud.com/blog/IMG_1140(20200328-104456)_1591776646572.JPG" width="25" alt="Lucent's Blog logo" class="panel-cover__logo logo logo1"></a>
-<a class="panel-cover__title panel-title"><a href="https://lucent.blog/#blog" title="link to homepage for Lucent's Blog" class="blog-button">Lucent's Blog(呆呆木)</a></a><br>
-反代使用的也是呆呆木的！再次感谢！<br>
+反代默认使用的是<a class="panel-cover__title panel-title"><a href="https://github.com/Yidadaa/ChatGPT-Next-Web">Yidadaa佬</a>的，感谢！
