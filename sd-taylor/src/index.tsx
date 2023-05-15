@@ -37,6 +37,7 @@ class Taylor {
       .option('cfg_scale', '-c <cfg_scale:number>', { fallback: config.cfg_scale })
       .option('output', '-o <output:string>', { fallback: config.output })
       .action(async ({ session, options }, prompt) => {
+        if (!prompt) return session.execute('help tl')
         prompt = await this.replace_lora(session, prompt)
         if (!prompt) return this.info
         const [width, height] = (options.resolution ? options.resolution : this.config.resolution).split('x').map(x => { return parseInt(x) })
@@ -78,7 +79,6 @@ class Taylor {
       .option('output', '-o <output:string>', { fallback: config.output })
       .action(async ({ session, options }, prompt) => {
         prompt = await this.replace_lora(session, prompt)
-        if (!prompt) return this.info
         const [width, height] = (options.resolution ? options.resolution : this.config.resolution).split('x').map(x => { return parseInt(x) })
         const payload: Taylor.Payload = {
           "steps": options.step,
@@ -108,7 +108,6 @@ class Taylor {
       .option('visibility', '-v <visibility:number>', { fallback: 1 })
       .option('upscaleFirst', '-f', { fallback: false })
       .action(async ({ session, options }, prompt) => {
-        
         prompt = await this.replace_lora(session, prompt)
         if (!prompt) return this.info
         const [width, height] = (options.resolution ? options.resolution : this.config.resolution).split('x').map(x => { return parseInt(x) })
@@ -214,7 +213,7 @@ class Taylor {
         </style>
       </head>
       <body>
-        <p>create by koishi-plugin-sd-taylor@1.2.5</p>
+        <p>create by koishi-plugin-sd-taylor@1.2.6</p>
         <div class="image-container" id="image-container">{images_arr}</div>
       </body>
     </html>;
@@ -226,7 +225,7 @@ class Taylor {
       userId: session.userId,
       nickname: session.author?.nickname || session.username,
     }
-    result.children.push(segment('message', attrs, 'create by koishi-plugin-sd-taylor@1.2.5\n当前存在lora:'))
+    result.children.push(segment('message', attrs, 'create by koishi-plugin-sd-taylor@1.2.6\n当前存在lora:'))
     let count: number = 0
     for (var i of lora_arr) {
       count++
@@ -365,6 +364,7 @@ class Taylor {
 
     const image = segment.select(session.content, "image")[0];
     const img_url: string = image?.attrs?.url
+    if (!img_url) return '没有图片喵'
     logger.info((session.author?.nickname || session.username) + ' : ' + payload.prompt)
     logger.info(img_url)
     const base64: string = await this.img2base64(this.ctx, img_url)
@@ -391,6 +391,7 @@ class Taylor {
     const path: string = '/sdapi/v1/interrogate'
     const image = segment.select(session.content, "image")[0];
     const img_url: string = image?.attrs?.url
+    if (!img_url) return '没有图片怎么识图'
     logger.info((session.author?.nickname || session.username) + ' : ' + 'Interrogate')
     logger.info(img_url)
     const base64: string = await this.img2base64(this.ctx, img_url)
@@ -412,6 +413,7 @@ class Taylor {
     const path: string = '/sdapi/v1/extra-single-image'
     const image = segment.select(session.content, "image")[0];
     const img_url: string = image?.attrs?.url
+    if (!img_url) return '没有图片怎么超分'
     logger.info((session.author?.nickname || session.username) + ' : ' + 'Extras')
     logger.info(img_url)
     const base64: string = await this.img2base64(this.ctx, img_url)
