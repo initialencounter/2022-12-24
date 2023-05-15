@@ -1,5 +1,5 @@
 {
-  "name": "koishi-plugin-test2",
+  "name": "koishi-plugin-call",
   "description": "",
   "version": "0.0.1",
   "main": "lib/index.js",
@@ -16,13 +16,6 @@
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.12.3"
-  },
-  "koishi": {
-    "service": {
-      "implements": [
-        "translator"
-      ]
-    }
+    "koishi": "^4.12.8"
   }
 }

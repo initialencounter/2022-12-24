@@ -1,5 +1,6 @@
-import { Context, Schema, Session, segment, Dict, Logger,h } from 'koishi'
-import {} from 'koishi-plugin-davinci-003'
+import { Context, Schema, Session, segment, Dict, Logger, h, trimSlash } from 'koishi'
+import { } from 'koishi-plugin-davinci-003'
+export const using = ['dvc']
 export const name = 'sd-taylor'
 
 const headers: object = {
@@ -10,10 +11,13 @@ const logger = new Logger(name)
 class Taylor {
   task: number
   output: string
+  info: string
   constructor(private ctx: Context, private config: Taylor.Config) {
     this.task = 0
     this.output = config.output
-    ctx.command('tl <prompt:text>','文字绘图', { authority: config.min_auth })
+    ctx.i18n.define('zh', require('./locales/zh'));
+    ctx.command('tl <prompt:text>', 'Stable Diffusion API /txt2img', { authority: config.min_auth })
+      .alias('taylor')
       .option('step', '--st <step:number>', { fallback: config.step })
       .option('denoising_strength', '-d <denoising_strength:number>', { fallback: config.denoising_strength })
       .option('seed', '--sd <seed:number>', { fallback: config.seed })
@@ -22,12 +26,8 @@ class Taylor {
       .option('cfg_scale', '-c <cfg_scale:number>', { fallback: config.cfg_scale })
       .option('output', '-o <output:string>', { fallback: config.output })
       .action(async ({ session, options }, prompt) => {
-        if(this.isChinese(prompt)&&ctx.dvc&&config.gpt_translate){
-          prompt = await this.ctx.dvc.translate('英语',prompt)
-        }else if(this.isChinese(prompt)&&!ctx.dvc&&config.gpt_translate){
-          session.send(session.text('commands.tl.messages.no-dvc'))
-          return session.text('commands.tl.messages.latin-only')
-        }
+        prompt = await this.replace_lora(session, prompt)
+        if (!prompt) return this.info
         const [width, height] = (options.resolution ? options.resolution : this.config.resolution).split('x').map(x => { return parseInt(x) })
         const payload: Taylor.Payload = {
           "steps": options.step ? options.step : config.step,
@@ -39,19 +39,20 @@ class Taylor {
           "denoising_strength": options.denoising_strength ? options.denoising_strength : config.denoising_strength,
           "prompt": prompt + ', ' + config.defaut_prompt
         }
-        if (['minimal', 'default', 'verbose'].includes(options.output)){
+        if (['minimal', 'default', 'verbose'].includes(options.output)) {
           this.output = options.output ? options.output : this.output
         }
         return await this.txt2img(session, payload)
       })
-    ctx.command('tl.txt <prompt:text>','sd识图', { authority: config.min_auth })
+
+    ctx.command('tl.txt', 'sd识图', { authority: config.min_auth })
       .option('model', '-m <model:string>', { fallback: config.model })
       .option('output', '-o <output:string>', { type: ['minimal', 'default', 'verbose'], fallback: config.output })
-      .action(async ({ session, options }, prompt) => {
+      .action(async ({ session, options }) => {
         this.output = options.output
-        return h('quote', { id: session.messageId })+await this.interrogate(session)
+        return h('quote', { id: session.messageId }) + await this.interrogate(session)
       })
-    ctx.command('tl.img <prompt:text>','以图绘图', { authority: config.min_auth })
+    ctx.command('tl.img <prompt:text>', '以图绘图', { authority: config.min_auth })
       .option('step', '--st <step:number>', { fallback: config.step })
       .option('denoising_strength', '-d <denoising_strength:number>', { fallback: config.denoising_strength })
       .option('seed', '--sd <seed:number>', { fallback: config.seed })
@@ -63,14 +64,10 @@ class Taylor {
       .option('upscaler2', '-2 <upscaler2>', { fallback: 'None' })
       .option('visibility', '-v <visibility:number>', { fallback: 1 })
       .option('upscaleFirst', '-f', { fallback: false })
-      .option('output', '-o <output:string>', {fallback: config.output })
+      .option('output', '-o <output:string>', { fallback: config.output })
       .action(async ({ session, options }, prompt) => {
-        if(this.isChinese(prompt)&&ctx.dvc&&config.gpt_translate){
-          prompt = await this.ctx.dvc.translate('英语',prompt)
-        }else if(this.isChinese(prompt)&&!ctx.dvc&&config.gpt_translate){
-          session.send(session.text('commands.tl.messages.no-dvc'))
-          return session.text('commands.tl.messages.latin-only')
-        }
+        prompt = await this.replace_lora(session, prompt)
+        if (!prompt) return this.info
         const [width, height] = (options.resolution ? options.resolution : this.config.resolution).split('x').map(x => { return parseInt(x) })
         const payload: Taylor.Payload = {
           "steps": options.step,
@@ -82,12 +79,12 @@ class Taylor {
           "denoising_strength": options.denoising_strength,
           "prompt": prompt + ', ' + config.defaut_prompt
         }
-        if (['minimal', 'default', 'verbose'].includes(options.output)){
+        if (['minimal', 'default', 'verbose'].includes(options.output)) {
           this.output = options.output ? options.output : this.output
         }
         return await this.img2img(session, payload)
       })
-    ctx.command('tl.ext <prompt:text>','图片超分辨率', { authority: config.min_auth })
+    ctx.command('tl.ext <prompt:text>', '图片超分辨率', { authority: config.min_auth })
       .option('step', '--st <step:number>', { fallback: config.step })
       .option('denoising_strength', '-d <denoising_strength:number>', { fallback: config.denoising_strength })
       .option('seed', '--sd <seed:number>', { fallback: config.seed })
@@ -100,9 +97,8 @@ class Taylor {
       .option('visibility', '-v <visibility:number>', { fallback: 1 })
       .option('upscaleFirst', '-f', { fallback: false })
       .action(async ({ session, options }, prompt) => {
-        if(this.isChinese(session.content)){
-          return session.text('commands.tl.messages.latin-only')
-        }
+        prompt = await this.replace_lora(session, prompt)
+        if (!prompt) return this.info
         const [width, height] = (options.resolution ? options.resolution : this.config.resolution).split('x').map(x => { return parseInt(x) })
         const payload: Taylor.Payload = {
           "steps": options.step,
@@ -114,29 +110,129 @@ class Taylor {
           "denoising_strength": options.denoising_strength,
           "prompt": prompt + ', ' + config.defaut_prompt
         }
-        return await this.extras(session, payload,options)
+        return await this.extras(session, payload, options)
 
       })
-    ctx.command('tl.dvc <prompt:text>','gpt识图').action(async({session},prompt)=>{
-      if(!ctx.dvc) return session.text('commands.tl.messages.no-dvc')
-      const img_info:string = await this.interrogate(session)
-      return await ctx.dvc.chat_with_gpt([{role:'user',content:img_info+prompt}])
-    })
-  }
+    // 抄袭自https://github.com/MirrorCY/sd-switch
+    ctx.command('tl.switch', '切换模型，抄袭自https://github.com/MirrorCY/sd-switch')
+      .alias('切换模型')
+      .action(async ({ session }) => {
+        const model: string = await this.switch_model_menu(session)
+        session.send(session.text('commands.tl.messages.switching', [model]))
+        if (model) {
+          await this.ctx.http.axios(config.api_path + '/sdapi/v1/options', {
+            method: 'POST',
+            data: {
+              sd_model_checkpoint: model
+            }
+          })
+          const model_now = (await this.ctx.http.axios(trimSlash(this.config.api_path) + '/sdapi/v1/options')).data
+          return session.text('commands.tl.messages.switch-success', [model_now.sd_model_checkpoint])
+        } else {
+          return this.info
+        }
 
+      })
+    ctx.command('tl.lora', '查看lora').alias('lora')
+      .action(async () => {
+        return (await this.get_lora()).join('\n')
+      })
+
+  }
+  async get_lora(): Promise<string[]> {
+    const config:Dict = (await this.ctx.http.get(trimSlash(this.config.api_path) + '/config',{ responseType: 'json' }))
+    const lora_arr = ['当前存在lora:']
+    config.components.forEach((i) => {
+      if (i.props.label == 'Lora' && i.props.show_label == true) {
+        i?.props?.choices.forEach((j: string) => lora_arr.push(j))
+        return lora_arr
+      }
+    })
+    return lora_arr
+  }
+  async switch_model_menu(session: Session): Promise<string> {
+    const type_arr: string[] = []
+    let type_str: string = '\n请输入编号:\n'
+    const model_now = (await this.ctx.http.axios(trimSlash(this.config.api_path) + '/sdapi/v1/options')).data.sd_model_checkpoint
+    const res = await this.ctx.http.get(trimSlash(this.config.api_path) + '/sdapi/v1/sd-models')
+    res.forEach((i, id) => {
+      type_str += String(id + 1) + ' ' + i.model_name + '\n'
+      type_arr.push(i.title)
+    })
+
+    session.send(h('quote', { id: session.messageId }) + session.text('commands.tl.messages.switch-output', [model_now]) + type_str)
+    const input = await session.prompt()
+    if (!input || Number.isNaN(+input)) {
+      this.info = session.text('commands.tl.messages.menu-err')
+      return ''
+    }
+    const index: number = parseInt(input) - 1
+    if (0 > index && index > type_arr.length - 1) {
+      this.info = session.text('commands.tl.messages.menu-err')
+      return ''
+    }
+    return type_arr[index]
+  }
+  async replace_lora(session: Session, s: string): Promise<string> {
+    if (!s.trim()) {
+      await session.execute('help tl')
+      return ''
+    }
+    if ((!this.ctx.dvc && this.config.gpt_translate) || (!this.ctx.dvc && this.config.gpt_turbo)) {
+      this.info = session.text('commands.tl.messages.no-dvc')
+      return ''
+    }
+    while (s.indexOf('&lt;') > -1) {
+      s = s.replace('&lt;', '<')
+    }
+    while (s.indexOf('&gt;') > -1) {
+      s = s.replace('&gt;', '>')
+    }
+    while (s.indexOf('，') > -1) {
+      s = s.replace('，', ',')
+    }
+    while (s.indexOf('  ') > -1) {
+      s = s.replace('  ', ' ')
+    }
+    // lora 检测
+    const reg = /<[^>]*>/g;
+    const matches = s.match(reg);
+    let cleanedMatches: string[] = []
+    if (matches) {
+      cleanedMatches = matches.map(match => match.slice(0, match.length));
+      s = s.replace(reg, "");
+    }
+
+    // 翻译
+    if (this.isChinese(s) && this.config.gpt_translate) {
+      s = await this.ctx.dvc.translate(session, '英语', s)
+    }
+    // GPT增强
+    if (this.config.gpt_turbo) {
+      s = await this.ctx.dvc.chat_with_gpt([{
+        role: 'system',
+        content: `用尽可能多的英文标签详细的描述一幅画面，
+        用碎片化的单词标签而不是句子去描述这幅画，描述词尽量丰富，
+        每个单词之间用逗号分隔，例如在描述白发猫娘的时候，
+        你应该用: "white hair"、 "cat girl"、 "cat ears"、 "cute 
+        girl"、 "beautiful"、"lovely"等英文标签词汇。你现在要描述的是:${s}`
+      }])
+    }
+    return cleanedMatches.join(' ') + s
+  }
   async txt2img(session: Session, payload: Taylor.Payload) {
     this.task += 1
-    const path: string = '/sdapi/v1/txt2img'
+    const path: string = this.config.controlnet ? '/controlnet/txt2img' : '/sdapi/v1/txt2img'
     session.send(session.text('commands.tl.messages.waiting'))
-    const api: string = `${this.config.api_path}${path}`
-    console.log(api)
+    const api: string = `${trimSlash(this.config.api_path)}${path}`
+    logger.info((session.author?.nickname || session.username) + ' : ' + payload.prompt)
     try {
       const resp = await this.ctx.http.post(api, payload, headers)
-      const res_img = "data:image/png;base64," + resp.images[0]
+      const res_img: string = "data:image/png;base64," + (resp.output ? resp.output[0] : resp.images[0])
       this.cleanUp()
       const parms: Taylor.Parameters = resp['parameters']
 
-      return this.getContent(session, parms,res_img)
+      return this.getContent(session, parms, res_img)
     }
     catch (err) {
       logger.warn(err)
@@ -146,23 +242,23 @@ class Taylor {
   }
   async img2img(session: Session, payload: Taylor.Payload) {
     this.task += 1
-    const path = '/sdapi/v1/img2img'
-    const api: string = `${this.config.api_path}${path}`
-    console.log(api)
+    const path: string = this.config.controlnet ? '/controlnet/img2img' : '/sdapi/v1/img2img'
+    const api: string = `${trimSlash(this.config.api_path)}${path}`
+
     const image = segment.select(session.content, "image")[0];
-    const img_url = image?.attrs?.url
+    const img_url: string = image?.attrs?.url
+    logger.info((session.author?.nickname || session.username) + ' : ' + payload.prompt)
+    logger.info(img_url)
     session.send(session.text('commands.tl.messages.waiting'))
     const base64: string = await this.img2base64(this.ctx, img_url)
     // 设置payload
     payload["init_images"] = ["data:image/png;base64," + base64]
     try {
       const resp = await this.ctx.http.post(api, payload, headers)
-      const info = resp.info
-      const init_img = "data:image/png;base64," + base64
-      const res_img = 'data:image/png;base64,' + resp.images[0]
+      const res_img: string = "data:image/png;base64," + (resp.output ? resp.output[0] : resp.images[0])
       this.cleanUp()
       const parms: Taylor.Parameters = resp['parameters']
-      return this.getContent(session, parms,res_img)
+      return this.getContent(session, parms, res_img)
     }
     catch (err) {
       logger.warn(err)
@@ -173,15 +269,16 @@ class Taylor {
 
   async interrogate(session: Session) {
     this.task += 1
-    session.send(session.text('.interrogate'))
+    await session.send(session.text('commands.tl.messages.interrogate'))
     const path: string = '/sdapi/v1/interrogate'
     const image = segment.select(session.content, "image")[0];
-    const img_url = image?.attrs?.url
+    const img_url: string = image?.attrs?.url
+    logger.info((session.author?.nickname || session.username) + ' : ' + 'Interrogate')
+    logger.info(img_url)
     const base64: string = await this.img2base64(this.ctx, img_url)
     try {
-      const resp:string = (await this.ctx.http.post(`${this.config.api_path}${path}`, { "image": "data:image/png;base64," + base64 })).caption
+      const resp: string = (await this.ctx.http.post(`${trimSlash(this.config.api_path)}${path}`, { "image": "data:image/png;base64," + base64 }))
       this.cleanUp()
-      console.log(resp)
       return resp
     }
     catch (err) {
@@ -190,12 +287,14 @@ class Taylor {
       return String(err)
     }
   }
-  async extras(session: Session, payload: Taylor.Payload,options:any) {
+  async extras(session: Session, payload: Taylor.Payload, options: any) {
     this.task += 1
     session.send(session.text('commands.tl.messages.waiting'))
     const path: string = '/sdapi/v1/extra-single-image'
     const image = segment.select(session.content, "image")[0];
-    const img_url = image?.attrs?.url
+    const img_url: string = image?.attrs?.url
+    logger.info((session.author?.nickname || session.username) + ' : ' + 'Extras')
+    logger.info(img_url)
     const base64: string = await this.img2base64(this.ctx, img_url)
     const payload_extras = {
       "image": "data:image/png;base64," + base64,
@@ -212,9 +311,8 @@ class Taylor {
 
     }
     try {
-      const resp = await this.ctx.http.post(`${this.config.api_path}${path}`, payload_extras)
+      const resp = await this.ctx.http.post(`${trimSlash(this.config.api_path)}${path}`, payload_extras)
       const res_img = 'data:image/png;base64,' + resp.image
-      console.log(resp)
       return segment.image(res_img)
     }
     catch (err) {
@@ -234,11 +332,11 @@ class Taylor {
     const res: string = sss.slice(id2 + 1, id3)
     return res
   }
-  getContent(session: Session, parms: Taylor.Parameters,image?:string) {
-    if (this.output === 'minimal'&&image) {
+  getContent(session: Session, parms: Taylor.Parameters, image?: string) {
+    if (this.output === 'minimal' && image) {
       return segment.image(image)
     }
-    const attrs:Dict = {
+    const attrs: Dict = {
       userId: session.userId,
       nickname: session.author?.nickname || session.username,
     }
@@ -249,7 +347,7 @@ class Taylor {
     if (this.output === 'verbose') {
       result.children.push(segment('message', attrs, `info = ${JSON.stringify(parms)}`))
     }
-    result.children.push(segment.image(image,attrs))
+    result.children.push(segment.image(image, attrs))
 
     return result
   }
@@ -266,11 +364,32 @@ namespace Taylor {
   export const usage = `
 ## 注意事项
 > 
-如需使用gpt识图或gpt翻译，请启用更新davinci-003插件至v1.6.0,并启用
+[stabe_diffusion](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/API)绘图插件,支持controlnet,lora,AI-Tag增强
+如需使用GPT翻译，请启用davinci-003插件
 对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-sd-taylor 概不负责。<br>
 如果有更多文本内容想要修改，可以在<a style="color:blue" href="/locales">本地化</a>中修改 zh 内容</br>
-## 使用方法
-gpt识图: tl.dvc 问题+图片
+## 目录结构
+### 已经做好了的
+- [x] 文字绘图
+- [x] 以图绘图
+- [x] 图片超分辨率
+- [x] 识图
+- [x] 切换模型
+- [x] lora查看
+- [x] controlnet
+
+
+### 指令如下：
+| 功能 | 指令 |
+|  ----  | ----  |
+| 文字绘图 | tl 描述 |
+| 以图绘图 | tl.img 原图 描述？ |
+| 超分辨率 | tl.ext 原图 |
+| 识图 | tl.txt 图片 |
+| 切换模型 | tl.switch|
+| lora查看 | tl.lora |
+
+
 问题反馈群:399899914
 `
   export interface Parameters {
@@ -358,10 +477,14 @@ gpt识图: tl.dvc 问题+图片
     output: string
     model: string
     gpt_translate: boolean
+    controlnet: boolean
+    latin_only: boolean
+    gpt_turbo: boolean
   }
   export const Config: Schema<Config> = Schema.object({
     api_path: Schema.string().description('服务器地址').required(),
     gpt_translate: Schema.boolean().description('是否启用gpt翻译').default(true),
+    gpt_turbo: Schema.boolean().description('GPT增强').default(true),
     min_auth: Schema.number().description('最低使用权限').default(1),
     step: Schema.number().default(20).description('采样步数0-100'),
     denoising_strength: Schema.number().default(0.5).description('改变强度0-1'),
@@ -377,6 +500,8 @@ gpt识图: tl.dvc 问题+图片
       Schema.const('default').description('发送图片和关键信息'),
       Schema.const('verbose').description('发送全部信息'),
     ]).description('输出方式。').default('default'),
+    controlnet: Schema.boolean().description('是否启用controlnet,需要安装controlnet拓展').default(false),
+    latin_only: Schema.boolean().description('只接受英文').default(false),
 
   })
 

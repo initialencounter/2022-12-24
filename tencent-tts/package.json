@@ -31,7 +31,7 @@
     "koishi": "^4.11.9"
   },
   "dependencies": {
-    "tencentcloud-sdk-nodejs-tts": "^4.0.3",
+    "tencentcloud-sdk-nodejs-tts": "^4.0.595",
     "@initencounter/vits": "^0.0.2"
   },
   "koishi": {

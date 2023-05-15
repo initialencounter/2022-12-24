@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-sd-taylor",
-  "description": "[stabe_diffusion](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/API)绘图插件,添加chat翻译",
-  "version": "1.2.3",
+  "description": "[stabe_diffusion](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/API)绘图插件,支持controlnet,lora,AI-Tag增强",
+  "version": "1.2.4",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -22,15 +22,18 @@
   "keywords": [
     "chatbot",
     "koishi",
-    "plugin"
+    "plugin",
+    "stabe diffusion",
+    "AI"
   ],
   "koishi":{
     "service": {
       "optional": [
-        "puppeteer"
+        "puppeteer",
+        "dvc"
       ]
     },
-    "description": "stabe_diffusion"
+    "description": "[stabe_diffusion](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/API)绘图插件,支持controlnet,lora,AI-Tag增强"
   },
   "peerDependencies": {
     "koishi": "^4.10.10"

@@ -45,6 +45,7 @@
     }
   },
   "dependencies": {
-    "@initencounter/vits": "^0.0.2"
+    "@initencounter/vits": "^0.0.2",
+    "@koishijs/translator": "^1.0.0"
   }
 }

@@ -4,8 +4,8 @@ import { } from '@koishijs/plugin-rate-limit';
 import { } from 'koishi-plugin-puppeteer';
 import { } from '@initencounter/vits'
 import { } from '@initencounter/sst'
-import { Censor } from './censor'
-export const using = ['puppeteer', 'vits', 'sst']
+import { } from '@koishijs/censor'
+export const using = ['puppeteer', 'vits', 'sst','censor']
 const name = 'davinci-003';
 const logger = new Logger(name);
 /**
@@ -26,23 +26,16 @@ class Dvc extends Service {
   sessions: Dict;
   personality: Dict;
   sessions_cmd: string[];
-  access_token: string;
-  ifgettoken: boolean;
   aliasMap: any;
-  charMap: any;
-  proxy_reverse: string
   type: string
-  censor: Censor
 
   constructor(ctx: Context, private config: Dvc.Config) {
     super(ctx, 'dvc', true)
     this.output_type = this.config.output
-    this.proxy_reverse = this.config.proxy_reverse
     this.type = this.config.type
 
 
     this.sessions = {};
-    this.access_token = ''
     this.session_config = [
       { "role": "system", "content": "你是我的全能AI助理" }
     ]
@@ -50,12 +43,6 @@ class Dvc extends Service {
       logger.warn('未启用puppter,将无法发送图片');
     }
     ctx.i18n.define('zh', require('./locales/zh'));
-    ctx.on('ready', () => {
-      this.censor = new Censor(ctx, this.config.AK, this.config.SK)
-      if (this.censor.access_token) {
-        this.ifgettoken = true
-      }
-    })
     ctx.on('send', (session) => {
       if (this.config.recall_all) {
         this.recall(session, session.messageId, this.config.recall_all_time)
@@ -263,12 +250,9 @@ class Dvc extends Service {
         await this.recall(session, msgid, this.config.recall_time)
       }
     }
-    let msg: string = prompt
-    if (this.access_token) {
-      const censor_text: boolean = await this.censor.censor_request(session.content)
-      if (!censor_text) {
-        return session.text('commands.dvc.messages.censor')
-      }
+    // 文本审核
+    if (this.ctx.censor) {
+      prompt = await this.ctx.censor.transform(prompt,session)
     }
     if (this.type == 'gpt3.5-unit') {
       const text: string = await this.chat_with_gpt([{ 'role': 'user', 'content': prompt }])
@@ -277,7 +261,7 @@ class Dvc extends Service {
     } else if (this.type == 'gpt4-unit') {
       return await this.chat_with_gpt4([{ 'role': 'user', 'content': prompt }])
     } else {
-      return await this.chat(msg, session.userId, session)
+      return await this.chat(prompt, session.userId, session)
     }
   }
 
@@ -342,6 +326,7 @@ class Dvc extends Service {
             messages: message
           }
         })
+        console.log(response.data)
       return response.data.choices[0].message.content
     }
     catch (error) {
@@ -375,7 +360,7 @@ class Dvc extends Service {
             messages: message
           }
         })
-
+        console.log(response.data)
       return response.data.choices[0].message.content
     }
     catch (error) {

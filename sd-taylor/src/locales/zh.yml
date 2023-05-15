@@ -45,3 +45,7 @@ commands:
         采样步数: {3}
         种子: {4}
         相关性: {5}
+      switching: 切换[{0}]中...
+      switch-success: 切换[{0}]成功!
+      switch-output: 当前模型：{0}。
+      menu-err: 请输入正确的编号。

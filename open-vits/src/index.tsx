@@ -1,6 +1,7 @@
 import { Context, Schema, h, Session, Logger, Dict } from 'koishi'
 import { } from '@koishijs/translator';
 import Vits from '@initencounter/vits'
+export const using = ['translator']
 export const name: string = 'open-vits'
 export const logger: Logger = new Logger(name)
 

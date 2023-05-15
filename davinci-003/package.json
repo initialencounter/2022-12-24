@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-davinci-003",
   "description": "AI聊天,支持GPT-4",
-  "version": "4.0.6",
+  "version": "4.0.6-alpha",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -38,7 +38,8 @@
       "optional": [
         "puppeteer",
         "vits",
-        "sst"
+        "sst",
+        "censor"
       ],
       "implements": [
         "dvc"
@@ -47,6 +48,7 @@
   },
   "dependencies": {
     "@initencounter/sst": "^0.0.1",
-    "@initencounter/vits": "^0.0.2"
+    "@initencounter/vits": "^0.0.2",
+    "@koishijs/censor": "^1.0.2"
   }
 }

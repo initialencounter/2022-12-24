@@ -3,9 +3,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logger = exports.name = void 0;
+exports.logger = exports.name = exports.using = void 0;
 const koishi_1 = require("koishi");
 const vits_1 = __importDefault(require("@initencounter/vits"));
+exports.using = ['translator'];
 exports.name = 'open-vits';
 exports.logger = new koishi_1.Logger(exports.name);
 class OpenVits extends vits_1.default {
