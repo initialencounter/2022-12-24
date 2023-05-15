@@ -1,6 +1,7 @@
-import { Context, Schema, Session, segment, Dict, Logger, h, trimSlash } from 'koishi'
+import { Context, Schema, Session, segment, Dict, Logger, h, trimSlash, arrayBufferToBase64 } from 'koishi'
 import { } from 'koishi-plugin-davinci-003'
-export const using = ['dvc']
+import { } from 'koishi-plugin-puppeteer'
+export const using = ['dvc', 'puppeteer']
 export const name = 'sd-taylor'
 
 const headers: object = {
@@ -12,9 +13,19 @@ class Taylor {
   task: number
   output: string
   info: string
+  lora: Dict
   constructor(private ctx: Context, private config: Taylor.Config) {
+    this.lora = {}
     this.task = 0
     this.output = config.output
+    ctx.on('ready', async () => {
+      try {
+        await this.get_lora()
+        logger.info('lora读取成功！')
+      } catch (e) {
+        logger.info('lora读取失败' + e)
+      }
+    })
     ctx.i18n.define('zh', require('./locales/zh'));
     ctx.command('tl <prompt:text>', 'Stable Diffusion API /txt2img', { authority: config.min_auth })
       .alias('taylor')
@@ -97,6 +108,7 @@ class Taylor {
       .option('visibility', '-v <visibility:number>', { fallback: 1 })
       .option('upscaleFirst', '-f', { fallback: false })
       .action(async ({ session, options }, prompt) => {
+        
         prompt = await this.replace_lora(session, prompt)
         if (!prompt) return this.info
         const [width, height] = (options.resolution ? options.resolution : this.config.resolution).split('x').map(x => { return parseInt(x) })
@@ -114,7 +126,7 @@ class Taylor {
 
       })
     // 抄袭自https://github.com/MirrorCY/sd-switch
-    ctx.command('tl.switch', '切换模型，抄袭自https://github.com/MirrorCY/sd-switch')
+    ctx.command('tl.switch', '切换模型，抄袭自MirrorCY/sd-switch')
       .alias('切换模型')
       .action(async ({ session }) => {
         const model: string = await this.switch_model_menu(session)
@@ -133,27 +145,112 @@ class Taylor {
         }
 
       })
-    ctx.command('tl.lora', '查看lora').alias('lora')
-      .action(async () => {
-        return (await this.get_lora()).join('\n')
+    ctx.command('tl.lora', '查看Lora').alias('lora')
+      .action(async ({ session }) => {
+        session.send(session.text('commands.tl.messages.loraing'))
+        if (this.config.lora_output && ctx.puppeteer) {
+          return await this.send_as_html(session)
+        }
+        return await this.send_as_figure(session)
       })
 
   }
-  async get_lora(): Promise<string[]> {
-    const config:Dict = (await this.ctx.http.get(trimSlash(this.config.api_path) + '/config',{ responseType: 'json' }))
-    const lora_arr = ['当前存在lora:']
-    config.components.forEach((i) => {
-      if (i.props.label == 'Lora' && i.props.show_label == true) {
-        i?.props?.choices.forEach((j: string) => lora_arr.push(j))
-        return lora_arr
-      }
-    })
-    return lora_arr
+  tsak_manager(session:Session){
+    if(this.task>0){
+      session.send(session.text('commands.tl.messages.pending',[this.task]))
+    }else{
+      session.send(session.text('commands.tl.messages.waiting'))
+    }
   }
+  async get_lora(): Promise<void> {
+    const config: Dict = (await this.ctx.http.get(trimSlash(this.config.api_path) + '/config', { responseType: 'json' }))
+    const config_string: string = JSON.stringify(config)
+    const reg: RegExp = /filename=[^>]*\/models\/Lora\/[^>]*\.png/g
+    const res_name: RegExp = /\/models\/Lora\/[^.]*.p/g
+    const urls: string[] = config_string.match(reg)
+    urls.forEach((j: string, jd: number) => {
+      const name = decodeURIComponent((j.match(res_name)[0]).slice(13, -2))
+      this.lora[name] = trimSlash(this.config.api_path) + '/file=' + urls[jd].slice(9,)
+    })
+  }
+  async send_as_html(session: Session): Promise<segment[]> {
+    const lora_arr = Object.entries(this.lora)
+    let images_arr = []
+    let count = 0
+    for (var i of lora_arr) {
+      count++
+      if ((count+1) % 6 == 0) {
+        session.send(this.lora_html(images_arr))
+        images_arr = []
+      }
+      const name = `${count}.${i[0]}`
+      if (i[1] == '') {
+        images_arr.push(<div><p>图片获取失败</p><p>{name}</p><br></br></div>)
+      } else {
+        images_arr.push(<div><img src={i[1]}></img><p>{name}</p><br></br></div>)
+      }
+    }
+    return this.lora_html(images_arr)
+
+  }
+  lora_html(images_arr: segment[]) {
+    return <html>
+      <head>
+        <title>当前存在Lora:</title>
+        <style>{`
+          p {
+            font-size: 20px;
+          }
+          .image-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-gap: 10px;
+          }
+          img {
+              width: auto;
+              height: 200px;
+              margin: 10px;
+          }`}
+        </style>
+      </head>
+      <body>
+        <p>create by koishi-plugin-sd-taylor@1.2.5</p>
+        <div class="image-container" id="image-container">{images_arr}</div>
+      </body>
+    </html>;
+  }
+  async send_as_figure(session: Session) {
+    const lora_arr = Object.entries(this.lora)
+    let result = segment('figure')
+    const attrs: Dict = {
+      userId: session.userId,
+      nickname: session.author?.nickname || session.username,
+    }
+    result.children.push(segment('message', attrs, 'create by koishi-plugin-sd-taylor@1.2.5\n当前存在lora:'))
+    let count: number = 0
+    for (var i of lora_arr) {
+      count++
+      if ((count+1) % 6 == 0) {
+        session.send(result)
+        result = segment('figure')
+      }
+      const name = `${count}.${i[0]}`
+      try {
+        const img_base64 = 'data:image/png;base64,' + arrayBufferToBase64(await this.ctx.http.get(i[1], { responseType: "arraybuffer" }))
+        result.children.push(segment('message', attrs, name))
+        result.children.push(segment.image(img_base64, attrs))
+      }
+      catch (e) {
+        result.children.push(segment('message', attrs, name))
+      }
+    }
+    return result
+  }
+
   async switch_model_menu(session: Session): Promise<string> {
     const type_arr: string[] = []
     let type_str: string = '\n请输入编号:\n'
-    const model_now = (await this.ctx.http.axios(trimSlash(this.config.api_path) + '/sdapi/v1/options')).data.sd_model_checkpoint
+    const model_now = (await this.ctx.http.axios(trimSlash(this.config.api_path) + '/sdapi/v1/options', {})).data.sd_model_checkpoint
     const res = await this.ctx.http.get(trimSlash(this.config.api_path) + '/sdapi/v1/sd-models')
     res.forEach((i, id) => {
       type_str += String(id + 1) + ' ' + i.model_name + '\n'
@@ -174,6 +271,14 @@ class Taylor {
     return type_arr[index]
   }
   async replace_lora(session: Session, s: string): Promise<string> {
+    const reg_lora: RegExp = /lora\d{1,2}/g
+    const lora_match = s.match(reg_lora)
+    for (var i of lora_match) {
+      s = s.replace(i, '')
+    }
+    while (s.indexOf('：') > -1) {
+      s = s.replace('：', ':')
+    }
     if (!s.trim()) {
       await session.execute('help tl')
       return ''
@@ -218,29 +323,42 @@ class Taylor {
         girl"、 "beautiful"、"lovely"等英文标签词汇。你现在要描述的是:${s}`
       }])
     }
-    return cleanedMatches.join(' ') + s
+    let lora_text: string = ''
+    const lora_arr = Object.entries(this.lora)
+    const lora_nums = lora_arr.length
+    const lora_weight: number = this.config.lora_weight
+    if (lora_match) {
+      for (var j of lora_match) {
+        const lora_index = Number(j.replace('lora', ''))
+        if (lora_index < lora_nums) {
+          lora_text += `, <lora:${lora_arr[lora_index - 1][0]}:${lora_weight}>`
+        }
+      }
+    }
+
+    return cleanedMatches.join(' ') + s + lora_text
   }
   async txt2img(session: Session, payload: Taylor.Payload) {
-    this.task += 1
+    this.tsak_manager(session)
+    this.task++
     const path: string = this.config.controlnet ? '/controlnet/txt2img' : '/sdapi/v1/txt2img'
-    session.send(session.text('commands.tl.messages.waiting'))
     const api: string = `${trimSlash(this.config.api_path)}${path}`
     logger.info((session.author?.nickname || session.username) + ' : ' + payload.prompt)
     try {
       const resp = await this.ctx.http.post(api, payload, headers)
       const res_img: string = "data:image/png;base64," + (resp.output ? resp.output[0] : resp.images[0])
-      this.cleanUp()
       const parms: Taylor.Parameters = resp['parameters']
-
+      this.task--
       return this.getContent(session, parms, res_img)
     }
     catch (err) {
+      this.task--
       logger.warn(err)
-      this.cleanUp()
       return String(err)
     }
   }
   async img2img(session: Session, payload: Taylor.Payload) {
+    this.tsak_manager(session)
     this.task += 1
     const path: string = this.config.controlnet ? '/controlnet/img2img' : '/sdapi/v1/img2img'
     const api: string = `${trimSlash(this.config.api_path)}${path}`
@@ -249,25 +367,25 @@ class Taylor {
     const img_url: string = image?.attrs?.url
     logger.info((session.author?.nickname || session.username) + ' : ' + payload.prompt)
     logger.info(img_url)
-    session.send(session.text('commands.tl.messages.waiting'))
     const base64: string = await this.img2base64(this.ctx, img_url)
     // 设置payload
     payload["init_images"] = ["data:image/png;base64," + base64]
     try {
       const resp = await this.ctx.http.post(api, payload, headers)
       const res_img: string = "data:image/png;base64," + (resp.output ? resp.output[0] : resp.images[0])
-      this.cleanUp()
       const parms: Taylor.Parameters = resp['parameters']
+      this.task--
       return this.getContent(session, parms, res_img)
     }
     catch (err) {
+      this.task--
       logger.warn(err)
-      this.cleanUp()
       return String(err)
     }
   }
 
   async interrogate(session: Session) {
+    this.tsak_manager(session)
     this.task += 1
     await session.send(session.text('commands.tl.messages.interrogate'))
     const path: string = '/sdapi/v1/interrogate'
@@ -278,12 +396,13 @@ class Taylor {
     const base64: string = await this.img2base64(this.ctx, img_url)
     try {
       const resp: string = (await this.ctx.http.post(`${trimSlash(this.config.api_path)}${path}`, { "image": "data:image/png;base64," + base64 }))
-      this.cleanUp()
+      this.task--
+
       return resp
     }
     catch (err) {
+      this.task--
       logger.warn(err)
-      this.cleanUp()
       return String(err)
     }
   }
@@ -313,11 +432,12 @@ class Taylor {
     try {
       const resp = await this.ctx.http.post(`${trimSlash(this.config.api_path)}${path}`, payload_extras)
       const res_img = 'data:image/png;base64,' + resp.image
+      this.task--
       return segment.image(res_img)
     }
     catch (err) {
       logger.warn(err)
-      this.cleanUp()
+      this.task--
       return String(err)
     }
   }
@@ -351,9 +471,6 @@ class Taylor {
 
     return result
   }
-  cleanUp() {
-    this.task -= 1
-  }
   async img2base64(ctx: Context, img_url: string) {
     const buffer = await ctx.http.get(img_url, { responseType: 'arraybuffer', headers })
     const base64 = Buffer.from(buffer).toString('base64')
@@ -375,7 +492,9 @@ namespace Taylor {
 - [x] 图片超分辨率
 - [x] 识图
 - [x] 切换模型
-- [x] lora查看
+- [x] Lora查看
+- [x] Lora快捷输入
+- [x] Lora预览
 - [x] controlnet
 
 
@@ -387,7 +506,8 @@ namespace Taylor {
 | 超分辨率 | tl.ext 原图 |
 | 识图 | tl.txt 图片 |
 | 切换模型 | tl.switch|
-| lora查看 | tl.lora |
+| 查看Lora | tl.lora |
+
 
 
 问题反馈群:399899914
@@ -465,6 +585,7 @@ namespace Taylor {
   }
   export interface Config {
     api_path: string
+    lora_weight: number
     min_auth: number
     step: number
     denoising_strength: number
@@ -480,9 +601,11 @@ namespace Taylor {
     controlnet: boolean
     latin_only: boolean
     gpt_turbo: boolean
+    lora_output: boolean
   }
   export const Config: Schema<Config> = Schema.object({
     api_path: Schema.string().description('服务器地址').required(),
+    lora_weight: Schema.number().description('lora权重,0-2').default(0.6),
     gpt_translate: Schema.boolean().description('是否启用gpt翻译').default(true),
     gpt_turbo: Schema.boolean().description('GPT增强').default(true),
     min_auth: Schema.number().description('最低使用权限').default(1),
@@ -502,6 +625,7 @@ namespace Taylor {
     ]).description('输出方式。').default('default'),
     controlnet: Schema.boolean().description('是否启用controlnet,需要安装controlnet拓展').default(false),
     latin_only: Schema.boolean().description('只接受英文').default(false),
+    lora_output: Schema.boolean().description('lora预览图').default(false),
 
   })
 

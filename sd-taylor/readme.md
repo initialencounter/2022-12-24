@@ -13,7 +13,9 @@ AI绘图插件,支持controlnet,lora,AI-Tag增强
 - [x] 图片超分辨率
 - [x] 识图
 - [x] 切换模型
-- [x] lora查看
+- [x] Lora查看
+- [x] Lora快捷输入
+- [x] Lora预览
 - [x] controlnet
 
 
@@ -25,9 +27,12 @@ AI绘图插件,支持controlnet,lora,AI-Tag增强
 | 超分辨率 | tl.ext 原图 |
 | 识图 | tl.txt 图片 |
 | 切换模型 | tl.switch|
-| lora查看 | tl.lora |
+| 查看Lora | tl.lora |
+
+
 ## 小妙招
 启用davinci-003可以获得最佳绘图体验
+
 
 ## 感谢
 
