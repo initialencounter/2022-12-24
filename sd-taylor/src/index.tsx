@@ -39,7 +39,7 @@ class Taylor {
       .action(async ({ session, options }, prompt) => {
         if (!prompt) return session.execute('help tl')
         prompt = await this.replace_lora(session, prompt)
-        if (!prompt) return this.info
+        if (prompt=='false20230516') return this.info
         const [width, height] = (options.resolution ? options.resolution : this.config.resolution).split('x').map(x => { return parseInt(x) })
         const payload: Taylor.Payload = {
           "steps": options.step ? options.step : config.step,
@@ -79,6 +79,7 @@ class Taylor {
       .option('output', '-o <output:string>', { fallback: config.output })
       .action(async ({ session, options }, prompt) => {
         prompt = await this.replace_lora(session, prompt)
+        if (prompt=='false20230516') return this.info
         const [width, height] = (options.resolution ? options.resolution : this.config.resolution).split('x').map(x => { return parseInt(x) })
         const payload: Taylor.Payload = {
           "steps": options.step,
@@ -109,7 +110,7 @@ class Taylor {
       .option('upscaleFirst', '-f', { fallback: false })
       .action(async ({ session, options }, prompt) => {
         prompt = await this.replace_lora(session, prompt)
-        if (!prompt) return this.info
+        if (prompt=='false20230516') return this.info
         const [width, height] = (options.resolution ? options.resolution : this.config.resolution).split('x').map(x => { return parseInt(x) })
         const payload: Taylor.Payload = {
           "steps": options.step,
@@ -213,7 +214,7 @@ class Taylor {
         </style>
       </head>
       <body>
-        <p>create by koishi-plugin-sd-taylor@1.2.6</p>
+        <p>create by koishi-plugin-sd-taylor@1.2.7</p>
         <div class="image-container" id="image-container">{images_arr}</div>
       </body>
     </html>;
@@ -225,7 +226,7 @@ class Taylor {
       userId: session.userId,
       nickname: session.author?.nickname || session.username,
     }
-    result.children.push(segment('message', attrs, 'create by koishi-plugin-sd-taylor@1.2.6\n当前存在lora:'))
+    result.children.push(segment('message', attrs, 'create by koishi-plugin-sd-taylor@1.2.7\n当前存在lora:'))
     let count: number = 0
     for (var i of lora_arr) {
       count++
@@ -272,19 +273,17 @@ class Taylor {
   async replace_lora(session: Session, s: string): Promise<string> {
     const reg_lora: RegExp = /lora\d{1,2}/g
     const lora_match = s.match(reg_lora)
-    for (var i of lora_match) {
-      s = s.replace(i, '')
+    if(lora_match){
+      for (var i of lora_match) {
+        s = s.replace(i, '')
+      }
     }
     while (s.indexOf('：') > -1) {
       s = s.replace('：', ':')
     }
-    if (!s.trim()) {
-      await session.execute('help tl')
-      return ''
-    }
     if ((!this.ctx.dvc && this.config.gpt_translate) || (!this.ctx.dvc && this.config.gpt_turbo)) {
       this.info = session.text('commands.tl.messages.no-dvc')
-      return ''
+      return 'false20230516'
     }
     while (s.indexOf('&lt;') > -1) {
       s = s.replace('&lt;', '<')
