@@ -58,7 +58,7 @@ class Arcadia extends koishi_1.Service {
         this.style = this.config.style;
         this.ratio = this.config.ratio;
         ctx.i18n.define('zh', require('./locales/zh'));
-        ctx.command('arcadia <prompt:text>', '意间Ai绘画,关键词，长度限制为500，关键词的分割用英文逗号，不要用+号。\n    项目地址：https://github.com/initialencounter/mykoishi/blob/main/arcadia#readme.md\n    意间AI：http://open.yjai.art/openai-painting', {
+        ctx.command('arcadia <prompt:text>', '意间Ai绘画', {
             authority: this.config.authority,
             maxUsage: this.config.usage,
             usageName: 'ai'
@@ -463,11 +463,8 @@ class Arcadia extends koishi_1.Service {
             koishi_1.Schema.const('毕加索').description('毕加索')
         ]).description('style').default('新海诚'),
         guidence_scale: koishi_1.Schema.number().description('引导力，默认为7.5').default(7.5),
-        // callback_url: Schema.string().description('callback_url'),
-        // callback_type: Schema.string().description('callback_type').default('end'),
         enable_face_enhance: koishi_1.Schema.boolean().description('面部强化').default(true),
         is_last_layer_skip: koishi_1.Schema.boolean().description('色彩强化').default(true),
-        // init_strength: Schema.number().description('init_strength').default(50),
         steps_mode: koishi_1.Schema.number().description('steps_mode').default(0),
         authority: koishi_1.Schema.number().description('最低使用权限').default(1),
         usage: koishi_1.Schema.number().description('使用次数').default(20),
