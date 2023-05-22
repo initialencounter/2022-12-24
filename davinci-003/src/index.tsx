@@ -8,11 +8,7 @@ import { } from '@koishijs/censor'
 export const using = ['puppeteer', 'vits', 'sst', 'censor']
 const name = 'davinci-003';
 const logger = new Logger(name);
-/**
- * chat_with_gpt|message: [{role:'user',content:<text>}] 
- * get_credit | 获取余额
- * translate | 翻译 lang:目标语言 prompt：文字
- */
+
 
 declare module 'koishi' {
   interface Context {
@@ -135,7 +131,7 @@ class Dvc extends Service {
     });
 
     //切换现有人格
-    ctx.command('dvc.切换人格', '切换为现有的人格', {
+    ctx.command('dvc.切换人格 <prompt:text>', '切换为现有的人格', {
       authority: 1
     }).alias('dvc.人格切换', '切换人格').action(async ({ session }, prompt) => {
       if (this.block(session)) {
@@ -144,7 +140,7 @@ class Dvc extends Service {
     })
 
     //切换引擎
-    ctx.command('dvc.切换引擎', '切换引擎', {
+    ctx.command('dvc.切换引擎 <prompt:text>', '切换引擎', {
       authority: 1
     }).alias('dvc.引擎切换', '切换引擎').action(async ({ session },prompt) => {
       if (this.block(session)) {
@@ -194,7 +190,7 @@ class Dvc extends Service {
    * @returns 翻译后的内容
    */
   async translate(session: Session, lang: string, prompt: string): Promise<string> {
-    return this.chat_with_gpt(session, [{ role: 'system', content: '你是一个翻译引擎，请将文本翻译为' + lang + '，只需要翻译不需要解释。当你从文本中检测到非' + lang + '文本时，请将它视作专有名词' }, { role: 'user', content: `请帮我我将如下文字翻译成${lang},“${prompt}”` }])
+    return this.chat_with_gpt(session, [{ role: 'system', content: '你是一个翻译引擎，请将文本翻译为' + lang + '，只需要翻译不需要解释。' }, { role: 'user', content: `请帮我我将如下文字翻译成${lang},“${prompt}”` }])
   }
 
   /**
@@ -396,6 +392,7 @@ class Dvc extends Service {
       return response.data.choices[0].message.content
     }
     catch (e) {
+      console.log(e)
       return session.text('commands.dvc.messages.err', [String(e)])
     }
   }

@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-sd-taylor",
   "description": "[stabe_diffusion](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/API)绘图插件,支持controlnet,lora,AI-Tag增强",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
