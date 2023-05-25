@@ -39,7 +39,7 @@
 
 
 ## -
-![AI](./screenshot/AI.png)
+![AI](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/AI.png)
 
 
 ## 游戏
@@ -48,7 +48,7 @@
 | [Puzzle](https://www.npmjs.com/package/koishi-plugin-puzzle) | [数字华容道](https://github.com/initialencounter/mykoishi/tree/master/puzzle) |
 | [Cube](https://www.npmjs.com/package/koishi-plugin-cube) | [魔方](https://github.com/initialencounter/mykoishi/tree/master/cube) |
 ## -
-![game](./screenshot/game.png)
+![game](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/game.png)
 ## 语音服务
 | NPM | REPO |
 | --- | --- |
@@ -61,7 +61,7 @@
 | [Vits](https://www.npmjs.com/package/@initencounter/vits) | [语音识别服务](https://github.com/initialencounter/mykoishi/tree/master/vits) |
 | [tts](https://www.npmjs.com/package/@initencounter/sst) | [语音合成服务](https://github.com/initialencounter/mykoishi/tree/master/sst) |
 ## -
-![voice](./screenshot/voice.png)
+![voice](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/voice.png)
 ## 资讯
 | NPM | REPO |
 | --- | --- |
