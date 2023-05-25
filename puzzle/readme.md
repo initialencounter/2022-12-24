@@ -5,7 +5,6 @@
 拼图游戏，数字华容道
 
 在QQ群里面玩华容
-![alt 示例6](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/6.jpg)
 
 ## 指令
 <br>
@@ -24,11 +23,11 @@
 
 ## 效果展示
 
-* ![数字华容道](../screenshot/6-1.png)
+* ![数字华容道](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/cube1.jpg)
 
-* ![自定义华容道](../screenshot/6-2.png)
+* ![自定义华容道](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/2.jpg)
 
-* ![排行榜](../screenshot/6-3.png)
+* ![排行榜](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/3.jpg)
 
 
 ## 更新日志

@@ -9,9 +9,9 @@
 颜值评分,[百度智能云](https://console.bce.baidu.com/ai/#/ai/face/overview/index)
 [![npm](https://img.shields.io/npm/v/koishi-plugin-facercg?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-facercg)
 ### 效果展示
-![alt 图片](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/3-1.jpeg)
+![alt 图片](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/face1.jpeg)
 ### 多人识别
-![alt 结果](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/3-2.jpeg)
+![alt 结果](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/face2.jpeg)
 
 
 ##自建服务端教程

@@ -49,10 +49,10 @@
 如果有更多文本内容想要修改，可以在<a href="/locales">本地化</a>中修改 zh 内容
 
 ### 示例
-![alt 示例7](https://github.com/initialencounter/mykoishi/blob/master/screenshot/7.png)
-![alt 示例7-1](https://github.com/initialencounter/mykoishi/blob/master/screenshot/7-1.png)
-![alt 示例7-2](https://github.com/initialencounter/mykoishi/blob/master/screenshot/7-2.png)
-![alt 示例7-3](https://github.com/initialencounter/mykoishi/blob/master/screenshot/7-3.png)
+![alt 示例7](https://github.com/initialencounter/mykoishi/blob/master/screenshot/cube0.png)
+![alt 示例7-1](https://github.com/initialencounter/mykoishi/blob/master/screenshot/cube1.png)
+![alt 示例7-2](https://github.com/initialencounter/mykoishi/blob/master/screenshot/cube2.png)
+![alt 示例7-3](https://github.com/initialencounter/mykoishi/blob/master/screenshot/cube3.png)
 
 ### 感谢
 ## cube.js参考b站--[神闪避的雪亲王](https://space.bilibili.com/16355723)

@@ -8,7 +8,7 @@
 ## 使用说明
 启用前请前往 <a style="color:blue" href="https://console.cloud.tencent.com/cam/capi">腾讯云官网控制台</a> 进行获取密钥
 只适配了QQ平台,其他平台兼容性未知
-![alt 示例1](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/14.png)
+![alt 示例1](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/tc-capi.png)
 
 ## 更新日志
 - v0.0.4

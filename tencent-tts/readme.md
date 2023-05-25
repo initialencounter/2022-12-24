@@ -4,6 +4,8 @@
 
 腾讯语音合成服务
 
+## key获取
+![alt 示例1](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/tc-capi.png)
 
 ## 标准音色
 

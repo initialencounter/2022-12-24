@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-star-rail-atlas?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-star-rail-atlas)
 
-![alt 示例](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/15.png)
+![alt 示例](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/starrail-atlas.png)
 
 Star-Rail-Atlas是一个主要由[`米游社@听语惊花`](https://bbs.mihoyo.com/ys/accountCenter/postList?id=289918413)（而不是西风驿站）制作的星穹铁道(StarRail)游戏图鉴。
 

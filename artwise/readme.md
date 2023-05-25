@@ -4,7 +4,7 @@
 
 知数云接口
 
-![alt 示例](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/16.png)
+![alt 示例](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/artwise.png)
 > 使用前在 <a style="color:blue" href="https://data.zhishuyun.com/documents">知数云</a> 中获取token<br>
 对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-artwise 概不负责。<br>
 ## 使用方法
