@@ -1,6 +1,5 @@
-import { Context, Schema, Logger,h } from 'koishi'
+import { Context, Schema, Logger, h } from 'koishi'
 import Vits from '@initencounter/vits'
-import * as fs from 'fs/promises'
 export const name = 'baidu-sst'
 export const logger = new Logger(name)
 
@@ -24,11 +23,11 @@ class BaiduTts extends Vits {
       this.access_token = await this.getAccessToken()
     })
     ctx.command('say <input:text>', '百度智能云语音合成')
-    .option('speaker', '-s <speaker:number>', { fallback: config.speaker_id })
+      .option('speaker', '-s <speaker:number>', { fallback: config.speaker_id })
       .action(async ({ session, options }, input) => {
         await session.send(session.text('commands.say.messages.waiting'));
-        const speaker_id: number = options.speaker?options.speaker:config.speaker_id
-        const result: BaiduTts.Result = { input,speaker_id }
+        const speaker_id: number = options.speaker ? options.speaker : config.speaker_id
+        const result: BaiduTts.Result = { input, speaker_id }
         return await this.say(result)
       })
   }
@@ -49,13 +48,14 @@ class BaiduTts extends Vits {
     const payload = {
       method: 'POST',
       url: 'https://tsn.baidu.com/text2audio',
+      responseType: 'arraybuffer' as const,
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': '*/*'
       },
       data: {
-        tex:encodeURIComponent(input),
-        tok:  String(this.access_token),
+        tex: encodeURIComponent(input),
+        tok: String(this.access_token),
         cuid: '1',
         ctp: '1',
         lan: 'zh',
@@ -64,12 +64,8 @@ class BaiduTts extends Vits {
       }
     }
     try {
-      const response = (await this.ctx.http.axios(payload))
-      console.log(typeof(response.data))
-      // await fs.writeFile('./test.wav',response.data)
-      console.log(response)
-      // const response_buffer: Buffer = Buffer.from(response_base64, 'base64')
-      return h.audio(response.data,'audio/mpeg')
+      const response = (await this.ctx.http.axios(payload)) // JSON.parse(JSON.stringify(payload)) (x
+      return h.audio(response.data, 'audio/wav')
     } catch (e) {
       logger.info(String(e))
       return h(String(e))
@@ -129,7 +125,12 @@ namespace BaiduTts {
   export const Config: Schema<Config> = Schema.object({
     AK_W: Schema.string().description('语音合成AK'),
     SK_W: Schema.string().description('语音合成SK'),
-    speaker_id: Schema.number().default(1).description('标准音色'),
+    speaker_id: Schema.union([
+      Schema.const(1).description('度小宇'),
+      Schema.const(0).description('度小美'),
+      Schema.const(4).description('度丫丫'),
+      Schema.const(3).description('度逍遥')
+    ]).default(0).description('标准音色'),
     max_length: Schema.number().default(256).description('最大长度')
   })
 
