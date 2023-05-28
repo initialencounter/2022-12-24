@@ -1,0 +1,12 @@
+messages:
+  check: 验证码如下,请在{0}s内输入
+  login:
+    failure: 登录失败,{0}
+    success: 登录成功,唯一令牌（token）是：{0}
+    notlogin: 请先登录，私信发送fur.login 账号 密码
+  register:
+    failure: 注册失败,{0}
+  download:
+    failure: 下载失败,{0}
+  update:
+    failure: 更新cookie失败，{0}
