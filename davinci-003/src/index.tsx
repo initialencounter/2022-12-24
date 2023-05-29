@@ -40,10 +40,10 @@ class Dvc extends Service {
       }
     })
     try {
-      this.personality = require('./personality.json');
+      this.personality = JSON.parse(fs.readFileSync('./personality.json', 'utf-8'));
     } catch (e) {
       this.personality = { "预设人格": [{ "role": "system", "content": "你是我的全能AI助理" }] }
-      fs.writeFileSync('./node_modules/koishi-plugin-davinci-003/lib/personality.json', JSON.stringify(this.personality));
+      fs.writeFileSync('./personality.json', JSON.stringify(this.personality));
     }
     this.session_config = Object.values(this.personality)[0]
     this.sessions_cmd = Object.keys(this.personality)
@@ -142,10 +142,10 @@ class Dvc extends Service {
     //切换引擎
     ctx.command('dvc.切换引擎 <prompt:text>', '切换引擎', {
       authority: 1
-    }).alias('dvc.引擎切换', '切换引擎').action(async ({ session },prompt) => {
+    }).alias('dvc.引擎切换', '切换引擎').action(async ({ session }, prompt) => {
       if (this.block(session)) {
         return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
-      } return this.switch_type(session,prompt)
+      } return this.switch_type(session, prompt)
     })
 
     //生图
@@ -328,13 +328,13 @@ class Dvc extends Service {
     if (this.config.nickwake) {
       for (var i of this.sessions_cmd) {
         if (session.content.indexOf(i) > -1) {
-          this.sessions[session.userId] = [{ "role": "system", "content": this.personality[i] }]
+          this.sessions[session.userId] = this.personality[i]
           return await this.sli(session, session.content, {})
         }
       }
     }
     // 随机 触发
-    if(this.config.randnum==0) return next()
+    if (this.config.randnum == 0) return next()
     const randnum: number = Math.random()
     if (randnum < this.config.randnum) return await this.dvc(session, session.content)
     return next()
@@ -392,7 +392,6 @@ class Dvc extends Service {
       return response.data.choices[0].message.content
     }
     catch (e) {
-      console.log(e)
       return session.text('commands.dvc.messages.err', [String(e)])
     }
   }
@@ -425,7 +424,7 @@ class Dvc extends Service {
     // 获得对话session
     let session_of_id = this.get_chat_session(sessionid)
     if (this.config.preset_pro) {
-      
+
       session_of_id[0] = this.session_config[0]
     }
     // 设置本次对话内容
@@ -524,6 +523,9 @@ class Dvc extends Service {
    */
   async rm_personality(session: Session, nick_name?: string) {
     const nick_names: string[] = Object.keys(this.personality)
+    if(nick_names.length==1){
+      return '再删下去就报错了'
+    }
     // 参数合法
     if (nick_name && nick_names.indexOf(nick_name) > -1) {
       return this.personality_rm(session, nick_name)
@@ -532,7 +534,7 @@ class Dvc extends Service {
     if (!input) {
       return session.text('commands.dvc.messages.menu-err')
     }
-    return this.personality_rm(session, nick_name)
+    return this.personality_rm(session, input)
   }
 
   /**
@@ -547,7 +549,7 @@ class Dvc extends Service {
     this.sessions_cmd.splice(index, 1)
     delete this.personality[nick_name]
     this.sessions[session.userId] = [{ "role": "system", "content": "你是我的全能AI助理" }]
-    fs.writeFileSync('./node_modules/koishi-plugin-davinci-003/lib/personality.json', JSON.stringify(this.personality))
+    fs.writeFileSync('./personality.json', JSON.stringify(this.personality))
     return '人格删除成功'
   }
 
@@ -583,7 +585,7 @@ class Dvc extends Service {
     const input = await session.prompt()
     if (!input || Number.isNaN(+input)) return ''
     const index: number = parseInt(input) - 1
-    if (0 > index && index > type_arr.length - 1) return ''
+    if ((index < 0) || (index > type_arr.length - 1)) return ''
     return type_arr[index]
   }
 
@@ -693,7 +695,7 @@ class Dvc extends Service {
     const type_arr: string[] = ['gpt3.5-js', 'gpt3.5-unit', 'gpt4', 'gpt4-unit']
     if (type && type_arr.indexOf(type) > -1) {
       this.type = type
-      return session.text('commands.dvc.messages.switch-success', ['引擎',type])
+      return session.text('commands.dvc.messages.switch-success', ['引擎', type])
     }
     const input = await this.switch_menu(session, type_arr, '引擎')
     if (!input) {
@@ -762,7 +764,7 @@ class Dvc extends Service {
     }
     this.sessions_cmd.push(nick_name)
     this.personality[nick_name] = personality_session
-    fs.writeFileSync('./node_modules/koishi-plugin-davinci-003/lib/personality.json', JSON.stringify(this.personality))
+    fs.writeFileSync('./personality.json', JSON.stringify(this.personality))
     return this.set_personality(session, nick_name)
   }
 
@@ -904,7 +906,7 @@ namespace Dvc {
       single_session: Schema.boolean().default(false).description('所有人共用一个会话'),
       whisper: Schema.boolean().default(false).description('语音输入功能,需要加载sst服务,启用插件tc-sst即可实现'),
       waiting: Schema.boolean().default(true).description('消息反馈，会发送思考中...'),
-      nickwake: Schema.boolean().default(true).description('人格昵称唤醒'),
+      nickwake: Schema.boolean().default(false).description('人格昵称唤醒'),
 
       recall: Schema.boolean().default(true).description('一段时间后会撤回“思考中”'),
       recall_time: Schema.number().default(5000).description('撤回的时间'),

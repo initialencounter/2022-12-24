@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-davinci-003",
-  "description": "AI聊天,支持GPT-4,更灵活地添加人格(system||assistant||user)",
-  "version": "4.0.7",
+  "description": "AI聊天,支持GPT-4,更新前先备份,否则后果自负",
+  "version": "5.0.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
