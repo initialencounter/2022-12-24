@@ -21,7 +21,7 @@ class FurBot {
       token: 'string',
       cookies: 'list'
     }, {
-      primary: 'uid', //设置 uid 为主键
+      primary: 'id', //设置 uid 为主键
       unique: ['uid','id'], //设置 uid及id 为唯一键
       autoInc: true
     })
