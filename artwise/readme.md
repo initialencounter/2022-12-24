@@ -20,3 +20,8 @@
 ## 问题反馈
 * QQ群：399899914<br>
 * 小伙伴如果遇到问题或者有新的想法，欢迎到[这里](https://github.com/initialencounter/mykoishi/issues)反馈哦~
+
+## 更新日志
+
+- v0.0.2
+  - 新增mj失败后自动重试

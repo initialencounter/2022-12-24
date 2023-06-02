@@ -1,5 +1,6 @@
-import { Context, Schema, Session, h, Dict, Next } from 'koishi'
+import { Context, Schema, Session, h, Dict, Next, Logger } from 'koishi'
 export const name = 'artwise'
+export const logger = new Logger(name)
 export const midjourney_action_dict: Dict = {
   '1': 'upsample1',
   '2': 'upsample2',
@@ -45,7 +46,13 @@ class Zsy {
       prompt: prompt
     };
     const url = `${BASEURL}/midjourney/imagine?token=${this.config.midjourney_token}`;
-    const res: Zsy.MidjourneyRes = await this.midjourney_request(session, url, payload)
+    let res: Zsy.MidjourneyRes
+    try{
+      res = await this.midjourney_request(session, url, payload)
+    }catch(e){
+      logger.error('出错了，正在重试')
+      res = await this.midjourney_request(session, url, payload)
+    }
     const messageId = (await session.bot.sendMessage(session.channelId, h.image(res.image_url), session.guildId))[0]
     midjourney_image_dict[messageId] = { image_id: res.image_id, prompt: prompt }
     let msg: string = '请输入后续操作编号:\n'
@@ -56,7 +63,13 @@ class Zsy {
     const input = await session.prompt()
     if (!input || Number.isNaN(+input)) return
     const action: string = res.actions[+input - 1]
-    return await this.secondary_request(session, res.image_id, action, prompt)
+    try{
+      return await this.secondary_request(session, res.image_id, action, prompt)
+    }catch(e){
+      logger.error('出错了，正在重试')
+      return await this.secondary_request(session, res.image_id, action, prompt)
+    }
+    
   }
   async midjourney_request(session: Session, url: string, option: Zsy.MidjourneyReq) {
     if (this.config.waiting) await session.send(session.text('commands.mj.messages.waiting'))
@@ -67,7 +80,6 @@ class Zsy {
       },
       ...option
     }
-    console.log(payload)
     return await this.ctx.http.post(url, payload)
   }
   async secondary_request(session: Session, image_id: string, action_: string, prompt: string) {
