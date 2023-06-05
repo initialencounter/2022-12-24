@@ -1,0 +1,39 @@
+{
+  "name": "koishi-plugin-blockly-registry",
+  "description": "blockly插件镜像站",
+  "version": "0.0.1",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "scripts": {
+    "build:console": "koishi-console build"
+  },
+  "license": "MIT",
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.11.9",
+    "koishi-plugin-blockly":"^0.6.2"
+  },
+  "devDependencies": {
+    "@koishijs/client": "^5.10.0"
+  },
+  "dependencies": {
+    "@koishijs/plugin-console": "^5.10.0"
+  },
+  "koishi": {
+    "description": "blockly插件镜像站",
+    "browser": true,
+    "service": {
+      "required":[
+        "blockly"
+      ]
+    }
+  }
+}
