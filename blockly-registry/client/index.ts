@@ -11,6 +11,7 @@ declare module '@koishijs/plugin-console' {
     'blockly-registry/query-cloud'(): Promise<Packages[]>
     'blockly-registry/query-version'(plugin_name:string): Promise<string>[]
     'blockly-registry/cloud-text'():Promise<string>
+    'blockly-registry/init'():Promise<(Packages[]|string|BlocklyRegistry.BlocklyDocument[])[]>
   }
 }
 export interface Packages {

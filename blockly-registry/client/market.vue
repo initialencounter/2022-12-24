@@ -370,6 +370,7 @@
 import { send, message } from "@koishijs/client";
 import { ref, watch } from "vue";
 import * as md5 from "spark-md5";
+import { get } from "http";
 export interface Packages {
   name: string;
   version: string;
@@ -425,16 +426,23 @@ const get_cloud_text = () => {
   });
 };
 const refresh_market = () => {
-  get_cloud_text();
-  send("blockly-registry/query-cloud").then((data) => {
-    cloud_plugins.value = data;
-    packages.value = data;
-    message.success("刷新成功");
-  });
+  get_cloud_plugin()
+  get_cloud_text()
 };
 const get_availiable_version = (name: string) => {
   send("blockly-registry/query-version", name).then((data) => {
     availiable_version.value = data;
+  });
+};
+const get_local_plugin = () => {
+  send("blockly-registry/query").then((data) => {
+    local_plugins.value = data;
+  });
+};
+const get_cloud_plugin = () => {
+  send("blockly-registry/query-cloud").then((data) => {
+    cloud_plugins.value = data;
+    packages.value = data;
   });
 };
 const showDialog = (name: string) => {
@@ -497,11 +505,13 @@ const show_local_plugins = ref<BlocklyDocument[]>();
 const upload = () => {
   isDisabled.value = true;
   close_dialogVisible_u();
-  send("blockly-registry/upload", select_plugin_u.value).then((data) => {
+  send("blockly-registry/upload", select_plugin_u.value,upload_plugin_desc.value,upload_plugin_version.value).then((data) => {
     if ((data as string).startsWith("error")) {
       message.error(data as string);
     } else {
       message.success(data as string);
+      upload_plugin_desc.value = "";
+      upload_plugin_version.value = "";
     }
     isDisabled.value = false;
   });
@@ -511,25 +521,25 @@ const close_dialogVisible = () => {
 };
 const close_dialogVisible_u = () => {
   dialogVisible_u.value = false;
-  upload_plugin_desc.value = "";
-  upload_plugin_version.value = "";
 };
 
 // 初始化
-get_cloud_text();
-send("blockly-registry/query-cloud").then((data) => {
-  cloud_plugins.value = data;
-  packages.value = data;
+send("blockly-registry/init").then((data) => {
+  local_plugins.value = data[0] as BlocklyDocument[];
+  cloud_plugins.value = data[1] as Packages[];
+  packages.value = data[1] as Packages[];
+  local_plugins.value = data[2] as BlocklyDocument[];
+  cloud_text.value = data[3] as string;
 });
-send("blockly-registry/query").then((data) => {
-  local_plugins.value = data;
-});
+
 watch(upload_mode, (value) => {
-  if (!value) {
-    packages.value = cloud_plugins.value;
+  if (!value) { 
     show_local_plugins.value = [];
+    get_cloud_plugin()
+    packages.value = cloud_plugins.value;
   } else {
     packages.value = [];
+    get_local_plugin()
     show_local_plugins.value = local_plugins.value;
   }
 });
