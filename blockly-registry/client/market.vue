@@ -3,70 +3,156 @@
     class="blockly-registry-container"
     :style="{ 'pointer-events': isDisabled ? 'none' : 'auto' }"
   >
-    <div class="blockly-registry-container-play">
-      <p class="blockly-registry-container_words-play" :text="cloud_text">
-        {{ cloud_text }}
-      </p>
-    </div>
-    <div class="blockly-registry-title" id="arktitle">
-      blocky插件镜像站
-      <div style="display: flex">
-        <span class="blockly-registry-mode-select" @click="openSw">
-          <span v-if="!upload_mode">
-            <img style="width: 4rem" src="./images/yunduanxiazai.png" />
-            <span>下载</span>
-          </span>
-          <span v-if="upload_mode">
-            <img style="width: 4rem" src="./images/yunduanshangchuan.png" />
-            <span>上传</span>
-          </span>
+    <!-- header -->
+    <div class="layout-header">
+      <span class="left">BLOCKLY REGISTRY</span>
+      <span class="blockly-registry-mode-select arktitle" @click="openSw">
+        <span v-if="upload_mode">
+          <svg
+            style="fill: #808080"
+            viewBox="0 0 1024 1024"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M870.4 57.6C780.8 19.2 652.8 0 512 0 371.2 0 243.2 19.2 153.6 57.6 51.2 102.4 0 153.6 0 211.2l0 595.2c0 57.6 51.2 115.2 153.6 153.6C243.2 1004.8 371.2 1024 512 1024c140.8 0 268.8-19.2 358.4-57.6 96-38.4 153.6-96 153.6-153.6L1024 211.2C1024 153.6 972.8 102.4 870.4 57.6L870.4 57.6zM812.8 320C729.6 352 614.4 364.8 512 364.8 403.2 364.8 294.4 352 211.2 320 115.2 294.4 70.4 256 70.4 211.2c0-38.4 51.2-76.8 140.8-108.8C294.4 76.8 403.2 64 512 64c102.4 0 217.6 19.2 300.8 44.8 89.6 32 140.8 70.4 140.8 108.8C953.6 256 908.8 294.4 812.8 320L812.8 320zM819.2 505.6C736 531.2 620.8 550.4 512 550.4c-108.8 0-217.6-19.2-307.2-44.8C115.2 473.6 64 435.2 64 396.8L64 326.4C128 352 172.8 384 243.2 396.8 326.4 416 416 428.8 512 428.8c96 0 185.6-12.8 268.8-32C851.2 384 896 352 960 326.4l0 76.8C960 435.2 908.8 473.6 819.2 505.6L819.2 505.6zM819.2 710.4c-83.2 25.6-198.4 44.8-307.2 44.8-108.8 0-217.6-19.2-307.2-44.8C115.2 684.8 64 646.4 64 601.6L64 505.6c64 32 108.8 57.6 179.2 76.8C326.4 601.6 416 614.4 512 614.4c96 0 185.6-12.8 268.8-32C851.2 563.2 896 537.6 960 505.6l0 96C960 646.4 908.8 684.8 819.2 710.4L819.2 710.4zM512 960c-108.8 0-217.6-19.2-307.2-44.8C115.2 889.6 64 851.2 64 812.8l0-96c64 32 108.8 57.6 179.2 76.8 76.8 19.2 172.8 32 262.4 32 96 0 185.6-12.8 268.8-32 76.8-19.2 121.6-44.8 185.6-76.8l0 96c0 38.4-51.2 76.8-140.8 108.8C736 947.2 614.4 960 512 960L512 960zM512 960"
+            ></path>
+          </svg>
         </span>
-        <span @click="refresh_market" class="blockly-registry-refresh-market">
-          <img style="width: 4rem" src="./images/shuaxin.png" />
-          <span>刷新🌟</span>
+        <span v-if="!upload_mode">
+          <svg
+            style="fill: #808080"
+            viewBox="0 -100 1024 1024"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M352.456912 832.032253c-35.434907 0-63.989249 28.554342-63.989249 63.989249 0 35.434907 28.554342 63.989249 63.989249 63.989249s63.989249-28.554342 63.989249-63.989249C416.446162 860.586595 387.891819 832.032253 352.456912 832.032253L352.456912 832.032253z"
+              fill="#575B66"
+              p-id="4291"
+            ></path>
+            <path
+              d="M800.55367 832.032253c-35.434907 0-63.989249 28.554342-63.989249 63.989249 0 35.434907 28.554342 63.989249 63.989249 63.989249s63.989249-28.554342 63.989249-63.989249C864.54292 860.586595 835.816563 832.032253 800.55367 832.032253L800.55367 832.032253z"
+              fill="#575B66"
+              p-id="4292"
+            ></path>
+            <path
+              d="M864.026877 800.037628 344.200235 800.037628c-46.099782 0-86.695112-36.466991-92.199563-83.082815l-54.356459-382.043339L166.853687 156.360826c-1.892155-15.653284-16.169326-28.382328-29.930455-28.382328L95.983874 127.978498c-17.717453 0-31.994625-14.277171-31.994625-31.994625s14.277171-31.994625 31.994625-31.994625l40.767344 0c46.615824 0 87.727196 36.466991 93.403662 83.082815l30.790526 177.86259L315.473879 708.698135c1.720141 14.793214 15.309256 27.350244 28.726356 27.350244l519.826642 0c17.717453 0 31.994625 14.277171 31.994625 31.994625S881.744331 800.037628 864.026877 800.037628z"
+              fill="#575B66"
+              p-id="4293"
+            ></path>
+            <path
+              d="M384.279523 672.05913c-16.685369 0-30.618512-12.729044-31.82261-29.586427-1.376113-17.545439 11.868974-33.026709 29.586427-34.230808l434.163615-31.994625c15.997312-0.172014 29.414413-12.55703 31.134554-26.834201l50.400134-288.295649c1.204099-10.664875-1.720141-22.533848-8.084663-29.758441-4.128339-4.644381-9.288762-7.052579-15.309256-7.052579L319.946246 224.3064c-17.717453 0-31.994625-14.277171-31.994625-31.994625S302.400806 159.973123 319.946246 159.973123l554.05745 0c24.426004 0 46.959852 10.148833 63.301193 28.554342 18.749538 21.157736 27.178229 50.744163 23.565933 81.706703l-50.400134 288.467663c-5.504452 44.895683-45.927768 81.362674-92.027549 81.362674l-431.755417 31.82261C385.82765 671.887116 384.967579 672.05913 384.279523 672.05913z"
+              fill="#575B66"
+              p-id="4294"
+            ></path>
+          </svg>
         </span>
-        <span @click="search" class="blockly-registry-refresh-market">
-          <img style="width: 4rem" src="./images/sousuo.png" />
-          <span>搜索🔍</span>
+      </span>
+      <div class="right">
+        <span
+          class="menu-item el-tooltip__trigger el-tooltip__trigger"
+          aria-describedby="el-id-6973-178"
+          style="height: 2rem; width: 1.5rem"
+          @click="refresh_market"
+          ><svg
+            t="1686044330104"
+            style="fill: #808080"
+            class="icon"
+            viewBox="0 0 1024 1024"
+            version="1.1"
+            xmlns="http://www.w3.org/2000/svg"
+            p-id="1460"
+          >
+            <path
+              d="M938.336973 255.26894c-16.685369-6.020494-35.090879 2.752226-40.939358 19.437594l-24.770032 69.493701c-29.070385-65.537376-74.998152-123.162103-133.48295-166.337645-185.947253-137.611288-450.848984-100.112212-590.180413 83.942886C81.534688 350.908785 52.980346 460.653788 68.805644 570.742819c15.825298 110.605073 74.48211 208.481102 164.789518 275.394591 75.686209 55.904586 164.273476 83.082815 252.172686 83.082815 128.494541 0 255.26894-57.624727 338.007727-166.853687 36.639006-48.335965 61.581052-102.348396 74.48211-160.833193 3.78431-17.373425-7.224593-34.402822-24.426004-38.187133-17.201411-3.78431-34.402822 7.052579-38.187133 24.426004-10.836889 49.36805-31.994625 95.123803-62.957164 135.891147-118.173694 156.016798-342.996136 187.839409-500.90509 70.869814-76.546279-56.592642-126.086343-139.33143-139.503444-232.907106-13.417101-93.059634 10.664875-185.775239 67.77356-261.11742C318.05409 144.491853 542.704519 112.497228 700.785486 229.466823c57.280699 42.315471 100.112212 100.972283 123.334117 167.197715l-110.261045-43.003528c-16.513355-6.364522-35.090879 1.720141-41.627415 18.233496-6.536536 16.513355 1.720141 35.090879 18.233496 41.627415l162.38132 63.473207c3.78431 1.548127 7.740635 2.236183 11.69696 2.236183 0.516042 0 1.032085-0.172014 1.548127-0.172014 1.204099 0.172014 2.408198 0.688056 3.612296 0.688056 13.245087 0 25.630102-8.256677 30.274483-21.32975l57.796741-161.693264C963.623047 279.694944 955.022342 261.289434 938.336973 255.26894z"
+              fill="#575B66"
+              p-id="1461"
+            ></path>
+          </svg>
         </span>
       </div>
     </div>
-
-    <div class="blockly-registry-search">
-      <input
-        class="blockly-registry-input"
-        @keyup.enter="search"
-        v-model="input_text"
-        placeholder="输入插件名称或作者,回车搜索"
-      />
+    <!-- cloud text -->
+    <div class="blockly-registry-hint">
+      <div class="blockly-registry-hint-box">
+        <p class="blockly-registry-hint-text" :text="cloud_text">
+          {{ cloud_text }}
+        </p>
+      </div>
     </div>
 
+    <!-- search -->
+
+    <div class="blockly-registry-search-box">
+      <div class="blockly-registry-search">
+        <input
+          class="blockly-registry-input"
+          @keyup.enter="search"
+          v-model="input_text"
+          placeholder="搜索插件名称或作者"
+        />
+      </div>
+      <div class="blockly-registry-search-action">
+        <svg
+          data-v-a9e07233=""
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 512 512"
+          class="market-icon search"
+        >
+          <path
+            fill="currentColor"
+            d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"
+          ></path>
+        </svg>
+      </div>
+    </div>
+
+    <!-- list -->
+    <div style="align-items: center;">
     <div class="blockly-registry-pkg-container">
-      <div
+      <a
         v-for="(pkg, index) in packages"
         :key="index"
         class="blockly-registry-item"
       >
         <div class="blockly-registry-name">
-          {{ pkg.name + "@" + pkg.version }}
+          {{ pkg.name }}
         </div>
-        <div class="blockly-registry-desc">{{ pkg.desc }}</div>
+        <div class="blockly-registry-version">
+          {{ pkg.version }}
+        </div>
+        <div class="blockly-registry-desc">
+          <k-markdown inline class="desc" :source="pkg.desc"></k-markdown>
+        </div>
         <div class="blockly-registry-author">
-          <svg
-            t="1685970149254"
-            class="icon"
-            viewBox="0 0 1024 1024"
-            version="1.1"
-            xmlns="http://www.w3.org/2000/svg"
-            p-id="12147"
+          <el-tooltip
+            :content="
+              pkg.author?.split(' ')[0] ? pkg.author?.split(' ')[0] : pkg.author
+            "
+            placement="top"
           >
-            <path
-              d="M510.548 105.582c-129.797 0-235.386 105.593-235.386 235.39 0 93.999 55.509 175.067 135.354 212.767-147.613 43.35-255.793 179.825-255.793 341.273 0 10.275 8.327 18.594 18.594 18.594 10.267 0 18.594-8.319 18.594-18.594 0-175.702 142.956-318.65 318.636-318.65 129.797 0 235.395-105.593 235.395-235.39s-105.598-235.39-235.395-235.39z m0 433.591c-109.294 0-198.197-88.917-198.197-198.202 0-109.29 88.903-198.202 198.197-198.202 109.298 0 198.206 88.912 198.206 198.202 0 109.29-88.903 198.202-198.206 198.202z m0 0z m215.838 72.907c-8.175-6.229-19.83-4.686-26.057 3.487-6.245 8.17-4.686 19.826 3.484 26.074 79.681 60.886 125.367 153.241 125.367 253.366 0 10.279 8.332 18.598 18.595 18.598 10.275 0 18.594-8.319 18.594-18.598 0-111.818-51.024-214.941-139.984-282.927z m0 0z"
-              fill=""
-              p-id="12148"
-            ></path>
-          </svg>
-          {{ pkg.author }}
+            <span
+              class="blockly-registry-avatar"
+              @click.stop.prevent="
+                $emit(
+                  'query',
+                  'email:' + pkg.author?.split(' ')[1]
+                    ? pkg.author?.split(' ')[1]
+                    : pkg.author
+                )
+              "
+            >
+              <img
+                :src="
+                  getAvatar(
+                    (pkg.author?.split(' ')[1]
+                      ? pkg.author?.split(' ')[1]
+                      : pkg.author
+                    ).slice(1, -1)
+                  )
+                "
+              />
+            </span>
+          </el-tooltip>
         </div>
         <button
           :id="`blockly-registry-${pkg.name}`"
@@ -119,8 +205,9 @@
             ></path>
           </svg>
         </button>
-      </div>
+      </a>
     </div>
+  </div>
     <div class="blockly-registry-pkg-container">
       <div
         v-for="(pkg, index) in show_local_plugins"
@@ -129,25 +216,42 @@
       >
         <div class="blockly-registry-name">{{ pkg.name }}</div>
         <div class="blockly-registry-name">
-          {{ pkg.name + "@" + (pkg?.version || "unknow") }}
+          {{ pkg.name }}
+        </div>
+        <div class="blockly-registry-version">
+          {{ pkg.version }}
         </div>
         <div class="blockly-registry-desc">{{ pkg?.desc || "unknow" }}</div>
         <div class="blockly-registry-author">
-          <svg
-            t="1685970149254"
-            class="icon"
-            viewBox="0 0 1024 1024"
-            version="1.1"
-            xmlns="http://www.w3.org/2000/svg"
-            p-id="12147"
+          <el-tooltip
+            :content="
+              pkg.author?.split(' ')[0] ? pkg.author?.split(' ')[0] : pkg.author
+            "
+            placement="top"
           >
-            <path
-              d="M510.548 105.582c-129.797 0-235.386 105.593-235.386 235.39 0 93.999 55.509 175.067 135.354 212.767-147.613 43.35-255.793 179.825-255.793 341.273 0 10.275 8.327 18.594 18.594 18.594 10.267 0 18.594-8.319 18.594-18.594 0-175.702 142.956-318.65 318.636-318.65 129.797 0 235.395-105.593 235.395-235.39s-105.598-235.39-235.395-235.39z m0 433.591c-109.294 0-198.197-88.917-198.197-198.202 0-109.29 88.903-198.202 198.197-198.202 109.298 0 198.206 88.912 198.206 198.202 0 109.29-88.903 198.202-198.206 198.202z m0 0z m215.838 72.907c-8.175-6.229-19.83-4.686-26.057 3.487-6.245 8.17-4.686 19.826 3.484 26.074 79.681 60.886 125.367 153.241 125.367 253.366 0 10.279 8.332 18.598 18.595 18.598 10.275 0 18.594-8.319 18.594-18.598 0-111.818-51.024-214.941-139.984-282.927z m0 0z"
-              fill=""
-              p-id="12148"
-            ></path>
-          </svg>
-          {{ pkg.author || "unknow" }}
+            <span
+              class="blockly-registry-avatar"
+              @click.stop.prevent="
+                $emit(
+                  'query',
+                  'email:' + pkg.author?.split(' ')[1]
+                    ? pkg.author?.split(' ')[1]
+                    : pkg.author
+                )
+              "
+            >
+              <img
+                :src="
+                  getAvatar(
+                    (pkg.author?.split(' ')[1]
+                      ? pkg.author?.split(' ')[1]
+                      : pkg.author
+                    ).slice(1, -1)
+                  )
+                "
+              />
+            </span>
+          </el-tooltip>
         </div>
         <button
           :id="`blockly-registry-${pkg.name}`"
@@ -265,7 +369,7 @@
 <script lang="ts" setup>
 import { send, message } from "@koishijs/client";
 import { ref, watch } from "vue";
-
+import * as md5 from "spark-md5";
 export interface Packages {
   name: string;
   version: string;
@@ -302,6 +406,19 @@ const upload_plugin_version = ref<string>();
 const select_plugin_version = ref<string>();
 const availiable_version = ref<string[]>();
 const cloud_text = ref<string>();
+
+const getAvatar = (email: string) => {
+  if (!email.includes("@"))
+    return `http://q2.qlogo.cn/headimg_dl?dst_uin=${email}&spec=100`;
+  return (
+    "https://s.gravatar.com" +
+    "/avatar/" +
+    (email
+      ? (md5 as unknown as typeof import("spark-md5")).hash(email.toLowerCase())
+      : "") +
+    ".png?d=mp"
+  );
+};
 const get_cloud_text = () => {
   send("blockly-registry/cloud-text").then((data) => {
     cloud_text.value = data as string;
@@ -418,16 +535,23 @@ watch(upload_mode, (value) => {
 });
 </script>
 <style lang="scss" scoped>
-.blockly-registry-container-play {
+.blockly-registry-hint {
+  align-items: center;
+}
+.blockly-registry-hint-box {
   position: relative;
   /* 最外层盒子，需要三个属性：定宽、文字不换行、超过隐藏 */
-  width: 60rem;
+  width: 40rem;
   white-space: nowrap;
   overflow: hidden;
-  font-size: 20px;
-  color: #65b4ae;
+  margin: 1rem 0 -0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--el-text-color-regular);
+  font-size: var(--el-font-size-base);
 }
-.blockly-registry-container_words-play {
+.blockly-registry-hint-text {
   top: 0%;
   /* 盒子背景宽度将随文字宽度而进行自适应 */
   width: fit-content;
@@ -436,45 +560,46 @@ watch(upload_mode, (value) => {
   /* 让前面的几个文字有一个初始的距离，达到更好的呈现效果 */
   padding-left: 20px;
 }
-.blockly-registry-container_words-play::after {
+.blockly-registry-hint-text::after {
   position: absolute;
   right: -100%;
   content: attr(text);
 }
 @keyframes move {
   0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-100%);
+    transform: translateX(100%);
   }
 }
 
 .blockly-registry-container {
-  padding: 1rem;
+  width: 100%;
+  margin: 0;
+  padding: 1rem 1.25rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: box-shadow 0.3s ease;
+  padding: 0 var(--card-margin);
   position: relative;
   height: 100%;
   width: 100%;
 }
 .blockly-registry-title {
   position: relative;
-  left: 20%;
+  text-align: center;
   font-size: xx-large;
-  margin: auto;
 }
-#arktitle {
-  font-size: 4rem;
+.arktitle {
   font-weight: bold;
-  line-height: 4rem;
-  background: linear-gradient(to bottom, green, gold );
-  -webkit-background-clip: text;
+  background: linear-gradient(to bottom, rgb(29, 185, 71), rgb(38, 151, 177));
   color: transparent;
   animation: blink 2s linear infinite;
   -webkit-animation: blink 2s linear infinite;
   -moz-animation: blink 2s linear infinite;
   -ms-animation: blink 2s linear infinite;
   -o-animation: blink 2s linear infinite;
-  text-align:justify;
+  text-align: justify;
 }
 
 @keyframes blink {
@@ -534,12 +659,31 @@ watch(upload_mode, (value) => {
 }
 
 .blockly-registry-mode-select {
-  font-size: 1rem;
+  padding: .2rem;
+  border-radius: .2rem .2rem .2rem .2rem;
+  width: 1.5rem;
+  position: absolute;
+  left: 14rem;
 }
 .blockly-registry-refresh-market {
   font-size: 1rem;
 }
+.blockly-registry-search-box {
+  display: flex;
+  margin: 2rem auto 0;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 1.5rem;
+  align-items: center;
+}
 .blockly-registry-search {
+  flex: 1 1 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 6px;
+  padding: 0.75rem 1.25rem;
+  padding-right: 0;
   padding-left: 20%;
   grid-gap: 1rem;
   display: grid;
@@ -547,74 +691,74 @@ watch(upload_mode, (value) => {
   align-content: center;
 }
 .blockly-registry-input {
-  align-content: center;
-  background-color: rgb(44, 68, 113);
-  padding: 0.5rem;
   border-radius: 1rem 1rem 1rem 1rem;
-  width: 20rem;
-  height: 1rem;
-  position: relative;
-  border: 1px solid rgb(36, 171, 171);
+  flex: 1 1 auto;
+  height: 2rem;
+  min-width: 8rem;
+  font-size: 1em;
+  padding: 0;
+  box-sizing: border-box;
+  color: inherit;
+  background-color: transparent;
+  border: none;
+  outline: none;
 }
-
+.blockly-registry-search-action {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2.5rem;
+  cursor: pointer;
+}
+.blockly-registry-input:hover {
+  background-color: rgb(180, 171, 23,10);
+}
 /* 插件列表 */
 .blockly-registry-pkg-container {
-  padding: 1rem;
-  padding-top: 2rem;
-  grid-gap: 1rem;
   display: grid;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--card-margin);
+  grid-template-columns: repeat(auto-fill,minmax(300px,1fr));
+  margin: var(--card-margin) 0;
+  justify-items: center;
 }
-
-@media screen and (max-device-width: 30rem) {
-  .blockly-registry-pkg-container {
-    grid-template-columns: repeat(1, 0fr);
-  }
-  .blockly-registry-container-play {
-    width: 30rem;
-  }
-}
-
-@media screen and (min-device-width: 30rem) and (max-device-width: 55rem) {
-  .blockly-registry-pkg-container {
-    grid-template-columns: repeat(2, 0fr);
-  }
-  .blockly-registry-container-play {
-    width: 40rem;
-  }
-}
-@media screen and (min-device-width: 55rem) and (max-device-width: 80rem) {
-  .blockly-registry-pkg-container {
-    grid-template-columns: repeat(3, 0fr);
-  }
-  .blockly-registry-container-play {
-    width: 70rem;
-  }
-}
-@media screen and (min-device-width: 80rem) {
-  .blockly-registry-pkg-container {
-    grid-template-columns: repeat(4, 0fr);
-  }
-  .blockly-registry-container-play {
-    width: 80rem;
-  }
-}
-
 .blockly-registry-item {
   position: relative;
-  padding: 1rem;
   left: 20%;
-  width: 15rem;
-  height: 10rem;
-  background-color: rgb(46, 69, 104);
+  width: 17rem;
+  height: 12rem;
+  transition: box-shadow 0.3s ease;
+  box-shadow: 0 0 0 2px inset transparent;
+  border: 2px solid var(--k-card-border);
   border-radius: 1rem 1rem 1rem 1rem;
+  border-color: #808080 ;
+  background-color: var(--k-card-bg);
+  border-radius: 8px;
+  overflow: hidden;
+  color: inherit;
+  text-decoration: none;
+}
+.blockly-registry-item:hover{
+  border-color: rgb(51, 175, 197) ;
 }
 .blockly-registry-name {
   position: absolute;
+  font-size: 2rem;
   top: 1rem;
   left: 1rem;
 }
+.blockly-registry-version {
+  padding: 0.2rem;
+  position: absolute;
+  font-size: 1rem;
+  top: 1rem;
+  right: 1rem;
+}
 .blockly-registry-author {
-  width: 1.5rem;
   color: rgb(29, 150, 125);
   border-radius: 1rem 1rem 1rem 1rem;
   position: absolute;
@@ -623,7 +767,6 @@ watch(upload_mode, (value) => {
 }
 .blockly-registry-desc {
   position: absolute;
-  font-size: 0.8rem;
   text-align: left;
   top: 5rem;
   right: 1rem;
@@ -637,9 +780,8 @@ watch(upload_mode, (value) => {
   right: 1rem;
   background-color: rgb(10, 171, 23);
   border-radius: 1rem 1rem 1rem 1rem;
-  
-
 }
+.blockly-registry-btn:hover {background-color: transparent}
 .blockly-registry-btn2 {
   padding: 0.2rem;
   width: 4rem;
@@ -648,7 +790,16 @@ watch(upload_mode, (value) => {
   right: 6rem;
   background-color: rgb(10, 171, 23);
   border-radius: 1rem 1rem 1rem 1rem;
-  
-
+}
+.blockly-registry-btn2:hover {background-color: transparent}
+.blockly-registry-avatar {
+  display: flex;
+  gap: 0.25rem;
+  img {
+    height: 1.5rem;
+    width: 1.5rem;
+    border-radius: 100%;
+    vertical-align: middle;
+  }
 }
 </style>

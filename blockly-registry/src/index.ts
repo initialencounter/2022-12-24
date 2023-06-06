@@ -48,7 +48,7 @@ class BlocklyRegistry {
   local_plugins: BlocklyRegistry.BlocklyDocument[]
   cloud_text: string
   constructor(private ctx: Context, private config: BlocklyRegistry.Config) {
-    this.cloud_text = '云端文字，还没准备好呢，请点击按钮,注意🫵 ⛔️ 不是刷新页面'
+    this.cloud_text = '🐟云端文字还没准备好呢，请点击右上角刷新按钮🐟'
     ctx.on('ready', async () => this.initialized())
     ctx.model.extend('blockly', {
       id: 'integer',
@@ -109,8 +109,8 @@ class BlocklyRegistry {
   }
   async pull_plugin(): Promise<Packages[]> {
     const cloud_plugins = [
-      { name: "gpt", version: "1.0.0", desc: "123131", author: "xxx <29991191912qq.com>", isinstalled: false },
-      { name: "glm", version: "0.0.1", desc: "123131", author: "init", isinstalled: true },
+      { name: "gpt", version: "1.0.0", desc: "123131[121](http://123.com)", author: "xxx <2911583893@qq.com>", isinstalled: false },
+      { name: "glm", version: "0.0.1", desc: "123131", author: "init <3118087750>", isinstalled: true },
       { name: "vits", version: "0.0.1", desc: "123131", author: "shigame", isinstalled: false },
       { name: "setu", version: "0.0.1", desc: "123131", author: "xxx", isinstalled: true },
       { name: "st", version: "0.0.1", desc: "123131", author: "atm", isinstalled: false },
@@ -236,6 +236,10 @@ class BlocklyRegistry {
   }
 }
 namespace BlocklyRegistry {
+  export const usage = `
+前往私信 qq 机器人 xxx 获取 token<br>
+上传插件请前往 blockly-registry 页面
+`
   export interface Config {
     token: string;
     author: string;
@@ -257,9 +261,9 @@ namespace BlocklyRegistry {
     isuploaded?: boolean;
   }
   export const Config: Schema<Config> = Schema.object({
-    token: Schema.string().description('上传blockly代码的token(用于鉴权)'),
-    author: Schema.string().description('作者'),
-    contact: Schema.string().description('qq号(用于鉴权,用户不可见)'),
+    token: Schema.string().description('上传 blockly 代码的 token (用于鉴权)'),
+    author: Schema.string().description('作者 格式: 昵称 < qq 号或者邮箱>,示例: "initialencounter 2911583893"'),
+    contact: Schema.string().description(' qq 号(用于鉴权,用户不可见)'),
     registry: Schema.string().description('插件源码镜像源'),
     start_now: Schema.boolean().default(false).description('启用后将在安装插件后立即启用'),
   })
