@@ -3,6 +3,7 @@ import Market from './market.vue'
 import { } from 'koishi-plugin-blockly-registry'
 import BlocklyRegistry from 'koishi-plugin-blockly-registry'
 import './icon'
+import './utils'
 declare module '@koishijs/plugin-console' {
   interface Events {
     'blockly-registry/upload'(plugin_id: number,desc:string,version:string): Promise<string>

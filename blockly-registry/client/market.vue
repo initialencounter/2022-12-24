@@ -7,7 +7,7 @@
     <div class="layout-header">
       <span class="left">BLOCKLY REGISTRY</span>
       <span class="blockly-registry-mode-select arktitle" @click="openSw">
-        <span v-if="mode=='up'">
+        <span v-if="mode == 'up'">
           <svg
             style="fill: #808080"
             viewBox="0 0 1024 1024"
@@ -18,7 +18,7 @@
             ></path>
           </svg>
         </span>
-        <span v-if="mode=='down'">
+        <span v-if="mode == 'down'">
           <svg
             style="fill: #808080"
             viewBox="0 -100 1024 1024"
@@ -91,7 +91,7 @@
           placeholder="搜索插件名称或作者"
         />
       </div>
-      <div class="blockly-registry-search-action">
+      <div class="blockly-registry-search-action" @click="search">
         <svg
           data-v-a9e07233=""
           xmlns="http://www.w3.org/2000/svg"
@@ -182,8 +182,7 @@
           </button>
           <button
             :id="`blockly-registry-${pkg.name}`"
-            class="blockly-registry-btn"
-            style="background-color: gold"
+            class="blockly-registry-btn3"
             v-if="pkg.isinstalled"
             @click="showDialog(pkg.name)"
           >
@@ -231,10 +230,18 @@
         <div class="blockly-registry-name">
           {{ pkg.name }}
         </div>
-        <div v-if="pkg?.latest" style="color: green;" class="blockly-registry-version">
+        <div
+          v-if="pkg?.latest"
+          style="color: green"
+          class="blockly-registry-version"
+        >
           v-{{ pkg.version }}
         </div>
-        <div v-if="!pkg?.latest" style="color: orange;" class="blockly-registry-version">
+        <div
+          v-if="!pkg?.latest"
+          style="color: orange"
+          class="blockly-registry-version"
+        >
           v-{{ pkg.version }}
         </div>
         <div class="blockly-registry-desc">{{ pkg?.desc || "unknow" }}</div>
@@ -274,7 +281,6 @@
         <button
           :id="`blockly-registry-${pkg.name}`"
           class="blockly-registry-btn2"
-          style="background-color: gold"
           v-if="pkg.isuploaded"
           @click="showDialog(pkg.name)"
         >
@@ -301,8 +307,7 @@
         <!-- push更新 -->
         <button
           :id="`blockly-registry-${pkg.name}`"
-          class="blockly-registry-btn"
-          style="background-color: gold"
+          class="blockly-registry-btn3"
           v-if="pkg.isuploaded"
           @click="showDialog_u(pkg.id)"
         >
@@ -390,7 +395,7 @@
 <script lang="ts" setup>
 import { send, message } from "@koishijs/client";
 import { ref, watch } from "vue";
-import * as md5 from "spark-md5";
+import { getAvatar } from "./utils";
 export interface Packages {
   name: string;
   version: string;
@@ -429,28 +434,21 @@ const upload_plugin_version = ref<string>();
 const select_plugin_version = ref<string>();
 const availiable_version = ref<string[]>();
 const cloud_text = ref<string>();
+const show_local_plugins = ref<BlocklyDocument[]>();
 
-const getAvatar = (email: string) => {
-  if (!email.includes("@"))
-    return `http://q2.qlogo.cn/headimg_dl?dst_uin=${email}&spec=100`;
-  return (
-    "https://s.gravatar.com" +
-    "/avatar/" +
-    (email
-      ? (md5 as unknown as typeof import("spark-md5")).hash(email.toLowerCase())
-      : "") +
-    ".png?d=mp"
-  );
-};
+// 从云端获取文本
 const get_cloud_text = () => {
   send("blockly-registry/cloud-text").then((data) => {
     cloud_text.value = data as string;
   });
 };
+/**
+ * 更新插件列表
+ */
 const refresh_list = () => {
   get_cloud_plugin();
   get_cloud_text();
-  if (mode.value=='down') {
+  if (mode.value == "down") {
     packages.value = cloud_plugins.value;
     show_local_plugins.value = [];
   } else {
@@ -458,6 +456,10 @@ const refresh_list = () => {
     show_local_plugins.value = local_plugins.value;
   }
 };
+/**
+ * 获取当前选中插件的所有版本
+ * @param name 插件名称
+ */
 const get_availiable_version = (name: string) => {
   send("blockly-registry/query-version", name).then((data) => {
     if (data.length == 0) {
@@ -466,39 +468,52 @@ const get_availiable_version = (name: string) => {
     availiable_version.value = data;
   });
 };
+/**
+ * 获取数据库中的插件
+ */
 const get_local_plugin = () => {
   send("blockly-registry/query").then((data) => {
     local_plugins.value = data;
   });
 };
+/**
+ * 获取云端的插件
+ */
 const get_cloud_plugin = () => {
   send("blockly-registry/query-cloud").then((data) => {
     cloud_plugins.value = data;
     packages.value = data;
   });
 };
+/**
+ * 显色对话框
+ * @param name 插件名称
+ */
 const showDialog = (name: string) => {
   get_availiable_version(name);
   select_plugin.value = name;
   dialogVisible.value = true;
 };
-
+/**
+ * 不区分大小写搜索插件的名称，作者，描述
+ */
 const search = () => {
   if (isDisabled.value) {
     message.warning("操作频繁!!⚠️");
     return;
   }
   isDisabled.value = true;
-  let source_plugin_list:Packages[] | BlocklyDocument[]  = cloud_plugins.value
-  if(mode.value=='up') source_plugin_list = local_plugins.value
-  if (input_text.value == "") {
-    refresh_package(source_plugin_list)
+  let source_plugin_list: Packages[] | BlocklyDocument[] = cloud_plugins.value;
+  if (mode.value == "up") source_plugin_list = local_plugins.value;
+  if (!input_text.value) {
+    refresh_package(source_plugin_list);
   }
   const target_list = [];
   for (var i of source_plugin_list) {
     if (
-      i.name.includes(input_text.value) ||
-      i.author.includes(input_text.value)
+      i.name.toLowerCase().includes(input_text.value.toLowerCase()) ||
+      i.author.toLowerCase().includes(input_text.value.toLowerCase()) ||
+      i.desc.toLowerCase().includes(input_text.value.toLowerCase())
     ) {
       target_list.push(i);
     }
@@ -506,8 +521,12 @@ const search = () => {
   message.success(`找到${target_list.length}个插件`);
   refresh_package(target_list);
 };
+/**
+ * 更新插件列表
+ * @param pkgs 本地插件或云端插件
+ */
 const refresh_package = (pkgs: Packages[] | BlocklyDocument[]) => {
-  if (mode.value=='down') {
+  if (mode.value == "down") {
     packages.value = pkgs as Packages[];
   } else {
     show_local_plugins.value = pkgs as BlocklyDocument[];
@@ -515,12 +534,19 @@ const refresh_package = (pkgs: Packages[] | BlocklyDocument[]) => {
   isDisabled.value = false;
   input_text.value = "";
 };
+/**
+ * 切换至上传或安装模式
+ */
 const openSw = () => {
-  mode.value = (mode.value=='up')?'down':'up';
+  mode.value = mode.value == "up" ? "down" : "up";
 };
+/**
+ * 传入插件名称，版本安装插件
+ * @param latest 是否安装最新版本
+ */
 const install = (latest: boolean = true) => {
   const target_version: string = latest
-    ? availiable_version.value[(availiable_version.value.length)-1]
+    ? availiable_version.value[availiable_version.value.length - 1]
     : select_plugin_version.value;
   isDisabled.value = true;
   close_dialogVisible();
@@ -535,11 +561,17 @@ const install = (latest: boolean = true) => {
     }
   );
 };
+/**
+ * 显色上传插件的对话框
+ * @param id 数据库插件id
+ */
 const showDialog_u = (id: number) => {
   select_plugin_u.value = id;
   dialogVisible_u.value = true;
 };
-const show_local_plugins = ref<BlocklyDocument[]>();
+/**
+ * 显示本地插件
+ */
 const upload = () => {
   isDisabled.value = true;
   close_dialogVisible_u();
@@ -559,6 +591,9 @@ const upload = () => {
     isDisabled.value = false;
   });
 };
+/**
+ * 关闭对话框
+ */
 const close_dialogVisible = () => {
   dialogVisible.value = false;
 };
@@ -567,14 +602,16 @@ const close_dialogVisible_u = () => {
 };
 
 // 初始化
-send("blockly-registry/init").then((data) => {
-  local_plugins.value = data[0] as BlocklyDocument[];
-  cloud_plugins.value = data[1] as Packages[];
-  cloud_text.value = data[2] as string;
-});
-
+send("blockly-registry/init").then(
+  (data: Packages[] | string | BlocklyDocument[]) => {
+    local_plugins.value = data[0] as BlocklyDocument[];
+    cloud_plugins.value = data[1] as Packages[];
+    cloud_text.value = data[2] as string;
+  }
+);
+mode.value = "down";
 watch(mode, (value) => {
-  if (value=='down') {
+  if (value == "down") {
     packages.value = cloud_plugins.value;
     show_local_plugins.value = [];
   } else {
@@ -584,276 +621,5 @@ watch(mode, (value) => {
 });
 </script>
 <style lang="scss" scoped>
-.blockly-registry-hint {
-  align-items: center;
-}
-.blockly-registry-hint-box {
-  position: relative;
-  /* 最外层盒子，需要三个属性：定宽、文字不换行、超过隐藏 */
-  width: 40rem;
-  white-space: nowrap;
-  overflow: hidden;
-  margin: 1rem 0 -0.5rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--el-text-color-regular);
-  font-size: var(--el-font-size-base);
-}
-.blockly-registry-hint-text {
-  top: 0%;
-  /* 盒子背景宽度将随文字宽度而进行自适应 */
-  width: fit-content;
-  /* 添加动画 */
-  animation: move 4s linear infinite;
-  /* 让前面的几个文字有一个初始的距离，达到更好的呈现效果 */
-  padding-left: 20px;
-}
-.blockly-registry-hint-text::after {
-  position: absolute;
-  right: -100%;
-  content: attr(text);
-}
-@keyframes move {
-  0% {
-    transform: translateX(100%);
-  }
-}
-
-.blockly-registry-container {
-  width: 100%;
-  margin: 0;
-  padding: 1rem 1.25rem;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  transition: box-shadow 0.3s ease;
-  padding: 0 var(--card-margin);
-  position: relative;
-  height: 100%;
-  width: 100%;
-}
-.blockly-registry-title {
-  position: relative;
-  text-align: center;
-  font-size: xx-large;
-}
-.arktitle {
-  font-weight: bold;
-  background: linear-gradient(to bottom, rgb(29, 185, 71), rgb(38, 151, 177));
-  color: transparent;
-  animation: blink 2s linear infinite;
-  -webkit-animation: blink 2s linear infinite;
-  -moz-animation: blink 2s linear infinite;
-  -ms-animation: blink 2s linear infinite;
-  -o-animation: blink 2s linear infinite;
-  text-align: justify;
-}
-
-@keyframes blink {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-  100% {
-    opacity: 0.8;
-  }
-}
-@-webkit-keyframes blink {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-  100% {
-    opacity: 0.8;
-  }
-}
-@-moz-keyframes blink {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-  100% {
-    opacity: 0.8;
-  }
-}
-@-ms-keyframes blink {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-  100% {
-    opacity: 0.8;
-  }
-}
-@-o-keyframes blink {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-  100% {
-    opacity: 0.8;
-  }
-}
-
-.blockly-registry-mode-select {
-  padding: 0.2rem;
-  border-radius: 0.2rem 0.2rem 0.2rem 0.2rem;
-  width: 1.5rem;
-  position: absolute;
-  left: 14rem;
-}
-.blockly-registry-refresh-market {
-  font-size: 1rem;
-}
-.blockly-registry-search-box {
-  display: flex;
-  margin: 2rem auto 0;
-  width: 100%;
-  max-width: 600px;
-  border-radius: 1.5rem;
-  align-items: center;
-}
-.blockly-registry-search {
-  flex: 1 1 auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 6px;
-  padding: 0.75rem 1.25rem;
-  padding-right: 0;
-  padding-left: 20%;
-  grid-gap: 1rem;
-  display: grid;
-  margin: auto;
-  align-content: center;
-}
-.blockly-registry-input {
-  color: #808080;
-  border-radius: 0.2rem 0.2rem 0.2rem 0.2rem;
-  flex: 1 1 auto;
-  height: 2rem;
-  min-width: 8rem;
-  font-size: 1em;
-  padding: 0;
-  box-sizing: border-box;
-  color: inherit;
-  background-color: transparent;
-  border: none;
-  outline: none;
-}
-.blockly-registry-search-action {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2.5rem;
-  cursor: pointer;
-}
-.blockly-registry-input:hover {
-  background-color: rgb(0, 0, 0);
-}
-/* 插件列表 */
-.blockly-registry-pkg-container {
-  display: grid;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--card-margin);
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  margin: var(--card-margin) 0;
-  justify-items: center;
-}
-.blockly-registry-item {
-  position: relative;
-  left: 20%;
-  width: 17rem;
-  height: 12rem;
-  transition: box-shadow 0.3s ease;
-  box-shadow: 0 0 0 2px inset transparent;
-  border: 2px solid var(--k-card-border);
-  border-radius: 1rem 1rem 1rem 1rem;
-  border-color: #808080;
-  background-color: var(--k-card-bg);
-  border-radius: 8px;
-  overflow: hidden;
-  color: inherit;
-  text-decoration: none;
-}
-.blockly-registry-item:hover {
-  border-color: rgb(51, 175, 197);
-}
-.blockly-registry-name {
-  position: absolute;
-  font-size: 2rem;
-  top: 1rem;
-  left: 1rem;
-}
-.blockly-registry-version {
-  padding: 0.2rem;
-  position: absolute;
-  font-size: 1rem;
-  top: 1rem;
-  right: 1rem;
-}
-.blockly-registry-author {
-  color: rgb(29, 150, 125);
-  border-radius: 1rem 1rem 1rem 1rem;
-  position: absolute;
-  bottom: 1rem;
-  left: 1rem;
-}
-.blockly-registry-desc {
-  position: absolute;
-  text-align: left;
-  top: 5rem;
-  right: 1rem;
-  left: 1rem;
-}
-.blockly-registry-btn {
-  padding: 0.2rem;
-  width: 4rem;
-  position: absolute;
-  bottom: 1rem;
-  right: 1rem;
-  background-color: rgb(10, 171, 23);
-  border-radius: 1rem 1rem 1rem 1rem;
-}
-.blockly-registry-btn:hover {
-  background-color: transparent;
-}
-.blockly-registry-btn2 {
-  padding: 0.2rem;
-  width: 4rem;
-  position: absolute;
-  bottom: 1rem;
-  right: 6rem;
-  background-color: rgb(10, 171, 23);
-  border-radius: 1rem 1rem 1rem 1rem;
-}
-.blockly-registry-btn2:hover {
-  background-color: transparent;
-}
-.blockly-registry-avatar {
-  display: flex;
-  gap: 0.25rem;
-  img {
-    height: 1.5rem;
-    width: 1.5rem;
-    border-radius: 100%;
-    vertical-align: middle;
-  }
-}
+@import "./style.scss";
 </style>

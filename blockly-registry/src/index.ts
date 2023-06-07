@@ -111,7 +111,6 @@ class BlocklyRegistry {
   async get_plugin_version(plugin_name: string): Promise<string[]> {
     try {
       const versions = (await this.ctx.http.get(this.config.registry + VERSION_PATH + '/' + plugin_name))
-      console.log(versions)
       return versions
     } catch (e) {
       logger.error(`${plugin_name}版本获取失败，请联系管理员`)
@@ -192,7 +191,7 @@ class BlocklyRegistry {
       return '上传失败,插件不存在'
     }
     this.ctx.database.set('blockly', [plugin_id], { author: this.config.author, desc: desc, version: version, isuploaded: true })
-    logger.info('上传', plugin[0].name)
+    logger.info(`上传插件：${plugin[0].name}； 版本：${version}`)
     try {
       const payload: BlocklyRegistry.UploadParms = {
         token: this.config.token,
@@ -251,8 +250,23 @@ class BlocklyRegistry {
 }
 namespace BlocklyRegistry {
   export const usage = `
+测试版，暂未开放下载功能
 前往私信 qq 机器人 xxx 获取 token<br>
 上传插件请前往 blockly-registry 页面
+
+## 注意事项：
+
+>感谢您对我们搭建的blockly镜像插件的关注和使用。在使用本插件之前，请仔细阅读并理解本免责声明的内容。
+本插件的发布和使用完全基于用户自愿。我们提供这个镜像插件的目的是为了方便用户分享和下载blockly的插件。
+本插件是由我们独立搭建和维护的，与blockly官方组织无关。因此，任何由于使用本插件而引起的纠纷、损失或问题，均与blockly官方无关。
+尽管我们努力确保本插件的安全性和稳定性，但无法保证本插件完全没有错误或缺陷。使用本插件的用户应自行承担风险，并对使用本插件可能带来的任何问题负全部责任。
+本插件可能会依赖于其他第三方组件、库或工具。对于这些第三方资源的使用和效果，我们无法控制或承担责任。
+我们保留随时中止、暂停或终止本插件的权利，而无需提前通知。这可能是出于技术原因、安全问题或其他因素考虑。
+我们鼓励用户在使用本插件之前备份所有相关数据和文件，以防止任何数据丢失或损坏。
+请注意，本免责声明可能随时更改或更新。建议您定期查看以获取最新版本。
+通过使用本插件，即表示您已阅读、理解并同意遵守以上免责声明中所述的条款和条件。如果您不同意这些条款和条件，请不要使用本插件。
+如有任何疑问或意见，请联系我们，我们将尽力为您提供帮助。
+谢谢！
 `
   export interface UploadParms {
     token: string
@@ -288,9 +302,9 @@ namespace BlocklyRegistry {
   }
   export const Config: Schema<Config> = Schema.object({
     token: Schema.string().description('上传 blockly 代码的 token (用于鉴权)'),
-    author: Schema.string().description('作者 格式: 昵称 < qq 号或者邮箱>,示例: "initialencounter 2911583893"'),
+    author: Schema.string().description('作者 格式: 昵称 < qq 号或者邮箱>,示例: "InitEncunnter <3118087750>"'),
     contact: Schema.string().description(' qq 号(用于鉴权,用户不可见)'),
-    registry: Schema.string().description('插件源码镜像源'),
+    registry: Schema.string().description('插件源码镜像源').default('https://market.blockly.t4wefan.pub'),
     start_now: Schema.boolean().default(false).description('启用后将在安装插件后立即启用'),
   })
 }

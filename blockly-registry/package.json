@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-blockly-registry",
   "description": "blockly插件镜像站",
-  "version": "0.0.1",
+  "version": "0.1.0-alpha.1",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -11,7 +11,20 @@
   "scripts": {
     "build:console": "koishi-console build"
   },
-  "license": "MIT",
+  "author": "initencounter <2911583893@qq.com>",
+  "contributors": [
+    "initencounter <2911583893@qq.com>",
+    "t4wefan <guanghoushi@gmail.com@qq.com>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi#readme",
+  "license": "AGPL-3.0",
   "keywords": [
     "chatbot",
     "koishi",
@@ -19,13 +32,11 @@
   ],
   "peerDependencies": {
     "koishi": "^4.11.9",
-    "koishi-plugin-blockly":"^0.6.2"
+    "koishi-plugin-blockly":"^0.6.2",
+    "@koishijs/plugin-console": "^5.10.0"
   },
   "devDependencies": {
     "@koishijs/client": "^5.10.0"
-  },
-  "dependencies": {
-    "@koishijs/plugin-console": "^5.10.0"
   },
   "koishi": {
     "description": "blockly插件镜像站",
