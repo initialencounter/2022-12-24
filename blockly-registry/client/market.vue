@@ -465,15 +465,7 @@ const get_availiable_version = (name: string) => {
     if (data.length == 0) {
       message.error("版本查询失败");
     }
-    availiable_version.value = data;
-  });
-};
-/**
- * 获取数据库中的插件
- */
-const get_local_plugin = () => {
-  send("blockly-registry/query").then((data) => {
-    local_plugins.value = data;
+    availiable_version.value = data as string[];
   });
 };
 /**
@@ -603,7 +595,7 @@ const close_dialogVisible_u = () => {
 
 // 初始化
 send("blockly-registry/init").then(
-  (data: Packages[] | string | BlocklyDocument[]) => {
+  (data) => {
     local_plugins.value = data[0] as BlocklyDocument[];
     cloud_plugins.value = data[1] as Packages[];
     cloud_text.value = data[2] as string;

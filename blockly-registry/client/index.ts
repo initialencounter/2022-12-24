@@ -10,7 +10,7 @@ declare module '@koishijs/plugin-console' {
     'blockly-registry/install'(plugin_name: string,plugin_version:string): Promise<string>
     'blockly-registry/query'(): Promise<BlocklyRegistry.BlocklyDocument[]>
     'blockly-registry/query-cloud'(): Promise<Packages[]>
-    'blockly-registry/query-version'(plugin_name:string): Promise<string>[]
+    'blockly-registry/query-version'(plugin_name:string): Promise<string[]>
     'blockly-registry/cloud-text'():Promise<string>
     'blockly-registry/init'():Promise<(Packages[]|string|BlocklyRegistry.BlocklyDocument[])[]>
   }
