@@ -2,7 +2,6 @@ import { Context, Logger, Schema } from 'koishi'
 import { } from '@koishijs/plugin-console'
 import { resolve } from 'path'
 import { } from 'koishi-plugin-blockly'
-import { DataService } from '@koishijs/plugin-console'
 declare module '@koishijs/plugin-console' {
   interface Events {
     'blockly-registry/upload'(plugin_id: number, desc: string, version: string): Promise<string>

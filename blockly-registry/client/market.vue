@@ -439,7 +439,7 @@ const show_local_plugins = ref<BlocklyDocument[]>();
 // 从云端获取文本
 const get_cloud_text = () => {
   send("blockly-registry/cloud-text").then((data) => {
-    cloud_text.value = data as string;
+    cloud_text.value = data;
   });
 };
 /**
@@ -465,7 +465,7 @@ const get_availiable_version = (name: string) => {
     if (data.length == 0) {
       message.error("版本查询失败");
     }
-    availiable_version.value = data as string[];
+    availiable_version.value = data;
   });
 };
 /**
@@ -544,10 +544,10 @@ const install = (latest: boolean = true) => {
   close_dialogVisible();
   send("blockly-registry/install", select_plugin.value, target_version).then(
     (data) => {
-      if ((data as string).startsWith("error")) {
-        message.error(data as string);
+      if ((data).startsWith("error")) {
+        message.error(data);
       } else {
-        message.success(data as string);
+        message.success(data);
       }
       isDisabled.value = false;
     }
@@ -573,10 +573,10 @@ const upload = () => {
     upload_plugin_desc.value,
     upload_plugin_version.value
   ).then((data) => {
-    if ((data as string).startsWith("error")) {
-      message.error(data as string);
+    if ((data).startsWith("error")) {
+      message.error(data);
     } else {
-      message.success(data as string);
+      message.success(data);
       upload_plugin_desc.value = "";
       upload_plugin_version.value = "";
     }
