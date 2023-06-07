@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-blockly-registry",
   "description": "blockly插件镜像站",
-  "version": "0.1.0-alpha.1",
+  "version": "0.2.0-alpha.1",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
