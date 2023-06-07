@@ -7,7 +7,7 @@
     <div class="layout-header">
       <span class="left">BLOCKLY REGISTRY</span>
       <span class="blockly-registry-mode-select arktitle" @click="openSw">
-        <span v-if="upload_mode">
+        <span v-if="mode=='up'">
           <svg
             style="fill: #808080"
             viewBox="0 0 1024 1024"
@@ -18,7 +18,7 @@
             ></path>
           </svg>
         </span>
-        <span v-if="!upload_mode">
+        <span v-if="mode=='down'">
           <svg
             style="fill: #808080"
             viewBox="0 -100 1024 1024"
@@ -52,7 +52,7 @@
           class="menu-item el-tooltip__trigger el-tooltip__trigger"
           aria-describedby="el-id-6973-178"
           style="height: 2rem; width: 1.5rem"
-          @click="refresh_market"
+          @click="refresh_list"
           ><svg
             t="1686044330104"
             style="fill: #808080"
@@ -106,120 +106,136 @@
       </div>
     </div>
 
-    <!-- list -->
-    <div style="align-items: center;">
-    <div class="blockly-registry-pkg-container">
-      <a
-        v-for="(pkg, index) in packages"
-        :key="index"
-        class="blockly-registry-item"
-      >
-        <div class="blockly-registry-name">
-          {{ pkg.name }}
-        </div>
-        <div class="blockly-registry-version">
-          {{ pkg.version }}
-        </div>
-        <div class="blockly-registry-desc">
-          <k-markdown inline class="desc" :source="pkg.desc"></k-markdown>
-        </div>
-        <div class="blockly-registry-author">
-          <el-tooltip
-            :content="
-              pkg.author?.split(' ')[0] ? pkg.author?.split(' ')[0] : pkg.author
-            "
-            placement="top"
-          >
-            <span
-              class="blockly-registry-avatar"
-              @click.stop.prevent="
-                $emit(
-                  'query',
-                  'email:' + pkg.author?.split(' ')[1]
-                    ? pkg.author?.split(' ')[1]
-                    : pkg.author
-                )
+    <!-- 云端列表 -->
+    <div style="align-items: center">
+      <div class="blockly-registry-pkg-container">
+        <a
+          v-for="(pkg, index) in packages"
+          :key="index"
+          class="blockly-registry-item"
+        >
+          <div class="blockly-registry-name">
+            {{ pkg.name }}
+          </div>
+          <div class="blockly-registry-version">
+            {{ pkg.version }}
+          </div>
+          <div class="blockly-registry-desc">
+            <k-markdown inline class="desc" :source="pkg.desc"></k-markdown>
+          </div>
+          <div class="blockly-registry-author">
+            <el-tooltip
+              :content="
+                pkg.author?.split(' ')[0]
+                  ? pkg.author?.split(' ')[0]
+                  : pkg.author
               "
+              placement="top"
             >
-              <img
-                :src="
-                  getAvatar(
-                    (pkg.author?.split(' ')[1]
+              <span
+                class="blockly-registry-avatar"
+                @click.stop.prevent="
+                  $emit(
+                    'query',
+                    'email:' + pkg.author?.split(' ')[1]
                       ? pkg.author?.split(' ')[1]
                       : pkg.author
-                    ).slice(1, -1)
                   )
                 "
-              />
-            </span>
-          </el-tooltip>
-        </div>
-        <button
-          :id="`blockly-registry-${pkg.name}`"
-          class="blockly-registry-btn"
-          v-if="!pkg.isinstalled"
-          @click="showDialog(pkg.name)"
-        >
-          <svg
-            t="1685970082203"
-            class="icon"
-            viewBox="0 0 1024 1024"
-            version="1.1"
-            xmlns="http://www.w3.org/2000/svg"
-            p-id="11166"
+              >
+                <img
+                  :src="
+                    getAvatar(
+                      (pkg.author?.split(' ')[1]
+                        ? pkg.author?.split(' ')[1]
+                        : pkg.author
+                      ).slice(1, -1)
+                    )
+                  "
+                />
+              </span>
+            </el-tooltip>
+          </div>
+          <button
+            :id="`blockly-registry-${pkg.name}`"
+            class="blockly-registry-btn"
+            v-if="!pkg.isinstalled"
+            @click="showDialog(pkg.name)"
           >
-            <path
-              d="M921.81 298.35a48.58 48.58 0 0 0-7.46-5.7L688.87 158.8c-7.84-4.71-17.33-5.22-21.09-5.22H348c-3.82 0-13.52 0.53-21.42 5.42L109.83 292.53l-0.19 0.12a48.23 48.23 0 0 0-7.44 5.69 27.16 27.16 0 0 0-17.88 25.48v502.52a27.17 27.17 0 0 0 27.14 27.14h801.07a27.09 27.09 0 0 0 27.14-27V323.82a27.16 27.16 0 0 0-17.86-25.47zM350.3 206.21h315.32L818 296.68H203.45zM887 800.84H137V349.32h750z"
-              p-id="11167"
-            ></path>
-            <path
-              d="M671.63 573.94l-38.97-35.39-94.34 103.87V411.99h-52.64v230.43l-94.34-103.87-38.97 35.39L512 749.68l159.63-175.74z"
-              p-id="11168"
-            ></path>
-          </svg>
-        </button>
-        <button
-          :id="`blockly-registry-${pkg.name}`"
-          class="blockly-registry-btn"
-          style="background-color: gold"
-          v-if="pkg.isinstalled"
-          @click="showDialog(pkg.name)"
-        >
-          <svg
-            t="1685970041674"
-            class="icon"
-            viewBox="0 0 1024 1024"
-            version="1.1"
-            xmlns="http://www.w3.org/2000/svg"
-            p-id="11025"
+            <svg
+              t="1685970082203"
+              class="icon"
+              viewBox="0 0 1024 1024"
+              version="1.1"
+              xmlns="http://www.w3.org/2000/svg"
+              p-id="11166"
+            >
+              <path
+                d="M921.81 298.35a48.58 48.58 0 0 0-7.46-5.7L688.87 158.8c-7.84-4.71-17.33-5.22-21.09-5.22H348c-3.82 0-13.52 0.53-21.42 5.42L109.83 292.53l-0.19 0.12a48.23 48.23 0 0 0-7.44 5.69 27.16 27.16 0 0 0-17.88 25.48v502.52a27.17 27.17 0 0 0 27.14 27.14h801.07a27.09 27.09 0 0 0 27.14-27V323.82a27.16 27.16 0 0 0-17.86-25.47zM350.3 206.21h315.32L818 296.68H203.45zM887 800.84H137V349.32h750z"
+                p-id="11167"
+              ></path>
+              <path
+                d="M671.63 573.94l-38.97-35.39-94.34 103.87V411.99h-52.64v230.43l-94.34-103.87-38.97 35.39L512 749.68l159.63-175.74z"
+                p-id="11168"
+              ></path>
+            </svg>
+          </button>
+          <button
+            :id="`blockly-registry-${pkg.name}`"
+            class="blockly-registry-btn"
+            style="background-color: gold"
+            v-if="pkg.isinstalled"
+            @click="showDialog(pkg.name)"
           >
-            <path
-              d="M855.6032 245.76H844.8v-46.6432c0-45.1584-36.7616-81.92-81.92-81.92H261.12c-45.1584 0-81.92 36.7616-81.92 81.92V245.76h-10.8032c-45.1584 0-81.92 36.7616-81.92 81.92v501.76c0 45.1584 36.7616 81.92 81.92 81.92h687.2064c45.1584 0 81.92-36.7616 81.92-81.92V327.68c0-45.1584-36.7616-81.92-81.92-81.92zM220.16 199.1168c0-22.5792 18.3808-40.96 40.96-40.96h501.76c22.5792 0 40.96 18.3808 40.96 40.96V245.76H220.16v-46.6432zM896.5632 829.44c0 22.5792-18.3808 40.96-40.96 40.96H168.3968c-22.5792 0-40.96-18.3808-40.96-40.96V327.68c0-22.5792 18.3808-40.96 40.96-40.96H855.6032c22.5792 0 40.96 18.3808 40.96 40.96v501.76z"
-              fill="#666666"
-              p-id="11026"
-            ></path>
-            <path
-              d="M359.1168 850.9952c-14.3872 0-27.2384-8.6016-32.768-21.9648a35.90656 35.90656 0 0 1 7.7312-39.3216l28.672-28.672-29.184-29.184-28.672 28.672a35.84 35.84 0 0 1-39.2704 7.7312 35.87072 35.87072 0 0 1-22.0672-33.4336c0.256-30.4128 12.2368-59.0336 33.7408-80.5376 31.232-31.232 77.1584-41.5232 118.2208-27.6992l160.4096-160.4096c-13.1072-39.4752-4.0448-84.0704 24.4224-114.8928 21.7088-23.4496 52.4288-36.9664 84.2752-37.0688h0.1024c14.3872 0 27.2384 8.6016 32.768 21.9648 5.632 13.568 2.6112 28.9792-7.7312 39.3216l-28.672 28.672 29.184 29.184 28.672-28.672a35.84 35.84 0 0 1 39.2704-7.7312 35.74784 35.74784 0 0 1 22.016 33.4336 114.63168 114.63168 0 0 1-33.7408 80.5376c-31.1808 31.232-77.2096 41.5232-118.2208 27.6992L467.968 699.0336c13.1072 39.4752 4.0448 84.0704-24.4224 114.8928a115.6096 115.6096 0 0 1-84.2752 37.0688h-0.1536z m-25.5488-162.2016c9.216 0 18.3808 3.4816 25.3952 10.496l36.352 36.352c13.9776 13.9776 13.9776 36.7616 0 50.7392l-22.272 22.272c15.4112-2.9696 29.44-10.7008 40.3968-22.5792 20.5312-22.1696 25.344-55.552 12.032-83.0464l-6.3488-13.1072 200.2432-200.2432 13.1584 6.4c28.5184 13.9264 62.72 8.2944 85.1456-14.1312 10.5984-10.5984 17.6128-23.9104 20.4288-38.3488L715.776 465.92c-6.7584 6.7584-15.7696 10.496-25.3952 10.496s-18.5856-3.7376-25.3952-10.496l-36.352-36.352a35.6608 35.6608 0 0 1-10.496-25.3952 35.84 35.84 0 0 1 10.496-25.3952l22.272-22.272c-15.4112 2.9696-29.44 10.7008-40.448 22.5792-20.5312 22.1696-25.344 55.552-12.032 83.0464l6.3488 13.1072-200.2432 200.2432-13.1584-6.4512a74.36288 74.36288 0 0 0-85.1456 14.1312 74.17856 74.17856 0 0 0-20.4288 38.3488l22.272-22.272a36.61824 36.61824 0 0 1 25.4976-10.4448z"
-              fill="#666666"
-              p-id="11027"
-            ></path>
-          </svg>
-        </button>
-      </a>
+            <svg
+              t="1685970041674"
+              class="icon"
+              viewBox="0 0 1024 1024"
+              version="1.1"
+              xmlns="http://www.w3.org/2000/svg"
+              p-id="11025"
+            >
+              <path
+                d="M855.6032 245.76H844.8v-46.6432c0-45.1584-36.7616-81.92-81.92-81.92H261.12c-45.1584 0-81.92 36.7616-81.92 81.92V245.76h-10.8032c-45.1584 0-81.92 36.7616-81.92 81.92v501.76c0 45.1584 36.7616 81.92 81.92 81.92h687.2064c45.1584 0 81.92-36.7616 81.92-81.92V327.68c0-45.1584-36.7616-81.92-81.92-81.92zM220.16 199.1168c0-22.5792 18.3808-40.96 40.96-40.96h501.76c22.5792 0 40.96 18.3808 40.96 40.96V245.76H220.16v-46.6432zM896.5632 829.44c0 22.5792-18.3808 40.96-40.96 40.96H168.3968c-22.5792 0-40.96-18.3808-40.96-40.96V327.68c0-22.5792 18.3808-40.96 40.96-40.96H855.6032c22.5792 0 40.96 18.3808 40.96 40.96v501.76z"
+                fill="#666666"
+                p-id="11026"
+              ></path>
+              <path
+                d="M359.1168 850.9952c-14.3872 0-27.2384-8.6016-32.768-21.9648a35.90656 35.90656 0 0 1 7.7312-39.3216l28.672-28.672-29.184-29.184-28.672 28.672a35.84 35.84 0 0 1-39.2704 7.7312 35.87072 35.87072 0 0 1-22.0672-33.4336c0.256-30.4128 12.2368-59.0336 33.7408-80.5376 31.232-31.232 77.1584-41.5232 118.2208-27.6992l160.4096-160.4096c-13.1072-39.4752-4.0448-84.0704 24.4224-114.8928 21.7088-23.4496 52.4288-36.9664 84.2752-37.0688h0.1024c14.3872 0 27.2384 8.6016 32.768 21.9648 5.632 13.568 2.6112 28.9792-7.7312 39.3216l-28.672 28.672 29.184 29.184 28.672-28.672a35.84 35.84 0 0 1 39.2704-7.7312 35.74784 35.74784 0 0 1 22.016 33.4336 114.63168 114.63168 0 0 1-33.7408 80.5376c-31.1808 31.232-77.2096 41.5232-118.2208 27.6992L467.968 699.0336c13.1072 39.4752 4.0448 84.0704-24.4224 114.8928a115.6096 115.6096 0 0 1-84.2752 37.0688h-0.1536z m-25.5488-162.2016c9.216 0 18.3808 3.4816 25.3952 10.496l36.352 36.352c13.9776 13.9776 13.9776 36.7616 0 50.7392l-22.272 22.272c15.4112-2.9696 29.44-10.7008 40.3968-22.5792 20.5312-22.1696 25.344-55.552 12.032-83.0464l-6.3488-13.1072 200.2432-200.2432 13.1584 6.4c28.5184 13.9264 62.72 8.2944 85.1456-14.1312 10.5984-10.5984 17.6128-23.9104 20.4288-38.3488L715.776 465.92c-6.7584 6.7584-15.7696 10.496-25.3952 10.496s-18.5856-3.7376-25.3952-10.496l-36.352-36.352a35.6608 35.6608 0 0 1-10.496-25.3952 35.84 35.84 0 0 1 10.496-25.3952l22.272-22.272c-15.4112 2.9696-29.44 10.7008-40.448 22.5792-20.5312 22.1696-25.344 55.552-12.032 83.0464l6.3488 13.1072-200.2432 200.2432-13.1584-6.4512a74.36288 74.36288 0 0 0-85.1456 14.1312 74.17856 74.17856 0 0 0-20.4288 38.3488l22.272-22.272a36.61824 36.61824 0 0 1 25.4976-10.4448z"
+                fill="#666666"
+                p-id="11027"
+              ></path>
+            </svg>
+          </button>
+        </a>
+      </div>
     </div>
-  </div>
+
+    <!-- 本地列表 -->
     <div class="blockly-registry-pkg-container">
       <div
         v-for="(pkg, index) in show_local_plugins"
         :key="index"
         class="blockly-registry-item"
       >
-        <div class="blockly-registry-name">{{ pkg.name }}</div>
+        <div class="blockly-registry-name" v-if="!pkg.invalid_name">
+          {{ pkg.name }}
+        </div>
+        <div
+          class="blockly-registry-name"
+          v-if="pkg.invalid_name"
+          style="color: yellow"
+        >
+          {{ pkg.name }}
+        </div>
         <div class="blockly-registry-name">
           {{ pkg.name }}
         </div>
-        <div class="blockly-registry-version">
-          {{ pkg.version }}
+        <div v-if="pkg?.latest" style="color: green;" class="blockly-registry-version">
+          v-{{ pkg.version }}
+        </div>
+        <div v-if="!pkg?.latest" style="color: orange;" class="blockly-registry-version">
+          v-{{ pkg.version }}
         </div>
         <div class="blockly-registry-desc">{{ pkg?.desc || "unknow" }}</div>
         <div class="blockly-registry-author">
@@ -230,6 +246,7 @@
             placement="top"
           >
             <span
+              v-if="pkg.isuploaded"
               class="blockly-registry-avatar"
               @click.stop.prevent="
                 $emit(
@@ -253,6 +270,7 @@
             </span>
           </el-tooltip>
         </div>
+        <!-- pull修改 -->
         <button
           :id="`blockly-registry-${pkg.name}`"
           class="blockly-registry-btn2"
@@ -280,6 +298,7 @@
             ></path>
           </svg>
         </button>
+        <!-- push更新 -->
         <button
           :id="`blockly-registry-${pkg.name}`"
           class="blockly-registry-btn"
@@ -305,6 +324,8 @@
             ></path>
           </svg>
         </button>
+
+        <!-- 发布 -->
         <button
           :id="`blockly-registry-${pkg.name}`"
           class="blockly-registry-btn"
@@ -370,7 +391,6 @@
 import { send, message } from "@koishijs/client";
 import { ref, watch } from "vue";
 import * as md5 from "spark-md5";
-import { get } from "http";
 export interface Packages {
   name: string;
   version: string;
@@ -390,11 +410,13 @@ export interface BlocklyDocument {
   desc?: string;
   version?: string;
   isuploaded?: boolean;
+  invalid_name?: boolean;
+  latest?: boolean;
 }
 const dialogVisible = ref(false);
 const upLoading = ref(false);
 const isDisabled = ref(false);
-const upload_mode = ref(false);
+const mode = ref<string>();
 const dialogVisible_u = ref(false);
 const select_plugin_u = ref<number>();
 const local_plugins = ref<BlocklyDocument[]>();
@@ -425,12 +447,22 @@ const get_cloud_text = () => {
     cloud_text.value = data as string;
   });
 };
-const refresh_market = () => {
-  get_cloud_plugin()
-  get_cloud_text()
+const refresh_list = () => {
+  get_cloud_plugin();
+  get_cloud_text();
+  if (mode.value=='down') {
+    packages.value = cloud_plugins.value;
+    show_local_plugins.value = [];
+  } else {
+    packages.value = [];
+    show_local_plugins.value = local_plugins.value;
+  }
 };
 const get_availiable_version = (name: string) => {
   send("blockly-registry/query-version", name).then((data) => {
+    if (data.length == 0) {
+      message.error("版本查询失败");
+    }
     availiable_version.value = data;
   });
 };
@@ -457,11 +489,13 @@ const search = () => {
     return;
   }
   isDisabled.value = true;
+  let source_plugin_list:Packages[] | BlocklyDocument[]  = cloud_plugins.value
+  if(mode.value=='up') source_plugin_list = local_plugins.value
   if (input_text.value == "") {
-    refresh_package(cloud_plugins.value);
+    refresh_package(source_plugin_list)
   }
   const target_list = [];
-  for (var i of cloud_plugins.value) {
+  for (var i of source_plugin_list) {
     if (
       i.name.includes(input_text.value) ||
       i.author.includes(input_text.value)
@@ -472,17 +506,21 @@ const search = () => {
   message.success(`找到${target_list.length}个插件`);
   refresh_package(target_list);
 };
-const refresh_package = (pkgs: Packages[]) => {
-  packages.value = pkgs;
+const refresh_package = (pkgs: Packages[] | BlocklyDocument[]) => {
+  if (mode.value=='down') {
+    packages.value = pkgs as Packages[];
+  } else {
+    show_local_plugins.value = pkgs as BlocklyDocument[];
+  }
   isDisabled.value = false;
   input_text.value = "";
 };
 const openSw = () => {
-  upload_mode.value = !upload_mode.value;
+  mode.value = (mode.value=='up')?'down':'up';
 };
 const install = (latest: boolean = true) => {
   const target_version: string = latest
-    ? availiable_version.value[0]
+    ? availiable_version.value[(availiable_version.value.length)-1]
     : select_plugin_version.value;
   isDisabled.value = true;
   close_dialogVisible();
@@ -505,7 +543,12 @@ const show_local_plugins = ref<BlocklyDocument[]>();
 const upload = () => {
   isDisabled.value = true;
   close_dialogVisible_u();
-  send("blockly-registry/upload", select_plugin_u.value,upload_plugin_desc.value,upload_plugin_version.value).then((data) => {
+  send(
+    "blockly-registry/upload",
+    select_plugin_u.value,
+    upload_plugin_desc.value,
+    upload_plugin_version.value
+  ).then((data) => {
     if ((data as string).startsWith("error")) {
       message.error(data as string);
     } else {
@@ -527,19 +570,15 @@ const close_dialogVisible_u = () => {
 send("blockly-registry/init").then((data) => {
   local_plugins.value = data[0] as BlocklyDocument[];
   cloud_plugins.value = data[1] as Packages[];
-  packages.value = data[1] as Packages[];
-  local_plugins.value = data[2] as BlocklyDocument[];
-  cloud_text.value = data[3] as string;
+  cloud_text.value = data[2] as string;
 });
 
-watch(upload_mode, (value) => {
-  if (!value) { 
-    show_local_plugins.value = [];
-    get_cloud_plugin()
+watch(mode, (value) => {
+  if (value=='down') {
     packages.value = cloud_plugins.value;
+    show_local_plugins.value = [];
   } else {
     packages.value = [];
-    get_local_plugin()
     show_local_plugins.value = local_plugins.value;
   }
 });
@@ -669,8 +708,8 @@ watch(upload_mode, (value) => {
 }
 
 .blockly-registry-mode-select {
-  padding: .2rem;
-  border-radius: .2rem .2rem .2rem .2rem;
+  padding: 0.2rem;
+  border-radius: 0.2rem 0.2rem 0.2rem 0.2rem;
   width: 1.5rem;
   position: absolute;
   left: 14rem;
@@ -701,7 +740,8 @@ watch(upload_mode, (value) => {
   align-content: center;
 }
 .blockly-registry-input {
-  border-radius: 1rem 1rem 1rem 1rem;
+  color: #808080;
+  border-radius: 0.2rem 0.2rem 0.2rem 0.2rem;
   flex: 1 1 auto;
   height: 2rem;
   min-width: 8rem;
@@ -724,7 +764,7 @@ watch(upload_mode, (value) => {
   cursor: pointer;
 }
 .blockly-registry-input:hover {
-  background-color: rgb(180, 171, 23,10);
+  background-color: rgb(0, 0, 0);
 }
 /* 插件列表 */
 .blockly-registry-pkg-container {
@@ -732,7 +772,7 @@ watch(upload_mode, (value) => {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--card-margin);
-  grid-template-columns: repeat(auto-fill,minmax(300px,1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   margin: var(--card-margin) 0;
   justify-items: center;
 }
@@ -745,15 +785,15 @@ watch(upload_mode, (value) => {
   box-shadow: 0 0 0 2px inset transparent;
   border: 2px solid var(--k-card-border);
   border-radius: 1rem 1rem 1rem 1rem;
-  border-color: #808080 ;
+  border-color: #808080;
   background-color: var(--k-card-bg);
   border-radius: 8px;
   overflow: hidden;
   color: inherit;
   text-decoration: none;
 }
-.blockly-registry-item:hover{
-  border-color: rgb(51, 175, 197) ;
+.blockly-registry-item:hover {
+  border-color: rgb(51, 175, 197);
 }
 .blockly-registry-name {
   position: absolute;
@@ -791,7 +831,9 @@ watch(upload_mode, (value) => {
   background-color: rgb(10, 171, 23);
   border-radius: 1rem 1rem 1rem 1rem;
 }
-.blockly-registry-btn:hover {background-color: transparent}
+.blockly-registry-btn:hover {
+  background-color: transparent;
+}
 .blockly-registry-btn2 {
   padding: 0.2rem;
   width: 4rem;
@@ -801,7 +843,9 @@ watch(upload_mode, (value) => {
   background-color: rgb(10, 171, 23);
   border-radius: 1rem 1rem 1rem 1rem;
 }
-.blockly-registry-btn2:hover {background-color: transparent}
+.blockly-registry-btn2:hover {
+  background-color: transparent;
+}
 .blockly-registry-avatar {
   display: flex;
   gap: 0.25rem;

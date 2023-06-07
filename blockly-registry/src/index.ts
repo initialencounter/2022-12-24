@@ -1,19 +1,22 @@
 import { Context, Logger, Schema } from 'koishi'
 import { } from '@koishijs/plugin-console'
-import { BlocklyDocument } from 'koishi-plugin-blockly'
 import { resolve } from 'path'
+import { } from 'koishi-plugin-blockly'
 declare module '@koishijs/plugin-console' {
   interface Events {
     'blockly-registry/upload'(plugin_id: number, desc: string, version: string): Promise<string>
     'blockly-registry/install'(plugin_name: string, plugin_version: string): Promise<string>
     'blockly-registry/query'(): Promise<BlocklyRegistry.BlocklyDocument[]>
     'blockly-registry/query-cloud'(): Promise<Packages[]>
-    'blockly-registry/query-version'(plugin_name:string): Promise<string[]>
-    'blockly-registry/cloud-text'():Promise<string>
-    'blockly-registry/init'():Promise<(Packages[]|string|BlocklyRegistry.BlocklyDocument[])[]>
+    'blockly-registry/query-version'(plugin_name: string): Promise<string[]>
+    'blockly-registry/cloud-text'(): Promise<string>
+    'blockly-registry/init'(): Promise<(Packages[] | string | BlocklyRegistry.BlocklyDocument[])[]>
   }
 }
-declare module "koishi-plugin-blockly" {
+declare module "koishi" {
+  interface Tables {
+    blockly: BlocklyDocument
+  }
   interface BlocklyDocument {
     id: number
     uuid: string
@@ -26,6 +29,8 @@ declare module "koishi-plugin-blockly" {
     desc?: string
     version?: string
     isuploaded?: boolean
+    invalid_name?: boolean
+    latest?: boolean
   }
 }
 
@@ -50,7 +55,6 @@ class BlocklyRegistry {
   cloud_text: string
   constructor(private ctx: Context, private config: BlocklyRegistry.Config) {
     this.cloud_text = '🐟云端文字还没准备好呢，请点击右上角刷新按钮🐟'
-    ctx.on('ready', async () => this.initialized(true))
     ctx.model.extend('blockly', {
       id: 'integer',
       name: 'string',
@@ -62,7 +66,9 @@ class BlocklyRegistry {
       author: 'string',
       desc: 'string',
       version: 'string',
-      isuploaded: 'boolean'
+      isuploaded: 'boolean',
+      invalid_name: 'boolean',
+      latest: 'boolean'
     })
     ctx.using(['console'], (ctx) => {
       ctx.console.addEntry({
@@ -71,84 +77,87 @@ class BlocklyRegistry {
       })
     })
     ctx.console.addListener('blockly-registry/upload', async (plugin_id: number, desc: string, version: string) => {
-      console.log('blockly-registry/upload',desc,version)
+      logger.info('blockly-registry/upload', desc, version)
       return (await this.upload(plugin_id, desc, version))
     })
     ctx.console.addListener('blockly-registry/install', async (plugin_name: string, plugin_version: string) => {
-      console.log('blockly-registry/install')
+      logger.info('blockly-registry/install')
       return (await this.install(plugin_name, plugin_version))
     })
     ctx.console.addListener('blockly-registry/query', async () => {
-      console.log('blockly-registry/query')
+      logger.info('blockly-registry/query')
       return this.local_plugins
     })
     ctx.console.addListener('blockly-registry/query-cloud', async () => {
-      console.log('blockly-registry/query-cloud')
+      logger.info('blockly-registry/query-cloud')
       return this.cloud_plugins
     })
 
-    ctx.console.addListener('blockly-registry/query-version',async(plugin_name:string)=>{
-      console.log('blockly-registry/query-version')
+    ctx.console.addListener('blockly-registry/query-version', async (plugin_name: string) => {
+      logger.info('blockly-registry/query-version')
       return (await this.get_plugin_version(plugin_name))
     })
-    ctx.console.addListener('blockly-registry/cloud-text',async()=>{
-      console.log('blockly-registry/cloud-text')
+    ctx.console.addListener('blockly-registry/cloud-text', async () => {
+      logger.info('blockly-registry/cloud-text')
       return this.cloud_text
     })
-    ctx.console.addListener('blockly-registry/init',async()=>{
-      console.log('blockly-registry/cloud-init')
+    ctx.console.addListener('blockly-registry/init', async () => {
+      logger.info('blockly-registry/cloud-init')
       await this.initialized()
       return [this.local_plugins, this.cloud_plugins, this.cloud_text]
     })
 
   }
-  async get_plugin_version(plugin_name:string): Promise<string[]>{
-    return (await this.ctx.http.get(this.config.registry+VERSION_PATH+'/'+plugin_name)).data
+  async get_plugin_version(plugin_name: string): Promise<string[]> {
+    try {
+      const versions = (await this.ctx.http.get(this.config.registry + VERSION_PATH + '/' + plugin_name))
+      console.log(versions)
+      return versions
+    } catch (e) {
+      logger.error(`${plugin_name}版本获取失败，请联系管理员`)
+      return []
+    }
+
   }
   async pull_plugin(): Promise<Packages[]> {
-    // const cloud_plugins = [
-    //   { name: "gpt", version: "1.0.0", desc: "123131[121](http://123.com)", author: "xxx <2911583893@qq.com>", isinstalled: false },
-    //   { name: "glm", version: "0.0.1", desc: "123131", author: "init <3118087750>", isinstalled: true },
-    //   { name: "vits", version: "0.0.1", desc: "123131", author: "shigame", isinstalled: false },
-    //   { name: "setu", version: "0.0.1", desc: "123131", author: "xxx", isinstalled: true },
-    //   { name: "st", version: "0.0.1", desc: "123131", author: "atm", isinstalled: false },
-    //   { name: "test", version: "0.0.1", desc: "123131", author: "xxx", isinstalled: true },
-    //   { name: "test", version: "0.0.1", desc: "123131", author: "xxx", isinstalled: false },
-    //   { name: "test", version: "0.0.1", desc: "123131", author: "xxx", isinstalled: false },
-    //   { name: "test", version: "0.0.1", desc: "123131", author: "xxx", isinstalled: false },
-    //   { name: "test", version: "0.0.1", desc: "123131", author: "xxx", isinstalled: false },
-    //   { name: "test", version: "0.0.1", desc: "123131", author: "xxx", isinstalled: false },
-    //   { name: "test", version: "0.0.1", desc: "123131", author: "xxx", isinstalled: false },
-    //   { name: "test", version: "0.0.1", desc: "123131", author: "xxx", isinstalled: false },
-    //   { name: "test", version: "0.0.1", desc: "123131", author: "xxx", isinstalled: false },
-    //   { name: "test", version: "0.0.1", desc: "123131", author: "xxx", isinstalled: false },
-    //   { name: "121", version: "0.0.1", desc: "123131", author: "xxx", isinstalled: false },
-    //   { name: "test", version: "0.0.1", desc: "123131", author: "xxx", isinstalled: false },
-    // ];
-    // return cloud_plugins
-    const cloud_plugins = (await this.ctx.http.axios(this.config.registry+INDEX_PATH)).data
-    return cloud_plugins['index']
+    try {
+      const cloud_plugins = (await this.ctx.http.axios(this.config.registry + INDEX_PATH)).data
+      return cloud_plugins['index']
+    } catch (e) {
+      logger.error('插件查询失败！')
+      return []
+    }
   }
   async query_plugin(): Promise<BlocklyRegistry.BlocklyDocument[]> {
-    const local_plugin: BlocklyRegistry.BlocklyDocument[] = (await this.ctx.database.get('blockly', { id: { $gt: 0, $lte: 9999 } }))
-    return local_plugin
+    try {
+      const local_plugin: BlocklyRegistry.BlocklyDocument[] = (await this.ctx.database.get('blockly', { id: { $gt: 0, $lte: 9999 } }))
+      return local_plugin
+    } catch (e) {
+      logger.error('数据库读取错误,请刷新页面')
+      return []
+    }
   }
   sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
-  async get_cloud_text():Promise<string>{
-    return (await this.ctx.http.axios({
-      method: 'GET',
-      url: this.config.registry+TEXT_PATH
-    })).data
+  async get_cloud_text(): Promise<string> {
+    try {
+      return (await this.ctx.http.axios({
+        method: 'GET',
+        url: this.config.registry + TEXT_PATH
+      })).data
+    } catch (e) {
+      logger.error(e + '镜像连接失败，请联系镜像站长')
+      return '镜像连接失败，请联系镜像站长'
+    }
+
   }
-  async initialized(wait:boolean=false) {
+  async initialized() {
     const cloud_plugins_name: string[] = []
     const local_plugins_name: string[] = []
-    this.cloud_text = await this.get_cloud_text()
-    if(wait) await this.sleep(5000)
-    this.cloud_plugins = await this.pull_plugin()
     this.local_plugins = await this.query_plugin()
+    this.cloud_text = await this.get_cloud_text()
+    this.cloud_plugins = await this.pull_plugin()
     for (var i of this.cloud_plugins) {
       cloud_plugins_name.push(i.name)
     }
@@ -157,12 +166,21 @@ class BlocklyRegistry {
     }
     for (var k in this.cloud_plugins) {
       if (local_plugins_name.includes(this.cloud_plugins[k].name)) {
+        const lc_plugin = await this.ctx.database.get('blockly', { name: [this.cloud_plugins[k].name] })
+        if (lc_plugin[0]?.isuploaded) {
+          this.ctx.database.set('blockly', { name: [local_plugins_name[k]] }, { author: this.config.author, invalid_name: true })
+        }
+        let latest = false
+        if (lc_plugin[0].version == this.cloud_plugins[k].version) {
+          latest = true
+        }
+        for (var l in this.local_plugins) {
+          if (this.local_plugins[l].name == this.cloud_plugins[k].name) {
+            this.local_plugins[l].latest = latest
+          }
+        }
+        this.ctx.database.set('blockly', { name: [local_plugins_name[k]] }, { latest: latest })
         this.cloud_plugins[k].isinstalled = true
-      }
-    }
-    for (var l in this.local_plugins) {
-      if (cloud_plugins_name.includes(this.local_plugins[l].name)) {
-        this.local_plugins[l].isuploaded = true
       }
     }
   }
@@ -173,35 +191,37 @@ class BlocklyRegistry {
     if (plugin.length < 1) {
       return '上传失败,插件不存在'
     }
+    this.ctx.database.set('blockly', [plugin_id], { author: this.config.author, desc: desc, version: version, isuploaded: true })
     logger.info('上传', plugin[0].name)
     try {
+      const payload: BlocklyRegistry.UploadParms = {
+        token: this.config.token,
+        token_id: this.config.contact,
+        name: plugin[0].name,
+        desc: desc,
+        version: version,
+        code: plugin[0].code,
+        body: plugin[0].body,
+        author: this.config.author
+      }
       const res = (await this.ctx.http.axios({
         method: 'POST',
-        url: this.config.registry+UPLOAD_PATH,
-        data: {
-          token: this.config.token,
-          token_id: this.config.contact,
-          name: plugin[0].name,
-          desc: desc,
-          version: version,
-          code: plugin[0].code,
-          body: plugin[0].body,
-          author: this.config.author
-        }
+        url: this.config.registry + UPLOAD_PATH,
+        data: payload
       })).data
-      if(res?.status=='ok')return '上传成功'
-      return 'error上传失败'+res.info
+      if (res?.status == 'ok') return '上传成功'
+      return 'error上传失败' + res.info
     } catch (e) {
       logger.error(e)
       //上传失败
-      return 'error上传失败'+e
+      return 'error上传失败' + e
     }
   }
   async install(plugin_name: string, plugin_version: string): Promise<string> {
-    logger.info('安装', plugin_name,plugin_version)
+    logger.info('安装', plugin_name, plugin_version)
     try {
       const exit_plugins = await this.ctx.database.get('blockly', { name: [plugin_name] })
-      if(exit_plugins[0]?.version == plugin_version ){
+      if (exit_plugins[0]?.version == plugin_version) {
         return `改插件当前版本已经是${plugin_version},无需修改`
       }
       const plugin: BlocklyRegistry.BlocklyDocument = await this.download_source_code(plugin_name, plugin_version)
@@ -210,11 +230,12 @@ class BlocklyRegistry {
         body: plugin.body,
         code: plugin.code,
         enabled: this.config.start_now,
-        edited: false, uuid: '0.0.1',
+        edited: false,
+        uuid: 'external',
         version: plugin.version,
         desc: plugin.desc,
         author: plugin.author
-      })  
+      })
       await this.ctx.blockly.reload(this.config.start_now)
       //成功
       return '安装成功,请前往blockly页面查看'
@@ -223,10 +244,9 @@ class BlocklyRegistry {
       logger.error(e)
       return `error安装失败${e}`
     }
-
   }
   async download_source_code(plugin_name: string, plugin_version: string) {
-    return (await this.ctx.http.axios(this.config.registry + CODE_PATH + plugin_name + plugin_version)).data
+    return (await this.ctx.http.axios(this.config.registry + CODE_PATH + '/' + plugin_name + '/' + plugin_version)).data
   }
 }
 namespace BlocklyRegistry {
@@ -234,6 +254,16 @@ namespace BlocklyRegistry {
 前往私信 qq 机器人 xxx 获取 token<br>
 上传插件请前往 blockly-registry 页面
 `
+  export interface UploadParms {
+    token: string
+    token_id: string
+    name: string
+    desc: string
+    version: string
+    code: string
+    body: string
+    author: string
+  }
   export interface Config {
     token: string;
     author: string;
@@ -253,6 +283,8 @@ namespace BlocklyRegistry {
     desc?: string;
     version?: string;
     isuploaded?: boolean;
+    invalid_name?: boolean;
+    latest?: boolean
   }
   export const Config: Schema<Config> = Schema.object({
     token: Schema.string().description('上传 blockly 代码的 token (用于鉴权)'),
