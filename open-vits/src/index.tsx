@@ -1,4 +1,4 @@
-import { Context, Schema, h, Session, Logger, Dict } from 'koishi'
+import { Context, Schema, h, Session, Logger, Dict, trimSlash } from 'koishi'
 import { } from '@koishijs/translator';
 import Vits from '@initencounter/vits'
 export const using = ['translator']
@@ -17,14 +17,14 @@ class OpenVits extends Vits {
   constructor(ctx: Context, config: OpenVits.Config) {
     super(ctx)
     this.speaker = Number(config.speaker_id)
-    this.speaker = (this.speaker < this.max_speakers && this.speaker > 0) ? this.speaker : 172
+    this.speaker = ((this.speaker < this.max_speakers) && this.speaker > 0) ? this.speaker : 172
     this.recall_time = config.recall_time
     this.max_length = config.max_length
     this.endpoint = config.endpoint
     this.speaker_dict = {}
     ctx.i18n.define('zh', require('./locales/zh'));
     ctx.on('ready', async () => {
-      this.speaker_list = (await this.ctx.http.get('http://api.t4wefan.pub:60254/voice/speakers'))['VITS']
+      this.speaker_list = (await this.ctx.http.get(trimSlash(`${config.endpoint}/voice/speakers`)))['VITS']
       this.max_speakers = this.speaker_list.length - 1
       this.speaker_list.forEach((i, id) => {
         let speaker_name: string = Object.values(i)[0]
@@ -61,7 +61,7 @@ class OpenVits extends Vits {
           this.speaker = Object.values(this.speaker_dict).indexOf(options.speaker)
         } else {
           this.speaker = options.speaker ? Number(options.speaker) : Number(config.speaker_id)
-          this.speaker = (this.speaker < this.max_speakers && this.speaker > 0) ? this.speaker : 3
+          this.speaker = ((this.speaker < this.max_speakers) && this.speaker > 0) ? this.speaker : 3
         }
         const languageCodes = ['zh', 'en', 'fr', 'jp', 'ru', 'de']
         if (options.lang) {
@@ -108,7 +108,7 @@ class OpenVits extends Vits {
       return h(String(await this.ctx.http.get('https://drive.t4wefan.pub/d/koishi/vits/error_too_long.txt', { responseType: "text" })));
     }
     try {
-      const url: string = `${this.endpoint}/voice?text=${encodeURIComponent(input)}&id=${speaker_id}&format=ogg`
+      const url: string = trimSlash(`${this.endpoint}/voice?text=${encodeURIComponent(input)}&id=${speaker_id}&format=ogg`)
       const response: Buffer = await this.ctx.http.get(url, { responseType: 'arraybuffer' });
       return h.audio(response, 'audio/mpeg')
     } catch (e) {
