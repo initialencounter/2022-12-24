@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-blockly-registry",
   "description": "blockly插件镜像站",
-  "version": "0.2.0-alpha.1",
+  "version": "0.4.0-alpha.1",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -14,7 +14,7 @@
   "author": "initencounter <2911583893@qq.com>",
   "contributors": [
     "initencounter <2911583893@qq.com>",
-    "t4wefan <guanghoushi@gmail.com@qq.com>"
+    "t4wefan <guanghoushi@gmail.com>"
   ],
   "repository": {
     "type": "git",

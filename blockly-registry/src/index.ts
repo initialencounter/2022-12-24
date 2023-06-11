@@ -50,6 +50,7 @@ const CODE_PATH = '/files'
 const TEXT_PATH = '/usage'
 const UPLOAD_PATH = '/upload'
 class BlocklyRegistry {
+  static sing = ['console', 'blockly'] as const
   cloud_plugins: Packages[]
   local_plugins: BlocklyRegistry.BlocklyDocument[]
   cloud_text: string
@@ -70,6 +71,7 @@ class BlocklyRegistry {
       invalid_name: 'boolean',
       latest: 'boolean'
     })
+    this.initialized()
     ctx.using(['console'], (ctx) => {
       ctx.console.addEntry({
         dev: resolve(__dirname, '../client/index.ts'),
