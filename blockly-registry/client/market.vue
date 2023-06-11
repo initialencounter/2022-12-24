@@ -599,6 +599,7 @@ send("blockly-registry/init").then(
     local_plugins.value = data[0] as BlocklyDocument[];
     cloud_plugins.value = data[1] as Packages[];
     cloud_text.value = data[2] as string;
+    refresh_list()
   }
 );
 mode.value = "down";

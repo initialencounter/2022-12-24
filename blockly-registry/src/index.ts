@@ -71,13 +71,13 @@ class BlocklyRegistry {
       invalid_name: 'boolean',
       latest: 'boolean'
     })
-    this.initialized()
     ctx.using(['console'], (ctx) => {
       ctx.console.addEntry({
         dev: resolve(__dirname, '../client/index.ts'),
         prod: resolve(__dirname, '../dist'),
       })
     })
+    this.initialized()
     ctx.console.addListener('blockly-registry/upload', async (plugin_id: number, desc: string, version: string) => {
       logger.info('blockly-registry/upload', desc, version)
       return (await this.upload(plugin_id, desc, version))
