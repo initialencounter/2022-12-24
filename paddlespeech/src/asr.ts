@@ -11,13 +11,13 @@ class PaddleSpeechAsr extends Sst {
     ctx.i18n.define('zh', require('./locales/zh'));
     if (config.auto_rcg) {
       ctx.middleware(async (session, next) => {
-        if (this.config.waiting) {
-          const msgid = (await session.bot.sendMessage(session.channelId, h('quote', { id: session.messageId }) + session.text('commands.asr.messages.thinking'), session.guildId))[0]
-          if (this.config.recall) {
-            await this.recall(session, msgid)
+        if (session.elements[0].type == "audio" && this.config.auto_rcg) {
+          if (this.config.waiting) {
+            const msgid = (await session.bot.sendMessage(session.channelId, h('quote', { id: session.messageId }) + session.text('commands.asr.messages.thinking'), session.guildId))[0]
+            if (this.config.recall) {
+              await this.recall(session, msgid)
+            }
           }
-        }
-        if (session.elements[0].type == "audio") {
           let text: string = await this.audio2text(session)
           if (text == '') {
             text = session.text('sst.messages.louder')
