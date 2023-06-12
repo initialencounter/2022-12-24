@@ -262,7 +262,7 @@ namespace WhisperAsr {
       Schema.const('tr').description('Türkçe'),
       Schema.const('uk').description('Українська'),
       Schema.const('vi').description('Tiếng Việt'),
-    ]).default('zh').description('支持一百多种语言'),
+    ]).default('zh').description('语言'),
     waiting: Schema.boolean().default(false).description('消息反馈，会发送思考中...'),
     recall: Schema.boolean().default(true).description('会撤回思考中'),
     recall_time: Schema.number().default(5000).description('撤回的时间'),

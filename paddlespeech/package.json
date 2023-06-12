@@ -1,0 +1,46 @@
+{
+  "name": "koishi-plugin-paddlespeech",
+  "description": "百度飞桨语音服务",
+  "version": "0.0.1",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "AGPL-3.0",
+  "author": "initencounter <2911583893@qq.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/baidu-tts#readme",
+  "scripts": {},
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "paddlespeech",
+    "paddle",
+    "speech",
+    "tts",
+    "asr"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.11.9",
+    "@initencounter/sst": "^0.0.1",
+    "@initencounter/vits": "^0.0.2"
+  },
+  "koishi": {
+    "description": "百度飞桨语音服务",
+    "service": {
+      "implements": [
+        "vits",
+        "sst"
+      ]
+    }
+  }
+}
