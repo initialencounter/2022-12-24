@@ -13,7 +13,7 @@ class OpenVits extends vits_1.default {
     constructor(ctx, config) {
         super(ctx);
         this.speaker = Number(config.speaker_id);
-        this.speaker = ((this.speaker < this.max_speakers) && this.speaker > 0) ? this.speaker : 172;
+        this.speaker = ((this.speaker < this.max_speakers) && this.speaker > -1) ? this.speaker : 3;
         this.recall_time = config.recall_time;
         this.max_length = config.max_length;
         this.endpoint = config.endpoint;
@@ -57,7 +57,7 @@ class OpenVits extends vits_1.default {
             }
             else {
                 this.speaker = options.speaker ? Number(options.speaker) : Number(config.speaker_id);
-                this.speaker = ((this.speaker < this.max_speakers) && this.speaker > 0) ? this.speaker : 3;
+                this.speaker = ((this.speaker < this.max_speakers) && this.speaker > -1) ? this.speaker : 3;
             }
             const languageCodes = ['zh', 'en', 'fr', 'jp', 'ru', 'de'];
             if (options.lang) {
