@@ -22,7 +22,10 @@
 | 查询余额 | dvc.credit |
 | 切换输出模式 | dvc.output |
 
-
+- dvc \<prompt\>
+  - -o 输出方式
+  - -l 启用16k 
+      
 ### 若出现400报错dvc.clear
 
 ## 添加人格的方法
@@ -36,6 +39,8 @@ QQ群：399899914<br>
 
 
 # 更新日志
+- v5.0.2
+    - 新增 gpt3.5-turbo-16k
 - v4.0.7
     - 更灵活地添加人格(system||assistant||user)
 - v4.0.6-beta

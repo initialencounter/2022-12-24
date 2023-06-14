@@ -24,9 +24,11 @@ class Dvc extends Service {
   sessions_cmd: string[];
   aliasMap: any;
   type: string
+  l6k: boolean;
 
   constructor(ctx: Context, private config: Dvc.Config) {
     super(ctx, 'dvc', true)
+    this.l6k = config.l6k
     this.output_type = this.config.output
     this.type = this.config.type
     this.sessions = {};
@@ -64,8 +66,10 @@ class Dvc extends Service {
     //主要逻辑
     ctx.command('dvc <text:text>', { authority: this.config.authority, })
       .option('output', '-o <output:string>')
+      .option('l6k','-l',{fallback:config.l6k})
       .alias(...this.config.alias)
       .action(async ({ session, options }) => {
+        this.l6k = options.l6k
         if (this.block(session)) {
           return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
         }
@@ -380,7 +384,7 @@ class Dvc extends Service {
             'Content-Type': 'application/json'
           },
           data: {
-            model: 'gpt-3.5-turbo-0613',
+            model: `gpt-3.5-turbo-${this.l6k?'16k':'0613'}`,
             temperature: this.config.temperature,
             top_p: 1,
             frequency_penalty: 0,
@@ -438,7 +442,7 @@ class Dvc extends Service {
     }
     // 记录上下文
     session_of_id.push({ "role": "assistant", "content": message });
-    while (JSON.stringify(session_of_id).length > (this.type == 'gpt4' ? 10000 : 3000)) {
+    while (JSON.stringify(session_of_id).length > (this.l6k?10000:(this.type == 'gpt4' ? 10000 : 3000))) {
       session_of_id.splice(1, 1);
       if (session_of_id.length <= 1) {
         break;
@@ -819,8 +823,10 @@ namespace Dvc {
 | 查询余额 | dvc.credit |
 | 切换输出模式 | dvc.output |
 
+- dvc \<prompt\>
+  - -o 输出方式
+  - -l 启用16k 
 
-      
 ## 添加人格的方法
 * 在聊天中发送“dvc.添加人格”可以添加并自动保存人格
 
@@ -853,6 +859,7 @@ namespace Dvc {
     type: string
     key: string
 
+    l6k: boolean
     preset_pro: boolean
     single_session: boolean
     waiting: boolean
@@ -902,6 +909,7 @@ namespace Dvc {
     }).description('基础设置'),
 
     Schema.object({
+      l6k: Schema.boolean().default(true).description('启用16k'),
       preset_pro: Schema.boolean().default(false).description('所有人共用一个人设'),
       single_session: Schema.boolean().default(false).description('所有人共用一个会话'),
       whisper: Schema.boolean().default(false).description('语音输入功能,需要加载sst服务,启用插件tc-sst即可实现'),
