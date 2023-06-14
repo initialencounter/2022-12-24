@@ -380,7 +380,7 @@ class Dvc extends Service {
             'Content-Type': 'application/json'
           },
           data: {
-            model: 'gpt-3.5-turbo',
+            model: 'gpt-3.5-turbo-0613',
             temperature: this.config.temperature,
             top_p: 1,
             frequency_penalty: 0,
