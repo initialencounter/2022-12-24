@@ -1,133 +1,19 @@
 import { Context, Schema, Logger, Session, h, base64ToArrayBuffer } from 'koishi'
 export const name = 'whisper-asr2'
-import Sst from '@initencounter/sst'
-import FormData from 'form-data';
-import { Readable } from 'stream';
+import {} from '@initencounter/sst'
 export const logger = new Logger(name)
-class WhisperAsr extends Sst {
-  temp_msg: string
-  recall_time: number
-  endpoint: string
-  access_token: string
-  method: string
-  task: string
-  language: string
-
-  constructor(ctx: Context, config: WhisperAsr.Config) {
-    super(ctx)
-    this.endpoint = config.endpoint
-    this.method = config.method
-    this.task = config.task
-    this.language = config.language
-    this.recall_time = config.recall_time
-    ctx.i18n.define('zh', require('./locales/zh'));
-    if (config.auto_rcg) {
-      ctx.middleware(async (session, next) => {
-        if (session.elements[0].type == "audio") {
-          let text: string = await this.audio2text(session)
-          if (text == '') {
-            text = session.text('commands.say.messages.louder')
-          }
-          return text
-        }
-        return next()
-      })
-    }
-    
+class WhisperAsr{
+  constructor(private ctx: Context, config: WhisperAsr.Config) {
     ctx.command('asr <url:string>', '语音url转文字')
       .alias('whisper')
       .option('lang', '-l <lang:string>', { fallback: config.language })
       .option('task', '-t <task:number>')
       .option('method', '-m <method:number>')
       .action(async ({ session, options }, input) => {
-        this.language = options.lang ? options.lang : config.language
-        this.task = options.task ? 'translate' : 'transcribe'
-        this.method = options.method ? 'faster-whisper' : 'openai-whisper'
-        if (!input) {
-          return h('quote', { id: session.messageId }) + session.text('commands.say.messages.no-input')
-        }
-        await session.send(session.text('commands.say.messages.waiting'));
-        // 判断是否需要撤回
-        if (config.recall) {
-          this.recall(session, this.temp_msg)
-        }
-        const file: Readable = await this.get_file(input)
-        const text: string = await this.create_task(file)
-        return h('quote', { id: session.messageId }) + text
       })
-
-    // 记录发送消息的messageid
-    ctx.on('send', (session) => {
-      this.temp_msg = session.messageId
-    })
-
   }
-  // 撤回的方法
-  async recall(session: Session, messageId: string) {
-    new Promise(resolve => setTimeout(() => {
-      session.bot.deleteMessage(session.channelId, messageId)
-    }
-      , this.recall_time));
-  }
-  async audio2text(session: Session): Promise<string> {
-    if (session.elements[0].type == "audio") {
-      const url: string = session.elements[0]["attrs"].url
-      const file: Readable = Readable.from(Buffer.from(url, 'base64'))
-      const text: string = await this.create_task(file)
-      return text
-    }
-    return 'Not a audio'
-  }
-
-  private async get_file(url: string): Promise<Readable> {
-    const response = await this.ctx.http.axios({
-      url,
-      method: 'GET',
-      responseType: 'stream',
-    });
-    return response.data;
-  }
-  private async create_task(fileStream: Readable): Promise<string> {
-    const form = new FormData();
-    form.append('audio_file', fileStream);
-    try {
-      const res = await this.ctx.http.post(`${this.endpoint}/asr`, form, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'accept': 'application/json'
-        },
-        params: {
-          method: this.method,
-          task: this.task,
-          language: this.language,
-          encode: 'true',
-          output: 'txt'
-        }
-      })
-      return res
-    } catch (e) {
-      logger.info(String(e))
-      return ''
-    }
-  }
-  
-
-
 }
 namespace WhisperAsr {
-  export const usage = `
-## 使用说明
-自建后端教程<a style="color:blue" href="https://github.com/ahmetoner/whisper-asr-webservice">whisper-asr-webservice</a> 
-插件仓库<a style="color:blue" href="https://github.com/initialencounter/koishi-plugin-whisper-asr">插件仓库</a> 
-## 使用方法
-* 直接发送语音即可转化或翻译为文本
-* asr 要转化/或翻译的语言url
-  - lang: 语言
-  - task: 是否切换为translate
-  - method: 是否切换为faster-whisper
-## 问题反馈群: 
-399899914
-`
   export interface Config {
     endpoint: string
     auto_rcg: boolean

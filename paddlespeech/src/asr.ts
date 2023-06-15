@@ -2,6 +2,10 @@ import { Context, Schema, Logger, Session, h, trimSlash } from 'koishi'
 import Sst from '@initencounter/sst'
 export const name = 'paddlespeech-asr'
 export const logger = new Logger(name)
+import fs from 'fs';
+import { exec } from 'child_process';
+type CallbackFunction = (error: Error | null, result: Buffer | null) => void;
+
 
 class PaddleSpeechAsr extends Sst {
   lang: string
@@ -26,33 +30,59 @@ class PaddleSpeechAsr extends Sst {
         }
       })
     }
-    ctx.command('asr [url]','语音连接转文字')
-    .option('lang','-l <lang:text>',{fallback:config.lang})
-    .action(async({session,options},url)=>{
-      this.lang = options.lang
-      url = url?url:'https://paddlespeech.bj.bcebos.com/PaddleAudio/zh.wav'
-      const buffer = Buffer.from((await this.get_file(url)))
-      const base64 = buffer.toString('base64')
-      return await this.make_requset(
-        base64
-        )
-    })
+    ctx.command('asr [url]', '语音连接转文字')
+      .option('lang', '-l <lang:text>', { fallback: config.lang })
+      .action(async ({ session, options }, url) => {
+        this.lang = options.lang
+        url = url ? url : 'https://paddlespeech.bj.bcebos.com/PaddleAudio/zh.wav'
+        url = url.replace(/&amp;/g, "&")
+        // url = 'http://grouptalk.c2c.qq.com/?ver=0&rkey=3062020101045b3059020101020101020465cb26a2042439387a4f765a334274434853236f5174586730495070666749577a62743433674f4c38780204648b2d74041f0000000866696c6574797065000000013100000005636f64656300000001300400&filetype=1&voice_codec=0'
+        const buffer = Buffer.from((await this.get_file(url)))
+        let res = ''
+        await this.convertBase64AMRtoWAV(buffer, async (error, result) => {
+          if (error) {
+            res = 'Not a audio'
+          } else {
+            const base64_str = result.toString('base64')
+            res = await this.make_requset(base64_str)
+          }
+        })
+        while (!res) {
+          await this.sleep(1000)
+        }
+        return res
+      })
   }
-  
+
   async audio2text(session: Session): Promise<string> {
     if (session.elements[0].type == "audio") {
-      const url: string = session.elements[0]["attrs"].url
-      let base64_str
+      let url: string = session.elements[0]["attrs"].url
+      let res = ''
       if (session.platform == 'wechaty') {
-        base64_str = url.replace('data:audio/wav;base64,', '')
+        const base64_str = url.replace('data:audio/wav;base64,', '')
+        res = await this.make_requset(base64_str)
+        return res
       } else {
+        url = url.replace(/&amp;/g, "&")
         const buffer = Buffer.from((await this.get_file(url)))
-        base64_str = buffer.toString('base64')
+        await this.convertBase64AMRtoWAV(buffer, async (error, result) => {
+          if (error) {
+            res = 'Not a audio'
+          } else {
+            const base64_str = result.toString('base64')
+            res = await this.make_requset(base64_str)
+          }
+        })
+        while (!res) {
+          await this.sleep(1000)
+        }
+        return res
       }
-      const text: string = await this.make_requset(base64_str)
-      return text
     }
     return 'Not a audio'
+  }
+  sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms))
   }
   async make_requset(base64): Promise<string> {
     const requset: PaddleSpeechAsr.Request = {
@@ -68,6 +98,19 @@ class PaddleSpeechAsr extends Sst {
       data: requset,
     })).data
     return res?.result?.transcription
+  }
+  async convertBase64AMRtoWAV(arraybufferData: ArrayBuffer, callback: CallbackFunction) {
+    // 将Base64数据保存到临时文件
+    const tempAMRFile = 'temp.amr';
+    fs.writeFileSync(tempAMRFile, Buffer.from(arraybufferData));
+    // 使用ffmpeg将AMR文件转换为WAV文件
+    const command = `ffmpeg -i ${tempAMRFile} output.wav`;
+    exec(command, async (error) => {
+      callback(error, fs.readFileSync('output.wav'))
+      fs.unlinkSync(tempAMRFile);
+      fs.unlinkSync('output.wav');
+    });
+    ;
   }
   private async get_file(url: string): Promise<ArrayBuffer> {
     const response = await this.ctx.http.axios({
