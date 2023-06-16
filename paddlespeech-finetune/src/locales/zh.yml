@@ -1,0 +1,4 @@
+commands:
+  tts:
+    messages:
+      thinking: 计算中...
