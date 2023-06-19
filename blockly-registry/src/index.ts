@@ -1,4 +1,4 @@
-import { Context, Logger, Schema } from 'koishi'
+import { Context, Logger, Schema,trimSlash } from 'koishi'
 import { } from '@koishijs/plugin-console'
 import { resolve } from 'path'
 import { } from 'koishi-plugin-blockly'
@@ -46,11 +46,11 @@ export const name = 'blockly-registry'
 export const logger = new Logger(name)
 const INDEX_PATH = '/index'
 const VERSION_PATH = '/versions'
-const CODE_PATH = '/files'
+const CODE_PATH = '/data'
 const TEXT_PATH = '/usage'
 const UPLOAD_PATH = '/upload'
 class BlocklyRegistry {
-  static sing = ['console', 'blockly'] as const
+  static using = ['console', 'blockly'] as const
   cloud_plugins: Packages[]
   local_plugins: BlocklyRegistry.BlocklyDocument[]
   cloud_text: string
@@ -226,17 +226,31 @@ class BlocklyRegistry {
         return `改插件当前版本已经是${plugin_version},无需修改`
       }
       const plugin: BlocklyRegistry.BlocklyDocument = await this.download_source_code(plugin_name, plugin_version)
-      await this.ctx.database.create("blockly", {
-        name: plugin.name,
-        body: plugin.body,
-        code: plugin.code,
-        enabled: this.config.start_now,
-        edited: false,
-        uuid: 'external',
-        version: plugin.version,
-        desc: plugin.desc,
-        author: plugin.author
-      })
+      if(exit_plugins.length==0){
+        await this.ctx.database.create("blockly", {
+          name: plugin.name,
+          body: plugin.body,
+          code: plugin.code,
+          enabled: this.config.start_now,
+          edited: false,
+          uuid: 'external',
+          version: plugin.version,
+          desc: plugin.desc,
+          author: plugin.author
+        })
+      }else{
+        await this.ctx.database.set("blockly", exit_plugins[0].id,{
+          name: plugin.name,
+          body: plugin.body,
+          code: plugin.code,
+          enabled: this.config.start_now,
+          edited: false,
+          uuid: 'external',
+          version: plugin.version,
+          desc: plugin.desc,
+          author: plugin.author
+        })
+      }
       await this.ctx.blockly.reload(this.config.start_now)
       //成功
       return '安装成功,请前往blockly页面查看'
@@ -247,7 +261,8 @@ class BlocklyRegistry {
     }
   }
   async download_source_code(plugin_name: string, plugin_version: string) {
-    return (await this.ctx.http.axios(this.config.registry + CODE_PATH + '/' + plugin_name + '/' + plugin_version)).data
+    const url = trimSlash(this.config.registry_httpserver + CODE_PATH + '/' + plugin_name + '/' + plugin_version+'.json')
+    return (await this.ctx.http.axios(url)).data
   }
 }
 namespace BlocklyRegistry {
@@ -286,6 +301,7 @@ namespace BlocklyRegistry {
     contact: string;
     registry: string;
     start_now: boolean;
+    registry_httpserver: string;
   }
   export interface BlocklyDocument {
     id?: number;
@@ -307,6 +323,7 @@ namespace BlocklyRegistry {
     author: Schema.string().description('作者 格式: 昵称 < qq 号或者邮箱>,示例: "InitEncunnter <3118087750>"'),
     contact: Schema.string().description(' qq 号(用于鉴权,用户不可见)'),
     registry: Schema.string().description('插件源码镜像源').default('https://market.blockly.t4wefan.pub'),
+    registry_httpserver: Schema.string().description('将从这里下载插件').default('https://go.blockly.t4wefan.pub'),
     start_now: Schema.boolean().default(false).description('启用后将在安装插件后立即启用'),
   })
 }
