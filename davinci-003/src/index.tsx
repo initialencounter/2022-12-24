@@ -67,7 +67,7 @@ class Dvc extends Service {
     //主要逻辑
     ctx.command('dvc <text:text>', { authority: this.config.authority, })
       .option('output', '-o <output:string>')
-      .option('l6k','-l',{fallback:config.l6k})
+      .option('l6k', '-l', { fallback: config.l6k })
       .alias(...this.config.alias)
       .action(async ({ session, options }) => {
         this.l6k = options.l6k
@@ -185,16 +185,22 @@ class Dvc extends Service {
         return await this.translate(session, options.lang, prompt)
       })
     ctx.command('dvc.update', '一键加载400条极品预设')
-    .alias('更新预设')
-    .action(async({session})=>{
-      const prompts_lastest:Dict =  await prompts.update()
-      for(const i of Object.keys(prompts_lastest)){
-        this.personality[i] = prompts_lastest[i]
-      }
-      fs.writeFileSync('./personality.json', JSON.stringify(this.personality))
-      return session.execute('切换人格')
-    })
+      .alias('更新预设')
+      .option('update', '-u')
+      .action(async ({ session, options }) => {
+        let update = false
+        if (options.update) {
+          update = true
+        }
+        const prompts_lastest: Dict = await prompts.update(update)
+        for (const i of Object.keys(prompts_lastest)) {
+          this.personality[i] = prompts_lastest[i]
+        }
+        fs.writeFileSync('./personality.json', JSON.stringify(this.personality))
+        return session.execute('切换人格')
+      })
   }
+
 
 
 
@@ -395,7 +401,7 @@ class Dvc extends Service {
             'Content-Type': 'application/json'
           },
           data: {
-            model: `gpt-3.5-turbo-${this.l6k?'16k':'0613'}`,
+            model: `gpt-3.5-turbo-${this.l6k ? '16k' : '0613'}`,
             temperature: this.config.temperature,
             top_p: 1,
             frequency_penalty: 0,
@@ -453,7 +459,7 @@ class Dvc extends Service {
     }
     // 记录上下文
     session_of_id.push({ "role": "assistant", "content": message });
-    while (JSON.stringify(session_of_id).length > (this.l6k?10000:(this.type == 'gpt4' ? 10000 : 3000))) {
+    while (JSON.stringify(session_of_id).length > (this.l6k ? 10000 : (this.type == 'gpt4' ? 10000 : 3000))) {
       session_of_id.splice(1, 1);
       if (session_of_id.length <= 1) {
         break;
@@ -538,7 +544,7 @@ class Dvc extends Service {
    */
   async rm_personality(session: Session, nick_name?: string) {
     const nick_names: string[] = Object.keys(this.personality)
-    if(nick_names.length==1){
+    if (nick_names.length == 1) {
       return '再删下去就报错了'
     }
     // 参数合法
