@@ -5,6 +5,7 @@ import { } from 'koishi-plugin-puppeteer';
 import { } from '@initencounter/vits'
 import { } from '@initencounter/sst'
 import { } from '@koishijs/censor'
+import prompts from '@initencounter/chat-prompts';
 export const using = ['puppeteer', 'vits', 'sst', 'censor']
 const name = 'davinci-003';
 const logger = new Logger(name);
@@ -183,6 +184,16 @@ class Dvc extends Service {
         }
         return await this.translate(session, options.lang, prompt)
       })
+    ctx.command('dvc.update', '一键加载400条极品预设')
+    .alias('更新预设')
+    .action(async({session})=>{
+      const prompts_lastest:Dict =  await prompts.update()
+      for(const i of Object.keys(prompts_lastest)){
+        this.personality[i] = prompts_lastest[i]
+      }
+      fs.writeFileSync('./personality.json', JSON.stringify(this.personality))
+      return session.execute('切换人格')
+    })
   }
 
 

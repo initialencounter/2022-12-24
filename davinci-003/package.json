@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-davinci-003",
   "description": "AI 聊天,支持 GPT-4, gpt3.5-turbo-16k",
-  "version": "5.0.2",
+  "version": "5.1.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -29,7 +29,10 @@
     "chatgpt4"
   ],
   "peerDependencies": {
-    "koishi": "^4.11.9"
+    "koishi": "^4.11.9",
+    "@initencounter/sst": "^0.0.1",
+    "@initencounter/vits": "^0.0.2",
+    "@koishijs/censor": "^1.0.2"
   },
   "koishi": {
     "description": "AI 聊天,支持 GPT-4, gpt3.5-turbo-16k",
@@ -47,8 +50,6 @@
     }
   },
   "dependencies": {
-    "@initencounter/sst": "^0.0.1",
-    "@initencounter/vits": "^0.0.2",
-    "@koishijs/censor": "^1.0.2"
+    "@initencounter/chat-prompts": "^1.0.1"
   }
 }
