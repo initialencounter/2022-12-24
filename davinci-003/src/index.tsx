@@ -6,6 +6,7 @@ import { } from '@initencounter/vits'
 import { } from '@initencounter/sst'
 import { } from '@koishijs/censor'
 import prompts from '@initencounter/chat-prompts';
+import { count } from 'console';
 export const using = ['puppeteer', 'vits', 'sst', 'censor']
 const name = 'davinci-003';
 const logger = new Logger(name);
@@ -599,10 +600,27 @@ class Dvc extends Service {
   // 发送选择菜单
   async switch_menu(session: Session, type_arr: string[], name: string): Promise<string> {
     let type_str: string = '\n'
+    let count = 0
+    const result = segment('figure')
     type_arr.forEach((i, id) => {
+      if(count>50){
+        count = 0
+        result.children.push(
+          segment('message', {
+            userId: '1114039391',
+            nickname: 'AI',
+          }, type_str))
+        type_str = ''
+      }
       type_str += String(id + 1) + ' ' + i + '\n'
+      count++
     })
-    session.send(h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.switch', [name, type_str]))
+    result.children.push(
+      segment('message', {
+        userId: '1114039391',
+        nickname: 'AI',
+      }, type_str))
+    await session.send(result)
     const input = await session.prompt()
     if (!input || Number.isNaN(+input)) return ''
     const index: number = parseInt(input) - 1

@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-davinci-003",
   "description": "AI 聊天,gpt3.5-turbo-16k, 新增 403 个极品人格",
-  "version": "5.1.2",
+  "version": "5.1.3",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
