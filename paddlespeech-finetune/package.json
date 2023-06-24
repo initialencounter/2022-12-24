@@ -30,7 +30,7 @@
   ],
   "peerDependencies": {
     "koishi": "^4.11.9",
-    "@initencounter/vits": "^0.0.2"
+    "@initencounter/vits": "^0.0.3"
   },
   "koishi": {
     "description": "将[PaddleSpeech克隆的声音](https://aistudio.baidu.com/aistudio/projectdetail/6406138?forkThirdPart=1)接入 Koishi",

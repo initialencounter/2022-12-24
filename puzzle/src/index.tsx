@@ -350,10 +350,10 @@ namespace Pz {
 
   export const Config: Schema<Config> = Schema.object({
     mode: Schema.union([
-      Schema.const(5).description('24p'),
-      Schema.const(4).description('15p'),
-      Schema.const(3).description('8p'),
-    ]).default(4).description('默认的游戏模式'),
+      Schema.const(5 as number).description('24p'),
+      Schema.const(4 as number).description('15p'),
+      Schema.const(3 as number).description('8p'),
+    ]).default(4 as number).description('默认的游戏模式'),
     maxConcurrency: Schema.number().default(50).description('最大存在游戏局数'),
     size: Schema.number().default(50).description('图片大小')
   })

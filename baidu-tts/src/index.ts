@@ -126,11 +126,11 @@ namespace BaiduTts {
     AK_W: Schema.string().description('语音合成AK'),
     SK_W: Schema.string().description('语音合成SK'),
     speaker_id: Schema.union([
-      Schema.const(1).description('度小宇'),
-      Schema.const(0).description('度小美'),
-      Schema.const(4).description('度丫丫'),
-      Schema.const(3).description('度逍遥')
-    ]).default(0).description('标准音色'),
+      Schema.const(1 as number).description('度小宇'),
+      Schema.const(0 as number).description('度小美'),
+      Schema.const(4 as number).description('度丫丫'),
+      Schema.const(3 as number).description('度逍遥')
+    ]).default(0 as number).description('标准音色'),
     max_length: Schema.number().default(256).description('最大长度')
   })
 

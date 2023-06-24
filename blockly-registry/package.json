@@ -31,9 +31,9 @@
     "plugin"
   ],
   "peerDependencies": {
+    "@koishijs/plugin-console": "^5.10.0",
     "koishi": "^4.13.0",
-    "koishi-plugin-blockly":"^0.6.2",
-    "@koishijs/plugin-console": "^5.10.0"
+    "koishi-plugin-blockly": "^0.6.2"
   },
   "devDependencies": {
     "@koishijs/client": "^5.10.0"
@@ -42,10 +42,13 @@
     "description": "blockly插件镜像站",
     "browser": true,
     "service": {
-      "required":[
+      "required": [
         "blockly",
         "console"
       ]
     }
+  },
+  "dependencies": {
+    "spark-md5": "^3.0.2"
   }
 }

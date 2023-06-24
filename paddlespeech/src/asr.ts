@@ -99,10 +99,10 @@ class PaddleSpeechAsr extends Sst {
     })).data
     return res?.result?.transcription
   }
-  async convertBase64AMRtoWAV(arraybufferData: ArrayBuffer, callback: CallbackFunction) {
+  async convertBase64AMRtoWAV(bufferData: Buffer, callback: CallbackFunction) {
     // 将Base64数据保存到临时文件
     const tempAMRFile = 'temp.amr';
-    fs.writeFileSync(tempAMRFile, Buffer.from(arraybufferData));
+    fs.writeFileSync(tempAMRFile, Buffer.from(bufferData));
     // 使用ffmpeg将AMR文件转换为WAV文件
     const command = `ffmpeg -i ${tempAMRFile} output.wav`;
     exec(command, async (error) => {
@@ -158,10 +158,7 @@ namespace PaddleSpeechAsr {
   export const Config: Schema<Config> = Schema.object({
     endpoint: Schema.string().default('http:127.0.0.1:8888').description('飞桨服务器地址'),
     auto_rcg: Schema.boolean().default(false).description('自动语音转文字,作为服务启用时建议关闭'),
-    lang: Schema.union([
-      Schema.const('zh').description('汉语'),
-      Schema.const('en').description('英语'),
-    ]).default('zh').description('语言'),
+    lang: Schema.string().default('zh').description('语言'),
     waiting: Schema.boolean().default(true).description('消息反馈，会发送计算中...'),
     recall: Schema.boolean().default(true).description('会撤回计算中'),
     recall_time: Schema.number().default(5000).description('撤回的时间'),

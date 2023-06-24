@@ -620,9 +620,9 @@ namespace Taylor {
     cfg_scale: Schema.number().default(15).description('相关性0-20'),
     model: Schema.string().default('clip').description('识图的模型'),
     output: Schema.union([
-      Schema.const('minimal').description('只发送图片'),
-      Schema.const('default').description('发送图片和关键信息'),
-      Schema.const('verbose').description('发送全部信息'),
+      Schema.const('minimal' as string).description('只发送图片'),
+      Schema.const('default' as string).description('发送图片和关键信息'),
+      Schema.const('verbose' as string).description('发送全部信息'),
     ]).description('输出方式。').default('default'),
     controlnet: Schema.boolean().description('是否启用controlnet,需要安装controlnet拓展').default(false),
     latin_only: Schema.boolean().description('只接受英文').default(false),

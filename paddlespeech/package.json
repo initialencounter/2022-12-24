@@ -32,7 +32,7 @@
   "peerDependencies": {
     "koishi": "^4.11.9",
     "@initencounter/sst": "^0.0.1",
-    "@initencounter/vits": "^0.0.2"
+    "@initencounter/vits": "^0.0.3"
   },
   "koishi": {
     "description": "百度飞桨语音服务,需要ffmpeg环境",

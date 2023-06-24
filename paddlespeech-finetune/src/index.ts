@@ -64,7 +64,7 @@ class PaddleSpeechFinetune extends Vits {
     }
     try {
       const response: PaddleSpeechFinetune.Result = (await this.ctx.http.axios(payload)).data
-      return h.audio(base64ToArrayBuffer(response.audio), 'audio/wav')
+      return h.audio(base64ToArrayBuffer(response.audio) as ArrayBuffer, 'audio/wav')
     } catch (e) {
       logger.info(String(e))
       return h(String(e))

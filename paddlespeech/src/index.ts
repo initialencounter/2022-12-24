@@ -70,7 +70,7 @@ export const Config: Schema<Dict> =
         lang: Schema.union([
           Schema.const('zh_cn').description('汉语'),
           Schema.const('en').description('英语'),
-        ]).default('zh').description('语言'),
+        ]).default('zh_cn').description('语言'),
       }).description('语音识别'),
       Schema.object({
         asr_enable: Schema.const(false)
