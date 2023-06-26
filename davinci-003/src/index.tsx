@@ -29,6 +29,7 @@ class Dvc extends Service {
   l6k: boolean;
 
   constructor(ctx: Context, private config: Dvc.Config) {
+    const using = ['puppeteer', 'vits', 'sst', 'censor'];
     super(ctx, 'dvc', true)
     this.l6k = config.l6k
     this.output_type = this.config.output
@@ -187,18 +188,19 @@ class Dvc extends Service {
       })
     ctx.command('dvc.update', '一键加载400条极品预设')
       .alias('更新预设')
-      .option('update', '-u')
       .action(async ({ session, options }) => {
-        let update = false
-        if (options.update) {
-          update = true
+        let prompts_latest = (await ctx.http.axios({
+          method: 'GET',
+          url: 'https://gitee.com/initencunter/ChatPrompts/raw/master/safe',
+          responseType: "json"
+        })).data;
+        prompts_latest = JSON.parse(Buffer.from(prompts_latest, 'base64').toString('utf-8'));
+        logger.info(prompts_latest);
+        for (const i of Object.keys(prompts_latest)) {
+          this.personality[i] = prompts_latest[i];
         }
-        const prompts_lastest: Dict = await prompts.update(update)
-        for (const i of Object.keys(prompts_lastest)) {
-          this.personality[i] = prompts_lastest[i]
-        }
-        fs.writeFileSync('./personality.json', JSON.stringify(this.personality))
-        return session.execute('切换人格')
+        fs.writeFileSync('./personality.json', JSON.stringify(this.personality));
+        return session.execute('切换人格');
       })
   }
 
@@ -269,7 +271,7 @@ class Dvc extends Service {
    * @param options 选项
    * @returns 
    */
-  async sli(session: Session, prompt: string, options: Dict): Promise<string | segment> {
+  async sli(session: Session, prompt: string, options: Dict): Promise<string | segment | void> {
     this.output_type = options.output ? options.output : this.output_type
     if (!prompt) {
       return session.text('commands.dvc.messages.no-prompt')
@@ -293,7 +295,7 @@ class Dvc extends Service {
    */
 
 
-  async dvc(session: Session, prompt: string): Promise<string | Element> {
+  async dvc(session: Session, prompt: string): Promise<string | Element | void> {
     if (this.config.waiting) {
       const msgid = (await session.bot.sendMessage(session.channelId, h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.thinking'), session.guildId))[0]
       if (this.config.recall && (!this.config.recall_all)) {
@@ -303,6 +305,13 @@ class Dvc extends Service {
     // 文本审核
     if (this.ctx.censor) {
       prompt = await this.ctx.censor.transform(prompt, session)
+    }
+    if (this.config.output == 'minimal' && this.config.stream_output) {
+      if (this.type == 'gpt3.5-unit') {
+        return await this.chat_with_gpt_stream(session, [{ 'role': 'user', 'content': prompt }])
+      } else if (this.type == 'gpt4-unit') {
+        return await this.chat_with_gpt4_stream(session, [{ 'role': 'user', 'content': prompt }])
+      }
     }
     if (this.type == 'gpt3.5-unit') {
       const text: string = await this.chat_with_gpt(session, [{ 'role': 'user', 'content': prompt }])
@@ -362,7 +371,45 @@ class Dvc extends Service {
     return next()
   }
 
-
+  async chat_with_gpt4_stream(session: Session, message: Dvc.Msg[]): Promise<string | void> {
+    let contents = ''
+    let content = ''
+    await this.ctx.http.axios(
+      {
+        method: 'post',
+        url: trimSlash(`${this.config.proxy_reverse4}/v1/chat/completions`),
+        headers: {
+          Authorization: `Bearer ${this.config.key}`
+        },
+        responseType: 'stream',
+        data: {
+          model: 'gpt-4',
+          messages: message
+        },
+        timeout: 600000
+      }).then(response => {
+        response.data.on('data', async (chunk) => {
+          const new_string = chunk.toString()
+          const json = new_string.match(/(?<="delta":{"content":")(.*?)(?="},"finish_reason")/)
+          if (json) {
+            if (['。', '，', '？', '！'].includes(json[0])) {
+              content += json[0]
+              session.send(content)
+              contents += content
+              content = ''
+            } else {
+              content += json[0]
+            }
+          }
+        });
+        response.data.on('end', () => {
+          return contents
+        })
+      }).catch(error => {
+        logger.error(error)
+        return String(error)
+      });
+  }
   async chat_with_gpt4(session: Session, message: Dvc.Msg[]): Promise<string> {
     try {
       const response = await this.ctx.http.axios(
@@ -420,6 +467,60 @@ class Dvc extends Service {
 
   /**
    * 
+   * @param message 发送给chatgpt的json列表
+   * @returns 将返回文字处理成json
+   */
+
+
+  async chat_with_gpt_stream(session: Session, message: Dvc.Msg[]): Promise<string | void> {
+    let contents = ''
+    let content = ''
+    await this.ctx.http.axios(
+      {
+        method: 'post',
+        url: `${this.config.proxy_reverse ? this.config.proxy_reverse : "https://api.openai.com"}/v1/chat/completions`,
+        headers: {
+          Authorization: `Bearer ${this.config.key}`,
+          'Content-Type': 'application/json',
+        },
+        responseType: 'stream',
+        data: {
+          model: `gpt-3.5-turbo-${this.l6k ? '16k' : '0613'}`,
+          temperature: this.config.temperature,
+          top_p: 1,
+          frequency_penalty: 0,
+          presence_penalty: 0,
+          messages: [{ "role": "user", "content": "请介绍你自己" }],
+          stream: true
+        },
+        timeout: 0
+      }).then(response => {
+        response.data.on('data', async (chunk) => {
+          const new_string = chunk.toString()
+          const json = new_string.match(/(?<="delta":{"content":")(.*?)(?="},"finish_reason")/)
+          if (json) {
+            if (['。', '，', '？', '！'].includes(json[0])) {
+              content += json[0]
+              session.send(content)
+              contents += content
+              content = ''
+            } else {
+              content += json[0]
+            }
+          }
+        }),
+          response.data.on('end', () => {
+            return contents
+          })
+      }).catch(error => {
+        logger.error(error)
+        return String(error)
+      });
+
+  }
+
+  /**
+   * 
    * @param sessionid QQ号
    * @returns 对应QQ的会话
    */
@@ -453,10 +554,18 @@ class Dvc extends Service {
     session_of_id.push({ "role": "user", "content": msg })
     // 与ChatGPT交互获得对话内容
     let message: string
-    if (this.type == 'gpt4') {
-      message = await this.chat_with_gpt4(session, session_of_id)
+    if (this.config.stream_output) {
+      if (this.type == 'gpt4') {
+        message = (await this.chat_with_gpt4_stream(session, session_of_id)) as string
+      } else {
+        message = (await this.chat_with_gpt_stream(session, session_of_id)) as string
+      }
     } else {
-      message = await this.chat_with_gpt(session, session_of_id)
+      if (this.type == 'gpt4') {
+        message = await this.chat_with_gpt4(session, session_of_id)
+      } else {
+        message = await this.chat_with_gpt(session, session_of_id)
+      }
     }
     // 记录上下文
     session_of_id.push({ "role": "assistant", "content": message });
@@ -603,7 +712,7 @@ class Dvc extends Service {
     let count = 0
     const result = segment('figure')
     type_arr.forEach((i, id) => {
-      if(count>50){
+      if (count > 50) {
         count = 0
         result.children.push(
           segment('message', {
@@ -919,6 +1028,7 @@ namespace Dvc {
     alias: string[]
     resolution?: string
     output: string
+    stream_output: boolean
 
     if_private: boolean
     if_at: boolean
@@ -979,6 +1089,7 @@ namespace Dvc {
         Schema.const('image').description('将对话转成图片'),
         Schema.const('voice').description('发送语音,需要安装ffmpeg')
       ]).description('输出方式。').default('minimal'),
+      stream_output: Schema.boolean().default(false).description('流式输出'),
 
       if_private: Schema.boolean().default(true).description('开启后私聊可触发ai'),
       if_at: Schema.boolean().default(true).description('开启后被提及(at/引用)可触发ai'),

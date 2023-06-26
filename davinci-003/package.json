@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-davinci-003",
-  "description": "AI 聊天,gpt3.5-turbo-16k, 新增 403 个极品人格",
-  "version": "5.1.3",
+  "description": "AI 聊天, 新增流式输出(stream)",
+  "version": "5.1.4-alpha",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -30,8 +30,6 @@
   ],
   "peerDependencies": {
     "koishi": "^4.11.9",
-    "@initencounter/sst": "^0.0.1",
-    "@initencounter/vits": "^0.0.2",
     "@koishijs/censor": "^1.0.2"
   },
   "koishi": {
@@ -50,6 +48,7 @@
     }
   },
   "dependencies": {
-    "@initencounter/chat-prompts": "^1.0.5"
+    "@initencounter/sst": "^0.0.1",
+    "@initencounter/vits": "^0.0.3"
   }
 }
