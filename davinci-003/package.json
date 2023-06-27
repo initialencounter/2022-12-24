@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-davinci-003",
   "description": "AI 聊天, 新增流式输出(stream)",
-  "version": "5.1.4-alpha",
+  "version": "5.1.4-beta",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [

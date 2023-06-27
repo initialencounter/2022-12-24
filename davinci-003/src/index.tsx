@@ -403,7 +403,17 @@ class Dvc extends Service {
           }
         });
         response.data.on('end', () => {
-          return contents
+          let session_of_id = this.get_chat_session(session.userId)
+          session_of_id.push({ "role": "assistant", "content": contents });
+          while (JSON.stringify(session_of_id).length > (this.l6k ? 10000 : (this.type == 'gpt4' ? 10000 : 3000))) {
+            session_of_id.splice(1, 1);
+            if (session_of_id.length <= 1) {
+              break;
+            }
+          }
+          this.sessions[session.userId] = session_of_id
+          logger.info("ChatGPT返回内容: ")
+          logger.info(contents)
         })
       }).catch(error => {
         logger.error(error)
@@ -490,7 +500,7 @@ class Dvc extends Service {
           top_p: 1,
           frequency_penalty: 0,
           presence_penalty: 0,
-          messages: [{ "role": "user", "content": "请介绍你自己" }],
+          messages: message,
           stream: true
         },
         timeout: 0
@@ -510,7 +520,17 @@ class Dvc extends Service {
           }
         }),
           response.data.on('end', () => {
-            return contents
+            let session_of_id = this.get_chat_session(session.userId)
+            session_of_id.push({ "role": "assistant", "content": contents });
+            while (JSON.stringify(session_of_id).length > (this.l6k ? 10000 : (this.type == 'gpt4' ? 10000 : 3000))) {
+              session_of_id.splice(1, 1);
+              if (session_of_id.length <= 1) {
+                break;
+              }
+            }
+            this.sessions[session.userId] = session_of_id
+            logger.info("ChatGPT返回内容: ")
+            logger.info(contents)
           })
       }).catch(error => {
         logger.error(error)
@@ -560,6 +580,7 @@ class Dvc extends Service {
       } else {
         message = (await this.chat_with_gpt_stream(session, session_of_id)) as string
       }
+      return
     } else {
       if (this.type == 'gpt4') {
         message = await this.chat_with_gpt4(session, session_of_id)
