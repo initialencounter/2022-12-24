@@ -14,6 +14,7 @@ class AutoX{
           if(platform == 'onebot'){
             const msg = {
               content: session.content,
+              guildId: guildId||0,
               id: id
             }
             ws_client.send(JSON.stringify(msg),(err)=>{
