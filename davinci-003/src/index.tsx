@@ -5,7 +5,6 @@ import { } from 'koishi-plugin-puppeteer';
 import { } from '@initencounter/vits'
 import { } from '@initencounter/sst'
 import { } from '@koishijs/censor'
-import prompts from '@initencounter/chat-prompts';
 import { count } from 'console';
 export const using = ['puppeteer', 'vits', 'sst', 'censor']
 const name = 'davinci-003';
