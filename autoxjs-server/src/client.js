@@ -14,7 +14,7 @@ const client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build()
 
 // 图片保存的路径
 const IMG_PATH = "/sdcard/Pictures/qq/";
-const ENDPOINT = "ws://101.132.243.2:32327";
+const ENDPOINT = "ws://127.0.0.1:32327";
 
 const request = new Request.Builder().url(ENDPOINT).build(); // ws 地址，
 client.dispatcher().cancelAll();//清理一次
