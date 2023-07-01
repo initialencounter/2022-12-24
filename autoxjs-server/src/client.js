@@ -51,8 +51,8 @@ function sendImage(imgUrl, qid) {
     intent.putExtra(Intent.EXTRA_STREAM, imgUrl);
     intent.setClassName("com.tencent.mobileqq", "com.tencent.mobileqq.activity.JumpActivity"); // QQ的包名和类名
     app.startActivity(intent);
-    text('搜索').findOne(2000).click();
-    text('搜索').findOne(2000).setText(qid);
+    id('ik5').findOne(2000).click();
+    id('ik5').findOne(2000).setText(qid);
     KeyCode(67);
     text(`(${qid})`).findOne(2000).parent().click();
     text('发送').findOne(2000).click();
@@ -94,8 +94,8 @@ function sendText(qid,msg) {
     intent.setType("text/plain");
     intent.setClassName("com.tencent.mobileqq", "com.tencent.mobileqq.activity.JumpActivity"); // QQ的包名和类名
     app.startActivity(intent);
-    text('搜索').findOne(2000).click();
-    text('搜索').findOne(2000).setText(qid);
+    id('ik5').findOne(2000).click();
+    id('ik5').findOne(2000).setText(qid);
     KeyCode(67);
     text(`(${qid})`).findOne(2000).parent().click();
     text('发送').findOne(2000).click();
