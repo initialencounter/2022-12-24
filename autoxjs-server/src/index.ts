@@ -1,3 +1,14 @@
+/*
+ * @Author: initialencounter
+ * @Date: 2023-07-01 23:21:55
+ * @FilePath: D:\dev\koishi-hmr\external\autoxjs-server\src\index.ts
+ * @Description:
+ *
+ * Copyright (c) 2023 by initialencounter, All Rights Reserved.
+ */
+
+
+
 import { Context, Schema, Dict, Logger } from 'koishi'
 import WebSocket from 'ws'
 export const name = 'autoxjs-sender'
@@ -11,7 +22,7 @@ class AutoX{
         logger.info('接受连接')
         ctx.before('send', async (session) => {
           const {platform,guildId,id} = await session.getChannel()
-          if(platform == 'onebot'){
+          if(platform == 'onebot' && session.content.length<3000){
             const msg = {
               content: session.content,
               guildId: guildId||0,
@@ -40,7 +51,7 @@ class AutoX{
       const wss = ctx.http.ws(config.endpoint)
       ctx.before('send', async (session) => {
         const {platform,guildId,id} = await session.getChannel()
-        if(platform == 'onebot'){
+        if(platform == 'onebot' && session.content.length<3000){
           const msg = {
             content: session.content,
             guildId: guildId||0,
@@ -56,15 +67,15 @@ class AutoX{
 }
 namespace AutoX{
   export const usage = `
+![demo](https://raw.githubusercontent.com/initialencounter/mykoishi/master/autoxjs-server/demo.gif)
+
 # 使用方法
 
 - 准备一台闲置的， 拥有 root 权限的安卓手机
 - 安装 [autoxjs](https://github.com/kkevsekk1/AutoX)
-- 修改 client.js 脚本的参数如 
-    - websocket 地址，
-    - 点击位置的坐标，不同手机屏幕分辨率不一样
-    直至可以顺利发送群消息和私信
+- 修改 client.js 脚本的 websocket 地址
 - 启用本插件
+- 为 Autoxjs 开启无障碍，授予 root 权限
 - 运行 client.js
 `
   export interface Config {
@@ -77,7 +88,7 @@ namespace AutoX{
     Schema.object({
       type: Schema.union([
         Schema.const('server' as string).description('Koishi 做 ws 服务端'),
-        Schema.const('client' as string).description('Koishi 做 ws 客户端')
+        Schema.const('client' as string).description('Koishi 做 ws 客户端, 暂无 AutoX.js的脚本')
       ]).default('server' as string).description('模式选择')
     }),
     Schema.union([

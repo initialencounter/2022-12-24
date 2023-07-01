@@ -1,12 +1,13 @@
 {
   "name": "koishi-plugin-autoxjs-sender",
-  "description": "使用 [autoxjs](https://github.com/kkevsekk1/AutoX) 发送消息",
-  "version": "1.0.2",
+  "description": "使用 [autoxjs](https://github.com/kkevsekk1/AutoX) 发送消息，风控的解决方法",
+  "version": "1.0.3",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
     "lib",
-    "dist"
+    "dist",
+    "demo.gif"
   ],
   "license": "AGPL-3.0",
   "author": "initencounter <2911583893@qq.com>",
@@ -28,6 +29,6 @@
     "koishi": "^4.11.9"
   },
   "koishi": {
-    "description": "使用 [autoxjs](https://github.com/kkevsekk1/AutoX) 发送消息"
+    "description": "使用 [autoxjs](https://github.com/kkevsekk1/AutoX) 发送消息，风控的解决方法"
   }
 }

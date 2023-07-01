@@ -1,77 +1,124 @@
+/*
+ * @Author: initialencounter
+ * @Date: 2023-07-01 22:04:50
+ * @LastEditors: initialencounter
+ * @LastEditTime: 2023-07-01 22:04:50
+ * @FilePath: D:\dev\koishi-hmr\external\autoxjs-server\src\client.js
+ * @Description: 请使用 AutoX.js 运行此脚本
+ *
+ * Copyright (c) 2023 by initialencounter, All Rights Reserved.
+ */
+
 importPackage(Packages["okhttp3"]); //导入包
-var client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
-var request = new Request.Builder().url("ws://121.37.247.122:32327").build(); //vscode  插件的ip地址，
+const client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
+
+// 图片保存的路径
+const IMG_PATH = "/sdcard/Pictures/qq/";
+const ENDPOINT = "ws://101.132.243.2:32327";
+
+const request = new Request.Builder().url(ENDPOINT).build(); // ws 地址，
 client.dispatcher().cancelAll();//清理一次
 
 
-// 发送私信
-function sendPrivateMsg(qq, msg) {
-    // 设置剪切板
-    setClip(msg);
-    // 打开发送消息的界面
-    app.startActivity({
-        action: "android.intent.action.VIEW",
-        data: "mqq://im/chat?chat_type=wpa&version=1&src_type=web&uin=" + qq,
-        packageName: "com.tencent.mobileqq",
-    });
-    sleep(300);
-    // 点击输入框
-    id("input").findOne(3000).click();
-    sleep(300);
-    // 打开剪切板
-    click(550, 1400);
-    sleep(200);
-    // 粘贴文本
-    click(256, 1582);
-    sleep(200);
-    // 发送消息
-    text("发送").findOne(2000).click();
-    sleep(300);
-    // 返回
-    back();
-    back();
+// 发送消息
+function sendMsg(msg) {
+    try {
+        let { content, guildId, id } = JSON.parse(msg);
+        if (guildId == 0) {
+            id = id.slice(8,);
+        }
+        device.wakeUp();
+        sleep(200);
+        const id1 = content.indexOf('<image url="') + 12;
+        if (id1 > 11) {
+            sendImage(saveImage(getUrl(id1, content)), id)
+        } else {
+            // 发送文本
+            sendText(id,content)
+        }
+        back();
+    }
+    catch (e) {
+        console.log("W:\n", e);
+    }
 }
 
-// 发送群消息
-function sendGroupMsg(qq, msg) {
-    setClip(msg);
-    app.startActivity({
-        action: "android.intent.action.VIEW",
-        data: "mqqapi://card/show_pslcard?src_type=internal&version=1&card_type=group&uin=" + qq,
-        packageName: "com.tencent.mobileqq",
-    });
-    sleep(200);
-    id("aek").findOne(3000).click();
+// 发送图片
+function sendImage(imgUrl, qid) {
+    const intent = new Intent();
+    intent.setAction(Intent.ACTION_SEND);
+    intent.setType("image/*");
+    intent.putExtra(Intent.EXTRA_STREAM, imgUrl);
+    intent.setClassName("com.tencent.mobileqq", "com.tencent.mobileqq.activity.JumpActivity"); // QQ的包名和类名
+    app.startActivity(intent);
+    text('搜索').findOne(2000).click();
+    text('搜索').findOne(2000).setText(qid);
+    KeyCode(67);
+    text(`(${qid})`).findOne(2000).parent().click();
+    text('发送').findOne(2000).click();
     sleep(300);
-    id("input").findOne(3000).click();
-    sleep(300);
-    click(550, 1400);
-    sleep(200);
-    click(256, 1582);
-    sleep(200);
-    text("发送").findOne(2000).click();
-    sleep(300);
-    back();
-    back();
 }
 
+// 保存图片
+function saveImage(url) {
+    print('img-url:', url);
+    const img = images.load(url);
+    const filePath = IMG_PATH + getTime() + ".jpg";
+    images.save(img, filePath, "jpg", 100);
+    img.recycle();
+    print("img-path", filePath);
+    return filePath;
+}
+
+// 获取图片 url
+function getUrl(id1, msg) {
+    const id2 = msg.indexOf('"/>');
+    const url = msg.slice(id1, id2);
+    return url;
+}
+
+// 获取时间
+function getTime() {
+    const date = new Date();
+    const date_str = date.toISOString();
+    return date_str.replace(/:/g, '-').slice(0, 19);
+}
+
+
+// 发送文本
+function sendText(qid,msg) {
+    print(qid,': ',msg)
+    const intent = new Intent();
+    intent.setAction(Intent.ACTION_SEND);
+    intent.putExtra(Intent.EXTRA_TEXT, msg);
+    intent.setType("text/plain");
+    intent.setClassName("com.tencent.mobileqq", "com.tencent.mobileqq.activity.JumpActivity"); // QQ的包名和类名
+    app.startActivity(intent);
+    text('搜索').findOne(2000).click();
+    text('搜索').findOne(2000).setText(qid);
+    KeyCode(67);
+    text(`(${qid})`).findOne(2000).parent().click();
+    text('发送').findOne(2000).click();
+    sleep(300);
+}
+
+
+
+// 客户端
 myListener = {
     onOpen: function (webSocket, response) {
         print("连接到服务端");
         webSocket.send('xiaomi8');
     },
     onMessage: function (webSocket, msg) { //msg可能是字符串，也可能是byte数组，取决于服务器送的内容
-        msg = JSON.parse(msg);
-        print(msg);
-        if (msg.guildId != 0) {
-            sendGroupMsg(msg.guildId, msg.content);
-        } else {
-            sendPrivateMsg((msg.id).slice(8,), msg.content);
-        }
+        sendMsg(msg);
+    },
+    onClosed: function (webSocket, code, response) {
+        print("已关闭");
     }
 }
 
-var webSocket = client.newWebSocket(request, new WebSocketListener(myListener)); //创建链接
+const webSocket = client.newWebSocket(request, new WebSocketListener(myListener)); //创建链接
 
 setInterval(() => { // 防止主线程退出
 
