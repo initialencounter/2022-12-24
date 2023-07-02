@@ -113,13 +113,11 @@ class AutoX {
 }
 namespace AutoX {
   export const usage = `
-![demo](https://raw.githubusercontent.com/initialencounter/mykoishi/master/autoxjs-server/demo.gif)
-
 # 使用方法
 
 - 准备一台闲置的， 拥有 root 权限的安卓手机
 - 安装 [autoxjs](https://github.com/kkevsekk1/AutoX)
-- 修改 client.js 脚本的 websocket 地址
+- 修改 [client.js](https://raw.githubusercontent.com/initialencounter/mykoishi/master/autoxjs-server/lib/client.js) 脚本的 websocket 地址
 - 启用本插件
 - 为 Autoxjs 开启无障碍，授予 root 权限
 - 运行 client.js
