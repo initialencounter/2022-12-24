@@ -34,7 +34,7 @@ function sendMsg(msg) {
             sendImage(saveImage(getUrl(id1, content)), id)
         } else {
             // 发送文本
-            sendText(id,content)
+            sendText(id, content);
         }
         back();
     }
@@ -86,8 +86,8 @@ function getTime() {
 
 
 // 发送文本
-function sendText(qid,msg) {
-    print(qid,': ',msg)
+function sendText(qid, msg) {
+    print(qid, ': ', msg)
     const intent = new Intent();
     intent.setAction(Intent.ACTION_SEND);
     intent.putExtra(Intent.EXTRA_TEXT, msg);
@@ -103,18 +103,28 @@ function sendText(qid,msg) {
 }
 
 
-
+const heartbeatInterval = 5000; // 心跳间隔时间，单位：毫秒
+let heartbeatTimer = null;
 // 客户端
 myListener = {
     onOpen: function (webSocket, response) {
         print("连接到服务端");
         webSocket.send('xiaomi8');
+        heartbeatTimer = setInterval(() => {
+            webSocket.send('heartbeat'); // 发送心跳包
+        }, heartbeatInterval);
     },
     onMessage: function (webSocket, msg) { //msg可能是字符串，也可能是byte数组，取决于服务器送的内容
-        sendMsg(msg);
+        if (msg == "heartbeat") {
+            print(getTime()+msg);
+        } else {
+            sendMsg(msg);
+        }
     },
     onClosed: function (webSocket, code, response) {
         print("已关闭");
+        clearInterval(heartbeatTimer);
+        heartbeatTimer = null;
     }
 }
 

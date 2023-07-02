@@ -14,47 +14,89 @@ import WebSocket from 'ws'
 export const name = 'autoxjs-sender'
 export const logger = new Logger(name)
 
-class AutoX{
-  constructor(private ctx:Context,private config:AutoX.Config){
+class AutoX {
+  constructor(private ctx: Context, private config: AutoX.Config) {
+    ctx.command('close_client', '关闭客户端连接').action(({ session }) => {
+      logger.info('用户关闭了ws')
+      session.send('close_client')
+    })
     if (config.type == 'server') {
-      const ws = new WebSocket.Server({ port: config.port ,host:"0.0.0.0"})
+      const ws = new WebSocket.Server({ port: config.port, host: "0.0.0.0" })
       ws.on('connection', ws_client => {
-        logger.info('接受连接')
+        const heartbeatInterval = config.heartbeatInterval; // 心跳间隔时间，单位：毫秒
+        let heartbeatTimer = null;
+        let connected = true
+        heartbeatTimer = setInterval(() => {
+          if (ws_client.readyState === WebSocket.OPEN) {
+            ws_client.send('heartbeat'); // 发送心跳包
+          } else {
+            clearInterval(heartbeatTimer);
+            heartbeatTimer = null;
+          }
+        }, heartbeatInterval);
+        // 监听 send
         ctx.before('send', async (session) => {
-          const {platform,guildId,id} = await session.getChannel()
-          if(platform == 'onebot' && session.content.length<3000){
+          const { platform, guildId, id } = await session.getChannel()
+          if (session.content == "close_client") {
+            ws_client.close(1000, '被动关闭')
+            connected = false
+            clearInterval(heartbeatTimer);
+            heartbeatTimer = null;
+          }
+          if (connected && platform == 'onebot' && session.content.length < 3000) {
             const msg = {
               content: session.content,
-              guildId: guildId||0,
+              guildId: guildId || 0,
               id: id
             }
-            ws_client.send(JSON.stringify(msg),(err)=>{
-              if(err){
-                logger.info('未知错误'+err)
+            ws_client.send(JSON.stringify(msg), (err) => {
+              if (err) {
+                logger.info('未知错误' + err)
               }
             })
             session.content = ''
           }
-          
+
         })
-        ws_client.on('close',(code,reason) => {
+        ws_client.on('close', (code, reason) => {
           logger.info(`连接关闭:\ncode:${code},reason:${reason}`)
+          clearInterval(heartbeatTimer);
+          heartbeatTimer = null;
         })
-        ws_client.on('error',err=>{
-          logger.info('未知错误'+err)
+        ws_client.on('error', err => {
+          logger.info('未知错误' + err)
+          clearInterval(heartbeatTimer);
+          heartbeatTimer = null;
         })
-        ws_client.on('message',(data)=>{
-          logger.info(data.toString('utf-8'))
+        ws_client.on('message', (data) => {
+          logger.info(this.getTime() + data.toString('utf-8'))
         })
       })
     } else {
       const wss = ctx.http.ws(config.endpoint)
+      const heartbeatInterval = config.heartbeatInterval; // 心跳间隔时间，单位：毫秒
+      let heartbeatTimer = null;
+      let connected = true
+      heartbeatTimer = setInterval(() => {
+        if (wss.readyState === WebSocket.OPEN) {
+          wss.send('heartbeat'); // 发送心跳包
+        } else {
+          clearInterval(heartbeatTimer);
+          heartbeatTimer = null;
+        }
+      }, heartbeatInterval);
       ctx.before('send', async (session) => {
-        const {platform,guildId,id} = await session.getChannel()
-        if(platform == 'onebot' && session.content.length<3000){
+        const { platform, guildId, id } = await session.getChannel()
+        if (session.content == "close_client") {
+          wss.close(1000, '被动关闭')
+          connected = false
+          clearInterval(heartbeatTimer);
+          heartbeatTimer = null;
+        }
+        if (connected && platform == 'onebot' && session.content.length < 3000) {
           const msg = {
             content: session.content,
-            guildId: guildId||0,
+            guildId: guildId || 0,
             id: id
           }
           wss.send(JSON.stringify(msg))
@@ -62,10 +104,14 @@ class AutoX{
         }
       })
     }
-  
+  }
+  getTime() {
+    const date = new Date();
+    const date_str = date.toISOString();
+    return date_str.replace(/:/g, '-').slice(0, 19);
   }
 }
-namespace AutoX{
+namespace AutoX {
   export const usage = `
 ![demo](https://raw.githubusercontent.com/initialencounter/mykoishi/master/autoxjs-server/demo.gif)
 
@@ -81,9 +127,10 @@ namespace AutoX{
   export interface Config {
     type: string
     port: number
+    heartbeatInterval: number
     endpoint: string
   }
-  
+
   export const Config: Schema<Dict> = Schema.intersect([
     Schema.object({
       type: Schema.union([
@@ -94,7 +141,8 @@ namespace AutoX{
     Schema.union([
       Schema.object({
         type: Schema.const('server' as string),
-        port: Schema.number().default(32327).description('websocket 服务端口')
+        port: Schema.number().default(32327).description('websocket 服务端口'),
+        heartbeatInterval: Schema.number().default(5000).description('心跳时间间隔')
       }).description('服务端模式'),
       Schema.object({
         type: Schema.const('client' as string),
@@ -105,4 +153,3 @@ namespace AutoX{
 }
 
 export default AutoX
-
