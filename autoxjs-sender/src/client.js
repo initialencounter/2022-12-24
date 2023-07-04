@@ -13,7 +13,7 @@ importPackage(Packages["okhttp3"]); //导入包
 const client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
 
 // 图片保存的路径
-const IMG_PATH = "/sdcard/Pictures/qq/";
+const IMG_PATH = "/sdcard/Pictures/";
 const ENDPOINT = "ws://127.0.0.1:32327";
 
 const request = new Request.Builder().url(ENDPOINT).build(); // ws 地址，
@@ -45,18 +45,26 @@ function sendMsg(msg) {
 
 // 发送图片
 function sendImage(imgUrl, qid) {
-    const intent = new Intent();
-    intent.setAction(Intent.ACTION_SEND);
+    const intent = app.intent({
+        action: "SEND",
+        packageName: "com.tencent.mobileqq",
+        className: "com.tencent.mobileqq.activity.JumpActivity",
+        root: true
+    })
     intent.setType("image/*");
     intent.putExtra(Intent.EXTRA_STREAM, imgUrl);
-    intent.setClassName("com.tencent.mobileqq", "com.tencent.mobileqq.activity.JumpActivity"); // QQ的包名和类名
     app.startActivity(intent);
-    id('ik5').findOne(2000).click();
-    id('ik5').findOne(2000).setText(qid);
-    KeyCode(67);
+    sleep(800);
+    click(250, 270);
+    for (var i of qid.slice(0, 2)) {
+        KeyCode(parseInt(i) + 7);
+        sleep(600);
+    }
     text(`(${qid})`).findOne(2000).parent().click();
     text('发送').findOne(2000).click();
     sleep(300);
+    back();
+    back();
 }
 
 // 保存图片
@@ -87,19 +95,27 @@ function getTime() {
 
 // 发送文本
 function sendText(qid, msg) {
-    print(qid, ': ', msg)
-    const intent = new Intent();
-    intent.setAction(Intent.ACTION_SEND);
+    print(qid, ': ', msg);
+    const intent = app.intent({
+        action: "SEND",
+        packageName: "com.tencent.mobileqq",
+        className: "com.tencent.mobileqq.activity.JumpActivity",
+        root: true
+    })
     intent.putExtra(Intent.EXTRA_TEXT, msg);
     intent.setType("text/plain");
-    intent.setClassName("com.tencent.mobileqq", "com.tencent.mobileqq.activity.JumpActivity"); // QQ的包名和类名
     app.startActivity(intent);
-    id('ik5').findOne(2000).click();
-    id('ik5').findOne(2000).setText(qid);
-    KeyCode(67);
+    sleep(500);
+    click(250, 270);
+    for (var i of qid.slice(0, 2)) {
+        KeyCode(parseInt(i) + 7);
+        sleep(600);
+    }
     text(`(${qid})`).findOne(2000).parent().click();
     text('发送').findOne(2000).click();
     sleep(300);
+    back();
+    back();
 }
 
 
