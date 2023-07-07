@@ -1,7 +1,7 @@
 {
-  "name": "koishi-plugin-autoxjs-sender",
-  "description": "使用 [autoxjs](https://github.com/kkevsekk1/AutoX) 发送消息，风控的解决方法",
-  "version": "1.2.2",
+  "name": "koishi-plugin-clock",
+  "description": "闹钟插件",
+  "version": "0.0.1",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -17,7 +17,7 @@
   "bugs": {
     "url": "https://github.com/initialencounter/mykoishi/issues"
   },
-  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/autoxjs-sender#readme",
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/clock#readme",
   "scripts": {},
   "keywords": [
     "chatbot",
@@ -27,7 +27,14 @@
   "peerDependencies": {
     "koishi": "^4.11.9"
   },
+  "dependencies":{
+    "node-cron": "^3.0.2"
+  },
   "koishi": {
-    "description": "使用 [autoxjs](https://github.com/kkevsekk1/AutoX) 发送消息，风控的解决方法"
+    "service":{
+      "optional": [
+        "database"
+      ]
+    }
   }
 }
