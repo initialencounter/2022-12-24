@@ -8,7 +8,11 @@
     "lib",
     "dist"
   ],
-  "author": "initencounter <2911583893@qq.com>",
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",

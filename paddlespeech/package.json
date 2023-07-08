@@ -9,7 +9,11 @@
     "dist"
   ],
   "license": "AGPL-3.0",
-  "author": "initencounter <2911583893@qq.com>",
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/initialencounter/mykoishi.git"

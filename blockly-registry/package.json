@@ -11,7 +11,11 @@
   "scripts": {
     "build:console": "koishi-console build"
   },
-  "author": "initencounter <2911583893@qq.com>",
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
   "contributors": [
     "initencounter <2911583893@qq.com>",
     "t4wefan <guanghoushi@gmail.com>"
