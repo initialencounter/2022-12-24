@@ -1,4 +1,5 @@
 import { Context, Schema,Logger,Bot } from 'koishi'
+import * as saolei from './saolei'
 export const name = 'stnb'
 export const logger = new Logger(name);
 
@@ -47,6 +48,7 @@ export const usage = `
 
 export function apply(ctx: Context, config: Config) {
   ctx.i18n.define('zh', require('./locales/zh'))
+  ctx.plugin(saolei)
   ctx.command('stnb <prompt:text>')
     .alias(config.cmd)
     .action(async ({ session, options },prompt) => {
