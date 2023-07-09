@@ -92,7 +92,7 @@ export function apply(ctx: Context, config: Config) {
     time: "text",
     msg: "text",
     enable: "boolean",
-    rules: "list"
+    rules: "json"
   }, {
     primary: 'id', //设置 uid 为主键
     autoInc: true
