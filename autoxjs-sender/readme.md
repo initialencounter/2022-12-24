@@ -12,3 +12,8 @@
 - 启用本插件
 - 为 Autoxjs 开启无障碍，授予 root 权限
 - 运行 client.js
+
+## 更新日志
+
+- v1.3.0
+    - 新增自动备份 koishi.yml packaage.json

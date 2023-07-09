@@ -11,11 +11,20 @@
 
 import { Context, Schema, Dict, Logger } from 'koishi'
 import WebSocket from 'ws'
+const fs = require('fs').promises;
 export const name = 'autoxjs-sender'
 export const logger = new Logger(name)
 
 class AutoX {
   constructor(private ctx: Context, private config: AutoX.Config) {
+    ctx.on('ready', async () => {
+      const json_data: string = await fs.readFile('package.json', 'utf8');
+      const yaml_data: string = await fs.readFile('koishi.yml', 'utf8');
+      // 备份
+      await fs.writeFile('./package.json.bak', json_data, 'utf8');
+      await fs.writeFile('./koishi.yml.bak', yaml_data, 'utf8');
+    })
+
     ctx.command('close_client', '关闭客户端连接').action(({ session }) => {
       logger.info('用户关闭了ws')
       session.send('close_client')
