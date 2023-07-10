@@ -5,7 +5,6 @@ import { } from 'koishi-plugin-puppeteer';
 import { } from '@initencounter/vits'
 import { } from '@initencounter/sst'
 import { } from '@koishijs/censor'
-import { count } from 'console';
 export const using = ['puppeteer', 'vits', 'sst', 'censor']
 const name = 'davinci-003';
 const logger = new Logger(name);
@@ -26,6 +25,7 @@ class Dvc extends Service {
   aliasMap: any;
   type: string
   l6k: boolean;
+  key_number: number;
 
   constructor(ctx: Context, private config: Dvc.Config) {
     const using = ['puppeteer', 'vits', 'sst', 'censor'];
@@ -33,6 +33,7 @@ class Dvc extends Service {
     this.l6k = config.l6k
     this.output_type = this.config.output
     this.type = this.config.type
+    this.key_number = 0
     this.sessions = {};
     if ((!ctx.puppeteer) && this.config.output == 'image') {
       logger.warn('未启用puppter,将无法发送图片');
@@ -232,7 +233,7 @@ class Dvc extends Service {
           method: 'post',
           url: trimSlash(`${this.config.proxy_reverse ? this.config.proxy_reverse : "https://api.openai.com"}/v1/images/generations`),
           headers: {
-            Authorization: `Bearer ${this.config.key}`,
+            Authorization: `Bearer ${this.config.key[this.key_number]}`,
             'Content-Type': 'application/json'
           },
           data: {
@@ -256,8 +257,13 @@ class Dvc extends Service {
       return result
     }
     catch (e) {
-      logger.warn(e)
-      return session.text('commands.dvc.messages.err', [String(e)])
+      this.key_number++
+      if (this.key_number < this.config?.key?.length) {
+        logger.info(`key${this.key_number - 1} 报错：${String(e)}`)
+        return await this.paint(session, prompt, n, size)
+      } else {
+        return session.text('commands.dvc.messages.err', [`key${this.key_number - 1} 报错：${String(e)}`])
+      }
     }
 
   }
@@ -378,7 +384,7 @@ class Dvc extends Service {
         method: 'post',
         url: trimSlash(`${this.config.proxy_reverse4}/v1/chat/completions`),
         headers: {
-          Authorization: `Bearer ${this.config.key}`
+          Authorization: `Bearer ${this.config.key[this.key_number]}`
         },
         responseType: 'stream',
         data: {
@@ -414,9 +420,14 @@ class Dvc extends Service {
           logger.info("ChatGPT返回内容: ")
           logger.info(contents)
         })
-      }).catch(error => {
-        logger.error(error)
-        return String(error)
+      }).catch(async (e) => {
+        this.key_number++
+        if (this.key_number < this.config?.key?.length) {
+          logger.info(`key${this.key_number - 1} 报错：${String(e)}`)
+          return await this.chat_with_gpt4_stream(session, message)
+        } else {
+          return session.text('commands.dvc.messages.err', [`key${this.key_number - 1} 报错：${String(e)}`])
+        }
       });
   }
   async chat_with_gpt4(session: Session, message: Dvc.Msg[]): Promise<string> {
@@ -426,7 +437,7 @@ class Dvc extends Service {
           method: 'post',
           url: trimSlash(`${this.config.proxy_reverse4}/v1/chat/completions`),
           headers: {
-            Authorization: `Bearer ${this.config.key}`
+            Authorization: `Bearer ${this.config.key[this.key_number]}`
           },
           data: {
             model: 'gpt-4',
@@ -437,7 +448,13 @@ class Dvc extends Service {
       return response.data.choices[0].message.content
     }
     catch (e) {
-      return session.text('commands.dvc.messages.err', [String(e)])
+      this.key_number++
+      if (this.key_number < this.config?.key?.length) {
+        logger.info(`key${this.key_number - 1} 报错：${String(e)}`)
+        return await this.chat_with_gpt4(session, message)
+      } else {
+        return session.text('commands.dvc.messages.err', [`key${this.key_number - 1} 报错：${String(e)}`])
+      }
     }
   }
   /**
@@ -454,7 +471,7 @@ class Dvc extends Service {
           method: 'post',
           url: trimSlash(`${this.config.proxy_reverse ? this.config.proxy_reverse : "https://api.openai.com"}/v1/chat/completions`),
           headers: {
-            Authorization: `Bearer ${this.config.key}`,
+            Authorization: `Bearer ${this.config.key[this.key_number]}`,
             'Content-Type': 'application/json'
           },
           data: {
@@ -470,7 +487,13 @@ class Dvc extends Service {
       return response.data.choices[0].message.content
     }
     catch (e) {
-      return session.text('commands.dvc.messages.err', [String(e)])
+      this.key_number++
+      if (this.key_number < this.config?.key?.length) {
+        logger.info(`key${this.key_number - 1} 报错：${String(e)}`)
+        return await this.chat_with_gpt(session, message)
+      } else {
+        return session.text('commands.dvc.messages.err', [`key${this.key_number - 1} 报错：${String(e)}`])
+      }
     }
   }
 
@@ -489,7 +512,7 @@ class Dvc extends Service {
         method: 'post',
         url: `${this.config.proxy_reverse ? this.config.proxy_reverse : "https://api.openai.com"}/v1/chat/completions`,
         headers: {
-          Authorization: `Bearer ${this.config.key}`,
+          Authorization: `Bearer ${this.config.key[this.key_number]}`,
           'Content-Type': 'application/json',
         },
         responseType: 'stream',
@@ -531,9 +554,14 @@ class Dvc extends Service {
             logger.info("ChatGPT返回内容: ")
             logger.info(contents)
           })
-      }).catch(error => {
-        logger.error(error)
-        return String(error)
+      }).catch(async (e) => {
+        this.key_number++
+        if (this.key_number < this.config?.key?.length) {
+          logger.info(`key${this.key_number - 1} 报错：${String(e)}`)
+          return await this.chat_with_gpt_stream(session, message)
+        } else {
+          return session.text('commands.dvc.messages.err', [`key${this.key_number - 1} 报错：${String(e)}`])
+        }
       });
 
   }
@@ -770,14 +798,20 @@ class Dvc extends Service {
       const url: string = trimSlash(`${this.config.proxy_reverse ? this.config.proxy_reverse : "https://api.openai.com"}/v1/dashboard/billing/subscription`)
       const res = await this.ctx.http.get(url, {
         headers: {
-          "Authorization": "Bearer " + this.config.key
+          "Authorization": "Bearer " + this.config.key[this.key_number]
         },
         timeout: 600000
       })
       return session.text('commands.dvc.messages.total_available', [res["soft_limit_usd"]])
     }
     catch (e) {
-      return session.text('commands.dvc.messages.err', [String(e)])
+      this.key_number++
+      if (this.key_number < this.config?.key?.length) {
+        logger.info(`key${this.key_number - 1} 报错：${String(e)}`)
+        return await this.get_credit(session)
+      } else {
+        return session.text('commands.dvc.messages.err', [`key${this.key_number - 1} 报错：${String(e)}`])
+      }
     }
   }
   /**
@@ -991,6 +1025,19 @@ namespace Dvc {
   - -o 输出方式
   - -l 启用16k 
 
+## 设置多个 key 的方法
+1. 直接修改
+2. 在配置文件修改
+  打开koishi.yml (可以使用 explorer 插件)
+  修改配置项
+  \`\`\`
+  davinci-003:3seyqr:
+    key:
+      - sk-kashdkahsjdhkashkd
+      - sk-ItGRonJPTa6sp9QYhN
+      - sk-sgadtiasyn2ouoi1n 
+  \`\`\`
+
 ## 添加人格的方法
 * 在聊天中发送“dvc.添加人格”可以添加并自动保存人格
 
@@ -1021,7 +1068,7 @@ namespace Dvc {
   }
   export interface Config {
     type: string
-    key: string
+    key: string[]
 
     l6k: boolean
     preset_pro: boolean
@@ -1070,7 +1117,10 @@ namespace Dvc {
         Schema.const('gpt4' as const).description('GPT-4'),
         Schema.const('gpt4-unit' as const).description('GPT-4-unit,超级节俭模式')
       ] as const).default('gpt3.5-js').description('引擎选择'),
-      key: Schema.string().description('api_key'),
+      key: Schema.union([
+        Schema.array(String),
+        Schema.transform(String, value => [value]),
+      ]).default([]).description('api_key'),
     }).description('基础设置'),
 
     Schema.object({

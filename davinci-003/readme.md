@@ -26,8 +26,18 @@
   - -o 输出方式
   - -l 启用16k 
       
-### 若出现400报错dvc.clear
-
+## 设置多个 key 的方法
+1. 直接修改
+2. 在配置文件修改
+  打开koishi.yml  (可以使用 explorer 插件)
+  修改配置项
+    ```
+    davinci-003:3seyqr:
+        key:
+        - sk-kashdkahsjdhkashkd*
+        - sk-ItGRonJPTa6sp9QYhN*
+        - sk-sgadtiasyn2ouoi1n*
+    ```
 ## 添加人格的方法
 * 在聊天中发送“dvc.添加人格”可以添加并自动保存人格
 
@@ -39,6 +49,8 @@ QQ群：399899914<br>
 
 
 # 更新日志
+- v6.0.0
+    - 自动更换报错的 key
 - v5.1.4-beta
     - 修复 stream 模式下的 prompt 失效
 - v5.1.4-alpha

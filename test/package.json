@@ -8,11 +8,6 @@
     "lib",
     "dist"
   ],
-  "author": {
-    "name": "initencounter",
-    "email": "2911583893@qq.com",
-    "url": "https://github.com/initialencounter"
-  },
   "license": "MIT",
   "scripts": {},
   "keywords": [
@@ -21,13 +16,6 @@
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.12.3"
-  },
-  "koishi": {
-    "service": {
-      "optional": [
-        "translator"
-      ]
-    }
+    "koishi": "^4.13.0"
   }
 }

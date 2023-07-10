@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-davinci-003",
-  "description": "AI 聊天, 新增流式输出(stream)",
-  "version": "5.1.4-beta",
+  "description": "AI 聊天",
+  "version": "6.0.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -37,7 +37,7 @@
     "@koishijs/censor": "^1.0.2"
   },
   "koishi": {
-    "description": "AI 聊天,gpt3.5-turbo-16k, 新增 403 个极品人格",
+    "description": "AI 聊天",
     "browser": true,
     "service": {
       "optional": [
