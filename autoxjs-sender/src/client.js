@@ -9,16 +9,82 @@
  * Copyright (c) 2023 by initialencounter, All Rights Reserved.
  */
 
-importPackage(Packages["okhttp3"]); //导入包
-const client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
-
 // 图片保存的路径
 const IMG_PATH = "/sdcard/Pictures/";
 const ENDPOINT = "ws://127.0.0.1:32327";
 
-const request = new Request.Builder().url(ENDPOINT).build(); // ws 地址，
-client.dispatcher().cancelAll();//清理一次
+importPackage(Packages["okhttp3"]); // 导入包
+const client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
 
+let request = new Request.Builder().url(ENDPOINT).build(); // ws 地址，
+client.dispatcher().cancelAll();// 清理一次
+const heartbeatInterval = 5000; // 心跳间隔时间，单位：毫秒
+let heartbeatTimer = null;
+let heartbeatSign = 1;
+let retryInterval = 10000;
+// WebSocket监听器
+const myListener = {
+    onOpen: function (webSocket, response) {
+        console.log("WebSocket连接已打开");
+        heartbeatTimer = setInterval(() => {
+            webSocket.send('heartbeat'); // 发送心跳包
+        }, heartbeatInterval);
+    },
+    onMessage: function (webSocket, text) {
+        if (text == "heartbeat") {
+            heartbeatSign++;
+            console.log(getTime() + text);
+        } else {
+            sendMsg(text);
+        }
+    },
+    onClosing: function (webSocket, code, reason) {
+        if (reason == "被动关闭") {
+            heartbeatSign = 0
+        }
+        console.log("WebSocket连接即将关闭" + "\ncode:\n" + code + "\nreason:\n" + reason);
+    },
+    onFailure: function (webSocket, t, response) {
+        console.log("WebSocket连接失败" + "\nreason:\n" + reason);
+    }
+};
+
+// 创建WebSocket连接
+let webSocket = client.newWebSocket(request, new WebSocketListener(myListener));
+
+// 重连函数
+function reconnect() {
+    try {
+        sleep(heartbeatInterval);
+        console.log("正在尝试重新连接...");
+        if (heartbeatTimer) {
+            clearInterval(heartbeatTimer);
+        }
+        heartbeatTimer = null;
+        webSocket.cancel(); // 取消当前WebSocket连接
+        request = new Request.Builder().url(ENDPOINT).build(); // ws 地址
+        client.dispatcher().cancelAll();//清理一次
+        webSocket = client.newWebSocket(request, new WebSocketListener(myListener));
+    } catch (e) {
+        console.log('未知错误' + e);
+    }
+
+}
+// 定时器，防止主线程退出
+let mainproc = setInterval(function () {
+    if (heartbeatSign == 0) {
+        console.log('跳过');
+        clearInterval(mainproc);
+    } else {
+        const heartbeatTmp = heartbeatSign;
+        sleep(retryInterval);
+        if (heartbeatTmp == heartbeatSign) {
+            console.log('主动重连')
+            reconnect();
+        }
+    }
+
+}, retryInterval);
 
 // 发送消息
 function sendMsg(msg) {
@@ -42,39 +108,36 @@ function sendMsg(msg) {
         console.log("W:\n", e);
     }
 }
-
+// 选择联系人并发送消息，然后返回
+function selectTarget(qid) {
+    id('ik5').text('搜索').findOne(4000).click();
+    id('ik5').text('搜索').findOne(3000).setText(qid);
+    id('j64').text(`(${qid})`).findOne(2000).parent().click();
+    id('dialogRightBtn').text('发送').findOne(2000).click();
+    back();
+    back();
+}
 // 发送图片
 function sendImage(imgUrl, qid) {
     const intent = app.intent({
         action: "SEND",
         packageName: "com.tencent.mobileqq",
         className: "com.tencent.mobileqq.activity.JumpActivity",
-        root: true
     })
     intent.setType("image/*");
     intent.putExtra(Intent.EXTRA_STREAM, imgUrl);
     app.startActivity(intent);
-    sleep(800);
-    click(250, 270);
-    for (var i of qid.slice(0, 2)) {
-        KeyCode(parseInt(i) + 7);
-        sleep(600);
-    }
-    text(`(${qid})`).findOne(2000).parent().click();
-    text('发送').findOne(2000).click();
-    sleep(300);
-    back();
-    back();
+    selectTarget(qid);
 }
 
 // 保存图片
 function saveImage(url) {
-    print('img-url:', url);
+    console.log('img-url:', url);
     const img = images.load(url);
     const filePath = IMG_PATH + getTime() + ".jpg";
     images.save(img, filePath, "jpg", 100);
     img.recycle();
-    print("img-path", filePath);
+    console.log("img-path", filePath);
     return filePath;
 }
 
@@ -95,57 +158,14 @@ function getTime() {
 
 // 发送文本
 function sendText(qid, msg) {
-    print(qid, ': ', msg);
+    console.log(qid, ': ', msg);
     const intent = app.intent({
         action: "SEND",
         packageName: "com.tencent.mobileqq",
         className: "com.tencent.mobileqq.activity.JumpActivity",
-        root: true
     })
     intent.putExtra(Intent.EXTRA_TEXT, msg);
     intent.setType("text/plain");
     app.startActivity(intent);
-    sleep(500);
-    click(250, 270);
-    for (var i of qid.slice(0, 2)) {
-        KeyCode(parseInt(i) + 7);
-        sleep(600);
-    }
-    text(`(${qid})`).findOne(2000).parent().click();
-    text('发送').findOne(2000).click();
-    sleep(300);
-    back();
-    back();
+    selectTarget(qid);
 }
-
-
-const heartbeatInterval = 5000; // 心跳间隔时间，单位：毫秒
-let heartbeatTimer = null;
-// 客户端
-myListener = {
-    onOpen: function (webSocket, response) {
-        print("连接到服务端");
-        webSocket.send('xiaomi8');
-        heartbeatTimer = setInterval(() => {
-            webSocket.send('heartbeat'); // 发送心跳包
-        }, heartbeatInterval);
-    },
-    onMessage: function (webSocket, msg) { //msg可能是字符串，也可能是byte数组，取决于服务器送的内容
-        if (msg == "heartbeat") {
-            print(getTime()+msg);
-        } else {
-            sendMsg(msg);
-        }
-    },
-    onClosed: function (webSocket, code, response) {
-        print("已关闭");
-        clearInterval(heartbeatTimer);
-        heartbeatTimer = null;
-    }
-}
-
-const webSocket = client.newWebSocket(request, new WebSocketListener(myListener)); //创建链接
-
-setInterval(() => { // 防止主线程退出
-
-}, 1000);

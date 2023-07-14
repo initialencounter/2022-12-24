@@ -14,6 +14,7 @@
 - 运行 client.js
 
 ## 更新日志
-
+- v1.4.0
+    - 更新脚本，更加稳定，且不再需要 root 权限了
 - v1.3.0
     - 新增自动备份 koishi.yml packaage.json

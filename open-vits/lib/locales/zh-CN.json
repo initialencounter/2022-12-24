@@ -1,1 +1,0 @@
-{"commands":{"say":{"description":"vits语音合成","usage":"-| <> <message forward> <message id=1> 项目地址https://github.com/Artrajz/vits-simple-api </message> <message id=2> 插件仓库https://github.com/initialencounter/koishi-plugin-open-vits </message> <message id=3> 指令如下：</message> <message id=4>1.[文字转语音] 请发送 \"say 文本\"</message> </message> </>","message":{"too-long":"文本消息过长"}}}}
