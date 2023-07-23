@@ -26,7 +26,7 @@ class Dvc extends Service {
   type: string
   l6k: boolean;
   key_number: number;
-
+  key: string[];
   constructor(ctx: Context, private config: Dvc.Config) {
     const using = ['puppeteer', 'vits', 'sst', 'censor'];
     super(ctx, 'dvc', true)
@@ -34,6 +34,7 @@ class Dvc extends Service {
     this.output_type = this.config.output
     this.type = this.config.type
     this.key_number = 0
+    this.key = [].concat(config.key)
     this.sessions = {};
     if ((!ctx.puppeteer) && this.config.output == 'image') {
       logger.warn('未启用puppter,将无法发送图片');
@@ -55,7 +56,10 @@ class Dvc extends Service {
     ctx.command('dvc.credit', '查询余额').action(async ({ session }) => {
       if (this.block(session)) {
         return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
-      } return this.get_credit(session)
+      }
+      session.send(h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.get'))
+      const credit = await this.get_credit(session)
+      return session.text('commands.dvc.messages.total_available', [credit])
     });
 
 
@@ -233,7 +237,7 @@ class Dvc extends Service {
           method: 'post',
           url: trimSlash(`${this.config.proxy_reverse ? this.config.proxy_reverse : "https://api.openai.com"}/v1/images/generations`),
           headers: {
-            Authorization: `Bearer ${this.config.key[this.key_number]}`,
+            Authorization: `Bearer ${this.key[this.key_number]}`,
             'Content-Type': 'application/json'
           },
           data: {
@@ -375,7 +379,11 @@ class Dvc extends Service {
     if (randnum < this.config.randnum) return await this.dvc(session, session.content)
     return next()
   }
-
+  /**
+   * GPT4 流式输出，适用于沙盒
+   * @param session 会话
+   * @param message 消息列表
+   */
   async chat_with_gpt4_stream(session: Session, message: Dvc.Msg[]): Promise<string | void> {
     let contents = ''
     let content = ''
@@ -384,7 +392,7 @@ class Dvc extends Service {
         method: 'post',
         url: trimSlash(`${this.config.proxy_reverse4}/v1/chat/completions`),
         headers: {
-          Authorization: `Bearer ${this.config.key[this.key_number]}`
+          Authorization: `Bearer ${this.key[this.key_number]}`
         },
         responseType: 'stream',
         data: {
@@ -421,13 +429,8 @@ class Dvc extends Service {
           logger.info(contents)
         })
       }).catch(async (e) => {
-        this.key_number++
-        if (this.key_number < this.config?.key?.length) {
-          logger.info(`key${this.key_number - 1} 报错：${String(e)}`)
-          return await this.chat_with_gpt4_stream(session, message)
-        } else {
-          return session.text('commands.dvc.messages.err', [`key${this.key_number - 1} 报错：${String(e)}`])
-        }
+        await this.switch_key(session, e)
+        return await this.chat_with_gpt4_stream(session, message)
       });
   }
   async chat_with_gpt4(session: Session, message: Dvc.Msg[]): Promise<string> {
@@ -437,7 +440,7 @@ class Dvc extends Service {
           method: 'post',
           url: trimSlash(`${this.config.proxy_reverse4}/v1/chat/completions`),
           headers: {
-            Authorization: `Bearer ${this.config.key[this.key_number]}`
+            Authorization: `Bearer ${this.key[this.key_number]}`
           },
           data: {
             model: 'gpt-4',
@@ -448,13 +451,8 @@ class Dvc extends Service {
       return response.data.choices[0].message.content
     }
     catch (e) {
-      this.key_number++
-      if (this.key_number < this.config?.key?.length) {
-        logger.info(`key${this.key_number - 1} 报错：${String(e)}`)
-        return await this.chat_with_gpt4(session, message)
-      } else {
-        return session.text('commands.dvc.messages.err', [`key${this.key_number - 1} 报错：${String(e)}`])
-      }
+      await this.switch_key(session, e)
+      return await this.chat_with_gpt4(session, message)
     }
   }
   /**
@@ -471,7 +469,7 @@ class Dvc extends Service {
           method: 'post',
           url: trimSlash(`${this.config.proxy_reverse ? this.config.proxy_reverse : "https://api.openai.com"}/v1/chat/completions`),
           headers: {
-            Authorization: `Bearer ${this.config.key[this.key_number]}`,
+            Authorization: `Bearer ${this.key[this.key_number]}`,
             'Content-Type': 'application/json'
           },
           data: {
@@ -487,13 +485,27 @@ class Dvc extends Service {
       return response.data.choices[0].message.content
     }
     catch (e) {
+      await this.switch_key(session, e)
+      return await this.chat_with_gpt(session, message)
+    }
+  }
+
+  /**
+   * 先查询余额 ,如果余额为 0，则从内存中删除 key, 如果还有余额，则暂时切换余额
+   * @param session 会话
+   * @param e Error
+   */
+
+  async switch_key(session: Session, e: Error) {
+    const credit = await this.get_credit(session)
+    logger.info(`key${this.key_number - 1}. ${this.key[this.key_number]} 报错，余额${credit}：${String(e)}`)
+    if (credit > 0) {
+      this.key.splice(this.key_number, 1)
+    } else {
       this.key_number++
-      if (this.key_number < this.config?.key?.length) {
-        logger.info(`key${this.key_number - 1} 报错：${String(e)}`)
-        return await this.chat_with_gpt(session, message)
-      } else {
-        return session.text('commands.dvc.messages.err', [`key${this.key_number - 1} 报错：${String(e)}`])
-      }
+    }
+    if (this.key_number > this.config?.key?.length) {
+      this.key_number = 0
     }
   }
 
@@ -503,7 +515,6 @@ class Dvc extends Service {
    * @returns 将返回文字处理成json
    */
 
-
   async chat_with_gpt_stream(session: Session, message: Dvc.Msg[]): Promise<string | void> {
     let contents = ''
     let content = ''
@@ -512,7 +523,7 @@ class Dvc extends Service {
         method: 'post',
         url: `${this.config.proxy_reverse ? this.config.proxy_reverse : "https://api.openai.com"}/v1/chat/completions`,
         headers: {
-          Authorization: `Bearer ${this.config.key[this.key_number]}`,
+          Authorization: `Bearer ${this.key[this.key_number]}`,
           'Content-Type': 'application/json',
         },
         responseType: 'stream',
@@ -555,13 +566,8 @@ class Dvc extends Service {
             logger.info(contents)
           })
       }).catch(async (e) => {
-        this.key_number++
-        if (this.key_number < this.config?.key?.length) {
-          logger.info(`key${this.key_number - 1} 报错：${String(e)}`)
-          return await this.chat_with_gpt_stream(session, message)
-        } else {
-          return session.text('commands.dvc.messages.err', [`key${this.key_number - 1} 报错：${String(e)}`])
-        }
+        await this.switch_key(session, e)
+        return await this.chat_with_gpt_stream(session, message)
       });
 
   }
@@ -754,7 +760,13 @@ class Dvc extends Service {
     return session.text('commands.dvc.messages.switch-success', ['输出模式', input])
 
   }
-  // 发送选择菜单
+  /**
+   * 发送选择菜单
+   * @param session 
+   * @param type_arr 
+   * @param name 
+   * @returns 
+   */
   async switch_menu(session: Session, type_arr: string[], name: string): Promise<string> {
     let type_str: string = '\n'
     let count = 0
@@ -792,26 +804,19 @@ class Dvc extends Service {
    * @returns apikey剩余额度
    */
 
-  async get_credit(session: Session): Promise<string> {
-    session.send(h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.get'))
+  async get_credit(session: Session): Promise<number> {
     try {
       const url: string = trimSlash(`${this.config.proxy_reverse ? this.config.proxy_reverse : "https://api.openai.com"}/v1/dashboard/billing/subscription`)
       const res = await this.ctx.http.get(url, {
         headers: {
-          "Authorization": "Bearer " + this.config.key[this.key_number]
+          "Authorization": "Bearer " + this.key[this.key_number]
         },
         timeout: 600000
       })
-      return session.text('commands.dvc.messages.total_available', [res["soft_limit_usd"]])
+      return res["soft_limit_usd"]
     }
     catch (e) {
-      this.key_number++
-      if (this.key_number < this.config?.key?.length) {
-        logger.info(`key${this.key_number - 1} 报错：${String(e)}`)
-        return await this.get_credit(session)
-      } else {
-        return session.text('commands.dvc.messages.err', [`key${this.key_number - 1} 报错：${String(e)}`])
-      }
+      return 0
     }
   }
   /**
@@ -927,11 +932,13 @@ class Dvc extends Service {
     return this.set_personality(session, input)
   }
 
-
-
+  /**
+   * 重置个人会话，保留人格
+   * @param session 会话
+   * @returns 
+   */
 
   reset(session: Session): string {
-
     let seession_json: Dvc.Msg[] = this.get_chat_session(session.userId)
     this.sessions[session.userId] = [{ "role": "system", "content": seession_json[0].content }]
     return '重置成功'
@@ -986,7 +993,6 @@ class Dvc extends Service {
     }
     return '人格设置成功: ' + nick_name
   }
-
 
 
   /**
@@ -1174,7 +1180,6 @@ namespace Dvc {
     }).description('过滤器'),
 
   ])
-
-
 }
+
 export default Dvc
