@@ -2,31 +2,15 @@ import { Context, Logger, Schema,Session } from 'koishi'
 
 import { } from '@koishijs/plugin-adapter-onebot'
 
-export const name = 'specialtile'
+export const name = 'specialtitle'
 export const logger = new Logger(name)
-
-export const usage = `
-使用说明：
-机器人必须拥有管理员权限
-如果有更多文本内容想要修改，可以在<a style="color:blue" href="/locales">本地化</a>中修改 zh 内容<br>
-若specialstiltle 未启动,在QQ群发送 specialtiltle 即可启动
-`
-export interface Config {
-  selfId: string
-  interval: number
-}
-
-export const Config: Schema<Config> = Schema.object({
-  selfId: Schema.string().default('1114039391').description('qq机器人账号'),
-  interval: Schema.number().default(60000).description('轮询间隔')
-})
 
 declare module 'koishi' {
   interface Tables {
-    specialtile: Specialtile
+    specialtitle: specialtitle
   }
 }
-export interface Specialtile {
+export interface specialtitle {
   id: number
   uid: string
   platform: string
@@ -37,9 +21,9 @@ export interface Specialtile {
 
 class Special {
   session:Session
-  constructor(ctx: Context, config: Config) {
+  constructor(ctx: Context, config: Special.Config) {
     ctx.i18n.define('zh', require('./locales/zh'))
-    ctx.model.extend('specialtile', {
+    ctx.model.extend('specialtitle', {
       id: 'unsigned',
       uid: 'text',
       platform: 'string',
@@ -51,17 +35,17 @@ class Special {
       unique: ['uid', 'id'],
       autoInc: true
     })
-    ctx.command('specialtiltle','启动 specialtiltle').action(({session})=>{
+    ctx.command('specialtitle','启动 specialtitle').action(({session})=>{
       this.session = session
-      return 'specialstiltle 已启动'
+      return 'specialstitle 已启动'
     })
     ctx.on('guild-member-added', async (session) => {
       this.session = session
       if (session.platform == 'onebot' && session?.onebot) {
         const uid = session.guildId + session.userId
-        const nickname = session.text('specialtilte.nickname')
+        const nickname = session.text('specialtitle.nickname')
         // 记录名片
-        await ctx.database.create('specialtile', {
+        await ctx.database.create('specialtitle', {
           uid: uid,
           nickname: nickname,
           platform: session.platform,
@@ -75,17 +59,18 @@ class Special {
     ctx.on('guild-member-deleted', async (session) => {
       this.session = session
       const uid = session.channelId + session.guildId + session.userId
-      const member = await ctx.database.get('specialtile', { uid: [uid] })
+      const member = await ctx.database.get('specialtitle', { uid: [uid] })
       if (member.length > 0) {
-        await ctx.database.remove('specialtile', { uid: [uid] })
+        await ctx.database.remove('specialtitle', { uid: [uid] })
       }
     })
-    // 监听群友名片的变化
+    ctx.on('ready',()=>{
+      // 监听群友名片的变化
     setInterval(async ()=>{
       if(!this.session){
-        logger.warn('specialstiltle 未启动,在QQ群发送 specialtiltle 可启动')
+        logger.warn('specialstitle 未启动,在QQ群发送 specialtitle 可启动')
       }
-      const nickname_list = await ctx.database.get('specialtile', { platform: ['onebot'] })
+      const nickname_list = await ctx.database.get('specialtitle', { platform: ['onebot'] })
       const group_list = await ctx.database.get('channel', { platform: ['onebot'] }, ["id"])
       const group_list_data = {}
       const bot = ctx.bots[`onebot:${config.selfId}`]
@@ -100,8 +85,25 @@ class Special {
           this.session.onebot.setGroupSpecialTitle(k.guildId,k.userId,k.nickname)
         }
       }
-    },config.interval)
+    },5000)
+    })
   }
 }
+namespace Special{
+  export const usage = `
+使用说明：
+机器人必须拥有管理员权限
+如果有更多文本内容想要修改，可以在<a style="color:blue" href="/locales">本地化</a>中修改 zh 内容<br>
+若specialstitle 未启动,在QQ群发送 specialtitle 即可启动
+`
+export interface Config {
+  selfId: string
+  interval: number
+}
 
+export const Config: Schema<Config> = Schema.object({
+  selfId: Schema.string().default('1114039391').description('qq机器人账号'),
+  interval: Schema.number().default(60000).description('轮询间隔')
+})
+}
 export default Special
