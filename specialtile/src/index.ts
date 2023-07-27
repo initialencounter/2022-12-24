@@ -102,7 +102,7 @@ class Special {
       }
       for (var i of target) {
         console.log(i)
-        session?.onebot.setGroupBan(session.guildId, session.userId, Math.floor((Math.random() * 60)))
+        session?.onebot.setGroupBan(session.guildId, i, Math.floor((Math.random() * 60)))
       }
       return next()
 
@@ -117,7 +117,7 @@ class Special {
       }
       for (var i of target) {
         console.log(i)
-        session?.onebot.setGroupBan(session.guildId, session.userId, 0)
+        session?.onebot.setGroupBan(session.guildId, i, 0)
       }
       return next()
     })
