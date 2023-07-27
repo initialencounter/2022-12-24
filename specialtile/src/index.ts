@@ -89,8 +89,37 @@ class Special {
     ctx.command('修改头衔 [uid:string] [nickname:string]', '修改群友头衔', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
       session?.onebot.setGroupSpecialTitle(session.guildId, args[0], args[1])
     })
-    ctx.command('口球大礼包').action(({session})=>{
-      session?.onebot.setGroupBan(session.guildId,session.userId,Math.floor((Math.random() * 1800000)))
+    ctx.command('口球大礼包').action(({ session }) => {
+      session?.onebot.setGroupBan(session.guildId, session.userId, Math.floor((Math.random() * 300)))
+    })
+    ctx.middleware((session, next) => {
+      if (!session.content.startsWith('捆绑')) {
+        return next()
+      }
+      const target = session.content.match(/(?<=<at id=")([\s\S]*?)(?="\/>)/g)
+      if (!target) {
+        return next()
+      }
+      for (var i of target) {
+        console.log(i)
+        session?.onebot.setGroupBan(session.guildId, session.userId, Math.floor((Math.random() * 60)))
+      }
+      return next()
+
+    })
+    ctx.middleware((session, next) => {
+      if (!session.content.startsWith('解绑')) {
+        return next()
+      }
+      const target = session.content.match(/(?<=<at id=")([\s\S]*?)(?="\/>)/g)
+      if (!target) {
+        return next()
+      }
+      for (var i of target) {
+        console.log(i)
+        session?.onebot.setGroupBan(session.guildId, session.userId, 0)
+      }
+      return next()
     })
     ctx.on('guild-member-added', async (session) => {
       if (session.platform == 'onebot' && session?.onebot) {
