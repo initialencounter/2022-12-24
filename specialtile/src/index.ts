@@ -7,11 +7,10 @@ export const name = 'specialtitle'
 export const logger = new Logger(name)
 
 class Special {
-  session: Session
   nickname_data: Dict
   constructor(ctx: Context, config: Special.Config) {
     try {
-      this.nickname_data = require('../../../data/nickname.json');
+      this.nickname_data = require('./data/nickname.json');
     } catch (e) {
       this.nickname_data = [
         "最後の冰吻",
@@ -82,18 +81,19 @@ class Special {
         "珎out了",
         "薇薇想念式",
         "相见不如怀念"]
-      fs.writeFileSync('../../../data/nickname.json', JSON.stringify(this.nickname_data));
+      fs.writeFileSync('./data/nickname.json', JSON.stringify(this.nickname_data));
     }
-    ctx.command('修改昵称 [uid:string] [nickname:string]', '修改群友昵称', { checkArgCount: true }).action(async ({ session }, ...args) => {
-      this.session = session
+    ctx.command('修改昵称 [uid:string] [nickname:string]', '修改群友昵称', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
       session?.onebot.setGroupCard(session.guildId, args[0], args[1])
     })
+    ctx.command('修改头衔 [uid:string] [nickname:string]', '修改群友头衔', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
+      session?.onebot.setGroupSpecialTitle(session.guildId, args[0], args[1])
+    })
     ctx.on('guild-member-added', async (session) => {
-      this.session = session
       if (session.platform == 'onebot' && session?.onebot) {
         const nickname = this.get_rondom_name()
         // 记录名片
-        await this.session.onebot.setGroupSpecialTitle(session.guildId, session.userId, nickname)
+        await session?.onebot.setGroupSpecialTitle(session.guildId, session.userId, nickname)
       }
     })
   }
