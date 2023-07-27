@@ -89,6 +89,9 @@ class Special {
     ctx.command('修改头衔 [uid:string] [nickname:string]', '修改群友头衔', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
       session?.onebot.setGroupSpecialTitle(session.guildId, args[0], args[1])
     })
+    ctx.command('口球大礼包').action(({session})=>{
+      session?.onebot.setGroupBan(session.guildId,session.userId,Math.floor((Math.random() * 1800000)))
+    })
     ctx.on('guild-member-added', async (session) => {
       if (session.platform == 'onebot' && session?.onebot) {
         const nickname = this.get_rondom_name()
