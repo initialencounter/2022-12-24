@@ -106,8 +106,19 @@ class Special {
     },{
       autoInc: true
     })
-
-    ctx.command('修改昵称 [uid:string] [nickname:string]', '修改群友昵称', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
+    ctx.command('设置管理 [nickname:string]', '通过QQ号设置管理员', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
+      if (session.platform !== 'onebot') {
+        return '该命令只适用于 onebot 平台'
+      }
+      session?.onebot.setGroupAdmin(session.guildId, args[0], true)
+    })
+    ctx.command('取消管理 [nickname:string]', '通过QQ号取消管理员', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
+      if (session.platform !== 'onebot') {
+        return '该命令只适用于 onebot 平台'
+      }
+      session?.onebot.setGroupAdmin(session.guildId, args[0], false)
+    })
+    ctx.command('修改昵称 [nickname:string]', '修改群友昵称', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
       if (session.platform !== 'onebot') {
         return '该命令只适用于 onebot 平台'
       }
