@@ -106,6 +106,10 @@ class Special {
     },{
       autoInc: true
     })
+    ctx.before('attach-user', async ({}, fields) => {
+      fields.add('authority')
+      fields.add('id')
+  })
     ctx.command('设置管理 [nickname:string]', '通过QQ号设置管理员', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
       if (session.platform !== 'onebot') {
         return '该命令只适用于 onebot 平台'
@@ -195,7 +199,21 @@ class Special {
       }
       for (var i of target) {
         await this.add_score(session.channelId,i,0-(this.map[i+session.channelId]?this.map[i+session.channelId]:0))
+        this.map[i+session.channelId] = 0
         session?.onebot.setGroupBan(session.channelId, i, 0)
+      }
+      return next()
+    })
+    ctx.middleware(async(session, next) => {
+      if (session.platform !== 'onebot') {
+        return '该命令只适用于 onebot 平台'
+      }
+      const session_auth: Session<"authority"> = session as Session<"authority">
+      const authority = session_auth.user.authority
+      if(authority==0){
+        const dt = Math.floor((Math.random() * 60))
+        await this.add_score(session.channelId,session.userId,dt)
+        session?.onebot.setGroupBan(session.channelId, session.userId, dt)
       }
       return next()
     })
