@@ -1,7 +1,7 @@
 import { Context, Logger, Schema, Session } from 'koishi'
-import { } from "koishi-plugin-cron"
+var cron = require('node-cron');
 import * as shutdown from "koishi-plugin-shutdown"
-export const using = ['cron', 'database']
+export const using = ['database']
 
 export const name = 'clock'
 export const logger = new Logger(name)
@@ -110,7 +110,7 @@ export function apply(ctx: Context, config: Config) {
   ctx.command('clock [time:text]', "添加闹钟")
     .option('once', '-o')
     .option('msg', '-m [msg:string]').action(({ session, options }, time) => {
-      return add_clock(ctx, session, time, options.msg, options.once ? false : true, config)
+      return add_clock(ctx, session as Session, time, options.msg, options.once ? false : true, config)
     })
   ctx.command('clock.r [id:number]', "删除闹钟", { checkArgCount: true, authority: 4 })
     .action(async ({ session }, id) => {
@@ -118,10 +118,10 @@ export function apply(ctx: Context, config: Config) {
       return `闹钟 ${id} 删除成功`
     })
   ctx.command('clock.l', "列出所有闹钟").action(async ({ session }) => {
-    return list_clock(ctx, session)
+    return list_clock(ctx, session as Session)
   })
   ctx.command('clock.s [id:number]', "关闭/启动闹钟", { checkArgCount: true }).action(async ({ session }, id) => {
-    return clock_switch(ctx, session, id)
+    return clock_switch(ctx, session as Session, id)
   })
 }
 /**
@@ -246,11 +246,7 @@ function schedule_cron(ctx: Context, config: Config, clock: Clock) {
       targets.push(i)
     }
   }
-  if (!ctx.cron) {
-    logger.warn('未加载cron 服务！')
-    return '未加载cron 服务！'
-  }
-  ctx.cron(clock.time, async () => {
+  cron.schedule(clock.time, async () => {
     for (let { channelId, platform, selfId, guildId } of targets) {
       if (!selfId) {
         const channel = await ctx.database.getChannel(platform, channelId, ['assignee', 'guildId'])

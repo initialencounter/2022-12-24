@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-specialtile",
   "description": "加群后自动设置头衔",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [

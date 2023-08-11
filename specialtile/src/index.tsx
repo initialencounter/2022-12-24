@@ -95,7 +95,104 @@ class Special {
         "他说我天真丶",
         "珎out了",
         "薇薇想念式",
-        "相见不如怀念"]
+        "相见不如怀念",
+        "痴心于他",
+        "非爱不可",
+        "人间绝色是你",
+        "相思无处安放",
+        "じ早已訫傷づ",
+        "宠一世",
+        "一生为一人",
+        "余生只护你一人",
+        "我许你一生一世",
+        "占据心房的一抹",
+        "红疼你，在情",
+        "清风不解语",
+        "离岸夕阳",
+        "做梦都想你",
+        "___su夕陌",
+        "岁月驳￣",
+        "心痛的故事￣",
+        "゛ 猩红色阳光",
+        "丶狠温暖",
+        "深海不及你",
+        "心顾我",
+        "拥你久暖i",
+        "牵手、永远",
+        "你最珍贵√",
+        "陪海枯石烂°",
+        "做啡犀利哥。也是哥",
+        "心动九十九次",
+        "世间河山不敌你",
+        "已逝。为守",
+        "叫我权志凤！",
+        "为你心软",
+        "有迩就足够丶",
+        "心动倒计时",
+        "七愿喜他",
+        "苛惜丶迩卟懂",
+        "做我心上人",
+        "迷谙の少年々",
+        "易是温暖77",
+        "へ风中搁浅の",
+        "泪戒卟鋽の依赖╰╮",
+        "ジMe咏恒の爱",
+        "陌篱ˉ殇花の♀",
+        "ヽの覀苽冭蓢",
+        "遙遙無歸期",
+        "传说里的你",
+        "腐蚀仅剰の誋忆",
+        "蓝色の幻想",
+        "弈剑のㄨ听雨阁",
+        "独洎の守候",
+        "柏铯のゾ味檤",
+        "祢ぺ葑のぺ丿",
+        "瞳孔中的我",
+        "给洎巳①個微笑",
+        "心疼了暮色伊人",
+        "微笑の瞳孔、",
+        "恋の¤兲使√",
+        "小ゞ拇指の微笑",
+        "苩铯の玫瑰",
+        "兜里の有糖硪の",
+        "独有笨伯",
+        "藦兲轮の约",
+        "顁兲骄の魂",
+        "洊、詯の情ミ",
+        "曲线婉转の羙",
+        "梦の旅驿站",
+        "放弃、伱の虚僞",
+        "很伈〤涙冰",
+        "ノ井、羙羙",
+        "绽放丶硪的青春",
+        "勾起讽刺の笶傛",
+        "寒冷渗进的温暖",
+        "失去伱旳溫柔",
+        "草莓味の衬衫",
+        "温柔の怜惜你╮",
+        "猪猪の下午茶",
+        "恶魔の梦ヾ",
+        "ゞ夜色乄朦胧",
+        "ぁ梦の如何挽留ゝ",
+        "黑白の未来",
+        "释怀の凹凸曼",
+        "彽蜩の哗郦",
+        "恛忆︿够了",
+        "曽紟の詤言",
+        "灞占迩の薀柔╰",
+        "糖ωσ心の",
+        "爱泪化作の雨",
+        "の、贰玥眼号だ",
+        "卟洊在の廽忆い",
+        "旧梦璀璨っ",
+        "你的の小王子",
+        "冷凌じ冰沁",
+        "じ☆veの蒾恋",
+        "ぎ雨のぶ茚誋",
+        "╰☆╮狼狈の╄→じ☆νě",
+        "ζ᭄落້໌ᮨ雪无痕ꦿ᭄〆",
+        "→偏執の守χμ者"
+      ]
       fs.writeFileSync('./data/nickname.json', JSON.stringify(this.nickname_data));
     }
     ctx.model.extend('ban_rank', {
@@ -103,48 +200,53 @@ class Special {
       uid: 'string',
       gid: 'string',
       score: 'integer'
-    },{
+    }, {
       autoInc: true
     })
-    ctx.before('attach-user', async ({}, fields) => {
+    ctx.before('attach-user', async ({ }, fields) => {
       fields.add('authority')
       fields.add('id')
-  })
+    })
     ctx.command('设置管理 [nickname:string]', '通过QQ号设置管理员', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
       if (session.platform !== 'onebot') {
-        return '该命令只适用于 onebot 平台'
+        return
       }
       session?.onebot.setGroupAdmin(session.guildId, args[0], true)
+      return "嗯！已经设置了"
     })
     ctx.command('取消管理 [nickname:string]', '通过QQ号取消管理员', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
       if (session.platform !== 'onebot') {
-        return '该命令只适用于 onebot 平台'
+        return
       }
       session?.onebot.setGroupAdmin(session.guildId, args[0], false)
+      return "嗯！已经取消了"
     })
-    ctx.command('修改昵称 [nickname:string]', '修改群友昵称', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
+    ctx.command('修改昵称 [uid:string] [nickname:string]', '修改群友昵称', { checkArgCount: true, authority: 1 }).action(async ({ session }, ...args) => {
       if (session.platform !== 'onebot') {
-        return '该命令只适用于 onebot 平台'
+        return
       }
       session?.onebot.setGroupCard(session.guildId, args[0], args[1])
+      return "嗯！已经修改了"
     })
-    ctx.command('修改头衔 [uid:string] [nickname:string]', '修改群友头衔', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
+    ctx.command('修改头衔 [uid:string] [nickname:string]', '修改群友头衔', { checkArgCount: true, authority: 1 }).action(async ({ session }, ...args) => {
       if (session.platform !== 'onebot') {
-        return '该命令只适用于 onebot 平台'
+        return
       }
       session?.onebot.setGroupSpecialTitle(session.guildId, args[0], args[1])
+      return "嗯！已经修改了"
     })
     ctx.command('口球大礼包').action(async ({ session }) => {
       if (session.platform !== 'onebot') {
-        return '该命令只适用于 onebot 平台'
+        return
       }
       const dt = Math.floor((Math.random() * 300))
-      await this.add_score(session.channelId,session.userId,dt)
+      await this.add_score(session.channelId, session.userId, dt)
       session?.onebot.setGroupBan(session.channelId, session.userId, dt)
+      return "嗯！"
     })
-    ctx.command('封神榜','谁才是本群的运气王').action(async ({ session }) => {
+    ctx.command('封神榜', '谁才是本群的运气王').action(async ({ session }) => {
       if (session.platform !== 'onebot') {
-        return '该命令只适用于 onebot 平台'
+        return
       }
       const list = await ctx.database.get('ban_rank', { gid: session.channelId })
       if (list.length < 1) {
@@ -155,8 +257,12 @@ class Special {
       rank_div.push(<div style="font-size:20px;width:200px;height:30px">封神榜</div>)
       for (var i in sorted_arr) {
         var itm: Ban_rank = sorted_arr[i]
-        const info = await session?.onebot.getGroupMemberInfo(session.guildId,itm.uid)
-        rank_div.push(<div style="font-size:10px;width:200px;height:20px">{`${(info.nickname||info.user_id)}:${itm.score}`}</div>)
+        try{
+        const info = await session?.onebot.getGroupMemberInfo(session.guildId, itm.uid)
+        rank_div.push(<div style="font-size:10px;width:200px;height:20px">{`${(info.nickname || info.user_id)}:${itm.score}`}</div>)
+        }catch(e){
+          logger.info(session.guild+itm.uid+"查无此人")
+        }
       }
       return <html>
         <div style={{
@@ -167,12 +273,12 @@ class Special {
         {rank_div}
       </html>
     })
-    ctx.middleware(async(session, next) => {
+    ctx.middleware(async (session, next) => {
       if (!session.content.startsWith('捆绑')) {
         return next()
       }
       if (session.platform !== 'onebot') {
-        return '该命令只适用于 onebot 平台'
+        return next()
       }
       const target = session.content.match(/(?<=<at id=")([\s\S]*?)(?="\/>)/g)
       if (!target) {
@@ -180,39 +286,39 @@ class Special {
       }
       for (var i of target) {
         const dt = Math.floor((Math.random() * 60))
-        await this.add_score(session.channelId,i,dt)
+        await this.add_score(session.channelId, i, dt)
         session?.onebot.setGroupBan(session.channelId, i, dt)
       }
       return next()
 
     })
-    ctx.middleware(async(session, next) => {
+    ctx.middleware(async (session, next) => {
       if (!session.content.startsWith('解绑')) {
         return next()
       }
       if (session.platform !== 'onebot') {
-        return '该命令只适用于 onebot 平台'
+        return next()
       }
       const target = session.content.match(/(?<=<at id=")([\s\S]*?)(?="\/>)/g)
       if (!target) {
         return next()
       }
       for (var i of target) {
-        await this.add_score(session.channelId,i,0-(this.map[i+session.channelId]?this.map[i+session.channelId]:0))
-        this.map[i+session.channelId] = 0
+        await this.add_score(session.channelId, i, 0 - (this.map[i + session.channelId] ? this.map[i + session.channelId] : 0))
+        this.map[i + session.channelId] = 0
         session?.onebot.setGroupBan(session.channelId, i, 0)
       }
       return next()
     })
-    ctx.middleware(async(session, next) => {
+    ctx.middleware(async (session, next) => {
       if (session.platform !== 'onebot') {
-        return '该命令只适用于 onebot 平台'
+        return next()
       }
       const session_auth: Session<"authority"> = session as Session<"authority">
       const authority = session_auth.user.authority
-      if(authority==0){
+      if (authority == 0) {
         const dt = Math.floor((Math.random() * 60))
-        await this.add_score(session.channelId,session.userId,dt)
+        await this.add_score(session.channelId, session.userId, dt)
         session?.onebot.setGroupBan(session.channelId, session.userId, dt)
       }
       return next()
@@ -239,8 +345,8 @@ class Special {
     }
     return this.quickSort(left).concat([arr[0]]).concat(this.quickSort(right))
   }
-  async add_score(channelId:string,userId:string, score: number) {
-    this.map[userId+channelId] = score
+  async add_score(channelId: string, userId: string, score: number) {
+    this.map[userId + channelId] = score
     const target = await this.ctx.database.get('ban_rank', { uid: userId, gid: channelId })
     if (target.length === 0) {
       await this.ctx.database.create('ban_rank', { uid: userId, gid: channelId, score: score })
