@@ -27,6 +27,8 @@ class Dvc extends Service {
   l6k: boolean;
   key_number: number;
   key: string[];
+  retry: Dict;
+  maxRetryTimes: number;
   constructor(ctx: Context, private config: Dvc.Config) {
     const using = ['puppeteer', 'vits', 'sst', 'censor'];
     super(ctx, 'dvc', true)
@@ -36,6 +38,8 @@ class Dvc extends Service {
     this.key_number = 0
     this.key = [].concat(config.key)
     this.sessions = {};
+    this.retry = {}
+    this.maxRetryTimes = config.maxRetryTimes
     if ((!ctx.puppeteer) && this.config.output == 'image') {
       logger.warn('未启用puppter,将无法发送图片');
     }
@@ -54,11 +58,11 @@ class Dvc extends Service {
     this.session_config = Object.values(this.personality)[0]
     this.sessions_cmd = Object.keys(this.personality)
     ctx.command('dvc.credit', '查询余额').action(async ({ session }) => {
-      if (this.block(session)) {
+      if (this.block(session as Session)) {
         return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
       }
       session.send(h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.get'))
-      const credit = await this.get_credit(session)
+      const credit = await this.get_credit(session as Session)
       return session.text('commands.dvc.messages.total_available', [credit])
     });
 
@@ -77,12 +81,12 @@ class Dvc extends Service {
       .alias(...this.config.alias)
       .action(async ({ session, options }) => {
         this.l6k = options.l6k
-        if (this.block(session)) {
+        if (this.block(session as Session)) {
           return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
         }
         if (session.content.indexOf(' ') == -1) {
           return session.text('commands.dvc.messages.no-prompt')
-        } return this.sli(session, session.content.slice(session.content.indexOf(' '), session.content.length), options)
+        } return this.sli(session as Session, session.content.slice(session.content.indexOf(' '), session.content.length), options)
       })
 
     //统计次数的工具人
@@ -90,27 +94,27 @@ class Dvc extends Service {
       maxUsage: this.config.usage,
       usageName: 'ai'
     }).action(({ session }, prompt) => {
-      if (this.block(session)) {
+      if (this.block(session as Session)) {
         return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
-      } return this.dvc(session, prompt)
+      } return this.dvc(session as Session, prompt)
     })
 
     //清空所有会话及人格
     ctx.command('dvc.clear', '清空所有会话及人格', {
       authority: 1
     }).action(({ session }) => {
-      if (this.block(session)) {
+      if (this.block(session as Session)) {
         return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
-      } return this.clear(session)
+      } return this.clear(session as Session)
     })
 
     //设置人格
     ctx.command('dvc.添加人格 <prompt:text>', '更改AI的人格,并重置会话', {
       authority: 1
     }).alias('设置人格', '添加人格').action(({ session }, prompt) => {
-      if (this.block(session)) {
+      if (this.block(session as Session)) {
         return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
-      } return this.add_personality(session, prompt)
+      } return this.add_personality(session as Session, prompt)
     })
 
 
@@ -118,9 +122,9 @@ class Dvc extends Service {
     ctx.command('dvc.删除人格 <prompt:text>', '删除AI的人格,并重置会话', {
       authority: 1
     }).alias('删除人格').action(({ session }, prompt) => {
-      if (this.block(session)) {
+      if (this.block(session as Session)) {
         return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
-      } return this.rm_personality(session, prompt)
+      } return this.rm_personality(session as Session, prompt)
     }
     )
 
@@ -128,35 +132,35 @@ class Dvc extends Service {
     ctx.command('dvc.重置会话', '重置会话', {
       authority: 1
     }).alias('重置会话').action(({ session }) => {
-      if (this.block(session)) {
+      if (this.block(session as Session)) {
         return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
       }
-      return this.reset(session)
+      return this.reset(session as Session)
     })
 
     //切换dvc的输出方式
     ctx.command('dvc.output <type:string>', '切换dvc的输出方式').action(({ session }, type) => {
-      if (this.block(session)) {
+      if (this.block(session as Session)) {
         return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
-      } return this.switch_output(session, type)
+      } return this.switch_output(session as Session, type)
     });
 
     //切换现有人格
     ctx.command('dvc.切换人格 <prompt:text>', '切换为现有的人格', {
       authority: 1
     }).alias('dvc.人格切换', '切换人格').action(async ({ session }, prompt) => {
-      if (this.block(session)) {
+      if (this.block(session as Session)) {
         return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
-      } return this.switch_peresonality(session, prompt)
+      } return this.switch_peresonality(session as Session, prompt)
     })
 
     //切换引擎
     ctx.command('dvc.切换引擎 <prompt:text>', '切换引擎', {
       authority: 1
     }).alias('dvc.引擎切换', '切换引擎').action(async ({ session }, prompt) => {
-      if (this.block(session)) {
+      if (this.block(session as Session)) {
         return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
-      } return this.switch_type(session, prompt)
+      } return this.switch_type(session as Session, prompt)
     })
 
     //生图
@@ -173,10 +177,10 @@ class Dvc extends Service {
       },
         prompt
       ) => {
-        if (this.block(session)) {
+        if (this.block(session as Session)) {
           return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
         } return this.paint(
-          session,
+          session as Session,
           prompt ? prompt : 'landscape',
           options.img_number ? options.img_number : 1,
           options.resolution ? options.resolution : this.config.resolution
@@ -185,10 +189,10 @@ class Dvc extends Service {
     ctx.command('dvc.翻译 <prompt:text>', 'AI翻译')
       .alias('翻译').option('lang', '-l <lang:t=string>', { fallback: this.config.lang })
       .action(async ({ session, options }, prompt) => {
-        if (this.block(session)) {
+        if (this.block(session as Session)) {
           return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
         }
-        return await this.translate(session, options.lang, prompt)
+        return await this.translate(session as Session, options.lang, prompt)
       })
     ctx.command('dvc.update', '一键加载400条极品预设')
       .alias('更新预设')
@@ -218,7 +222,7 @@ class Dvc extends Service {
    * @returns 翻译后的内容
    */
   async translate(session: Session, lang: string, prompt: string): Promise<string> {
-    return this.chat_with_gpt(session, [{ role: 'system', content: '你是一个翻译引擎，请将文本翻译为' + lang + '，只需要翻译不需要解释。' }, { role: 'user', content: `请帮我我将如下文字翻译成${lang},“${prompt}”` }])
+    return this.chat_with_gpt(session as Session, [{ role: 'system', content: '你是一个翻译引擎，请将文本翻译为' + lang + '，只需要翻译不需要解释。' }, { role: 'user', content: `请帮我我将如下文字翻译成${lang},“${prompt}”` }])
   }
 
   /**
@@ -428,8 +432,11 @@ class Dvc extends Service {
           logger.info("ChatGPT返回内容: ")
           logger.info(contents)
         })
+        this.retry[this.key[this.key_number]] = 0
       }).catch(async (e) => {
-        await this.switch_key(session, e)
+        if (!(await this.switch_key(session, e))) {
+          return ''
+        }
         return await this.chat_with_gpt4_stream(session, message)
       });
   }
@@ -448,10 +455,13 @@ class Dvc extends Service {
           },
           timeout: 600000
         })
+      this.retry[this.key[this.key_number]] = 0
       return response.data.choices[0].message.content
     }
     catch (e) {
-      await this.switch_key(session, e)
+      if (!(await this.switch_key(session, e))) {
+        return ''
+      }
       return await this.chat_with_gpt4(session, message)
     }
   }
@@ -482,10 +492,13 @@ class Dvc extends Service {
           },
           timeout: 0
         })
+      this.retry[this.key[this.key_number]] = 0
       return response.data.choices[0].message.content
     }
     catch (e) {
-      await this.switch_key(session, e)
+      if (!(await this.switch_key(session, e))) {
+        return ''
+      }
       return await this.chat_with_gpt(session, message)
     }
   }
@@ -499,13 +512,27 @@ class Dvc extends Service {
   async switch_key(session: Session, e: Error) {
     const credit = await this.get_credit(session)
     logger.info(`key${this.key_number - 1}. ${this.key[this.key_number]} 报错，余额${credit}：${String(e)}`)
-    if (credit > 0) {
+    if (credit == 0) {
       this.key.splice(this.key_number, 1)
     } else {
       this.key_number++
     }
-    if (this.key_number > this.config?.key?.length) {
+    if (this.retry[this.key[this.key_number]]) {
+      this.retry[this.key[this.key_number]] = this.retry[this.key[this.key_number]] + 1
+      if (this.retry[this.key[this.key_number]] > this.maxRetryTimes) {
+        this.key.splice(this.key_number, 1)
+        return false
+      }
+    } else {
+      this.retry[this.key[this.key_number]] = 1
+    }
+    if (this.key_number > this?.key?.length) {
       this.key_number = 0
+    }
+    if (this.key.length == 0) {
+      return false
+    } else {
+      return true
     }
   }
 
@@ -565,8 +592,11 @@ class Dvc extends Service {
             logger.info("ChatGPT返回内容: ")
             logger.info(contents)
           })
+        this.retry[this.key[this.key_number]] = 0
       }).catch(async (e) => {
-        await this.switch_key(session, e)
+        if (!(await this.switch_key(session, e))) {
+          return ''
+        }
         return await this.chat_with_gpt_stream(session, message)
       });
 
@@ -1112,6 +1142,7 @@ namespace Dvc {
     blockuser: string[]
     blockchannel: string[]
 
+    maxRetryTimes: number
 
 
   }
@@ -1171,14 +1202,14 @@ namespace Dvc {
       if_at: Schema.boolean().default(true).description('开启后被提及(at/引用)可触发ai'),
       randnum: Schema.number().default(0).description('随机回复概率，如需关闭可设置为0'),
       proxy_reverse: Schema.string().default('https://gpt.lucent.blog').description('GPT3反向代理地址'),
-      proxy_reverse4: Schema.string().default('https://chatgpt.nextweb.fun/api/openai').description('GPT4反向代理地址')
+      proxy_reverse4: Schema.string().default('https://chatgpt.nextweb.fun/api/openai').description('GPT4反向代理地址'),
+      maxRetryTimes: Schema.number().default(30).description('报错后最大重试次数')
     }).description('进阶设置'),
 
     Schema.object({
       blockuser: Schema.array(String).default([]).description('屏蔽的用户'),
       blockchannel: Schema.array(String).default([]).description('屏蔽的频道')
     }).description('过滤器'),
-
   ])
 }
 
