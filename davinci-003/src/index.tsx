@@ -113,6 +113,7 @@ class Dvc extends Service {
       authority: 1
     }).alias('设置人格', '添加人格').action(({ session }, prompt) => {
       if (this.block(session as Session)) {
+        session.send("添加人格失败？看这里！\n https://forum.koishi.xyz/t/topic/2349/4")
         return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
       } return this.add_personality(session as Session, prompt)
     })
@@ -1076,6 +1077,7 @@ namespace Dvc {
 
 ## 添加人格的方法
 * 在聊天中发送“dvc.添加人格”可以添加并自动保存人格
+* [添加人格教程](https://forum.koishi.xyz/t/topic/2349/4)
 
 ## 问题反馈
 * QQ群：399899914<br>
