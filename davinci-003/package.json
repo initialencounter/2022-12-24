@@ -33,8 +33,7 @@
     "chatgpt4"
   ],
   "peerDependencies": {
-    "koishi": "^4.11.9",
-    "@koishijs/censor": "^1.0.2"
+    "koishi": "^4.11.9"
   },
   "koishi": {
     "description": "AI 聊天",
@@ -53,6 +52,7 @@
   },
   "dependencies": {
     "@initencounter/sst": "^0.0.1",
-    "@initencounter/vits": "^0.0.3"
+    "@initencounter/vits": "^0.0.3",
+    "@koishijs/censor": "^1.0.2"
   }
 }
