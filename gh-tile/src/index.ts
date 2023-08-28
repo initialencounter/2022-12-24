@@ -6,7 +6,7 @@ import { resolve } from "path";
 export const name = 'gh-tile'
 export const logger = new Logger(name)
 
-export const usage = mainUsage
+export const usage = `${mainUsage}`
 export interface Rule {
   platform: string
   channelId: string
@@ -76,6 +76,9 @@ export function apply(ctx: Context, config: Config) {
     }else{
       const currentWeek = new Date().getDay()
       const data = await getContributions(ctx, clocks[0]?.token, clocks[0]?.username)
+      if(!data){
+        return "token 失效"
+      }
       const tileNums = data?.["user"]?.["contributionsCollection"]?.["contributionCalendar"]?.["weeks"]?.[0]?.["contributionDays"]?.[currentWeek]?.["contributionCount"]
       return clocks[0]?.username+"今天贴了 "+tileNums+" 块瓷砖"
     }
@@ -94,6 +97,7 @@ export function apply(ctx: Context, config: Config) {
   })
   ctx.command('tile', "添加github瓷砖提醒, 绑定token")
     .action(({ session}) => {
+      session.bot.sendPrivateMessage
       // 为了保证登录安全，只能私信机器人操作
       if (session?.guildId===session?.channelId) {
         return session.text('messages.login.failure', ['不安全的操作，请私信机器人操作'])
@@ -232,8 +236,14 @@ async function getContributions(ctx: Context, token: string, username: string) {
           }
         }`
   }
-  const response = await ctx.http.post('https://api.github.com/graphql', body, { headers: headers });
-  const data = await response.data;
+  let response
+  try{
+    response = await ctx.http.post('https://api.github.com/graphql', body, { headers: headers });
+  }catch(e){
+    logger.error(e)
+  }
+
+  const data = await response?.data;
   return data
 }
 
@@ -271,6 +281,11 @@ setDailyAlarm(gh_tile.time, async () => {
       guildId = channel.guildId
     }
     const data = await getContributions(ctx, gh_tile.token, gh_tile.username)
+    if(!data){
+      const bot = ctx.bots[`${platform}:${selfId}`]
+      const img_url = pathToFileURL(resolve(__dirname, "0.jpg")).href
+      bot?.sendMessage(channelId, "token失效", guildId)
+    }
     const tile = getContributionCount(data, new Date().getDay())
     if (!tile) {
       const bot = ctx.bots[`${platform}:${selfId}`]
