@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-gh-tile",
   "description": "提醒你该贴瓷砖了",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -29,9 +29,7 @@
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.11.9"
-  },
-  "dependencies":{
-    "node-cron": "^3.0.2"
+    "koishi": "^4.11.9",
+    "koishi-plugin-shutdown": "^0.3.0"
   }
 }

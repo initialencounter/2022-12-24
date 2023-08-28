@@ -1,6 +1,8 @@
 import { Context, Schema, Session, h, Logger } from 'koishi'
 
 import { mainUsage } from './config'
+import { pathToFileURL} from 'node:url'
+import { resolve } from "path";
 export const name = 'gh-tile'
 export const logger = new Logger(name)
 
@@ -20,7 +22,7 @@ export const Rule: Schema<Rule> = Schema.object({
 })
 export const Config: Schema<Config> = Schema.object({
   rules: Schema.array(Rule).description('推送规则。'),
-  corn: Schema.string().default("0 30 23 * * *").description("默认的提醒时间")
+  corn: Schema.string().default("23-30").description("默认的提醒时间")
 })
 export interface Config {
   rules: Rule[]
@@ -41,8 +43,6 @@ export interface Gh_tile {
   userId?: string
 }
 
-
-var cron = require('node-cron');
 export const using = ['database']
 export function apply(ctx: Context, config: Config) {
   ctx.model.extend('gh_tile', {
@@ -69,7 +69,30 @@ export function apply(ctx: Context, config: Config) {
   ctx.command('stile', "关闭/启动tile提醒", { checkArgCount: true }).action(async ({ session }, id) => {
     return clock_switch(ctx, session as Session)
   })
-  ctx.command('tile', "添加github瓷砖提醒")
+  ctx.command('瓷砖 [userId:string]',"查看群友今天贴了多少瓷砖").action(async({session})=>{
+    const clocks = await ctx.database.get('gh_tile', {userId:session.userId})
+    if(clocks.length===0){
+      return "该用户没有绑定token (私信机器人绑定)"
+    }else{
+      const currentWeek = new Date().getDay()
+      const data = await getContributions(ctx, clocks[0]?.token, clocks[0]?.username)
+      const tileNums = data?.["user"]?.["contributionsCollection"]?.["contributionCalendar"]?.["weeks"]?.[0]?.["contributionDays"]?.[currentWeek]?.["contributionCount"]
+      return clocks[0]?.username+"今天贴了 "+tileNums+" 块瓷砖"
+    }
+  })
+  ctx.middleware(async (session, next)=>{
+    if(!session.content.startsWith("瓷砖")){
+      return next()
+    }else{
+      const target = session.content.match(/(?<=<at id=")([\s\S]*?)(?="\/>)/g)
+      if(target.length===0){
+        return next()
+      }else{
+        return session.execute("瓷砖 "+target[0])
+      }
+    }
+  })
+  ctx.command('tile', "添加github瓷砖提醒, 绑定token")
     .action(({ session}) => {
       // 为了保证登录安全，只能私信机器人操作
       if (session?.guildId===session?.channelId) {
@@ -238,20 +261,50 @@ function schedule_cron(ctx: Context, config: Config, gh_tile: Gh_tile) {
       targets.push(i)
     }
   }
-  cron.schedule(gh_tile.time, async () => {
-    for (let { channelId, platform, selfId, guildId } of targets) {
-      if (!selfId) {
-        const channel = await ctx.database.getChannel(platform, channelId, ['assignee', 'guildId'])
-        if (!channel || !channel.assignee) return
-        selfId = channel.assignee
-        guildId = channel.guildId
-      }
-      const data = await getContributions(ctx, gh_tile.token, gh_tile.username)
-      const tile = getContributionCount(data, new Date().getDay())
-      if (!tile) {
-        const bot = ctx.bots[`${platform}:${selfId}`]
-        bot?.sendMessage(channelId, h.at(gh_tile.userId)+"起来贴瓷砖!!!", guildId)
-      }
+  // 设置每天早上8点触响铃
+setDailyAlarm(gh_tile.time, async () => {
+  for (let { channelId, platform, selfId, guildId } of targets) {
+    if (!selfId) {
+      const channel = await ctx.database.getChannel(platform, channelId, ['assignee', 'guildId'])
+      if (!channel || !channel.assignee) return
+      selfId = channel.assignee
+      guildId = channel.guildId
     }
-  })
+    const data = await getContributions(ctx, gh_tile.token, gh_tile.username)
+    const tile = getContributionCount(data, new Date().getDay())
+    if (!tile) {
+      const bot = ctx.bots[`${platform}:${selfId}`]
+      const img_url = pathToFileURL(resolve(__dirname, "0.jpg")).href
+      bot?.sendMessage(channelId, h.image(img_url)+""+h.at(gh_tile.userId)+"起来贴瓷砖!!!", guildId)
+    }
+  }
+});
+
+}
+
+function setDailyAlarm(time:string, callback:CallableFunction) {
+  const hour = Number(time.split("-")[0])
+  const minute = Number(time.split("-")[1])
+  if(isNaN(hour)||isNaN(minute)){
+    logger.error("瓷砖提醒设置失败！")
+    return
+  }
+  const now = new Date();
+  const alarmTime = new Date();
+  alarmTime.setUTCHours(hour);
+  alarmTime.setUTCMinutes(minute);
+  alarmTime.setUTCSeconds(0);
+
+  if (alarmTime <= now) {
+    // 如果今天的时间已经过去了，就设置到明天的同一时间
+    alarmTime.setUTCDate(alarmTime.getDate() + 1);
+  }
+
+  const timeUntilAlarm = alarmTime.getTime() - now.getTime();
+  setTimeout(() => {
+    setInterval(callback, 86400000);
+    callback();
+    // 设置每隔一天触发一次的定时器
+  }, timeUntilAlarm);
+  logger.info("瓷砖提醒设置成功！")
 }
