@@ -69,8 +69,9 @@ export function apply(ctx: Context, config: Config) {
   ctx.command('stile', "关闭/启动tile提醒", { checkArgCount: true }).action(async ({ session }, id) => {
     return clock_switch(ctx, session as Session)
   })
-  ctx.command('瓷砖 [userId:string]',"查看群友今天贴了多少瓷砖").action(async({session})=>{
-    const clocks = await ctx.database.get('gh_tile', {userId:session.userId})
+  ctx.command('瓷砖 [userId:string]',"查看群友今天贴了多少瓷砖").action(async({session},...args)=>{
+    const uid = args?.[0]?args[0]:session.userId
+    const clocks = await ctx.database.get('gh_tile', {userId:uid})
     if(clocks.length===0){
       return "该用户没有绑定token (私信机器人绑定)"
     }else{
