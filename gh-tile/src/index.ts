@@ -3,7 +3,7 @@ import { Context, Schema, Session, h, Logger } from 'koishi'
 import { mainUsage } from './config'
 import { pathToFileURL } from 'node:url'
 import { resolve } from "path";
-import { getTileNums } from "./utils"
+import { getTileNums, getContributions, setDailyAlarm } from "./utils"
 export const name = 'gh-tile'
 export const logger = new Logger(name)
 
@@ -23,7 +23,7 @@ export const Rule: Schema<Rule> = Schema.object({
 })
 export const Config: Schema<Config> = Schema.object({
   rules: Schema.array(Rule).description('推送规则。'),
-  corn: Schema.string().default("23-30").description("默认的提醒时间")
+  corn: Schema.string().default("15-30").description("默认的提醒时间,UTC时间")
 })
 export interface Config {
   rules: Rule[]
@@ -63,7 +63,7 @@ export function apply(ctx: Context, config: Config) {
     const clocks = await ctx.database.get('gh_tile', {})
     for (var i of clocks) {
       if (i.enable) {
-        schedule_cron(ctx, config, i)
+        schedule_cron(ctx, i)
       }
     }
   })
@@ -95,6 +95,9 @@ export function apply(ctx: Context, config: Config) {
     }
     if (nums === false) {
       return "获取瓷砖失败"
+    }
+    if (nums === -1) {
+      nums = 0
     }
     return clocks[0]?.username + "今天贴了 " + nums + " 块瓷砖"
   })
@@ -178,7 +181,6 @@ async function add_clock(
 
   schedule_cron(
     ctx,
-    config,
     {
       time: config.corn,
       token: token,
@@ -217,63 +219,6 @@ async function clock_switch(ctx: Context, session: Session) {
 
 }
 
-async function getContributions(ctx: Context, token: string, username: string) {
-  const headers = {
-    'Authorization': `bearer ${token}`,
-  }
-  const currentDate = new Date();
-  // 获取 周几
-  const currentWeek = currentDate.getDay();
-
-  // 获取周末
-  const weekStart = new Date(currentDate);
-  weekStart.setDate(currentDate.getDate() - currentWeek);
-  const formattedStart = weekStart.toISOString();
-
-  // 获取周日
-  const weekEnd = new Date(currentDate);
-  weekEnd.setDate(currentDate.getDate() + (6 - currentWeek)); // Start from the 1st day of last month
-  const formattedEnd = weekEnd.toISOString();
-
-  const body = {
-    "query": `query {
-          user(login: "${username}") {
-            name
-            contributionsCollection(from: "${formattedStart}" to: "${formattedEnd}") {
-              contributionCalendar {
-                weeks {
-                  contributionDays {
-                    contributionCount
-                    date
-                    weekday
-                  }
-                  firstDay
-                }
-              }
-            }
-          }
-        }`
-  }
-  let response
-  try {
-    response = await ctx.http.post('https://api.github.com/graphql', body, { headers: headers });
-    const data = response?.data;
-    const nums = getContributionCount(data, new Date().getDay())
-    return nums
-  } catch (e) {
-    logger.error(e)
-    return false
-  }
-}
-
-function getContributionCount(contributionData, currentWeek: number) {
-  const todayContribution = contributionData?.["user"]?.["contributionsCollection"]?.["contributionCalendar"]?.["weeks"]?.[0]?.["contributionDays"]?.[currentWeek]?.["contributionCount"]
-  if (todayContribution === 0) {
-    return 0
-  } else {
-    return todayContribution
-  }
-}
 
 
 /**
@@ -283,69 +228,44 @@ function getContributionCount(contributionData, currentWeek: number) {
  * @param clock 闹钟配置
  * @returns 
  */
-function schedule_cron(ctx: Context, config: Config, gh_tile: Gh_tile) {
-  const targets = config.rules
-  for (var i of gh_tile.rules) {
-    if (!targets.includes(i)) {
-      targets.push(i)
-    }
-  }
-  // 设置每天早上8点触响铃
+function schedule_cron(ctx: Context, gh_tile: Gh_tile) {
+  // 设置每天早上11点30触响铃
   setDailyAlarm(gh_tile.time, async () => {
-    for (let { channelId, platform, selfId, guildId } of targets) {
-      if (!selfId) {
-        const channel = await ctx.database.getChannel(platform, channelId, ['assignee', 'guildId'])
-        if (!channel || !channel.assignee) return
-        selfId = channel.assignee
-        guildId = channel.guildId
-      }
-      let nums: number | boolean
+    let { channelId, platform, selfId, guildId } = gh_tile.rules[0]
+    if (!selfId) {
+      const channel = await ctx.database.getChannel(platform, channelId, ['assignee', 'guildId'])
+      if (!channel || !channel.assignee) return
+      selfId = channel.assignee
+      guildId = channel.guildId
+    }
+    let nums: number | boolean
 
-      if (gh_tile?.token) {
-        nums = await getContributions(ctx, gh_tile.token, gh_tile.username)
-      } else {
-        // 获取日期
-        const now = new Date();
-        const year = String(now.getFullYear())
-        const month = String(now.getMonth() + 1)
-        const day = String(now.getDate())
-        const date = `${year}-${month.length < 2 ? "0" + month : month}-${day.length < 2 ? "0" + day : day}`
-        nums = await getTileNums(ctx, gh_tile.username,date)
+    if (gh_tile?.token) {
+      nums = await getContributions(ctx, gh_tile.token, gh_tile.username)
+    } else {
+      // 获取日期
+      const now = new Date();
+      const year = String(now.getFullYear())
+      const month = String(now.getMonth() + 1)
+      const day = String(now.getDate())
+      const date = `${year}-${month.length < 2 ? "0" + month : month}-${day.length < 2 ? "0" + day : day}`
+      nums = await getTileNums(ctx, gh_tile.username, date)
 
-      }
-      if (nums === 0) {
-        const bot = ctx.bots[`${platform}:${selfId}`]
-        const img_url = pathToFileURL(resolve(__dirname, "0.jpg")).href
-        bot?.sendMessage(channelId, h.image(img_url) + "" + h.at(gh_tile.userId) + "起来贴瓷砖!!!", guildId)
-      }
+    }
+    if (nums === -1) {
+      const bot = ctx.bots[`${gh_tile.rules[0].platform}:${gh_tile.rules[0].selfId}`]
+      const img_url = pathToFileURL(resolve(__dirname, "0.jpg")).href
+      bot?.sendMessage(channelId, h.image(img_url) + "" + h.at(gh_tile.userId) + "起来贴瓷砖!", guildId)
     }
   });
 
 }
-
-function setDailyAlarm(time: string, callback: CallableFunction) {
-  const hour = Number(time.split("-")[0])
-  const minute = Number(time.split("-")[1])
-  if (isNaN(hour) || isNaN(minute)) {
-    logger.error("瓷砖提醒设置失败！")
-    return
+async function getTileRank(ctx:Context,session:Session){
+  const users = await ctx.database.get('gh_tile',{})
+  const tmp = []
+  for(var i of users){
+    if(i?.rules?.[0]?.guildId === session.guildId){
+      tmp.push(i)
+    }
   }
-  const now = new Date();
-  const alarmTime = new Date();
-  alarmTime.setUTCHours(hour);
-  alarmTime.setUTCMinutes(minute);
-  alarmTime.setUTCSeconds(0);
-
-  if (alarmTime <= now) {
-    // 如果今天的时间已经过去了，就设置到明天的同一时间
-    alarmTime.setUTCDate(alarmTime.getDate() + 1);
-  }
-
-  const timeUntilAlarm = alarmTime.getTime() - now.getTime();
-  setTimeout(() => {
-    setInterval(callback, 86400000);
-    callback();
-    // 设置每隔一天触发一次的定时器
-  }, timeUntilAlarm);
-  logger.info("瓷砖提醒设置成功！")
 }
