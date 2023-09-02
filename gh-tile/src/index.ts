@@ -1,8 +1,9 @@
 import { Context, Schema, Session, h, Logger } from 'koishi'
 
 import { mainUsage } from './config'
-import { pathToFileURL} from 'node:url'
+import { pathToFileURL } from 'node:url'
 import { resolve } from "path";
+import { getTileNums } from "./utils"
 export const name = 'gh-tile'
 export const logger = new Logger(name)
 
@@ -69,41 +70,55 @@ export function apply(ctx: Context, config: Config) {
   ctx.command('stile', "关闭/启动tile提醒", { checkArgCount: true }).action(async ({ session }, id) => {
     return clock_switch(ctx, session as Session)
   })
-  ctx.command('瓷砖 [userId:string]',"查看群友今天贴了多少瓷砖").action(async({session},...args)=>{
-    const uid = args?.[0]?args[0]:session.userId
-    const clocks = await ctx.database.get('gh_tile', {userId:uid})
-    if(clocks.length===0){
-      return "该用户没有绑定token (私信机器人绑定)"
-    }else{
-      const currentWeek = new Date().getDay()
-      const data = await getContributions(ctx, clocks[0]?.token, clocks[0]?.username)
-      if(!data){
-        return "token 失效"
+  ctx.command('瓷砖 [userId:string] [date:string]', "查看群友今天贴了多少瓷砖").action(async ({ session }, ...args) => {
+    const uid = args?.[0] ? args[0] : session.userId
+    const clocks = await ctx.database.get('gh_tile', { userId: uid })
+    let nums: number | boolean
+    if (clocks?.[0]?.token) {
+      nums = await getContributions(ctx, clocks[0]?.token, clocks[0]?.username)
+    } else if (clocks?.[0]?.username) {
+
+      let date: string
+      if (args?.[1]) {
+        date = args[1]
+      } else {
+        // 获取日期
+        const now = new Date();
+        const year = String(now.getFullYear())
+        const month = String(now.getMonth() + 1)
+        const day = String(now.getDate())
+        date = `${year}-${month.length < 2 ? "0" + month : month}-${day.length < 2 ? "0" + day : day}`
       }
-      const tileNums = data?.["user"]?.["contributionsCollection"]?.["contributionCalendar"]?.["weeks"]?.[0]?.["contributionDays"]?.[currentWeek]?.["contributionCount"]
-      return clocks[0]?.username+"今天贴了 "+tileNums+" 块瓷砖"
+      nums = await getTileNums(ctx, clocks[0].username, date)
+    } else {
+      return "未绑定用户"
     }
+    if (nums === false) {
+      return "获取瓷砖失败"
+    }
+    return clocks[0]?.username + "今天贴了 " + nums + " 块瓷砖"
   })
-  ctx.middleware(async (session, next)=>{
-    if(!session.content.startsWith("瓷砖")){
+  ctx.middleware(async (session, next) => {
+    if (!session.content.startsWith("瓷砖")) {
       return next()
-    }else{
+    } else {
       const target = session.content.match(/(?<=<at id=")([\s\S]*?)(?="\/>)/g)
-      if(target.length===0){
+      if (target.length === 0) {
         return next()
-      }else{
-        return session.execute("瓷砖 "+target[0])
+      } else {
+        return session.execute("瓷砖 " + target[0])
       }
     }
   })
-  ctx.command('tile', "添加github瓷砖提醒, 绑定token")
-    .action(({ session}) => {
+  ctx.command('tile', "添加github瓷砖提醒, 绑定github用户名")
+    .action(({ session }) => {
       session.bot.sendPrivateMessage
       // 为了保证登录安全，只能私信机器人操作
-      if (session?.guildId===session?.channelId) {
-        return session.text('messages.login.failure', ['不安全的操作，请私信机器人操作'])
+      if (session?.guildId === session?.channelId) {
+        return add_clock(ctx, session as Session, config)
+      } else {
+        return add_clock(ctx, session as Session, config, false)
       }
-      return add_clock(ctx, session as Session, config)
     })
 }
 /**
@@ -119,20 +134,22 @@ export function apply(ctx: Context, config: Config) {
 async function add_clock(
   ctx: Context,
   session: Session,
-  config: Config) {
-  
+  config: Config,
+  addToken: boolean = false) {
+
   const target = await ctx.database.get("gh_tile", { userId: session.userId })
   if (target.length > 0) {
     return '已存在瓷砖提醒，请输入命令stile 关闭/启动tile提醒'
   }
 
-  let token: string
-  await session.send('请输入github token')
-  token = await session.prompt(150000)
-  if (!token) {
-    return '瓷砖提醒设置失败，无效的github token'
+  let token: string = ''
+  if (addToken) {
+    await session.send('请输入github token')
+    token = await session.prompt(150000)
+    if (!token) {
+      return '瓷砖提醒设置失败，无效的github token'
+    }
   }
-
 
   let username: string
   await session.send('请输入 github 用户名')
@@ -238,22 +255,23 @@ async function getContributions(ctx: Context, token: string, username: string) {
         }`
   }
   let response
-  try{
+  try {
     response = await ctx.http.post('https://api.github.com/graphql', body, { headers: headers });
-  }catch(e){
+    const data = response?.data;
+    const nums = getContributionCount(data, new Date().getDay())
+    return nums
+  } catch (e) {
     logger.error(e)
+    return false
   }
-
-  const data = await response?.data;
-  return data
 }
 
 function getContributionCount(contributionData, currentWeek: number) {
   const todayContribution = contributionData?.["user"]?.["contributionsCollection"]?.["contributionCalendar"]?.["weeks"]?.[0]?.["contributionDays"]?.[currentWeek]?.["contributionCount"]
   if (todayContribution === 0) {
-    return false
+    return 0
   } else {
-    return true
+    return todayContribution
   }
 }
 
@@ -273,35 +291,42 @@ function schedule_cron(ctx: Context, config: Config, gh_tile: Gh_tile) {
     }
   }
   // 设置每天早上8点触响铃
-setDailyAlarm(gh_tile.time, async () => {
-  for (let { channelId, platform, selfId, guildId } of targets) {
-    if (!selfId) {
-      const channel = await ctx.database.getChannel(platform, channelId, ['assignee', 'guildId'])
-      if (!channel || !channel.assignee) return
-      selfId = channel.assignee
-      guildId = channel.guildId
+  setDailyAlarm(gh_tile.time, async () => {
+    for (let { channelId, platform, selfId, guildId } of targets) {
+      if (!selfId) {
+        const channel = await ctx.database.getChannel(platform, channelId, ['assignee', 'guildId'])
+        if (!channel || !channel.assignee) return
+        selfId = channel.assignee
+        guildId = channel.guildId
+      }
+      let nums: number | boolean
+
+      if (gh_tile?.token) {
+        nums = await getContributions(ctx, gh_tile.token, gh_tile.username)
+      } else {
+        // 获取日期
+        const now = new Date();
+        const year = String(now.getFullYear())
+        const month = String(now.getMonth() + 1)
+        const day = String(now.getDate())
+        const date = `${year}-${month.length < 2 ? "0" + month : month}-${day.length < 2 ? "0" + day : day}`
+        nums = await getTileNums(ctx, gh_tile.username,date)
+
+      }
+      if (nums === 0) {
+        const bot = ctx.bots[`${platform}:${selfId}`]
+        const img_url = pathToFileURL(resolve(__dirname, "0.jpg")).href
+        bot?.sendMessage(channelId, h.image(img_url) + "" + h.at(gh_tile.userId) + "起来贴瓷砖!!!", guildId)
+      }
     }
-    const data = await getContributions(ctx, gh_tile.token, gh_tile.username)
-    if(!data){
-      const bot = ctx.bots[`${platform}:${selfId}`]
-      const img_url = pathToFileURL(resolve(__dirname, "0.jpg")).href
-      bot?.sendMessage(channelId, "token失效", guildId)
-    }
-    const tile = getContributionCount(data, new Date().getDay())
-    if (!tile) {
-      const bot = ctx.bots[`${platform}:${selfId}`]
-      const img_url = pathToFileURL(resolve(__dirname, "0.jpg")).href
-      bot?.sendMessage(channelId, h.image(img_url)+""+h.at(gh_tile.userId)+"起来贴瓷砖!!!", guildId)
-    }
-  }
-});
+  });
 
 }
 
-function setDailyAlarm(time:string, callback:CallableFunction) {
+function setDailyAlarm(time: string, callback: CallableFunction) {
   const hour = Number(time.split("-")[0])
   const minute = Number(time.split("-")[1])
-  if(isNaN(hour)||isNaN(minute)){
+  if (isNaN(hour) || isNaN(minute)) {
     logger.error("瓷砖提醒设置失败！")
     return
   }
