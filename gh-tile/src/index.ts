@@ -3,10 +3,11 @@ import { Context, Schema, Session, h, Logger } from 'koishi'
 import { mainUsage } from './config'
 import { pathToFileURL } from 'node:url'
 import { resolve } from "path";
-import { getTileNums, getContributions, setDailyAlarm } from "./utils"
+import { getTileNums, getContributions } from "./utils"
 export const name = 'gh-tile'
 export const logger = new Logger(name)
 
+const setTimeoutDict = {}
 export const usage = `${mainUsage}`
 export interface Rule {
   platform: string
@@ -31,22 +32,23 @@ export interface Config {
 }
 declare module 'koishi' {
   interface Tables {
-    gh_tile: Gh_tile
+    github_tile: Gh_tile
   }
 }
+const TABLE_NAME = "github_tile"
 export interface Gh_tile {
   id?: number
   time?: string
   enable?: boolean
-  rules: Rule[]
+  rules: Rule
   token: string
   username: string
-  userId?: string
+  userId: string
 }
 
 export const using = ['database']
 export function apply(ctx: Context, config: Config) {
-  ctx.model.extend('gh_tile', {
+  ctx.model.extend('github_tile', {
     // 各字段类型
     id: 'unsigned',
     time: "text",
@@ -57,10 +59,11 @@ export function apply(ctx: Context, config: Config) {
     userId: "string"
   }, {
     primary: 'id', //设置 uid 为主键
-    autoInc: true
+    autoInc: true,
+    unique: ['id', 'userId']
   })
   ctx.on('ready', async () => {
-    const clocks = await ctx.database.get('gh_tile', {})
+    const clocks = await ctx.database.get('github_tile', {})
     for (var i of clocks) {
       if (i.enable) {
         schedule_cron(ctx, i)
@@ -88,7 +91,7 @@ export function apply(ctx: Context, config: Config) {
       }
 
       if (!username) {
-        const clocks = await ctx.database.get('gh_tile', { userId: session.userId })
+        const clocks = await ctx.database.get('github_tile', { userId: session.userId })
         if (clocks?.length > 0) {
           if (clocks?.[0]?.token) {
             nums = await getContributions(ctx, clocks[0]?.token, clocks?.[0]?.username)
@@ -118,7 +121,7 @@ export function apply(ctx: Context, config: Config) {
       if (!target) {
         target = [session.userId]
       }
-      const username = (await ctx.database.get("gh_tile", { userId: target[0] }))?.[0].username
+      const username = (await ctx.database.get(TABLE_NAME, { userId: target[0] }))?.[0].username
       if (!username) {
         return next()
       }
@@ -180,13 +183,22 @@ async function add_clock(
   session: Session,
   config: Config,
   addToken: boolean = false) {
-
-  const target = await ctx.database.get("gh_tile", { userId: session.userId })
-  if (target.length > 0) {
-    return '已存在瓷砖提醒，请输入命令stile 关闭/启动tile提醒'
+  let username: string
+  let token: string = ''
+  let cover: boolean = false
+  const target = await ctx.database.get(TABLE_NAME, { userId: session.userId })
+  if (target?.length > 0) {
+    session.send("已存在提醒，是否要继续[y/n]")
+    const continu = await session.prompt(150000)
+    if (continu.toUpperCase().startsWith("N")) {
+      return
+    }
+    cover = true
+    clearAlarm(session.userId)
+    token = target[0]?.token
   }
 
-  let token: string = ''
+
   if (addToken) {
     await session.send('请输入github token')
     token = await session.prompt(150000)
@@ -195,38 +207,18 @@ async function add_clock(
     }
   }
 
-  let username: string
+
   await session.send('请输入 github 用户名')
   username = await session.prompt(150000)
   if (!username) {
     return '瓷砖提醒设置失败，无效的 username'
   }
-
-  ctx.database.create('gh_tile', {
-    time: config.corn,
-    enable: true,
-    userId: session.userId,
-    token: token,
-    username: username,
-    rules:
-      [
-        {
-          selfId: session.bot.selfId,
-          platform: session.platform,
-          guildId: session.guildId,
-          channelId: session.channelId
-        }
-      ]
-  })
-
-
-  schedule_cron(
-    ctx,
-    {
+  if (cover) {
+    ctx.database.set('github_tile', { userId: session.userId }, {
       time: config.corn,
+      enable: true,
       token: token,
       username: username,
-      enable: true,
       rules:
         [
           {
@@ -237,7 +229,41 @@ async function add_clock(
           }
         ]
     })
-  return '瓷砖提醒成功'
+  } else {
+    ctx.database.create('github_tile', {
+      time: config.corn,
+      enable: true,
+      userId: session.userId,
+      token: token,
+      username: username,
+      rules: {
+        selfId: session.bot.selfId,
+        platform: session.platform,
+        guildId: session.guildId,
+        channelId: session.channelId
+      }
+    })
+  }
+
+
+
+  schedule_cron(
+    ctx,
+    {
+      time: config.corn,
+      token: token,
+      username: username,
+      userId: session.userId,
+      enable: true,
+      rules: {
+        selfId: session.bot.selfId,
+        platform: session.platform,
+        guildId: session.guildId,
+        channelId: session.channelId
+      }
+
+    })
+  return '瓷砖提醒成功,输入命令stile 关闭/启动tile提醒'
 
 }
 /**
@@ -248,14 +274,13 @@ async function add_clock(
  * @returns 
  */
 async function clock_switch(ctx: Context, session: Session) {
-  const target = await ctx.database.get("gh_tile", { userId: session.userId })
+  const target = await ctx.database.get(TABLE_NAME, { userId: session.userId })
   if (target.length < 1) {
     return '请先添加瓷砖提醒'
   }
-  await ctx.database.set("gh_tile", { userId: session.userId }, { enable: target[0].enable ? false : true })
-  const msg = `${target?.[0].username}，已${target[0].enable ? "关闭" : "开启"}瓷砖提醒, 重启后生效`
-  // 重启 koishi
-  session.execute('shutdown -r now')
+  clearAlarm(session.userId)
+  await ctx.database.set(TABLE_NAME, { userId: session.userId }, { enable: target[0].enable ? false : true })
+  const msg = `${target?.[0].username}，已${target[0].enable ? "关闭" : "开启"}瓷砖提醒`
   return msg
 
 }
@@ -271,8 +296,8 @@ async function clock_switch(ctx: Context, session: Session) {
  */
 function schedule_cron(ctx: Context, gh_tile: Gh_tile) {
   // 设置每天早上11点30触响铃
-  setDailyAlarm(gh_tile.time, async () => {
-    let { channelId, platform, selfId, guildId } = gh_tile.rules[0]
+  setDailyAlarm(gh_tile.time, gh_tile, async () => {
+    let { channelId, platform, selfId, guildId } = gh_tile.rules
     if (!selfId) {
       const channel = await ctx.database.getChannel(platform, channelId, ['assignee', 'guildId'])
       if (!channel || !channel.assignee) return
@@ -299,5 +324,39 @@ function schedule_cron(ctx: Context, gh_tile: Gh_tile) {
       bot?.sendMessage(channelId, h.image(img_url) + "" + h.at(gh_tile.userId) + "起来贴瓷砖!", guildId)
     }
   });
+
+}
+
+export function setDailyAlarm(time: string, gh_tile: Gh_tile, callback: CallableFunction) {
+  const hour = Number(time.split("-")[0])
+  const minute = Number(time.split("-")[1])
+  if (isNaN(hour) || isNaN(minute)) {
+    logger.error("瓷砖提醒设置失败！")
+    return
+  }
+  const now = new Date();
+  const alarmTime = new Date();
+  alarmTime.setUTCHours(hour);
+  alarmTime.setUTCMinutes(minute);
+  alarmTime.setUTCSeconds(0);
+  if (alarmTime <= now) {
+    // 如果今天的时间已经过去了，就设置到明天的同一时间
+    alarmTime.setUTCDate(alarmTime.getDate() + 1);
+  }
+  const timeUntilAlarm = alarmTime.getTime() - now.getTime();
+  setTimeoutDict[gh_tile.userId] = setTimeout(() => {
+    setInterval(callback, 86400000);
+    callback();
+    // 设置每隔一天触发一次的定时器
+  }, timeUntilAlarm);
+  logger.info(`${(gh_tile.userId)}-${gh_tile.username}瓷砖提醒设置成功！`)
+}
+
+export function clearAlarm(uid: string) {
+  // 清除timeOut
+  const timeoutId = setTimeoutDict[uid]
+  if (timeoutId) {
+    clearTimeout(timeoutId)
+  }
 
 }
