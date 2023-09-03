@@ -27,8 +27,6 @@ export async function getTileNums(ctx: Context, username: string,date:string) {
 
 }
 
-// console.log(getTileNums(new Context(),"XxLittleCxX","2023-09-02"))
-
 
 
 export async function getContributions(ctx: Context, token: string, username: string) {

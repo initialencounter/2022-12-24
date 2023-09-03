@@ -70,50 +70,91 @@ export function apply(ctx: Context, config: Config) {
   ctx.command('stile', "关闭/启动tile提醒", { checkArgCount: true }).action(async ({ session }, id) => {
     return clock_switch(ctx, session as Session)
   })
-  ctx.command('瓷砖 [userId:string] [date:string]', "查看群友今天贴了多少瓷砖").action(async ({ session }, ...args) => {
-    const uid = args?.[0] ? args[0] : session.userId
-    const clocks = await ctx.database.get('gh_tile', { userId: uid })
-    let nums: number | boolean
-    if (clocks?.[0]?.token) {
-      nums = await getContributions(ctx, clocks[0]?.token, clocks[0]?.username)
-    } else if (clocks?.[0]?.username) {
-
-      let date: string
-      if (args?.[1]) {
-        date = args[1]
-      } else {
+  ctx.command('瓷砖', "查看群友今天贴了多少瓷砖")
+    .option("username", "-u <username:string>")
+    .option("date", "-d <date:string>")
+    .action(async ({ session, options }, ...args) => {
+      let nums: number | boolean
+      let username: string = options?.username
+      let date: string = options?.date
+      const now = new Date();
+      const year = String(now.getFullYear())
+      const month = String(now.getMonth() + 1)
+      const day = String(now.getDate())
+      const nowadate = `${year}-${month.length < 2 ? "0" + month : month}-${day.length < 2 ? "0" + day : day}`
+      if (options?.date && date != nowadate) {
         // 获取日期
-        const now = new Date();
-        const year = String(now.getFullYear())
-        const month = String(now.getMonth() + 1)
-        const day = String(now.getDate())
-        date = `${year}-${month.length < 2 ? "0" + month : month}-${day.length < 2 ? "0" + day : day}`
+        date = options.date
       }
-      nums = await getTileNums(ctx, clocks[0].username, date)
-    } else {
-      return "未绑定用户"
-    }
-    if (nums === false) {
-      return "获取瓷砖失败"
-    }
-    if (nums === -1) {
-      nums = 0
-    }
-    return clocks[0]?.username + "今天贴了 " + nums + " 块瓷砖"
-  })
+
+      if (!username) {
+        const clocks = await ctx.database.get('gh_tile', { userId: session.userId })
+        if (clocks?.length > 0) {
+          if (clocks?.[0]?.token) {
+            nums = await getContributions(ctx, clocks[0]?.token, clocks?.[0]?.username)
+          } else {
+            nums = await getTileNums(ctx, clocks[0].username, date)
+          }
+        }
+        else {
+          return "该用户未绑定 github"
+        }
+      } else {
+        nums = await getTileNums(ctx, username, date)
+      }
+      if (nums === false) {
+        return "获取瓷砖失败"
+      }
+      if (nums === -1) {
+        nums = 0
+      }
+      return `${username} 在 ${date} 贴了 ${nums} 块瓷砖`
+    })
   ctx.middleware(async (session, next) => {
     if (!session.content.startsWith("瓷砖")) {
       return next()
     } else {
-      const target = session.content.match(/(?<=<at id=")([\s\S]*?)(?="\/>)/g)
-      if (target.length === 0) {
-        return next()
-      } else {
-        return session.execute("瓷砖 " + target[0])
+      let target = session.content.match(/(?<=<at id=")([\s\S]*?)(?="\/>)/g)
+      if (!target) {
+        target = [session.userId]
       }
+      const username = (await ctx.database.get("gh_tile", { userId: target[0] }))?.[0].username
+      if (!username) {
+        return next()
+      }
+      if (session.content.indexOf("昨天") > -1) {
+        const now = new Date();
+        let year = now.getFullYear();
+        let month = now.getMonth() + 1;
+        let day = now.getDate();
+        if (day === 1) {
+          if ([1, 2, 4, 6, 8, 9, 11].includes(month)) {
+            day = 31;
+            if (month === 1) {
+              year = now.getFullYear() - 1;
+              month = 12;
+            } else {
+              month = now.getMonth();
+            }
+          } else if (month === 3) {
+            const isLeapYear = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0));
+            day = isLeapYear ? 29 : 28;
+            month = now.getMonth();
+          } else {
+            day = 30;
+            month = now.getMonth();
+          }
+        } else {
+          day = day - 1;
+        }
+        const date = `${year}-${String(month).length < 2 ? "0" + month : month}-${String(day).length < 2 ? "0" + day : day}`
+        return session.execute(`瓷砖 -u ${username} -d ${date}`)
+      }
+      return session.execute("瓷砖 -u " + username)
+
     }
   })
-  ctx.command('tile', "添加github瓷砖提醒, 绑定github用户名")
+  ctx.command('tile', "添加github瓷砖提醒, 绑定github用户名").alias("绑定gh")
     .action(({ session }) => {
       session.bot.sendPrivateMessage
       // 为了保证登录安全，只能私信机器人操作
@@ -259,13 +300,4 @@ function schedule_cron(ctx: Context, gh_tile: Gh_tile) {
     }
   });
 
-}
-async function getTileRank(ctx:Context,session:Session){
-  const users = await ctx.database.get('gh_tile',{})
-  const tmp = []
-  for(var i of users){
-    if(i?.rules?.[0]?.guildId === session.guildId){
-      tmp.push(i)
-    }
-  }
 }
