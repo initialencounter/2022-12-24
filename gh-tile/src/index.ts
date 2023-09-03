@@ -16,18 +16,11 @@ export interface Rule {
   guildId?: string
 }
 
-export const Rule: Schema<Rule> = Schema.object({
-  platform: Schema.string().description('平台名称。').required(),
-  channelId: Schema.string().description('频道 ID。').required(),
-  guildId: Schema.string().description('群组 ID。'),
-  selfId: Schema.string().description('机器人 ID。'),
-})
 export const Config: Schema<Config> = Schema.object({
-  rules: Schema.array(Rule).description('推送规则。'),
   corn: Schema.string().default("15-30").description("默认的提醒时间,UTC时间")
 })
+
 export interface Config {
-  rules: Rule[]
   corn: string
 }
 declare module 'koishi' {
