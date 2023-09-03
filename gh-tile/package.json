@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-gh-tile",
   "description": "查看群友的瓷砖, 破坏性更新, 更新前请备份gh-tile数据表",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [

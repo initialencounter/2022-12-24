@@ -78,14 +78,17 @@ export function apply(ctx: Context, config: Config) {
       const month = String(now.getMonth() + 1)
       const day = String(now.getDate())
       const nowadate = `${year}-${month.length < 2 ? "0" + month : month}-${day.length < 2 ? "0" + day : day}`
-      if (options?.date && date != nowadate) {
+      if (date !== nowadate) {
         // 获取日期
         date = options.date
+      }else{
+        date = nowadate
       }
 
       if (!username) {
         const clocks = await ctx.database.get('github_tile', { userId: session.userId })
         if (clocks?.length > 0) {
+          username = clocks[0].username
           if (clocks?.[0]?.token) {
             nums = await getContributions(ctx, clocks[0]?.token, clocks?.[0]?.username)
           } else {
