@@ -1,22 +1,10 @@
-import { Context, Logger, segment, Element, Session, Service, Dict, h, Next, Fragment, Schema, trimSlash } from 'koishi';
-import fs from 'fs';
-import { } from '@koishijs/plugin-rate-limit';
-import { } from 'koishi-plugin-puppeteer';
-import { } from '@initencounter/vits'
-import { } from '@initencounter/sst'
-import { } from '@koishijs/censor'
-export const using = ['puppeteer', 'vits', 'sst', 'censor']
+import { Context, Logger, segment, Element, Session, Dict, h, Next, Fragment, Schema, trimSlash } from 'koishi';
 const name = 'davinci-003';
 const logger = new Logger(name);
+import {resolve} from 'path'
 
 
-declare module 'koishi' {
-  interface Context {
-    dvc: Dvc
-  }
-}
-
-class Dvc extends Service {
+class Dvc {
   output_type: string;
   session_config: Dvc.Msg[];
   sessions: Dict;
@@ -29,9 +17,8 @@ class Dvc extends Service {
   key: string[];
   retry: Dict;
   maxRetryTimes: number;
-  constructor(ctx: Context, private config: Dvc.Config) {
-    const using = ['puppeteer', 'vits', 'sst', 'censor'];
-    super(ctx, 'dvc', true)
+  constructor(private ctx: Context, private config: Dvc.Config) {
+    this.personality = require(resolve(__dirname,'personality.json'))
     this.l6k = config.l6k
     this.output_type = this.config.output
     this.type = this.config.type
@@ -40,21 +27,7 @@ class Dvc extends Service {
     this.sessions = {};
     this.retry = {}
     this.maxRetryTimes = config.maxRetryTimes
-    if ((!ctx.puppeteer) && this.config.output == 'image') {
-      logger.warn('未启用puppter,将无法发送图片');
-    }
     ctx.i18n.define('zh', require('./locales/zh'));
-    ctx.on('send', (session) => {
-      if (this.config.recall_all) {
-        this.recall(session, session.messageId, this.config.recall_all_time)
-      }
-    })
-    try {
-      this.personality = JSON.parse(fs.readFileSync('./personality.json', 'utf-8'));
-    } catch (e) {
-      this.personality = { "预设人格": [{ "role": "system", "content": "你是我的全能AI助理" }] }
-      fs.writeFileSync('./personality.json', JSON.stringify(this.personality));
-    }
     this.session_config = Object.values(this.personality)[0]
     this.sessions_cmd = Object.keys(this.personality)
     ctx.command('dvc.credit', '查询余额').action(async ({ session }) => {
@@ -108,26 +81,14 @@ class Dvc extends Service {
       } return this.clear(session as Session)
     })
 
-    //设置人格
-    ctx.command('dvc.添加人格 <prompt:text>', '更改AI的人格,并重置会话', {
+    //切换现有人格
+    ctx.command('dvc.切换人格 <prompt:text>', '切换为现有的人格', {
       authority: 1
-    }).alias('设置人格', '添加人格').action(({ session }, prompt) => {
+    }).alias('dvc.人格切换', '切换人格').action(async ({ session }, prompt) => {
       if (this.block(session as Session)) {
-        session.send("添加人格失败？看这里！\n https://forum.koishi.xyz/t/topic/2349/4")
         return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
-      } return this.add_personality(session as Session, prompt)
+      } return this.switch_peresonality(session as Session, prompt)
     })
-
-
-    //设置人格
-    ctx.command('dvc.删除人格 <prompt:text>', '删除AI的人格,并重置会话', {
-      authority: 1
-    }).alias('删除人格').action(({ session }, prompt) => {
-      if (this.block(session as Session)) {
-        return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
-      } return this.rm_personality(session as Session, prompt)
-    }
-    )
 
     //删除会话,只保留人格
     ctx.command('dvc.重置会话', '重置会话', {
@@ -146,14 +107,6 @@ class Dvc extends Service {
       } return this.switch_output(session as Session, type)
     });
 
-    //切换现有人格
-    ctx.command('dvc.切换人格 <prompt:text>', '切换为现有的人格', {
-      authority: 1
-    }).alias('dvc.人格切换', '切换人格').action(async ({ session }, prompt) => {
-      if (this.block(session as Session)) {
-        return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
-      } return this.switch_peresonality(session as Session, prompt)
-    })
 
     //切换引擎
     ctx.command('dvc.切换引擎 <prompt:text>', '切换引擎', {
@@ -194,22 +147,6 @@ class Dvc extends Service {
           return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
         }
         return await this.translate(session as Session, options.lang, prompt)
-      })
-    ctx.command('dvc.update', '一键加载400条极品预设')
-      .alias('更新预设')
-      .action(async ({ session, options }) => {
-        let prompts_latest = (await ctx.http.axios({
-          method: 'GET',
-          url: 'https://gitee.com/initencunter/ChatPrompts/raw/master/safe',
-          responseType: "json"
-        })).data;
-        prompts_latest = JSON.parse(Buffer.from(prompts_latest, 'base64').toString('utf-8'));
-        logger.info(prompts_latest);
-        for (const i of Object.keys(prompts_latest)) {
-          this.personality[i] = prompts_latest[i];
-        }
-        fs.writeFileSync('./personality.json', JSON.stringify(this.personality));
-        return session.execute('切换人格');
       })
   }
 
@@ -313,7 +250,9 @@ class Dvc extends Service {
     if (this.config.waiting) {
       const msgid = (await session.bot.sendMessage(session.channelId, h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.thinking'), session.guildId))[0]
       if (this.config.recall && (!this.config.recall_all)) {
-        await this.recall(session, msgid, this.config.recall_time)
+        setTimeout(()=>{
+        session.bot.deleteMessage(session.channelId, msgid)
+        },5000)
       }
     }
     // 文本审核
@@ -718,56 +657,6 @@ class Dvc extends Service {
       return true
     }
   }
-  /**
-   * 撤回消息
-   * @param session 
-   * @param messageId 
-   * @param time 
-   */
-  async recall(session: Session, messageId: string, time: number) {
-    new Promise(resolve => setTimeout(() => {
-      session.bot.deleteMessage(session.channelId, messageId)
-    }
-      , time));
-
-  }
-  /**
-   * 删除人格逻辑
-   * @param session 
-   * @param nick_name 
-   * @returns 
-   */
-  async rm_personality(session: Session, nick_name?: string) {
-    const nick_names: string[] = Object.keys(this.personality)
-    if (nick_names.length == 1) {
-      return '再删下去就报错了'
-    }
-    // 参数合法
-    if (nick_name && nick_names.indexOf(nick_name) > -1) {
-      return this.personality_rm(session, nick_name)
-    }
-    const input = await this.switch_menu(session, nick_names, '人格')
-    if (!input) {
-      return session.text('commands.dvc.messages.menu-err')
-    }
-    return this.personality_rm(session, input)
-  }
-
-  /**
-   * 删除人格
-   * @param session 会话
-   * @param nick_name 人格名称
-   * @returns 字符串
-   */
-
-  personality_rm(session: Session, nick_name: string): string {
-    const index: number = this.sessions_cmd.indexOf(nick_name)
-    this.sessions_cmd.splice(index, 1)
-    delete this.personality[nick_name]
-    this.sessions[session.userId] = [{ "role": "system", "content": "你是我的全能AI助理" }]
-    fs.writeFileSync('./personality.json', JSON.stringify(this.personality))
-    return '人格删除成功'
-  }
 
   /**
    * 
@@ -847,6 +736,9 @@ class Dvc extends Service {
       return res["soft_limit_usd"]
     }
     catch (e) {
+      if (String(e).includes('405') || String(e).includes('429')) {
+        return 0.000000001
+      }
       return 0
     }
   }
@@ -892,28 +784,6 @@ class Dvc extends Service {
         }
       }
       return result
-    }
-    else {
-      const elements: Array<Element> = []
-      for (var msg of resp) {
-        if (msg.role == 'user') {
-          elements.push(<div style="color:#ff9900;font-size: 25px;background:transparent;width=500px;height:50px,">用户:{msg.content}</div>)
-          continue
-        }
-        if (msg.role == 'assistant') {
-          elements.push(<div style="color:black;font-size: 25px;background:transparent;width=500px;height:50px,">AI:{msg.content}</div>)
-        } else {
-          elements.push(<div style="color:#723b8d;font-size: 25px;background:transparent;width=400px">人格设定:{msg.content}</div>)
-        }
-      }
-      return <html>
-        <img style="-webkit-user-select: none; display: block; margin: auto; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); cursor: zoom-in;" src='' width="600" height="1000"></img>
-        <div style='position: absolute;top:20px;left:20px;width:600px;'>
-          <p style="color:#723b8d">ChatGPT3.5-Turbo</p>
-          {elements}
-        </div>
-        <div style='position: absolute;top:10px;'>create by koishi-plugin-davinci-003-v4.0.7</div>
-      </html>
     }
   }
 
@@ -975,38 +845,6 @@ class Dvc extends Service {
     return '重置成功'
   }
 
-  async add_personality(session: Session, nick_name: string): Promise<string> {
-
-    if (!nick_name) {
-      session.send('请输入人格昵称(输入q退出)')
-      nick_name = await session.prompt(60000)
-      if (!nick_name || nick_name == "q") session.text('commands.dvc.messages.set-personality')
-    }
-    let input_key: string
-    let input_value: string
-    const personality_session = []
-    while (true) {
-      session.send('请输入role(system||assistant||user)(输入q退出，e结束)')
-      input_key = await session.prompt(60000)
-      if (input_key == 'q' || !input_key) {
-        return session.text('commands.dvc.messages.set-personality')
-      }
-      if (input_key == 'e') {
-        break
-      }
-      if (["system", "assistant", "user"].indexOf(input_key) == -1) return session.text('commands.dvc.messages.set-personality-role')
-      session.send('请输入内容(输入q退出)')
-      input_value = await session.prompt(60000)
-      if (input_value == 'q' || !input_value) {
-        return session.text('commands.dvc.messages.set-personality')
-      }
-      personality_session.push({ role: input_key, content: input_value })
-    }
-    this.sessions_cmd.push(nick_name)
-    this.personality[nick_name] = personality_session
-    fs.writeFileSync('./personality.json', JSON.stringify(this.personality))
-    return this.set_personality(session, nick_name)
-  }
 
   /**
    * 设置人格
@@ -1052,7 +890,6 @@ namespace Dvc {
 | 功能 | 指令 |
 |  ----  | ----  |
 | 重置会话 | dvc.重置会话 |
-| 添加人格 | dvc.添加人格 |
 | 清空所有回话 | dvc.clear |
 | 切换人格 | dvc.切换人格 |
 | 查询余额 | dvc.credit |
@@ -1112,7 +949,6 @@ namespace Dvc {
     preset_pro: boolean
     single_session: boolean
     waiting: boolean
-    whisper: boolean
     nickwake: boolean
 
     recall: boolean
@@ -1195,8 +1031,6 @@ namespace Dvc {
         Schema.const('minimal').description('只发送文字消息'),
         Schema.const('quote').description('引用消息'),
         Schema.const('figure').description('以聊天记录形式发送'),
-        Schema.const('image').description('将对话转成图片'),
-        Schema.const('voice').description('发送语音,需要安装ffmpeg')
       ]).description('输出方式。').default('minimal'),
       stream_output: Schema.boolean().default(false).description('流式输出'),
 

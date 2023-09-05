@@ -1,9 +1,18 @@
 {
   "name": "koishi-plugin-davinci-003",
   "description": "AI 聊天",
-  "version": "6.1.1",
+  "version": "6.2.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "node": "./lib/node/index.js",
+      "browser": "./lib/browser/index.js",
+      "types": "./lib/index.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "lib",
     "dist"
