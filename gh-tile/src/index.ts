@@ -74,33 +74,34 @@ export function apply(ctx: Context, config: Config) {
       let username: string = options?.username
       let date: string = options?.date
       const now = new Date();
-      const year = String(now.getFullYear())
-      const month = String(now.getMonth() + 1)
-      const day = String(now.getDate())
-      const nowadate = `${year}-${month.length < 2 ? "0" + month : month}-${day.length < 2 ? "0" + day : day}`
-      if (date !== nowadate) {
-        // 获取日期
-        date = options.date
-      }else{
+      const year = now.getFullYear()
+      const month = now.getMonth() + 1
+      const day = now.getDate()
+      const nowadate = `${year}-${month < 10 ? "0" + month : month}-${day < 10 ? "0" + day : day}`
+
+      let token: string
+
+      if (!date) {
         date = nowadate
+      }
+      if (!username) {
+        const clocks = await ctx.database.get('github_tile', { userId: session.userId })
+        username = clocks?.[0]?.username
+        token = clocks?.[0]?.token
+      } else {
+        const clocks = await ctx.database.get('github_tile', { username: username })
+        token = clocks?.[0]?.token
       }
 
       if (!username) {
-        const clocks = await ctx.database.get('github_tile', { userId: session.userId })
-        if (clocks?.length > 0) {
-          username = clocks[0].username
-          if (clocks?.[0]?.token) {
-            nums = await getContributions(ctx, clocks[0]?.token, clocks?.[0]?.username)
-          } else {
-            nums = await getTileNums(ctx, clocks[0].username, date)
-          }
-        }
-        else {
-          return "该用户未绑定 github"
-        }
+        return "该用户未绑定 github"
+      }
+      if (token) {
+        nums = await getContributions(ctx, token, username, date)
       } else {
         nums = await getTileNums(ctx, username, date)
       }
+
       if (nums === false) {
         return "获取瓷砖失败"
       }
@@ -117,9 +118,9 @@ export function apply(ctx: Context, config: Config) {
       if (!target) {
         target = [session.userId]
       }
-      const username = (await ctx.database.get(TABLE_NAME, { userId: target[0] }))?.[0].username
+      const username = (await ctx.database.get(TABLE_NAME, { userId: target[0] }))?.[0]?.username
       if (!username) {
-        return next()
+        return '该用户未绑定 github'
       }
       if (session.content.indexOf("昨天") > -1) {
         const now = new Date();
@@ -302,15 +303,16 @@ function schedule_cron(ctx: Context, gh_tile: Gh_tile) {
     }
     let nums: number | boolean
 
+
+    // 获取日期
+    const now = new Date();
+    const year = now.getFullYear()
+    const month = now.getMonth() + 1
+    const day = now.getDate()
+    const date = `${year}-${month < 10 ? "0" + month : month}-${day < 10 ? "0" + day : day}`
     if (gh_tile?.token) {
-      nums = await getContributions(ctx, gh_tile.token, gh_tile.username)
+      nums = await getContributions(ctx, gh_tile.token, gh_tile.username, date)
     } else {
-      // 获取日期
-      const now = new Date();
-      const year = String(now.getFullYear())
-      const month = String(now.getMonth() + 1)
-      const day = String(now.getDate())
-      const date = `${year}-${month.length < 2 ? "0" + month : month}-${day.length < 2 ? "0" + day : day}`
       nums = await getTileNums(ctx, gh_tile.username, date)
 
     }

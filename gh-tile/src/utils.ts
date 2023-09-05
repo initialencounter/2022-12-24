@@ -29,11 +29,17 @@ export async function getTileNums(ctx: Context, username: string,date:string) {
 
 
 
-export async function getContributions(ctx: Context, token: string, username: string) {
+export async function getContributions(ctx: Context, token: string, username: string, data:string) {
     const headers = {
       'Authorization': `bearer ${token}`,
     }
     const currentDate = new Date();
+    if(data){
+      const [year,month,day]: number[] = data.split('-').map((s)=>{return parseInt(s)})
+      currentDate.setUTCFullYear(year);
+      currentDate.setUTCMonth(month);
+      currentDate.setUTCDate(day)
+    }
     // 获取 周几
     const currentWeek = currentDate.getDay();
   
@@ -70,7 +76,7 @@ export async function getContributions(ctx: Context, token: string, username: st
     try {
       response = await ctx.http.post('https://api.github.com/graphql', body, { headers: headers });
       const data = response?.data;
-      const nums = getContributionCount(data, new Date().getDay())
+      const nums = getContributionCount(data, currentWeek)
       return nums
     } catch (e) {
       logger.error(e)
