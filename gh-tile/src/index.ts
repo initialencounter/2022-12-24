@@ -4,6 +4,7 @@ import { mainUsage } from './config'
 import { pathToFileURL } from 'node:url'
 import { resolve } from "path";
 import { getTileNums, getContributions } from "./utils"
+import cron from 'node-cron'
 export const name = 'gh-tile'
 export const logger = new Logger(name)
 
@@ -293,7 +294,8 @@ async function clock_switch(ctx: Context, session: Session) {
  */
 function schedule_cron(ctx: Context, gh_tile: Gh_tile) {
   // 设置每天早上11点30触响铃
-  setDailyAlarm(gh_tile.time, gh_tile, async () => {
+  const [hour,minute] = gh_tile.time.split('-')
+  cron.schedule(`0 ${minute} ${hour} * * *`,async () => {
     let { channelId, platform, selfId, guildId } = gh_tile.rules
     if (!selfId) {
       const channel = await ctx.database.getChannel(platform, channelId, ['assignee', 'guildId'])
@@ -322,31 +324,6 @@ function schedule_cron(ctx: Context, gh_tile: Gh_tile) {
       bot?.sendMessage(channelId, h.image(img_url) + "" + h.at(gh_tile.userId) + "起来贴瓷砖!", guildId)
     }
   });
-
-}
-
-export function setDailyAlarm(time: string, gh_tile: Gh_tile, callback: CallableFunction) {
-  const hour = Number(time.split("-")[0])
-  const minute = Number(time.split("-")[1])
-  if (isNaN(hour) || isNaN(minute)) {
-    logger.error("瓷砖提醒设置失败！")
-    return
-  }
-  const now = new Date();
-  const alarmTime = new Date();
-  alarmTime.setUTCHours(hour);
-  alarmTime.setUTCMinutes(minute);
-  alarmTime.setUTCSeconds(0);
-  if (alarmTime <= now) {
-    // 如果今天的时间已经过去了，就设置到明天的同一时间
-    alarmTime.setUTCDate(alarmTime.getDate() + 1);
-  }
-  const timeUntilAlarm = alarmTime.getTime() - now.getTime();
-  setTimeoutDict[gh_tile.userId] = setTimeout(() => {
-    setInterval(callback, 86400000);
-    callback();
-    // 设置每隔一天触发一次的定时器
-  }, timeUntilAlarm);
   logger.info(`${(gh_tile.userId)}-${gh_tile.username}瓷砖提醒设置成功！`)
 }
 
