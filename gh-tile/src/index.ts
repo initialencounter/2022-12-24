@@ -18,7 +18,7 @@ export interface Rule {
 }
 
 export const Config: Schema<Config> = Schema.object({
-  corn: Schema.string().default("15-30").description("默认的提醒时间,UTC时间")
+  corn: Schema.string().default("23-30").description("默认的提醒时间,UTC时间")
 })
 
 export interface Config {
@@ -295,7 +295,8 @@ async function clock_switch(ctx: Context, session: Session) {
 function schedule_cron(ctx: Context, gh_tile: Gh_tile) {
   // 设置每天早上11点30触响铃
   const [hour,minute] = gh_tile.time.split('-')
-  cron.schedule(`0 ${minute} ${hour} * * *`,async () => {
+  const cronExp = `0 ${minute} ${hour} * * *`
+  cron.schedule(cronExp,async () => {
     let { channelId, platform, selfId, guildId } = gh_tile.rules
     if (!selfId) {
       const channel = await ctx.database.getChannel(platform, channelId, ['assignee', 'guildId'])

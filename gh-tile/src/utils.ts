@@ -7,7 +7,7 @@ export async function getTileNums(ctx: Context, username: string,date:string) {
     let html: string
     try {
         html = await ctx.http.get(`https://github.com/${username}`)
-        fs.writeFileSync('text.html',html)
+        // fs.writeFileSync('text.html',html)
     } catch (e) {
         return false
     }
