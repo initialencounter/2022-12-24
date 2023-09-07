@@ -168,6 +168,7 @@ class CubeActivity {
     rank_div.push(<div style="font-size:20px;width:200px;height:40px">最早通关玩家</div>)
     rank_div.push(<div style="font-size:10px;width:200px;height:10px">1.Riley</div>)
     rank_div.push(<div style="font-size:10px;width:200px;height:10px">2.疏棂</div>)
+    rank_div.push(<div style="font-size:10px;width:200px;height:10px">3.Transformation</div>)
     rank_div.push(<div style="font-size:20px;width:200px;height:30px">----------------------</div>)
     rank_div.push(<div style="font-size:20px;width:200px;height:30px">魔方排行榜</div>)
     for (var i in sorted_arr) {
