@@ -198,6 +198,7 @@ class Pz {
     }
   }
   draw_img(data: number[][] = this.game_data, type: number = 1) {
+    const mode = this.game_data.length
     if (this.ctx.puppeteer) {
       const ofs: number = 8
       const size = this.config.size
@@ -205,7 +206,7 @@ class Pz {
       for (let i = 0; i < data.length; i++) {                          // 生成数组
         for (let j = 0; j < data.length; j++) {
           const num: number = data[i][j]
-          var style_str: string = `position: absolute;font-size: ${size / 1.7}px;text-align: center;width: ${size}px;height: ${size}px;left: ${j * size + ofs}px;top: ${i * size + ofs}px;background: ${this.find_color(num)}`
+          var style_str: string = `position: absolute;font-size: ${size / 1.7}px;text-align: center;width: ${size}px;height: ${size}px;left: ${j * size + ofs}px;top: ${i * size + ofs}px;background: ${this.find_color(num,mode)}`
           res.push(<div style={style_str}>{num}</div>)
         }
       }
@@ -226,16 +227,10 @@ class Pz {
       this.game_img = <p>{msg_str}</p>
     }
   }
-  find_color(num: number) {
-    var cr_num: number = 0
-    for (let i = 0; i < 5; i++) {                          // 生成数组
-      for (let j = 0; j < 5; j++) {
-        if (num == cr_num) {
-          return theme[i][j]
-        }
-        cr_num++
-      }
-    }
+  find_color(num: number,mode:number) {
+    const y = num%mode
+    const x = Math.floor(num/mode)
+    return theme[x][y]
 
   }
   async add_score() {
