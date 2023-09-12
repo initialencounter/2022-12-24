@@ -1,6 +1,7 @@
-import { Context, Dict, Schema, Session, Element, Logger } from 'koishi'
+import { Context, Dict, Schema, Session, Element, Logger, h } from 'koishi'
 import { } from 'koishi-plugin-puppeteer'
 import { Klotsk } from './puzzle'
+import { setTheme, renderX } from './render'
 export const name: string = 'puzzle'
 export const logger = new Logger(name)
 
@@ -36,6 +37,7 @@ class Pz {
     this.mode = config.mode
     this.players = []
     this.done = false
+    setTheme(config)
     // this.wait = new Date().getSeconds()
     ctx.i18n.define('zh', require('./locales/zh'))
     ctx.model.extend('puzzle', {
@@ -132,15 +134,11 @@ class Pz {
         delete this.globalTasks[this.session.channelId]
         this.done = false
       }
-      return <html>
-        <div style={{
-          width: rec_klotsk.mode * this.game_img_size + 'px',
-          height: rec_klotsk.mode * this.game_img_size + 60 + 'px',
-          background: 'transparent',
-        }}></div>
-        {this.game_img}
-      </html>
+      this.session.send(this.game_info)
+      return this.game_img
     } else {
+      // return this.game_img
+
       if (this.config.maxConcurrency) {
         if (Object.keys(this.globalTasks).length >= this.config.maxConcurrency) {
           return this.session.text('commands.pz.messages.concurrent-jobs')
@@ -149,14 +147,8 @@ class Pz {
           this.globalTasks[this.session.channelId] = new_klotsk
           await this.game()
           this.draw_img()
-          return <html>
-            <div style={{
-              width: new_klotsk.mode * this.game_img_size + 'px',
-              height: new_klotsk.mode * this.game_img_size + 60 + 'px',
-              background: "transparent",
-            }}></div>
-            {this.game_img}
-          </html>
+          this.session.send(this.game_info)
+          return this.game_img
         }
       }
     }
@@ -197,39 +189,14 @@ class Pz {
       this.game_info = this.session.text('commands.pz.messages.info', [op_str, ktk.duration()])
     }
   }
-  draw_img(data: number[][] = this.game_data, type: number = 1) {
+  async draw_img(data: number[][] = this.game_data, type: number = 1) {
     const mode = this.game_data.length
-    if (this.ctx.puppeteer) {
-      const ofs: number = 8
-      const size = this.config.size
-      const res: Element[] = []
-      for (let i = 0; i < data.length; i++) {                          // 生成数组
-        for (let j = 0; j < data.length; j++) {
-          const num: number = data[i][j]
-          var style_str: string = `position: absolute;font-size: ${size / 1.7}px;text-align: center;width: ${size}px;height: ${size}px;left: ${j * size + ofs}px;top: ${i * size + ofs}px;background: ${this.find_color(num,mode)}`
-          res.push(<div style={style_str}>{num}</div>)
-        }
-      }
-      if (type == 1) {
-        res.push(<p style={`position: absolute;text-align: center;font-size: ${size / 3}px;width: ${size * data.length}px;height: ${size / 4}px;left: ${ofs}px;top: ${data.length * size + ofs}px`}>{this.game_info}</p>)
-      }
-
-      this.game_img = res
-    } else {
-      var msg_str = ''
-      for (let i = 0; i < data.length; i++) {                          //未安装ppt时
-        for (let j = 0; j < data.length; j++) {
-          msg_str += data[i][j] + ' '
-        }
-        msg_str += '\n'
-      }
-      msg_str += this.game_info
-      this.game_img = <p>{msg_str}</p>
-    }
+    const img = renderX(data)
+    return this.game_img = h.image(img, 'image/png')
   }
-  find_color(num: number,mode:number) {
-    const y = num%mode
-    const x = Math.floor(num/mode)
+  find_color(num: number, mode: number) {
+    const y = num % mode
+    const x = Math.floor(num / mode)
     return theme[x][y]
 
   }
@@ -262,19 +229,11 @@ class Pz {
       return this.session.text('commands.pz.messages.no-rank', [mode])
     }
     const sorted_arr: Pz.Rankls[] = this.quickSort(rank_arr)
-    const rank_div: any[] = []
+    let rank_div = `${mode}x${mode}排行榜\n`
     for (var itm of sorted_arr) {
-      rank_div.push(<div style="font-size:40px;width:200px;height:50px">{`${itm.uid}:${itm.score}`}</div>)
+      rank_div += `${itm.uid}:${itm.score}\n`
     }
-    rank_div.push(<div style="font-size:20px;width:200px;height:50px">----------------------</div>, <div style="font-size:20px;width:200px;height:50px">{`${mode}x${mode}排行榜`}</div>)
-    return <html>
-      <div style={{
-        width: 600 + 'px',
-        height: (rank_arr.length + 1) * 50 + 30 + 'px',
-        background: "transparent",
-      }}></div>
-      {rank_div}
-    </html>
+    return rank_div
   }
 
 
@@ -305,14 +264,7 @@ class Pz {
       def_koi.push(temp)
     }
     this.draw_img(def_koi, 2)
-    return <html>
-      <div style={{
-        width: def_mode * options.size + 'px',
-        height: def_mode * options.size + 100 + 'px',
-        background: 'transparent',
-      }}></div>
-      {this.game_img}
-    </html>
+    return this.game_img
   }
 
 
@@ -340,6 +292,7 @@ namespace Pz {
   export interface Config {
     mode: number
     size: number
+    colorForSerialNum: string
     maxConcurrency: number
   }
 
@@ -349,6 +302,7 @@ namespace Pz {
       Schema.const(4 as number).description('15p'),
       Schema.const(3 as number).description('8p'),
     ]).default(4 as number).description('默认的游戏模式'),
+    colorForSerialNum: Schema.string().default("#000000FF").description('数字颜色'),
     maxConcurrency: Schema.number().default(50).description('最大存在游戏局数'),
     size: Schema.number().default(50).description('图片大小')
   })
