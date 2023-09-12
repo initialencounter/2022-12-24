@@ -37,7 +37,7 @@ export async function getContributions(ctx: Context, token: string, username: st
     if(data){
       const [year,month,day]: number[] = data.split('-').map((s)=>{return parseInt(s)})
       currentDate.setUTCFullYear(year);
-      currentDate.setUTCMonth(month);
+      currentDate.setUTCMonth(month-1);
       currentDate.setUTCDate(day)
     }
     // 获取 周几
