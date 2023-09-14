@@ -13,7 +13,7 @@ export async function getTileNums(ctx: Context, username: string, date: string) 
   }
   date = (date.split('-').map((i) => {
     if (parseInt(i) < 10) {
-      return "0" + i
+      return "0" + i.replace('0','')
     } else {
       return i
     }
@@ -22,6 +22,7 @@ export async function getTileNums(ctx: Context, username: string, date: string) 
   const reg = new RegExp(`(?<=class="ContributionCalendar-day" data-date="${date}" data-level=".*?"><span class="sr-only">)([\\s\\S]*?)(?=</span></td>)`, 'g')
   // 匹配瓷砖
   const dr = html.match(reg)
+  // console.log(dr)
   if (!dr) {
     return false
   }
@@ -35,7 +36,7 @@ export async function getTileNums(ctx: Context, username: string, date: string) 
 }
 
 
-
+getTileNums(new Context(), 'aimerneige','2023-09-1')
 export async function getContributions(ctx: Context, token: string, username: string, data: string) {
   const headers = {
     'Authorization': `bearer ${token}`,
