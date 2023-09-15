@@ -39,6 +39,7 @@ export interface Gh_tile {
 }
 
 const alertList: Gh_tile[] = []
+let channelIdObj = {}
 export const using = ['database']
 export function apply(ctx: Context, config: Config) {
   ctx.model.extend('github_tile', {
@@ -72,22 +73,38 @@ export function apply(ctx: Context, config: Config) {
       const month = now.getMonth() + 1
       const day = now.getDate()
       const date = `${year}-${month < 10 ? "0" + month : month}-${day < 10 ? "0" + day : day}`
+      channelIdObj = []
       for (var i of alertList) {
-        let { channelId, platform, selfId, guildId } = i.rules
-        let nums: number | boolean
-        if (i?.token) {
-          nums = await getContributions(ctx, i.token, i.username, date)
+        let { channelId, selfId } = i.rules
+        const channelIdList = channelIdDict<string>(`${channelId}-${selfId}`)
+        if ((channelIdList).length < 1) {
+          channelIdObj[`${channelId}-${selfId}`] = [i]
         } else {
-          nums = await getTileNums(ctx, i.username, date)
-        }
-        if (nums === -1) {
-          const bot = ctx.bots[`${platform}:${selfId}`]
-          const img_url = pathToFileURL(resolve(__dirname, "0.jpg")).href
-          bot?.sendMessage(channelId, h.image(img_url) + "" + h.at(i.userId) + new Session(bot).text('commands.tile.messages.tile-alert'), guildId)
-        } else if (!nums) {
-          logger.warn(`${(i.userId)}-${i.username} 瓷砖查询失败, 建议配置 token 或 proxy`)
+          channelIdObj[`${channelId}-${selfId}`].push(i)
         }
       }
+      for (var j of Object.keys(channelIdObj)) {
+        let atList = ''
+        let { channelId, platform, selfId, guildId } = channelIdDict<string>(j)[0].rules
+        for (var k of channelIdDict<string>(j)) {
+          let nums: number | boolean
+          if (k?.token) {
+            nums = await getContributions(ctx, k.token, k.username, date)
+          } else {
+            nums = await getTileNums(ctx, k.username, date)
+          }
+          if (nums === -1) {
+            atList += h.at(k.userId)
+          } else if (!nums) {
+            logger.warn(`${(k.userId)}-${k.username} 瓷砖查询失败, 建议配置 token 或 proxy`)
+          }
+        }
+        const bot = ctx.bots[`${platform}:${selfId}`]
+        const img_url = pathToFileURL(resolve(__dirname, "0.jpg")).href
+        bot?.sendMessage(channelId, h.image(img_url) + "" + atList + new Session(bot).text('commands.tile.messages.tile-alert'), guildId)
+      }
+
+
     })
   })
   ctx.command('tile', "查看群友今天贴了多少瓷砖").alias("瓷砖")
@@ -192,6 +209,23 @@ export function apply(ctx: Context, config: Config) {
       }
     })
 }
+
+function channelIdDict<T>(channelIdselfId: T): Array<{
+  enable: boolean,
+  userId: T,
+  token: T,
+  username: T,
+  rules:
+  {
+    selfId: T,
+    platform: T,
+    guildId: T,
+    channelId: T
+  }
+
+}> {
+  return channelIdObj[`${channelIdselfId}`] ?? []
+}
 /**
  * 添加闹钟，根据 once 选项添加临时闹钟或永久闹钟
  * @param ctx 上下文
@@ -243,14 +277,13 @@ async function add_clock(
       token: token,
       username: username,
       rules:
-        [
-          {
-            selfId: session.bot.selfId,
-            platform: session.platform,
-            guildId: session.guildId,
-            channelId: session.channelId
-          }
-        ]
+      {
+        selfId: session.bot.selfId,
+        platform: session.platform,
+        guildId: session.guildId,
+        channelId: session.channelId
+      }
+
     })
   } else {
     ctx.database.create('github_tile', {
