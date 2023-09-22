@@ -10,5 +10,6 @@
 - 3. generate new token, (classic 版本就可以)
 
 ## 注意事项
-- 1. stile 命令需要启用 shutdown 插件
-- 2. 0.0.1版本添加的瓷砖提醒要将 corn 表达式改成 `小时-分钟` 的格式
+
+- 建议配置github token, 如果无法直接访问GitHub
+- 可以在插件的模块目录下将0.jpg更换为你喜欢的图片

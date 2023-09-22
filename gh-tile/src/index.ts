@@ -323,7 +323,7 @@ async function add_clock(
  */
 async function clock_switch(ctx: Context, session: Session) {
   const target = await ctx.database.get(TABLE_NAME, { userId: session.userId })
-  if (target.length < 1) {
+  if (target.length === 0) {
     return session.text('commands.tile.messages.no-such-user')
   }
   if (target?.[0].enable) {
@@ -333,7 +333,7 @@ async function clock_switch(ctx: Context, session: Session) {
   }
   await ctx.database.set(TABLE_NAME, { userId: session.userId }, { enable: target[0].enable ? false : true })
 
-  return session.text('commands.tile.messages.no-such-user', [target?.[0].username, target[0].enable ? "关闭" : "开启"])
+  return session.text('commands.tile.messages.tile-switch', [target?.[0].username, target[0].enable ? "关闭" : "开启"])
 
 }
 
