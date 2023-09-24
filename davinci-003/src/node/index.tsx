@@ -30,9 +30,7 @@ class Dvc extends Service {
   retry: Dict;
   maxRetryTimes: number;
   constructor(ctx: Context, private config: Dvc.Config) {
-    const using = ['puppeteer', 'vits', 'sst', 'censor'];
     super(ctx, 'dvc', true)
-    this.l6k = config.l6k
     this.output_type = this.config.output
     this.type = this.config.type
     this.key_number = 0
@@ -40,10 +38,17 @@ class Dvc extends Service {
     this.sessions = {};
     this.retry = {}
     this.maxRetryTimes = config.maxRetryTimes
-    if ((!ctx.puppeteer) && this.config.output == 'image') {
-      logger.warn('未启用puppter,将无法发送图片');
-    }
     ctx.i18n.define('zh', require('./locales/zh'));
+
+    ctx.on('ready',()=>{
+      if ((!ctx.puppeteer) && this.config.output == 'image') {
+        logger.warn('未启用puppter,将无法发送图片');
+      }
+      if ((!ctx.vits)&& this.config.output == "voice") {
+        logger.warn('未启用puppter,将无法输出语音');
+      }
+    })
+
     ctx.on('send', (session) => {
       if (this.config.recall_all) {
         this.recall(session, session.messageId, this.config.recall_all_time)
@@ -77,10 +82,8 @@ class Dvc extends Service {
     //主要逻辑
     ctx.command('dvc <text:text>', { authority: this.config.authority, })
       .option('output', '-o <output:string>')
-      .option('l6k', '-l', { fallback: config.l6k })
       .alias(...this.config.alias)
       .action(async ({ session, options }) => {
-        this.l6k = options.l6k
         if (this.block(session as Session)) {
           return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
         }
@@ -423,7 +426,7 @@ class Dvc extends Service {
         response.data.on('end', () => {
           let session_of_id = this.get_chat_session(session.userId)
           session_of_id.push({ "role": "assistant", "content": contents });
-          while (JSON.stringify(session_of_id).length > (this.l6k ? 10000 : (this.type == 'gpt4' ? 10000 : 3000))) {
+          while (JSON.stringify(session_of_id).length > 10000) {
             session_of_id.splice(1, 1);
             if (session_of_id.length <= 1) {
               break;
@@ -484,7 +487,7 @@ class Dvc extends Service {
             'Content-Type': 'application/json'
           },
           data: {
-            model: `gpt-3.5-turbo-${this.l6k ? '16k' : '0613'}`,
+            model: "gpt-3.5-turbo-16k",
             temperature: this.config.temperature,
             top_p: 1,
             frequency_penalty: 0,
@@ -556,7 +559,7 @@ class Dvc extends Service {
         },
         responseType: 'stream',
         data: {
-          model: `gpt-3.5-turbo-${this.l6k ? '16k' : '0613'}`,
+          model: "gpt-3.5-turbo-16k",
           temperature: this.config.temperature,
           top_p: 1,
           frequency_penalty: 0,
@@ -583,7 +586,7 @@ class Dvc extends Service {
           response.data.on('end', () => {
             let session_of_id = this.get_chat_session(session.userId)
             session_of_id.push({ "role": "assistant", "content": contents });
-            while (JSON.stringify(session_of_id).length > (this.l6k ? 10000 : (this.type == 'gpt4' ? 10000 : 3000))) {
+            while (JSON.stringify(session_of_id).length > 10000) {
               session_of_id.splice(1, 1);
               if (session_of_id.length <= 1) {
                 break;
@@ -654,7 +657,7 @@ class Dvc extends Service {
     }
     // 记录上下文
     session_of_id.push({ "role": "assistant", "content": message });
-    while (JSON.stringify(session_of_id).length > (this.l6k ? 10000 : (this.type == 'gpt4' ? 10000 : 3000))) {
+    while (JSON.stringify(session_of_id).length > 10000) {
       session_of_id.splice(1, 1);
       if (session_of_id.length <= 1) {
         break;
@@ -1111,7 +1114,6 @@ namespace Dvc {
     type: string
     key: string[]
 
-    l6k: boolean
     preset_pro: boolean
     single_session: boolean
     waiting: boolean
@@ -1166,7 +1168,6 @@ namespace Dvc {
     }).description('基础设置'),
 
     Schema.object({
-      l6k: Schema.boolean().default(true).description('启用16k'),
       preset_pro: Schema.boolean().default(false).description('所有人共用一个人设'),
       single_session: Schema.boolean().default(false).description('所有人共用一个会话'),
       whisper: Schema.boolean().default(false).description('语音输入功能,需要加载sst服务,启用插件tc-sst即可实现'),

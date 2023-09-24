@@ -3,7 +3,6 @@
 [![npm](https://img.shields.io/npm/v/koishi-plugin-davinci-003?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-davinci-003)
 
 
-![alt 示例](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/dvc.png)
 # 注意事项
 
 > 使用前在 <a style="color:blue" href="https://beta.openai.com/account/api-keys">beta.openai.com</a> 中获取api-key<br>
