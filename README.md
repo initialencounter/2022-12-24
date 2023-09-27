@@ -38,17 +38,13 @@
 | [Couplet](https://www.npmjs.com/package/koishi-plugin-couplet) | [对对联](https://github.com/initialencounter/mykoishi/tree/master/couplet) |
 
 
-## -
-![AI](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/AI.png)
-
-
 ## 游戏
 | NPM | REPO |
 | --- | --- |
 | [Puzzle](https://www.npmjs.com/package/koishi-plugin-puzzle) | [数字华容道](https://github.com/initialencounter/mykoishi/tree/master/puzzle) |
 | [Cube](https://www.npmjs.com/package/koishi-plugin-cube) | [魔方](https://github.com/initialencounter/mykoishi/tree/master/cube) |
-## -
-![game](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/game.png)
+| [minesweeper-ending](https://www.npmjs.com/package/koishi-plugin-minesweeper-ending) | [数字华容道](https://github.com/initialencounter/koishi-plugin-minesweeper-ending) |
+
 ## 语音服务
 | NPM | REPO |
 | --- | --- |
@@ -60,8 +56,7 @@
 | [Open-Vits](https://www.npmjs.com/package/koishi-plugin-open-vits) | [Vits语音合成](https://github.com/initialencounter/mykoishi/tree/master/open-vits) |
 | [Vits](https://www.npmjs.com/package/@initencounter/vits) | [语音识别服务](https://github.com/initialencounter/mykoishi/tree/master/vits) |
 | [tts](https://www.npmjs.com/package/@initencounter/sst) | [语音合成服务](https://github.com/initialencounter/mykoishi/tree/master/sst) |
-## -
-![voice](https://raw.githubusercontent.com/initialencounter/mykoishi/master/screenshot/voice.png)
+
 ## 资讯
 | NPM | REPO |
 | --- | --- |
@@ -69,6 +64,8 @@
 | [Steam-Trading](https://www.npmjs.com/package/koishi-plugin-steam-trading) | [Steam挂刀](https://github.com/initialencounter/mykoishi/tree/master/steam-trading) |
 | [MQTT](https://www.npmjs.com/package/koishi-plugin-mqtt) | [MQTT订阅推送](https://github.com/initialencounter/mykoishi/tree/master/mqtt) |
 | [Furbot](https://www.npmjs.com/package/koishi-plugin-furbot) | [兽云祭接口](https://github.com/initialencounter/mykoishi/tree/master/furbot) |
+| [Gh-tile](https://www.npmjs.com/package/koishi-plugin-gh-tile) | [GitHub 瓷砖提醒](https://github.com/initialencounter/mykoishi/tree/master/gh-tile) |
+
 
 ## 工具
 
@@ -76,6 +73,7 @@
 | --- | --- |
 | [Blacklist](https://www.npmjs.com/package/koishi-plugin-blacklist) | [黑名单](https://github.com/initialencounter/mykoishi/tree/master/blacklist) |
 | [Loader](https://www.npmjs.com/package/koishi-plugin-loader) | [升级所有插件](https://github.com/initialencounter/mykoishi/tree/master/loader) |
+| [specialtile](https://www.npmjs.com/package/koishi-plugin-speciltile) | [特殊的瓷砖](https://github.com/initialencounter/mykoishi/tree/master/specialtile) |
 
 
 <!-- LICENSE -->
