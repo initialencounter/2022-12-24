@@ -114,7 +114,7 @@ class Dvc extends Service {
     //设置人格
     ctx.command('dvc.添加人格 <prompt:text>', '更改AI的人格,并重置会话', {
       authority: 1
-    }).alias('设置人格', '添加人格').action(({ session }, prompt) => {
+    }).action(({ session }, prompt) => {
       if (this.block(session as Session)) {
         session.send("添加人格失败？看这里！\n https://forum.koishi.xyz/t/topic/2349/4")
         return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
@@ -125,7 +125,7 @@ class Dvc extends Service {
     //设置人格
     ctx.command('dvc.删除人格 <prompt:text>', '删除AI的人格,并重置会话', {
       authority: 1
-    }).alias('删除人格').action(({ session }, prompt) => {
+    }).action(({ session }, prompt) => {
       if (this.block(session as Session)) {
         return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
       } return this.rm_personality(session as Session, prompt)
@@ -175,7 +175,7 @@ class Dvc extends Service {
     })
       .option('resolution', '-r <resolution:string>')
       .option('img_number', '-n <img_number:number>')
-      .alias('生图').action(async ({
+      .action(async ({
         session,
         options
       },
@@ -191,7 +191,7 @@ class Dvc extends Service {
         )
       })
     ctx.command('dvc.翻译 <prompt:text>', 'AI翻译')
-      .alias('翻译').option('lang', '-l <lang:t=string>', { fallback: this.config.lang })
+      .option('lang', '-l <lang:t=string>', { fallback: this.config.lang })
       .action(async ({ session, options }, prompt) => {
         if (this.block(session as Session)) {
           return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
@@ -199,7 +199,7 @@ class Dvc extends Service {
         return await this.translate(session as Session, options.lang, prompt)
       })
     ctx.command('dvc.update', '一键加载400条极品预设')
-      .alias('更新预设')
+      .alias('dvc.更新预设')
       .action(async ({ session, options }) => {
         let prompts_latest = (await ctx.http.axios({
           method: 'GET',
