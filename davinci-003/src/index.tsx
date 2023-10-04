@@ -13,7 +13,7 @@ const logger = new Logger(name);
 declare module '@koishijs/plugin-console' {
   interface Events {
     'davinci-003/getproxy'(): string
-    'davinci-003/getcredit'(key:string):Promise<number>
+    'davinci-003/getcredit'(key: string): Promise<number>
   }
 }
 
@@ -236,11 +236,11 @@ class Dvc extends Service {
       return this.config.proxy_reverse4
 
     })
-    ctx.console.addListener('davinci-003/getcredit', async (key?:string) => {
-      if(!key){
+    ctx.console.addListener('davinci-003/getcredit', async (key?: string) => {
+      if (!key) {
         key = this.key[this.key_number]
       }
-      return  await this.get_credit2(key??this.key[this.key_number])
+      return await this.get_credit2(key ?? this.key[this.key_number])
     })
   }
 
@@ -865,6 +865,9 @@ class Dvc extends Service {
    */
 
   async get_credit(): Promise<number> {
+    if ((this.config.type.startsWith('gpt4') ? this.config.proxy_reverse4 : this.config.proxy_reverse).indexOf('anywhere') > -1) {
+      return this.get_credit_peiqi(this.key[this.key_number])
+    }
     try {
       const url: string = trimSlash(`${this.config.proxy_reverse ? this.config.proxy_reverse : "https://api.openai.com"}/v1/dashboard/billing/subscription`)
       const res = await this.ctx.http.get(url, {
@@ -882,10 +885,28 @@ class Dvc extends Service {
       return 0
     }
   }
-
-  async get_credit2(key:string): Promise<number> {
+  async get_credit_peiqi(key: string): Promise<number> {
     try {
-      const url: string = trimSlash(`${(this.config.type.startsWith('gpt4')?this.config.proxy_reverse4:this.config.proxy_reverse) ?? "https://api.openai.com"}/v1/dashboard/billing/subscription`)
+      const url = 'https://api.chatanywhere.org/v1/query/balance'
+      const res = await this.ctx.http.axios({
+        url: url,
+        method: 'post',
+        headers: { "Authorization": key, 'Content-Type': 'application/json' }
+      })
+      const credit = res['data']['balanceTotal'] - res['data']['balanceUsed']
+      return credit
+    } catch (e) {
+      return -1
+    }
+  }
+  async get_credit2(key: string): Promise<number> {
+    if ((this.config.type.startsWith('gpt4') ? this.config.proxy_reverse4 : this.config.proxy_reverse).indexOf('anywhere') > -1) {
+      return this.get_credit_peiqi(key)
+    }
+    try {
+
+      const url: string = trimSlash(`${(this.config.type.startsWith('gpt4') ? this.config.proxy_reverse4 : this.config.proxy_reverse) ?? "https://api.openai.com"}/v1/dashboard/billing/subscription`)
+
       const res = await this.ctx.http.get(url, {
         headers: {
           "Authorization": "Bearer " + key
