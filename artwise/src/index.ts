@@ -19,7 +19,7 @@ const BASEURL: string = 'https://api.zhishuyun.com'
 class Zsy {
   constructor(private ctx: Context, private config: Zsy.Config) {
     ctx.i18n.define('zh', require('./locales/zh'))
-    ctx.command('mj', 'Midjourney Imagine API').action(async ({ session }, prompt) => this.midjourney(session, prompt))
+    ctx.command('mj', 'Midjourney Imagine API').action(async ({ session }, prompt) => this.midjourney(session, session.content.slice(3,)))
     ctx.command('mai', 'ChatGPT 4 API').action(async ({ session }, prompt) => this.chatgpt4(session, prompt))
     ctx.command('wai', 'ChatGPT 3.5 API').action(async ({ session }, prompt) => this.chatgpt3(session, prompt))
     // ctx.command('uai', '网页详情内容解析').action(async ({ session }, prompt) => this.article(session, prompt))
