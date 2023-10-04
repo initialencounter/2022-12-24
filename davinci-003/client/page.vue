@@ -1,17 +1,19 @@
-<template v-if="show">
-  <h1 class="davinci-003-title">插件文档：</h1>
-  <details>
-    <iframe src="https://initialencounter.github.io/docu/docs/KoishiPlugins/AI/davinci-003" width="800px"
-      height="600px"></iframe>
-  </details>
-  <h1 class="davinci-003-title">查询 ChatGPTAPI 余额</h1>
-  <p v-if="failed === 'true'" style="color:red" class="davinci-003-credit">{{ credit_text }}</p>
-  <p v-if="failed === 'false'" style="color:green" class="davinci-003-credit">{{ credit_text }}</p>
-  <p> </p>
-  <input placeholder="请输入以sk-开头的key..." placeholder-style="color:red;font-size:28rpx" class="davinci-003-input"
-    v-model="input_text">
-  <p> </p>
-  <k-button class="davinci-003-serch" @click="get_credit">查询</k-button>
+<template>
+  <template v-if="show">
+    <h1 class="davinci-003-title">插件文档：</h1>
+    <details>
+      <iframe src="https://initialencounter.github.io/docu/docs/KoishiPlugins/AI/davinci-003" width="800px"
+        height="600px"></iframe>
+    </details>
+    <h1 class="davinci-003-title">查询 ChatGPTAPI 余额</h1>
+    <p v-if="failed === 'true'" style="color:red" class="davinci-003-credit">{{ credit_text }}</p>
+    <p v-if="failed === 'false'" style="color:green" class="davinci-003-credit">{{ credit_text }}</p>
+    <p> </p>
+    <input placeholder="请输入以sk-开头的key..." placeholder-style="color:red;font-size:28rpx" class="davinci-003-input"
+      v-model="input_text">
+    <p> </p>
+    <k-button class="davinci-003-serch" @click="get_credit">查询</k-button>
+  </template>
 </template>
 
 <script lang="ts" setup>
@@ -26,9 +28,11 @@ const input_text = ref<string>();
 const credit_text = ref<string>();
 const proxy = ref<string>();
 const failed = ref<string>();
-input_text.value = ''
-credit_text.value = ""
-proxy.value = ""
+const show = ref<boolean>();
+input_text.value = '';
+credit_text.value = "";
+proxy.value = "";
+show.value = false;
 
 declare module '@koishijs/plugin-console' {
   interface Events {
@@ -37,11 +41,8 @@ declare module '@koishijs/plugin-console' {
   }
 }
 
-defineProps<{
-  show: boolean
-}>()
 
-const show = (() => {
+show.value = (() => {
   // 判断插件配置页面的逻辑
   const pageUrl = window.location.href
   if (pageUrl.indexOf('davinci-003') === -1) return false
@@ -82,7 +83,7 @@ send('davinci-003/getcredit', '').then((res) => {
   padding: 0 0 0 0;
 }
 
-input::-webkit-input-placeholder {
+.davinci-003-input::-webkit-input-placeholder {
   /* placeholder颜色 */
   color: #555555;
   /* placeholder字体大小 */
