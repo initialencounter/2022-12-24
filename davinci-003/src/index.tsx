@@ -1,14 +1,21 @@
 import { Context, Logger, segment, Element, Session, Service, Dict, h, Next, Fragment, Schema, trimSlash } from 'koishi';
-import fs from 'fs';
+import fs, { readFileSync } from 'fs';
 import { } from '@koishijs/plugin-rate-limit';
 import { } from 'koishi-plugin-puppeteer';
 import { } from '@initencounter/vits'
 import { } from '@initencounter/sst'
 import { } from '@koishijs/censor'
-export const using = ['puppeteer', 'vits', 'sst', 'censor']
+import { DataService } from '@koishijs/plugin-console'
+import { resolve } from 'path';
 const name = 'davinci-003';
 const logger = new Logger(name);
 
+declare module '@koishijs/plugin-console' {
+  interface Events {
+    'davinci-003/getproxy'(): string
+    'davinci-003/getcredit'(key:string):Promise<number>
+  }
+}
 
 declare module 'koishi' {
   interface Context {
@@ -17,6 +24,7 @@ declare module 'koishi' {
 }
 
 class Dvc extends Service {
+  static using = ['console']
   output_type: string;
   session_config: Dvc.Msg[];
   sessions: Dict;
@@ -40,13 +48,19 @@ class Dvc extends Service {
     this.maxRetryTimes = config.maxRetryTimes
     ctx.i18n.define('zh', require('./locales/zh'));
 
-    ctx.on('ready',()=>{
+    ctx.on('ready', () => {
       if ((!ctx.puppeteer) && this.config.output == 'image') {
         logger.warn('未启用puppter,将无法发送图片');
       }
-      if ((!ctx.vits)&& this.config.output == "voice") {
+      if ((!ctx.vits) && this.config.output == "voice") {
         logger.warn('未启用puppter,将无法输出语音');
       }
+    })
+    ctx.using(['console'], (ctx) => {
+      ctx.console.addEntry({
+        dev: resolve(__dirname, '../client/index.ts'),
+        prod: resolve(__dirname, '../dist'),
+      })
     })
 
     ctx.on('send', (session) => {
@@ -67,7 +81,7 @@ class Dvc extends Service {
         return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
       }
       session.send(h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.get'))
-      const credit = await this.get_credit(session as Session)
+      const credit = await this.get_credit()
       return session.text('commands.dvc.messages.total_available', [credit])
     });
 
@@ -214,9 +228,21 @@ class Dvc extends Service {
         fs.writeFileSync('./personality.json', JSON.stringify(this.personality));
         return session.execute('切换人格');
       })
+    ctx.console.addListener('davinci-003/getproxy', () => {
+
+      if (this.config.type == 'gpt3.5') {
+        return this.config.proxy_reverse
+      }
+      return this.config.proxy_reverse4
+
+    })
+    ctx.console.addListener('davinci-003/getcredit', async (key?:string) => {
+      if(!key){
+        key = this.key[this.key_number]
+      }
+      return  await this.get_credit2(key??this.key[this.key_number])
+    })
   }
-
-
 
 
   /**
@@ -487,7 +513,7 @@ class Dvc extends Service {
             'Content-Type': 'application/json'
           },
           data: {
-            model: "gpt-3.5-turbo-16k",
+            model: "gpt-3.5-turbo",
             temperature: this.config.temperature,
             top_p: 1,
             frequency_penalty: 0,
@@ -514,7 +540,7 @@ class Dvc extends Service {
    */
 
   async switch_key(session: Session, e: Error) {
-    const credit = await this.get_credit(session)
+    const credit = await this.get_credit()
     logger.info(`key${this.key_number - 1}. ${this.key[this.key_number]} 报错，余额${credit}：${String(e)}`)
     if (credit == 0) {
       this.key.splice(this.key_number, 1)
@@ -559,7 +585,7 @@ class Dvc extends Service {
         },
         responseType: 'stream',
         data: {
-          model: "gpt-3.5-turbo-16k",
+          model: "gpt-3.5-turbo",
           temperature: this.config.temperature,
           top_p: 1,
           frequency_penalty: 0,
@@ -838,7 +864,7 @@ class Dvc extends Service {
    * @returns apikey剩余额度
    */
 
-  async get_credit(session: Session): Promise<number> {
+  async get_credit(): Promise<number> {
     try {
       const url: string = trimSlash(`${this.config.proxy_reverse ? this.config.proxy_reverse : "https://api.openai.com"}/v1/dashboard/billing/subscription`)
       const res = await this.ctx.http.get(url, {
@@ -847,13 +873,28 @@ class Dvc extends Service {
         },
         timeout: 600000
       })
-      return res["soft_limit_usd"]
+      return res["hard_limit_usd"]
     }
     catch (e) {
-      if(String(e).includes('405') || String(e).includes('429')){
+      if (String(e).includes('405') || String(e).includes('429')) {
         return 0.000000001
       }
       return 0
+    }
+  }
+
+  async get_credit2(key:string): Promise<number> {
+    try {
+      const url: string = trimSlash(`${(this.config.type.startsWith('gpt4')?this.config.proxy_reverse4:this.config.proxy_reverse) ?? "https://api.openai.com"}/v1/dashboard/billing/subscription`)
+      const res = await this.ctx.http.get(url, {
+        headers: {
+          "Authorization": "Bearer " + key
+        },
+      })
+      return res["hard_limit_usd"]
+    }
+    catch (e) {
+      return -1
     }
   }
   /**
@@ -1047,48 +1088,6 @@ class Dvc extends Service {
 }
 
 namespace Dvc {
-  export const usage = `
-> 使用前在 <a style="color:blue" href="https://beta.openai.com/account/api-keys">beta.openai.com</a> 中获取api-key<br>
-语音输入只适配了QQ平台，其他平台兼容性未知<br>
-如需使用内容审查,请前往<a style="color:blue" href="https://ai.baidu.com/solution/censoring?hmsr=aibanner&hmpl=censoring">百度智能云</a> 获取AK和SK</br>
-对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-davinci-003 概不负责。<br>
-如果有更多文本内容想要修改，可以在<a style="color:blue" href="/locales">本地化</a>中修改 zh 内容<br>
-## 使用方法
-
-| 功能 | 指令 |
-|  ----  | ----  |
-| 重置会话 | dvc.重置会话 |
-| 添加人格 | dvc.添加人格 |
-| 清空所有回话 | dvc.clear |
-| 切换人格 | dvc.切换人格 |
-| 查询余额 | dvc.credit |
-| 切换输出模式 | dvc.output |
-
-- dvc \<prompt\>
-  - -o 输出方式
-  - -l 启用16k 
-
-## 设置多个 key 的方法
-1. 直接修改
-2. 在配置文件修改
-  打开koishi.yml (可以使用 explorer 插件)
-  修改配置项
-  \`\`\`
-  davinci-003:3seyqr:
-    key:
-      - sk-kashdkahsjdhkashkd
-      - sk-ItGRonJPTa6sp9QYhN
-      - sk-sgadtiasyn2ouoi1n 
-  \`\`\`
-
-## 添加人格的方法
-* 在聊天中发送“dvc.添加人格”可以添加并自动保存人格
-* [添加人格教程](https://forum.koishi.xyz/t/topic/2349/4)
-
-## 问题反馈
-* QQ群：399899914<br>
-* 小伙伴如果遇到问题或者有新的想法，欢迎到[这里](https://github.com/initialencounter/mykoishi/issues)反馈哦~
-`
   export interface Personality {
     nick_name: string
     descirption: string

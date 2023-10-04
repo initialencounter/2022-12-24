@@ -1,13 +1,8 @@
 # koishi-plugin-davinci-003
 
-[![npm](https://img.shields.io/npm/v/koishi-plugin-davinci-003?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-davinci-003)
-
-
-# 注意事项
-
 > 使用前在 <a style="color:blue" href="https://beta.openai.com/account/api-keys">beta.openai.com</a> 中获取api-key<br>
-如果需要语音输入，密钥可前往官网控制台 <a style="color:blue" href="https://console.cloud.tencent.com/cam/capi">腾讯云</a> 进行获取
-如需使用内容审查,请前往<a style="color:blue" href="https://ai.baidu.com/solution/censoring?hmsr=aibanner&hmpl=censoring">百度智能云</a> 获取AK和SK</br>
+或者前往<a style="color:blue" href="https://peiqi.shop/">chatgptanywhere.com</a> 中获取api-key<br>
+如果 api-key 来源是 chatanywhere.com ,需将反代地址修改为https://api.chatanywhere.com.cn<br>
 对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-davinci-003 概不负责。<br>
 如果有更多文本内容想要修改，可以在<a style="color:blue" href="/locales">本地化</a>中修改 zh 内容</br>
 # 使用方法
@@ -23,8 +18,7 @@
 
 - dvc \<prompt\>
   - -o 输出方式
-  - -l 启用16k 
-      
+
 ## 设置多个 key 的方法
 1. 直接修改
 2. 在配置文件修改
@@ -49,6 +43,8 @@ QQ群：399899914<br>
 
 
 # 更新日志
+- v6.3.0
+    新增控制台查询余额，修复16k
 - v6.2.0
     - 新增 k-on 独立入口
 - v6.1.1
