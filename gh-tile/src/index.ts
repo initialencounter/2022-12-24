@@ -101,7 +101,7 @@ export function apply(ctx: Context, config: Config) {
         }
         const bot = ctx.bots[`${platform}:${selfId}`]
         const img_url = pathToFileURL(resolve(__dirname, "0.jpg")).href
-        bot?.sendMessage(channelId, h.image(img_url) + "" + atList + new Session(bot).text('commands.tile.messages.tile-alert'), guildId)
+        bot?.sendMessage(channelId, h.image(img_url) + "" + atList + new Session(bot,{}).text('commands.tile.messages.tile-alert'), guildId)
       }
 
 

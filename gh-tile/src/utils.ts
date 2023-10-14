@@ -6,7 +6,7 @@ const logger = new Logger("gh-tile")
 export async function getTileNums(ctx: Context, username: string, date: string) {
   let html: string
   try {
-    html = await ctx.http.get(`https://github.com/${username}`)
+    html = await ctx.http.get(`https://initencunter-node-server.hf.space/?url=https://github.com/${username}&method=get`)
     // fs.writeFileSync('text.html',html)
   } catch (e) {
     return false
@@ -19,7 +19,7 @@ export async function getTileNums(ctx: Context, username: string, date: string) 
     }
   })).join('-')
   // 构建正则表达式
-  const reg = new RegExp(`(?<=class="ContributionCalendar-day" data-date="${date}" data-level=".*?"><span class="sr-only">)([\\s\\S]*?)(?=</span></td>)`, 'g')
+  const reg = new RegExp(`(?<=class="ContributionCalendar-day".*?data-date="${date}" data-level=".*?"><span class="sr-only">)([\\s\\S]*?)(?=</span></td>)`, 'g')
   // 匹配瓷砖
   const dr = html.match(reg)
   // console.log(dr)
@@ -36,7 +36,6 @@ export async function getTileNums(ctx: Context, username: string, date: string) 
 }
 
 
-getTileNums(new Context(), 'aimerneige','2023-09-1')
 export async function getContributions(ctx: Context, token: string, username: string, data: string) {
   const headers = {
     'Authorization': `bearer ${token}`,
