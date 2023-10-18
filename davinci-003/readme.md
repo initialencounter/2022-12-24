@@ -43,6 +43,8 @@ QQ群：399899914<br>
 
 
 # 更新日志
+- v6.3.4
+    修复 undefined key
 - v6.3.2
     修复chatgptanywhere查询余额bug
 - v6.3.1

@@ -464,7 +464,7 @@ class Dvc extends Service {
         })
         this.retry[this.key[this.key_number]] = 0
       }).catch(async (e) => {
-        if (!(await this.switch_key(session, e))) {
+        if (!(await this.switch_key(e))) {
           return ''
         }
         return await this.chat_with_gpt4_stream(session, message)
@@ -489,7 +489,7 @@ class Dvc extends Service {
       return response.data.choices[0].message.content
     }
     catch (e) {
-      if (!(await this.switch_key(session, e))) {
+      if (!(await this.switch_key(e))) {
         return ''
       }
       return await this.chat_with_gpt4(session, message)
@@ -526,7 +526,7 @@ class Dvc extends Service {
       return response.data.choices[0].message.content
     }
     catch (e) {
-      if (!(await this.switch_key(session, e))) {
+      if (!(await this.switch_key(e))) {
         return ''
       }
       return await this.chat_with_gpt(session, message)
@@ -539,16 +539,11 @@ class Dvc extends Service {
    * @param e Error
    */
 
-  async switch_key(session: Session, e: Error) {
-    const credit = await this.get_credit()
-    logger.info(`key${this.key_number - 1}. ${this.key[this.key_number]} 报错，余额${credit}：${String(e)}`)
-    if (credit == 0) {
-      this.key.splice(this.key_number, 1)
-    } else {
-      this.key_number++
-    }
+  async switch_key(e: Error) {
+    // 记录重试次数
     if (this.retry[this.key[this.key_number]]) {
       this.retry[this.key[this.key_number]] = this.retry[this.key[this.key_number]] + 1
+      // 如果重试次数超出最大，删除key
       if (this.retry[this.key[this.key_number]] > this.maxRetryTimes) {
         this.key.splice(this.key_number, 1)
         return false
@@ -556,16 +551,42 @@ class Dvc extends Service {
     } else {
       this.retry[this.key[this.key_number]] = 1
     }
-    if (this.key_number > this?.key?.length) {
-      this.key_number = 0
+    // 查询余额
+    const credit = await this.get_credit()
+    logger.info(`key${this.key_number - 1}. ${this.key[this.key_number]} 报错，余额${credit}：${String(e)}`)
+    // 余额为 0 ,删除key
+    if (credit === 0) {
+      this.key.splice(this.key_number, 1)
+    } else {
+      // 切换 key
+      this.key_number++
+      // 如果 key 的下标超出边界
+      if (this.key_number > (this?.key?.length - 1)) {
+        this.retry = {}
+        this.key_number = 0
+        return true
+      }
     }
+    // 如果读取不到key，重置key
+    if (this.key[this.key_number] == undefined) {
+      this.resetKey()
+      logger.error("未配置key或所有key都已失效")
+      return false
+    }
+
+    // 如果 key 缓存池为空, 重置key
     if (this.key.length == 0) {
+      this.resetKey()
       return false
     } else {
       return true
     }
   }
-
+  async resetKey() {
+    this.retry = {}
+    this.key_number = 0
+    this.key = this.config.key
+  }
   /**
    * 
    * @param message 发送给chatgpt的json列表
@@ -624,7 +645,7 @@ class Dvc extends Service {
           })
         this.retry[this.key[this.key_number]] = 0
       }).catch(async (e) => {
-        if (!(await this.switch_key(session, e))) {
+        if (!(await this.switch_key(e))) {
           return ''
         }
         return await this.chat_with_gpt_stream(session, message)
@@ -879,10 +900,10 @@ class Dvc extends Service {
       return res["hard_limit_usd"]
     }
     catch (e) {
-      if (String(e).includes('405') || String(e).includes('429')) {
-        return 0.000000001
+      if (String(e).includes('401')) {
+        return 0
       }
-      return 0
+      return -1
     }
   }
   async get_credit_peiqi(key: string): Promise<number> {
@@ -1101,7 +1122,7 @@ class Dvc extends Service {
    */
 
   clear(session: Session): string {
-
+    this.resetKey()
     this.sessions = {}
     return session.text('commands.dvc.messages.clean')
   }
