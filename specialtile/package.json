@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-specialtile",
   "description": "加群后自动设置头衔",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -30,6 +30,7 @@
   ],
   "peerDependencies": {
     "koishi": "^4.11.9",
-    "@koishijs/plugin-adapter-onebot": "^5.7.3"
+    "@koishijs/plugin-adapter-onebot": "^6.0.2"
+
   }
 }
