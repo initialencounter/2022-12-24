@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-facercg",
   "description": "颜值评分,可[自建后端](https://github.com/initialencounter/beauty-predict-server)",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
