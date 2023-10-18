@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "xpath": "^0.0.32",
-    "xmldom": "^0.7.0",
+    "xmldom": "^0.6.0",
     "iconv-lite": "^0.6.3"
   }
 }
