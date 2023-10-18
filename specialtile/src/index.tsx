@@ -135,28 +135,28 @@ class Special {
       if (session.platform !== 'onebot') {
         return
       }
-      session?.onebot.setGroupAdmin(session.guildId, args[0], true)
+      session.bot.internal?.setGroupAdmin(session.guildId, args[0], true)
       return "嗯！已经设置了"
     })
     ctx.command('取消管理 [nickname:string]', '通过QQ号取消管理员', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
       if (session.platform !== 'onebot') {
         return
       }
-      session?.onebot.setGroupAdmin(session.guildId, args[0], false)
+      session.bot.internal?.setGroupAdmin(session.guildId, args[0], false)
       return "嗯！已经取消了"
     })
     ctx.command('修改昵称 [uid:string] [nickname:string]', '修改群友昵称', { checkArgCount: true, authority: 1 }).action(async ({ session }, ...args) => {
       if (session.platform !== 'onebot') {
         return
       }
-      session?.onebot.setGroupCard(session.guildId, args[0], args[1])
+      session.bot.internal?.setGroupCard(session.guildId, args[0], args[1])
       return "嗯！已经修改了"
     })
     ctx.command('修改头衔 [uid:string] [nickname:string]', '修改群友头衔', { checkArgCount: true, authority: 1 }).action(async ({ session }, ...args) => {
       if (session.platform !== 'onebot') {
         return
       }
-      session?.onebot.setGroupSpecialTitle(session.guildId, args[0], args[1])
+      session.bot.internal?.setGroupSpecialTitle(session.guildId, args[0], args[1])
       return "嗯！已经修改了"
     })
     ctx.command('口球大礼包').action(async ({ session }) => {
@@ -165,7 +165,7 @@ class Special {
       }
       const dt = Math.floor((Math.random() * 300))
       await this.add_score(session.channelId, session.userId, dt)
-      session?.onebot.setGroupBan(session.channelId, session.userId, dt)
+      session.bot.internal?.setGroupBan(session.channelId, session.userId, dt)
       return "嗯！"
     })
     ctx.command('封神榜', '谁才是本群的运气王').action(async ({ session }) => {
@@ -182,7 +182,7 @@ class Special {
       for (var i in sorted_arr) {
         var itm: Ban_rank = sorted_arr[i]
         try{
-        const info = await session?.onebot.getGroupMemberInfo(session.guildId, itm.uid)
+        const info = await session.bot.internal?.getGroupMemberInfo(session.guildId, itm.uid)
         rank_div.push(<div style="font-size:10px;width:200px;height:20px">{`${(info.nickname || info.user_id)}:${itm.score}`}</div>)
         }catch(e){
           logger.info(session.guild+itm.uid+"查无此人")
@@ -211,7 +211,7 @@ class Special {
       for (var i of target) {
         const dt = Math.floor((Math.random() * 60))
         await this.add_score(session.channelId, i, dt)
-        session?.onebot.setGroupBan(session.channelId, i, dt)
+        session.bot.internal?.setGroupBan(session.channelId, i, dt)
       }
       return next()
 
@@ -230,7 +230,7 @@ class Special {
       for (var i of target) {
         await this.add_score(session.channelId, i, 0 - (this.map[i + session.channelId] ? this.map[i + session.channelId] : 0))
         this.map[i + session.channelId] = 0
-        session?.onebot.setGroupBan(session.channelId, i, 0)
+        session.bot.internal?.setGroupBan(session.channelId, i, 0)
       }
       return next()
     })
@@ -243,14 +243,14 @@ class Special {
       if (authority == 0) {
         const dt = Math.floor((Math.random() * 60))
         await this.add_score(session.channelId, session.userId, dt)
-        session?.onebot.setGroupBan(session.channelId, session.userId, dt)
+        session.bot.internal?.setGroupBan(session.channelId, session.userId, dt)
       }
       return next()
     })
     ctx.on('guild-member-added', async (session) => {
-      if (session.platform == 'onebot' && session?.onebot) {
+      if (session.platform == 'onebot') {
         const nickname = this.get_rondom_name()
-        await session?.onebot.setGroupSpecialTitle(session.guildId, session.userId, nickname)
+        await session.bot.internal?.setGroupSpecialTitle(session.guildId, session.userId, nickname)
       }
     })
   }

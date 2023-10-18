@@ -2,9 +2,8 @@ import {
     Context, Schema, Logger, segment, Session, Service, Dict
 }
     from 'koishi';
-import { } from '@koishijs/plugin-rate-limit';
 import { } from 'koishi-plugin-puppeteer';
-import { } from '@koishijs/plugin-rate-limit';
+import { } from 'koishi-plugin-rate-limit';
 export const name = 'arcadia';
 export const logger = new Logger(name);
 import * as crypto from 'crypto';

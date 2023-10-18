@@ -1,5 +1,5 @@
 import { Context, Schema,Logger } from 'koishi'
-import {} from '@koishijs/plugin-rate-limit'
+import {} from 'koishi-plugin-rate-limit'
 export const name = 'couplet'
 export const logger = new Logger(name);
 

@@ -1,5 +1,5 @@
 import { Context, Schema, Logger,Element,segment } from 'koishi'
-import { } from '@koishijs/plugin-rate-limit'
+import { } from 'koishi-plugin-rate-limit'
 import { } from 'koishi-plugin-puppeteer'
 export const name = 'facercg'
 

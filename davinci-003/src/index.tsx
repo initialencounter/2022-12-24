@@ -1,6 +1,6 @@
 import { Context, Logger, segment, Element, Session, Service, Dict, h, Next, Fragment, Schema, trimSlash } from 'koishi';
 import fs, { readFileSync } from 'fs';
-import { } from '@koishijs/plugin-rate-limit';
+import { } from 'koishi-plugin-rate-limit';
 import { } from 'koishi-plugin-puppeteer';
 import { } from '@initencounter/vits'
 import { } from '@initencounter/sst'

@@ -139,7 +139,7 @@ namespace WhisperAsr {
     recall_time: number
   }
 
-  export const Config: Schema<Config> = Schema.object({
+  export const Config = Schema.object({
     endpoint: Schema.string().default('http://127.0.0.1:9000').description('whisper-asr服务器地址'),
     auto_rcg: Schema.boolean().default(false).description('自动语音转文字,作为服务启用时建议关闭'),
 
