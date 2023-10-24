@@ -99,6 +99,9 @@ export function apply(ctx: Context, config: Config) {
             logger.warn(`${(k.userId)}-${k.username} 瓷砖查询失败, 建议配置 token 或 proxy`)
           }
         }
+        if(atList==''){
+          return
+        }
         const bot = ctx.bots[`${platform}:${selfId}`]
         const img_url = pathToFileURL(resolve(__dirname, "0.jpg")).href
         bot?.sendMessage(channelId, h.image(img_url) + "" + atList + new Session(bot,{}).text('commands.tile.messages.tile-alert'), guildId)
