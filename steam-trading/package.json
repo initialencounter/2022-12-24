@@ -39,7 +39,7 @@
     "steam trading"
   ],
   "peerDependencies": {
-    "koishi": "^4.11.1"
+    "koishi": "^4.15.2"
   },
   "dependencies": {
     "pngjs": "^7.0.0"

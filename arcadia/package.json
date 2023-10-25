@@ -28,10 +28,10 @@
     "koishi",
     "plugin"
   ],
-  "koishi":{
+  "koishi": {
     "description": "意间Ai绘画(yjart),支持100多个模型"
   },
   "peerDependencies": {
-    "koishi": "^4.11.9"
+    "koishi": "^4.15.2"
   }
 }

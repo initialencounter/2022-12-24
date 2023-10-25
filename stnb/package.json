@@ -29,7 +29,7 @@
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.10.10"
+    "koishi": "^4.15.2"
   },
   "dependencies": {
     "xpath": "^0.0.32",

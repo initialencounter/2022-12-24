@@ -29,8 +29,7 @@
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.11.9",
+    "koishi": "^4.15.2",
     "@koishijs/plugin-adapter-onebot": "^6.0.2"
-
   }
 }

@@ -33,7 +33,7 @@
     "asr"
   ],
   "peerDependencies": {
-    "koishi": "^4.11.9"
+    "koishi": "^4.15.2"
   },
   "dependencies": {
     "@initencounter/sst": "^0.0.1"

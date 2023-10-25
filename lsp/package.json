@@ -29,9 +29,9 @@
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.11.7"
+    "koishi": "^4.15.2"
   },
   "koishi": {
-    "description":"老色批插件"
+    "description": "老色批插件"
   }
 }

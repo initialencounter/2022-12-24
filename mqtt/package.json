@@ -41,10 +41,9 @@
         "mqtt"
       ]
     }
-
   },
   "peerDependencies": {
-    "koishi": "^4.11.9"
+    "koishi": "^4.15.2"
   },
   "dependencies": {
     "mqtt": "^4.3.7"

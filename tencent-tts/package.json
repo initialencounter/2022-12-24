@@ -32,10 +32,10 @@
     "service"
   ],
   "peerDependencies": {
-    "koishi": "^4.11.9"
+    "koishi": "^4.15.2"
   },
   "dependencies": {
-    "tencentcloud-sdk-nodejs-tts": "^4.0.595",
+    "tencentcloud-sdk-nodejs-tts": "^4.0.711",
     "@initencounter/vits": "^0.0.2"
   },
   "koishi": {

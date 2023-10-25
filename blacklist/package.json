@@ -30,14 +30,16 @@
     "EULA"
   ],
   "peerDependencies": {
-    "koishi": "^4.11.1"
+    "koishi": "^4.15.2"
   },
   "koishi": {
     "service": {
-        "required": ["eula"]
+      "required": [
+        "eula"
+      ]
     }
   },
   "dependencies": {
-    "koishi-plugin-eula": "^1.0.4"
+    "koishi-plugin-eula": "^1.2.0"
   }
 }

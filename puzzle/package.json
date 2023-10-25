@@ -34,6 +34,6 @@
     "browser": true
   },
   "peerDependencies": {
-    "koishi": "^4.11.1"
+    "koishi": "^4.15.2"
   }
 }

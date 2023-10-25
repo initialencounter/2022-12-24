@@ -35,12 +35,12 @@
     "plugin"
   ],
   "peerDependencies": {
-    "@koishijs/plugin-console": "^5.10.0",
-    "koishi": "^4.13.0",
-    "koishi-plugin-blockly": "^0.6.2"
+    "@koishijs/plugin-console": "^5.17.0",
+    "koishi": "^4.15.2",
+    "koishi-plugin-blockly": "^0.6.3"
   },
   "devDependencies": {
-    "@koishijs/client": "^5.10.0"
+    "@koishijs/client": "^5.17.0"
   },
   "koishi": {
     "description": "blockly插件镜像站",

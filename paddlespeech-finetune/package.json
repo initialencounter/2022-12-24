@@ -33,7 +33,7 @@
     "tts"
   ],
   "peerDependencies": {
-    "koishi": "^4.11.9",
+    "koishi": "^4.15.2",
     "@initencounter/vits": "^0.0.3"
   },
   "koishi": {

@@ -29,14 +29,14 @@
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.11.9"
+    "koishi": "^4.15.2"
   },
-  "dependencies":{
+  "dependencies": {
     "koishi-plugin-shutdown": "^0.3.0",
     "node-cron": "^3.0.2"
   },
   "koishi": {
-    "service":{
+    "service": {
       "optional": [
         "database"
       ]

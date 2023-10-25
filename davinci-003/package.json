@@ -34,8 +34,8 @@
     "chatgpt4"
   ],
   "peerDependencies": {
-    "koishi": "^4.12.0",
-    "@koishijs/plugin-console": "^5.11.0"
+    "koishi": "^4.15.2",
+    "@koishijs/plugin-console": "^5.17.0"
   },
   "koishi": {
     "description": "AI 聊天",
@@ -61,6 +61,6 @@
     "@koishijs/censor": "^1.0.2"
   },
   "devDependencies": {
-    "@koishijs/client": "^5.10.0"
+    "@koishijs/client": "^5.17.0"
   }
 }
