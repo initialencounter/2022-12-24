@@ -17,7 +17,8 @@ export interface Rule {
 }
 
 export const Config: Schema<Config> = Schema.object({
-  corn: Schema.string().default("23-30").description("默认的提醒时间,UTC时间")
+  corn: Schema.string().default("23-30").description("默认的提醒时间,UTC时间"),
+  forwardServer: Schema.string().default("https://initencunter-node-server.hf.space/?method=get&url=https://github.com").description("转发服务")
 })
 
 export interface Config {
@@ -104,7 +105,9 @@ export function apply(ctx: Context, config: Config) {
         }
         const bot = ctx.bots[`${platform}:${selfId}`]
         const img_url = pathToFileURL(resolve(__dirname, "0.jpg")).href
-        bot?.sendMessage(channelId, h.image(img_url) + "" + atList + new Session(bot,{}).text('commands.tile.messages.tile-alert'), guildId)
+        // 读取提醒语
+        const alertText = ctx.i18n.get('commands.tile.messages.tile-alert')['zh']??'快起来贴瓷砖！'
+        bot?.sendMessage(channelId, h.image(img_url) + "" + atList + alertText, guildId)
       }
 
 

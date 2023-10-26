@@ -1,12 +1,12 @@
-import { Context, Logger } from "koishi";
+import { Context, Logger,trimSlash } from "koishi";
 import fs from "fs";
 const logger = new Logger("gh-tile")
 
 // 获取今日瓷砖数，
-export async function getTileNums(ctx: Context, username: string, date: string) {
+export async function getTileNums(ctx: Context, username: string, date: string, forwardServer: string = 'https://initencunter-node-server.hf.space/?method=get&url=https://github.com') {
   let html: string
   try {
-    html = await ctx.http.get(`https://initencunter-node-server.hf.space/?url=https://github.com/${username}&method=get`)
+    html = await ctx.http.get(`${trimSlash(forwardServer)}/${username}`)
     // fs.writeFileSync('text.html',html)
   } catch (e) {
     return false

@@ -17,8 +17,13 @@ commands:
       username: github用户名
       date: 日期：示例 2023-9-1
     messages:
-      tile-alert: 快起来贴瓷砖
-      no-such-user: 该用户未绑定GitHub，发送tile.bind绑定
+      tile-alert: |-
+        <random>
+          <>快起来贴瓷砖！</>
+          <>为什么不贴瓷砖！</>
+          <>懒鬼懒鬼懒鬼！</>
+        </random>
+      no-such-user: 未绑定GitHub，发送tile.bind绑定
       inv-token: 无效的token
       inv-username: 无效的用户名
       tile-set-success: 瓷砖提醒成功,输入命令tile.switch 关闭/启动tile提醒

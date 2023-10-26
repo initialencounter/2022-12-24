@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-gh-tile",
   "description": "Github 瓷砖提醒, 查看瓷砖",
-  "version": "2.1.4",
+  "version": "2.2.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -30,9 +30,6 @@
   ],
   "peerDependencies": {
     "koishi": "^4.15.2"
-  },
-  "koishi": {
-    "browser": true
   },
   "dependencies": {
     "node-cron": "^3.0.2"
