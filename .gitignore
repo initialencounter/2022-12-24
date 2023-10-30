@@ -1,6 +1,7 @@
 lib
 dist
 data
+locales
 
 node_modules
 npm-debug.log
@@ -20,3 +21,7 @@ tsconfig.tsbuildinfo
 *.db
 koishi.yml
 *.lock
+package-lock.json
+
+
+personality.json

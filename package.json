@@ -9,6 +9,7 @@
   "license": "AGPL-3.0",
   "workspaces": [
     "Plugins/*/*",
+    "test",
     "external/*/external/*",
     "external/*/external/*/packages/*",
     "external/*/external/*/packages/@*/*",
