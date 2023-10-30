@@ -32,7 +32,7 @@
   "bugs": {
     "url": "https://github.com/initialencounter/koishi-plugin-genshin-atlas/issues"
   },
-  "homepage": "https://github.com/initialencounter/koishi-plugin-genshin-atlas#readme",
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Games/genshin-atlas#readme",
   "peerDependencies": {
     "koishi": "^4.12.0",
     "@koishijs/plugin-console": "^5.11.0"

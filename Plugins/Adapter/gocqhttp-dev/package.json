@@ -31,7 +31,7 @@
   "bugs": {
     "url": "https://github.com/initialencounter/mykoishi/issues"
   },
-  "homepage": "https://github.com/initialencounter/koishi-plugin-gocqhttp",
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Adapter/gocqhttp-dev",
   "keywords": [
     "bot",
     "qqbot",

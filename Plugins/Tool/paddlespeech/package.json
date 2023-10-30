@@ -21,7 +21,7 @@
   "bugs": {
     "url": "https://github.com/initialencounter/mykoishi/issues"
   },
-  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/baidu-tts#readme",
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Tool/paddlespeech#readme",
   "scripts": {},
   "keywords": [
     "chatbot",

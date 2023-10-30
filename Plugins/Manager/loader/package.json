@@ -21,7 +21,7 @@
   "bugs": {
     "url": "https://github.com/initialencounter/mykoishi/issues"
   },
-  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/loader#readme",
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Manager/loader#readme",
   "scripts": {},
   "keywords": [
     "chatbot",

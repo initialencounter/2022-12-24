@@ -1,9 +1,0 @@
-torch
-transformers
-datasets
-PIL
-requests
-numpy
-fastapi
-uvicorn
-pydantic

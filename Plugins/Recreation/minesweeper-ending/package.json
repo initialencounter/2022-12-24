@@ -15,12 +15,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/initialencounter/koishi-plugin-minesweeper-ending.git"
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
   },
   "bugs": {
-    "url": "https://github.com/initialencounter/koishi-plugin-minesweeper-ending/issues"
+    "url": "https://github.com/initialencounter/mykoishi/issues"
   },
-  "homepage": "https://github.com/initialencounter/koishi-plugin-minesweeper-ending#readme",
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Recreation/minesweeper-ending#readme",
   "scripts": {},
   "keywords": [
     "chatbot",

@@ -21,7 +21,7 @@
   "bugs": {
     "url": "https://github.com/initialencounter/koishi-plugin-facercg/issues"
   },
-  "homepage": "https://github.com/initialencounter/koishi-plugin-facercg#readme",
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/AI/facercg#readme",
   "scripts": {},
   "keywords": [
     "chatbot",

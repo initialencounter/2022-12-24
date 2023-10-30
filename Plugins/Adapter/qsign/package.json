@@ -20,7 +20,7 @@
   "bugs": {
     "url": "https://github.com/initialencounter/koishi-plugin-qsign/issues"
   },
-  "homepage": "https://github.com/initialencounter/koishi-plugin-qsign",
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Adapter/qsign",
   "license": "AGPL-3",
   "scripts": {
     "postinstall": "node install"
