@@ -63,6 +63,7 @@
     "@initencounter/sst": "^0.0.1",
     "@initencounter/vits": "^0.0.3",
     "@koishijs/censor": "^1.0.2",
+    "@koishijs/plugin-adapter-onebot": "6.0.2",
     "@koishijs/plugin-admin": "^2.0.0-alpha.4",
     "@koishijs/plugin-analytics": "^1.0.6",
     "@koishijs/plugin-auth": "^4.1.3",
