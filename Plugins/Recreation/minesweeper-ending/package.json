@@ -1,0 +1,52 @@
+{
+  "name": "koishi-plugin-minesweeper-ending",
+  "description": "扫雷残局，无猜，高性能原生图像处理",
+  "version": "1.5.6",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/koishi-plugin-minesweeper-ending.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/koishi-plugin-minesweeper-ending/issues"
+  },
+  "homepage": "https://github.com/initialencounter/koishi-plugin-minesweeper-ending#readme",
+  "scripts": {},
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "残局",
+    "扫雷",
+    "扫雷残局",
+    "minesweeper",
+    "endgame"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.13.0"
+  },
+  "koishi": {
+    "description": {
+      "en": "Minesweeper, no guesswork, high-performance native image processing",
+      "zh": "扫雷残局，无猜，高性能原生图像处理"
+    },
+    "service": {
+      "required": [
+        "database"
+      ]
+    }
+  },
+  "dependencies": {
+    "pngjs": "^7.0.0"
+  }
+}

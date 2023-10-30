@@ -1,0 +1,54 @@
+{
+  "name": "koishi-plugin-qsign",
+  "description": "go-cqhttp-dev 安装器",
+  "version": "1.2.4",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "install.js"
+  ],
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/koishi-plugin-qsign.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/koishi-plugin-qsign/issues"
+  },
+  "homepage": "https://github.com/initialencounter/koishi-plugin-qsign",
+  "license": "AGPL-3",
+  "scripts": {
+    "postinstall": "node install"
+  },
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.14.0"
+  },
+  "koishi": {
+    "description": {
+      "zh": "[go-cqhttp-dev](https://github.com/rhwong/go-cqhttp-dev) 安装器, 并非 qsign 安装器",
+      "en": "[go-cqhttp-dev](https://github.com/rhwong/go-cqhttp-dev) installer not qsign"
+    },
+    "service": {
+      "optional": [
+        "console"
+      ]
+    }
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.10",
+    "axios": "^1.4.0",
+    "env-paths": "^2.2.1",
+    "tar": "^6.1.15",
+    "zlib": "^1.0.5"
+  }
+}

@@ -1,4 +1,3 @@
-<!-- PROJECT LOGO -->
 <br />
 <div align="center">
   <a href="https://github.com/initialencounter/mykoishi">
@@ -26,77 +25,49 @@
   </p>
 </div>
 
-## 人工智能
-| NPM | REPO |
-| --- | --- |
-| [Arcadia](https://www.npmjs.com/package/koishi-plugin-arcadia) | [意间AI绘画](https://github.com/initialencounter/mykoishi/tree/master/arcadia)|
-| [Artwise](https://www.npmjs.com/package/koishi-plugin-artwise) | [知数云接口](https://github.com/initialencounter/mykoishi/tree/master/artwise) |
-| [SD-Taylor](https://www.npmjs.com/package/koishi-plugin-sd-taylor) | [StableDiffusion绘图](https://github.com/initialencounter/mykoishi/tree/master/sd-taylor) |
-| [Davinci-003](https://www.npmjs.com/package/koishi-plugin-davinci-003) | [OpenAI接口](https://github.com/initialencounter/mykoishi/tree/master/davinci-003) |
-| [DVC-Edu](https://www.npmjs.com/package/koishi-plugin-dvc-edu) | [OpenAI教育版](https://github.com/initialencounter/mykoishi/tree/master/dvc-edu) |
-| [Facercg](https://www.npmjs.com/package/koishi-plugin-facercg) | [颜值预测](https://github.com/initialencounter/mykoishi/tree/master/facercg) |
-| [Couplet](https://www.npmjs.com/package/koishi-plugin-couplet) | [对对联](https://github.com/initialencounter/mykoishi/tree/master/couplet) |
 
+## Koishi 插件
 
-## 游戏
-| NPM | REPO |
-| --- | --- |
-| [Puzzle](https://www.npmjs.com/package/koishi-plugin-puzzle) | [数字华容道](https://github.com/initialencounter/mykoishi/tree/master/puzzle) |
-| [Cube](https://www.npmjs.com/package/koishi-plugin-cube) | [魔方](https://github.com/initialencounter/mykoishi/tree/master/cube) |
-| [minesweeper-ending](https://www.npmjs.com/package/koishi-plugin-minesweeper-ending) | [数字华容道](https://github.com/initialencounter/koishi-plugin-minesweeper-ending) |
-
-## 语音服务
-| NPM | REPO |
-| --- | --- |
-| [Baidu-SST](https://www.npmjs.com/package/koishi-plugin-baidu-sst) | [百度智能云语音识别](https://github.com/initialencounter/mykoishi/tree/master/baidu-sst) |
-| [Baidu-TTS](https://www.npmjs.com/package/koishi-plugin-baidu-tts) | [百度智能云语音合成](https://github.com/initialencounter/mykoishi/tree/master/baidu-tts) |
-| [TC-SST](https://www.npmjs.com/package/koishi-plugin-tc-sst) | [腾讯云语音识别](https://github.com/initialencounter/mykoishi/tree/master/tc-sst) |
-| [Tencent-TTS](https://www.npmjs.com/package/koishi-plugin-tencent-tts) | [腾讯云语音合成](https://github.com/initialencounter/mykoishi/tree/master/tencent-tts) |
-| [Whisper-ASR](https://www.npmjs.com/package/koishi-plugin-whisper-asr) | [OpenAI语音识别](https://github.com/initialencounter/mykoishi/tree/master/whisper-asr) |
-| [Open-Vits](https://www.npmjs.com/package/koishi-plugin-open-vits) | [Vits语音合成](https://github.com/initialencounter/mykoishi/tree/master/open-vits) |
-| [Vits](https://www.npmjs.com/package/@initencounter/vits) | [语音识别服务](https://github.com/initialencounter/mykoishi/tree/master/vits) |
-| [tts](https://www.npmjs.com/package/@initencounter/sst) | [语音合成服务](https://github.com/initialencounter/mykoishi/tree/master/sst) |
-
-## 资讯
-| NPM | REPO |
-| --- | --- |
-| [Star-Rail-Atlas](https://www.npmjs.com/package/koishi-plugin-star-rail-atlas) | [星穹铁道图鉴](https://github.com/initialencounter/mykoishi/tree/master/star-rail-atlas) |
-| [Steam-Trading](https://www.npmjs.com/package/koishi-plugin-steam-trading) | [Steam挂刀](https://github.com/initialencounter/mykoishi/tree/master/steam-trading) |
-| [MQTT](https://www.npmjs.com/package/koishi-plugin-mqtt) | [MQTT订阅推送](https://github.com/initialencounter/mykoishi/tree/master/mqtt) |
-| [Furbot](https://www.npmjs.com/package/koishi-plugin-furbot) | [兽云祭接口](https://github.com/initialencounter/mykoishi/tree/master/furbot) |
-| [Gh-tile](https://www.npmjs.com/package/koishi-plugin-gh-tile) | [GitHub 瓷砖提醒](https://github.com/initialencounter/mykoishi/tree/master/gh-tile) |
-
-
-## 工具
-
-| NPM | REPO |
-| --- | --- |
-| [Blacklist](https://www.npmjs.com/package/koishi-plugin-blacklist) | [黑名单](https://github.com/initialencounter/mykoishi/tree/master/blacklist) |
-| [Loader](https://www.npmjs.com/package/koishi-plugin-loader) | [升级所有插件](https://github.com/initialencounter/mykoishi/tree/master/loader) |
-| [specialtile](https://www.npmjs.com/package/koishi-plugin-speciltile) | [特殊的瓷砖](https://github.com/initialencounter/mykoishi/tree/master/specialtile) |
-
-
-<!-- LICENSE -->
-## License
-
-Distributed under the AGPL-3 License. See `LICENSE` for more information.
-
-
-
-<!-- CONTACT -->
-## Contact
-
-QQ群399899914
-
-[bilibili](https://space.bilibili.com/225995995)
-
-
-
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-* [koishi开发者们](https://koishi.chat/)
-* [houko(小莫)](https://github.com/houko)
-* [xhmily(呆呆木)](https://lucent.blog/)
-* [inisis](https://github.com/inisis)
+* 人工智能
+  * [ChatGPT](./Plugins/AI/davinci-003/README.md)
+  * [颜值评分](./Plugins/AI/facercg/README.md)
+  * [Stable Diffusion](./Plugins/AI/sd-taylor/README.md)
+  * [意间 AI](./Plugins/AI/arcadia/README.md)
+  * [知数云](./Plugins/AI/arcadia/README.md)
+* 适配器
+  * [go-cqhttp-dev](./Plugins/Adapter/gocqhttp-dev/README.md)
+  * [qsign](./Plugins/Adapter/qsign/README.md)
+  * [autoxjs-sender](./Plugins/Adapter/autoxjs-sender/README.md)
+* 拓展功能
+  * [mqtt](./Plugins/Extension/mqtt/README.md)
+* 控制台
+  * [blockly 插件市场](./Plugins/Console/blockly-registry/README.md)
+* 管理工具
+  * [闹钟](./Plugins/Manager/clock/README.md)
+  * [loader](./Plugins/Manager/loader/README.md)
+  * [blacklist](./Plugins/Manager/blacklist/README.md)
+* 行为预设
+  * [群主插件](./Plugins/Behavior/specialtile/README.md)
+* 资讯服务
+  * [兽云祭](./Plugins/News/furbot/README.md)
+  * [fraud-db](./Plugins/News/fraud-db/README.md)
+  * [瓷砖提醒](./Plugins/News/gh-tile/README.md)
+* 实用工具
+  * [飞桨语音](./Plugins/Tool/paddlespeech/README.md)
+  * [OpenAI 语音](./Plugins/Tool/whisper-asr/README.md)
+  * [飞桨语音-克隆](./Plugins/Tool/paddlespeech-finetune/README.md)
+  * [百度TTS](./Plugins/Tool/baidu-tts/README.md)
+  * [百度STT](./Plugins/Tool/baidu-sst/README.md)
+  * [腾讯TTS](./Plugins/Tool/tencent-tts/README.md)
+  * [腾讯STT](./Plugins/Tool/tc-sst/README.md)
+  * [@initencounter/vits](./Plugins/Tool/vits/README.md)
+  * [@initencounter/sst](./Plugins/Tool/sst/README.md)
+* 娱乐玩法
+  * [数字华容道](./Plugins/Recreation/puzzle/README.md)
+  * [魔方](./Plugins/Recreation/cube/README.md)
+  * [对对联](./Plugins/Recreation/couplet/README.md)
+  * [扫雷残局](./Plugins/Recreation/minesweeper-ending/README.md)
+* 游戏辅助
+  * [斯坦牛逼](./Plugins/Games/stnb/README.md)
+  * [Steam 挂刀行情](./Plugins/Games/steam-trading/README.md)
+  * [原神图鉴](./Plugins/Games/genshin-atlas/README.md)

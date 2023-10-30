@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head lang="zh-CN">
+    <meta charset="UTF-8" />
+    <meta name="renderer" content="webkit" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>滑条验证码</title>
+  </head>
+  <body>
+    <div id="cap_iframe" style="width: 230px; height: 220px"></div>
+    <script type="text/javascript">
+      !(function () {
+        const e = document.createElement("script");
+        e.type = "text/javascript";
+        e.src = "https://captcha.qq.com/template/TCapIframeApi.js" + location.search;
+        document.getElementsByTagName("head").item(0).appendChild(e);
+
+        function getQueryVariable(variable) {
+          const query = window.location.search.substring(1);
+          const vars = query.split('&');
+          for (let i = 0; i < vars.length; i++) {
+            const pair = vars[i].split('=');
+            if (decodeURIComponent(pair[0]) == variable) {
+              return decodeURIComponent(pair[1]);
+            }
+          }
+        }
+
+        e.onload = () => {
+          capInit(document.getElementById("cap_iframe"), {
+            callback: (a) => {
+              fetch(`/gocqhttp/ticket?id=${getQueryVariable("id")}&ticket=${a.ticket}`, {
+                method: 'POST',
+              }).finally(() => window.close())
+            },
+            showHeader: !1,
+          });
+        };
+      })();
+    </script>
+  </body>
+</html>

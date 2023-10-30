@@ -1,22 +1,24 @@
 lib
+bin
 dist
-data
+temp
 
-node_modules
+todo.md
+yarn.lock
+node_modules/
 npm-debug.log
 yarn-debug.log
 yarn-error.log
-tsconfig.temp.json
+package-lock.json
 tsconfig.tsbuildinfo
+report.*.json
 
 .eslintcache
 .DS_Store
 .idea
 .vscode
+.yarn
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
-*.db
-koishi.yml
-*.lock
