@@ -50,7 +50,7 @@ export function apply(ctx: Context, config: Config) {
     rules: "json",
     token: "text",
     username: "text",
-    userId: "string"
+    userId: "string",
   }, {
     primary: 'id', //设置 uid 为主键
     autoInc: true,
@@ -87,6 +87,7 @@ export function apply(ctx: Context, config: Config) {
       for (var j of Object.keys(channelIdObj)) {
         let atList = ''
         let { channelId, platform, selfId, guildId } = channelIdDict<string>(j)[0].rules
+        let rank = []
         for (var k of channelIdDict<string>(j)) {
           let nums: number | boolean
           if (k?.token) {
@@ -94,23 +95,25 @@ export function apply(ctx: Context, config: Config) {
           } else {
             nums = await getTileNums(ctx, k.username, date)
           }
+          // 记录瓷砖
+          if(nums as number > 0){
+            rank.push({username:k.username,tile:nums})
+          }
           if (nums === -1) {
             atList += h.at(k.userId)
           } else if (!nums) {
             logger.warn(`${(k.userId)}-${k.username} 瓷砖查询失败, 建议配置 token 或 proxy`)
           }
         }
-        if(atList==''){
-          return
-        }
+        // 排序
+        rank.sort((a, b) => b.tile - a.tile)
         const bot = ctx.bots[`${platform}:${selfId}`]
         const img_url = pathToFileURL(resolve(__dirname, "0.jpg")).href
+        bot?.sendMessage(channelId, rank[0].username+" 是今天的瓷砖王", guildId)
         // 读取提醒语
-        const alertText = ctx.i18n.get('commands.tile.messages.tile-alert')['zh']??'快起来贴瓷砖！'
+        const alertText = ctx.i18n.get('commands.tile.messages.tile-alert')['zh'] ?? '快起来贴瓷砖！'
         bot?.sendMessage(channelId, h.image(img_url) + "" + atList + alertText, guildId)
       }
-
-
     })
   })
   ctx.command('tile', "查看群友今天贴了多少瓷砖").alias("瓷砖")
