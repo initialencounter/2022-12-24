@@ -2,6 +2,7 @@ lib
 dist
 data
 locales
+cache
 
 node_modules
 npm-debug.log
