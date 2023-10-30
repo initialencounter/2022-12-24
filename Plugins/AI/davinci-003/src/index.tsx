@@ -5,7 +5,7 @@ import { } from 'koishi-plugin-puppeteer';
 import { } from '@initencounter/vits'
 import { } from '@initencounter/sst'
 import { } from '@koishijs/censor'
-import { DataService } from '@koishijs/plugin-console'
+import { } from '@koishijs/plugin-console'
 import { resolve } from 'path';
 const name = 'davinci-003';
 const logger = new Logger(name);
@@ -14,6 +14,7 @@ declare module '@koishijs/plugin-console' {
   interface Events {
     'davinci-003/getproxy'(): string
     'davinci-003/getcredit'(key: string): Promise<number>
+    'davinci-003/getusage'(): string
   }
 }
 
@@ -22,9 +23,13 @@ declare module 'koishi' {
     dvc: Dvc
   }
 }
-
+const version = require('../package.json')["version"]
+const localUsage = readFileSync(resolve(__dirname, "../readme.md")).toString('utf-8').split("更新日志")[0];
 class Dvc extends Service {
-  static using = ['console']
+  static inject = {
+    required: ['console'],
+    optional: ['puppeteer', 'vits', 'sst', 'censor']
+  }
   output_type: string;
   session_config: Dvc.Msg[];
   sessions: Dict;
@@ -241,6 +246,9 @@ class Dvc extends Service {
         key = this.key[this.key_number]
       }
       return await this.get_credit2(key ?? this.key[this.key_number])
+    })
+    ctx.console.addListener('davinci-003/getusage',()=>{
+      return localUsage
     })
   }
 
@@ -1001,7 +1009,7 @@ class Dvc extends Service {
           <p style="color:#723b8d">ChatGPT3.5-Turbo</p>
           {elements}
         </div>
-        <div style='position: absolute;top:10px;'>create by koishi-plugin-davinci-003-v4.0.7</div>
+        <div style='position: absolute;top:10px;'>create by koishi-plugin-davinci-003@{version}</div>
       </html>
     }
   }
@@ -1203,9 +1211,9 @@ namespace Dvc {
         Schema.const('gpt4-unit' as const).description('GPT-4-unit,超级节俭模式')
       ] as const).default('gpt3.5-js').description('引擎选择'),
       key: Schema.union([
-        Schema.array(String),
+        Schema.array(String).role('secret'),
         Schema.transform(String, value => [value]),
-      ]).default([]).description('api_key'),
+      ]).default([]).role('secret').description('api_key'),
     }).description('基础设置'),
 
     Schema.object({
@@ -1224,8 +1232,8 @@ namespace Dvc {
       selfid: Schema.string().description('聊天记录头像的QQ号').default('3118087750'),
 
       max_tokens: Schema.number().description('请求长度,否则报错').default(3000),
-      temperature: Schema.number().description('创造力').default(0),
-      authority: Schema.number().description('允许使用的最低权限').default(1),
+      temperature: Schema.number().role('slider').min(0).max(1).step(0.01).default(0).description('创造力'),
+      authority: Schema.number().role('slider').min(0).max(5).step(1).description('允许使用的最低权限').default(1),
       superusr: Schema.array(String).default(['3118087750']).description('可以无限调用的用户'),
       usage: Schema.number().description('每人每日可用次数').default(100),
       minInterval: Schema.number().default(5000).description('连续调用的最小间隔,单位毫秒。'),
@@ -1247,9 +1255,9 @@ namespace Dvc {
 
       if_private: Schema.boolean().default(true).description('开启后私聊可触发ai'),
       if_at: Schema.boolean().default(true).description('开启后被提及(at/引用)可触发ai'),
-      randnum: Schema.number().default(0).description('随机回复概率，如需关闭可设置为0'),
-      proxy_reverse: Schema.string().default('https://gpt.lucent.blog').description('GPT3反向代理地址'),
-      proxy_reverse4: Schema.string().default('https://chatgpt.nextweb.fun/api/openai').description('GPT4反向代理地址'),
+      randnum: Schema.number().role('slider').min(0).max(1).step(0.01).default(0).description('随机回复概率，如需关闭可设置为0'),
+      proxy_reverse: Schema.string().role('link').default('https://gpt.lucent.blog').description('GPT3反向代理地址'),
+      proxy_reverse4: Schema.string().role('link').default('https://chatgpt.nextweb.fun/api/openai').description('GPT4反向代理地址'),
       maxRetryTimes: Schema.number().default(30).description('报错后最大重试次数')
     }).description('进阶设置'),
 

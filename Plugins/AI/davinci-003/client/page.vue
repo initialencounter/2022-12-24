@@ -1,8 +1,12 @@
 <template>
   <template v-if="show">
-    <h1 class="davinci-003-title">插件文档：</h1>
+    <h1 class="davinci-003-title">插件文档（本地）：</h1>
     <details>
-      <iframe src="https://initialencounter.github.io/docu/docs/KoishiPlugins/AI/davinci-003" width="800px"
+      <k-markdown :source="mdData" ></k-markdown>
+    </details>
+    <h1 class="davinci-003-title">插件文档（云端）：</h1>
+    <details>
+      <iframe src="https://initialencounter.github.io/doc/docs/KoishiPlugins/AI/davinci-003" width="800px"
         height="600px"></iframe>
     </details>
     <h1 class="davinci-003-title">查询 ChatGPTAPI 余额</h1>
@@ -28,6 +32,7 @@ const input_text = ref<string>();
 const credit_text = ref<string>();
 const proxy = ref<string>();
 const failed = ref<string>();
+const mdData = ref<string>();
 const show = ref<boolean>();
 input_text.value = '';
 credit_text.value = "";
@@ -37,6 +42,7 @@ show.value = false;
 declare module '@koishijs/plugin-console' {
   interface Events {
     'davinci-003/getproxy'(): string
+    'davinci-003/getusage'(): string
     'davinci-003/getcredit'(key: string): Promise<number>
   }
 }
@@ -62,6 +68,9 @@ async function get_credit() {
   credit_text.value = `当前余额：${res}`
 }
 
+send('davinci-003/getusage').then((res)=>{
+  mdData.value = res
+})
 send('davinci-003/getcredit', '').then((res) => {
   if (res === -1) {
     failed.value = 'true'
