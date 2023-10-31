@@ -130,31 +130,7 @@ export function apply(ctx: Context, config: Config) {
         return session.text('commands.tile.messages.no-such-user')
       }
       if (session.content.indexOf("昨天") > -1) {
-        const now = new Date();
-        let year = now.getFullYear();
-        let month = now.getMonth() + 1;
-        let day = now.getDate();
-        if (day === 1) {
-          if ([1, 2, 4, 6, 8, 9, 11].includes(month)) {
-            day = 31;
-            if (month === 1) {
-              year = now.getFullYear() - 1;
-              month = 12;
-            } else {
-              month = now.getMonth();
-            }
-          } else if (month === 3) {
-            const isLeapYear = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0));
-            day = isLeapYear ? 29 : 28;
-            month = now.getMonth();
-          } else {
-            day = 30;
-            month = now.getMonth();
-          }
-        } else {
-          day = day - 1;
-        }
-        const date = `${year}-${String(month).length < 2 ? "0" + month : month}-${String(day).length < 2 ? "0" + day : day}`
+        const date = getYesterdayDate()
         return session.execute(`瓷砖 -u ${username} -d ${date}`)
       }
       return session.execute("瓷砖 -u " + username)
@@ -162,13 +138,13 @@ export function apply(ctx: Context, config: Config) {
     }
   })
   ctx.command('tile.bind [username:string]', "添加github瓷砖提醒, 绑定github用户名").alias("绑定gh", "添加瓷砖")
-    .action(({ session },username) => {
+    .action(({ session }, username) => {
       session.bot.sendPrivateMessage
       // 为了保证登录安全，只能私信机器人操作
       if (session?.guildId === session?.channelId) {
-        return add_clock(ctx, session as Session,username)
+        return add_clock(ctx, session as Session, username)
       } else {
-        return add_clock(ctx, session as Session,username, false)
+        return add_clock(ctx, session as Session, username, false)
       }
     })
 }
@@ -202,7 +178,7 @@ function channelIdDict<T>(channelIdselfId: T): Array<{
 async function add_clock(
   ctx: Context,
   session: Session,
-  username:string,
+  username: string,
   addToken: boolean = false) {
   let token: string = ''
   let cover: boolean = false
@@ -227,7 +203,7 @@ async function add_clock(
     }
   }
 
-  if(!username){
+  if (!username) {
     await session.send(session.text('commands.tile.messages.tile-input', ["GitHub 用户名"]))
     username = await session.prompt(150000)
   }
@@ -341,7 +317,7 @@ export async function alertCallbackFunctionasync(ctx: Context) {
     bot?.sendMessage(channelId, rank[0].username + " 是今天的瓷砖王", guildId)
     // 读取提醒语
     const alertText = ctx.i18n.get('commands.tile.messages.tile-alert')['zh'] ?? '快起来贴瓷砖！'
-    if(!atList){
+    if (!atList) {
       return
     }
     bot?.sendMessage(channelId, h.image(img_url) + "" + atList + alertText, guildId)
@@ -357,10 +333,44 @@ export function clearAlarm(uid: string) {
 }
 
 export function getDate() {
-  // 获取日期
+  // 获取日期 如果在8点之前，则返回昨天的日期
   const now = new Date();
+  const hour = now.getHours()
+  if (hour<8){
+    const date = getYesterdayDate()
+    return date
+  }
   const year = now.getFullYear()
   const month = now.getMonth() + 1
   const day = now.getDate()
   return `${year}-${month < 10 ? "0" + month : month}-${day < 10 ? "0" + day : day}`
+}
+
+export function getYesterdayDate() {
+  const now = new Date();
+  let year = now.getFullYear();
+  let month = now.getMonth() + 1;
+  let day = now.getDate();
+  if (day === 1) {
+    if ([1, 2, 4, 6, 8, 9, 11].includes(month)) {
+      day = 31;
+      if (month === 1) {
+        year = now.getFullYear() - 1;
+        month = 12;
+      } else {
+        month = now.getMonth();
+      }
+    } else if (month === 3) {
+      const isLeapYear = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0));
+      day = isLeapYear ? 29 : 28;
+      month = now.getMonth();
+    } else {
+      day = 30;
+      month = now.getMonth();
+    }
+  } else {
+    day = day - 1;
+  }
+  const date = `${year}-${String(month).length < 2 ? "0" + month : month}-${String(day).length < 2 ? "0" + day : day}`
+  return date
 }
