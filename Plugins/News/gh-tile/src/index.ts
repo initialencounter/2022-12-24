@@ -314,7 +314,7 @@ export async function alertCallbackFunctionasync(ctx: Context) {
     const bot = ctx.bots[`${platform}:${selfId}`]
     const img_url = pathToFileURL(resolve(__dirname, "0.jpg")).href
     // console.dir(rank[0].username + " 是今天的瓷砖王")
-    bot?.sendMessage(channelId, rank[0].username + " 是今天的瓷砖王", guildId)
+    bot?.sendMessage(channelId, `${rank[0].username} 是今天的瓷砖王，居然贴了${rank[0]?.tile}块瓷砖`, guildId)
     // 读取提醒语
     const alertText = ctx.i18n.get('commands.tile.messages.tile-alert')['zh'] ?? '快起来贴瓷砖！'
     if (!atList) {
