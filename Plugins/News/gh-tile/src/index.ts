@@ -161,14 +161,14 @@ export function apply(ctx: Context, config: Config) {
 
     }
   })
-  ctx.command('tile.bind', "添加github瓷砖提醒, 绑定github用户名").alias("绑定gh", "添加瓷砖")
-    .action(({ session }) => {
+  ctx.command('tile.bind [username:string]', "添加github瓷砖提醒, 绑定github用户名").alias("绑定gh", "添加瓷砖")
+    .action(({ session },username) => {
       session.bot.sendPrivateMessage
       // 为了保证登录安全，只能私信机器人操作
       if (session?.guildId === session?.channelId) {
-        return add_clock(ctx, session as Session)
+        return add_clock(ctx, session as Session,username)
       } else {
-        return add_clock(ctx, session as Session, false)
+        return add_clock(ctx, session as Session,username, false)
       }
     })
 }
@@ -202,8 +202,8 @@ function channelIdDict<T>(channelIdselfId: T): Array<{
 async function add_clock(
   ctx: Context,
   session: Session,
+  username:string,
   addToken: boolean = false) {
-  let username: string
   let token: string = ''
   let cover: boolean = false
   const target = await ctx.database.get(TABLE_NAME, { userId: session.userId })
@@ -227,9 +227,10 @@ async function add_clock(
     }
   }
 
-
-  await session.send(session.text('commands.tile.messages.tile-input', ["GitHub 用户名"]))
-  username = await session.prompt(150000)
+  if(!username){
+    await session.send(session.text('commands.tile.messages.tile-input', ["GitHub 用户名"]))
+    username = await session.prompt(150000)
+  }
   if (!username) {
     return session.text('commands.tile.messages.inv-username')
   }
@@ -336,11 +337,13 @@ export async function alertCallbackFunctionasync(ctx: Context) {
     rank.sort((a, b) => b.tile - a.tile)
     const bot = ctx.bots[`${platform}:${selfId}`]
     const img_url = pathToFileURL(resolve(__dirname, "0.jpg")).href
-    console.dir(rank[0].username + " 是今天的瓷砖王")
+    // console.dir(rank[0].username + " 是今天的瓷砖王")
     bot?.sendMessage(channelId, rank[0].username + " 是今天的瓷砖王", guildId)
     // 读取提醒语
     const alertText = ctx.i18n.get('commands.tile.messages.tile-alert')['zh'] ?? '快起来贴瓷砖！'
-    console.dir(atList + alertText)
+    if(!atList){
+      return
+    }
     bot?.sendMessage(channelId, h.image(img_url) + "" + atList + alertText, guildId)
   }
 }
