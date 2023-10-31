@@ -36,6 +36,7 @@ export interface Gh_tile {
   rules: Rule
   token: string
   username: string
+  nickname: string
   userId: string
 }
 
@@ -50,6 +51,7 @@ export function apply(ctx: Context, config: Config) {
     rules: "json",
     token: "text",
     username: "text",
+    nickname: "text",
     userId: "string",
   }, {
     primary: 'id', //设置 uid 为主键
@@ -154,6 +156,7 @@ function channelIdDict<T>(channelIdselfId: T): Array<{
   userId: T,
   token: T,
   username: T,
+  nickname:T,
   rules:
   {
     selfId: T,
@@ -215,6 +218,7 @@ async function add_clock(
       enable: true,
       token: token,
       username: username,
+      nickname: session.username,
       rules:
       {
         selfId: session.bot.selfId,
@@ -243,6 +247,7 @@ async function add_clock(
     userId: session.userId,
     token: token,
     username: username,
+    nickname: session.username,
     rules: {
       selfId: session.bot.selfId,
       platform: session.platform,
@@ -303,7 +308,7 @@ export async function alertCallbackFunctionasync(ctx: Context) {
         rank.push({ username: k.username, tile: nums })
       }
       if (nums === -1) {
-        atList += h.at(k.userId)
+        atList += h.at(k.userId,{name: k.nickname}) + ' '
       } else if (!nums) {
         logger.warn(`${(k.userId)}-${k.username} 瓷砖查询失败, 建议配置 token 或 proxy`)
       }
