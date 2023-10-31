@@ -38,7 +38,9 @@
     "dep": "yakumo upgrade",
     "pub": "yakumo publish",
     "dev": "cross-env NODE_ENV=development koishi start -r esbuild-register -r yml-register",
-    "start": "koishi start"
+    "start": "koishi start",
+    "test:gh-tile": "mocha --exit -r esbuild-register -r yml-register Plugins/News/gh-tile/test/index.spec.ts",
+    "test:gh-tile:cron": "node -r esbuild-register Plugins/News/gh-tile/test/cron.spec.ts"
   },
   "devDependencies": {
     "@koishijs/client": "^5.17.0",
@@ -71,6 +73,7 @@
     "@koishijs/plugin-commands": "^3.4.2",
     "@koishijs/plugin-config": "^2.4.2",
     "@koishijs/plugin-console": "^5.17.0",
+    "@koishijs/plugin-database-memory": "^2.3.6",
     "@koishijs/plugin-database-sqlite": "^3.6.1",
     "@koishijs/plugin-dataview": "^2.3.1",
     "@koishijs/plugin-explorer": "^1.4.5",
@@ -80,9 +83,13 @@
     "@koishijs/plugin-locales": "^2.5.1",
     "@koishijs/plugin-logger": "^2.4.0",
     "@koishijs/plugin-market": "^2.3.1",
+    "@koishijs/plugin-mock": "^2.6.3",
     "@koishijs/plugin-sandbox": "^3.2.2",
     "@koishijs/plugin-status": "^7.2.2",
     "@octokit/openapi-types": "^19.0.2",
+    "@types/chai": "^4.3.9",
+    "@types/mocha": "^10.0.3",
+    "chai": "^4.3.10",
     "koishi": "^4.15.2",
     "koishi-plugin-adapter-onebot": "^6.1.2",
     "koishi-plugin-adapter-red": "2.2.1",
@@ -92,6 +99,7 @@
     "koishi-plugin-puppeteer": "^3.6.3",
     "koishi-plugin-rate-limit": "^2.0.0",
     "koishi-plugin-status-pro": "1.1.7",
-    "koishi-plugin-theme-vanilla": "^1.0.6"
+    "koishi-plugin-theme-vanilla": "^1.0.6",
+    "mocha": "^10.2.0"
   }
 }
