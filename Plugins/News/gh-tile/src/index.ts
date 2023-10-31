@@ -39,7 +39,7 @@ export interface Gh_tile {
   userId: string
 }
 
-const alertList: Gh_tile[] = []
+export const alertList: Gh_tile[] = []
 let channelIdObj = {}
 export const using = ['database']
 export function apply(ctx: Context, config: Config) {
@@ -58,63 +58,14 @@ export function apply(ctx: Context, config: Config) {
   })
   ctx.i18n.define('zh', require('./locales/zh'))
   ctx.on('ready', async () => {
-    const clocks = await ctx.database.get('github_tile', {})
+    const clocks = await ctx.database.get('github_tile', { enable: { $eq: true } })
     for (var j of clocks) {
-      if (j.enable) {
-        alertList.push(j)
-        logger.info(`${(j.userId)}-${j.username} 瓷砖提醒设置成功！`)
-      }
+      alertList.push(j)
+      logger.info(`${(j.userId)}-${j.username} 瓷砖提醒设置成功！`)
     }
     const [hour, minute] = config.corn.split('-')
     const cronExp = `0 ${minute} ${hour} * * *`
-    cron.schedule(cronExp, async () => {
-      // 获取日期
-      const now = new Date();
-      const year = now.getFullYear()
-      const month = now.getMonth() + 1
-      const day = now.getDate()
-      const date = `${year}-${month < 10 ? "0" + month : month}-${day < 10 ? "0" + day : day}`
-      channelIdObj = []
-      for (var i of alertList) {
-        let { channelId, selfId } = i.rules
-        const channelIdList = channelIdDict<string>(`${channelId}-${selfId}`)
-        if ((channelIdList).length < 1) {
-          channelIdObj[`${channelId}-${selfId}`] = [i]
-        } else {
-          channelIdObj[`${channelId}-${selfId}`].push(i)
-        }
-      }
-      for (var j of Object.keys(channelIdObj)) {
-        let atList = ''
-        let { channelId, platform, selfId, guildId } = channelIdDict<string>(j)[0].rules
-        let rank = []
-        for (var k of channelIdDict<string>(j)) {
-          let nums: number | boolean
-          if (k?.token) {
-            nums = await getContributions(ctx, k.token, k.username, date)
-          } else {
-            nums = await getTileNums(ctx, k.username, date)
-          }
-          // 记录瓷砖
-          if(nums as number > 0){
-            rank.push({username:k.username,tile:nums})
-          }
-          if (nums === -1) {
-            atList += h.at(k.userId)
-          } else if (!nums) {
-            logger.warn(`${(k.userId)}-${k.username} 瓷砖查询失败, 建议配置 token 或 proxy`)
-          }
-        }
-        // 排序
-        rank.sort((a, b) => b.tile - a.tile)
-        const bot = ctx.bots[`${platform}:${selfId}`]
-        const img_url = pathToFileURL(resolve(__dirname, "0.jpg")).href
-        bot?.sendMessage(channelId, rank[0].username+" 是今天的瓷砖王", guildId)
-        // 读取提醒语
-        const alertText = ctx.i18n.get('commands.tile.messages.tile-alert')['zh'] ?? '快起来贴瓷砖！'
-        bot?.sendMessage(channelId, h.image(img_url) + "" + atList + alertText, guildId)
-      }
-    })
+    cron.schedule(cronExp, () => alertCallbackFunctionasync(ctx))
   })
   ctx.command('tile', "查看群友今天贴了多少瓷砖").alias("瓷砖")
     .option("username", "-u <username:string>")
@@ -157,6 +108,9 @@ export function apply(ctx: Context, config: Config) {
       }
       if (nums === -1) {
         nums = 0
+      }
+      if (nums === 0) {
+        return `${username} 在 ${date} 没有贴瓷砖`
       }
       return `${username} 在 ${date} 贴了 ${nums} 块瓷砖`
     })
@@ -212,9 +166,9 @@ export function apply(ctx: Context, config: Config) {
       session.bot.sendPrivateMessage
       // 为了保证登录安全，只能私信机器人操作
       if (session?.guildId === session?.channelId) {
-        return add_clock(ctx, session as Session, config)
+        return add_clock(ctx, session as Session)
       } else {
-        return add_clock(ctx, session as Session, config, false)
+        return add_clock(ctx, session as Session, false)
       }
     })
 }
@@ -248,7 +202,6 @@ function channelIdDict<T>(channelIdselfId: T): Array<{
 async function add_clock(
   ctx: Context,
   session: Session,
-  config: Config,
   addToken: boolean = false) {
   let username: string
   let token: string = ''
@@ -345,7 +298,52 @@ async function clock_switch(ctx: Context, session: Session) {
   return session.text('commands.tile.messages.tile-switch', [target?.[0].username, target[0].enable ? "关闭" : "开启"])
 
 }
+export async function alertCallbackFunctionasync(ctx: Context) {
+  const date = getDate()
+  channelIdObj = []
+  for (var i of alertList) {
+    let { channelId, selfId } = i.rules
+    const channelIdList = channelIdDict<string>(`${channelId}-${selfId}`)
+    if ((channelIdList).length < 1) {
+      channelIdObj[`${channelId}-${selfId}`] = [i]
+    } else {
+      channelIdObj[`${channelId}-${selfId}`].push(i)
+    }
+  }
+  for (var j of Object.keys(channelIdObj)) {
+    let atList = ''
+    let { channelId, platform, selfId, guildId } = channelIdDict<string>(j)[0].rules
+    let rank = []
+    for (var k of channelIdDict<string>(j)) {
+      let nums: number | boolean
+      if (k?.token) {
+        nums = await getContributions(ctx, k.token, k.username, date)
+      } else {
+        nums = await getTileNums(ctx, k.username, date)
+      }
+      // 记录瓷砖
+      if (nums as number > 0) {
+        rank.push({ username: k.username, tile: nums })
+      }
+      if (nums === -1) {
+        atList += h.at(k.userId)
+      } else if (!nums) {
+        logger.warn(`${(k.userId)}-${k.username} 瓷砖查询失败, 建议配置 token 或 proxy`)
+      }
+    }
 
+    // 排序
+    rank.sort((a, b) => b.tile - a.tile)
+    const bot = ctx.bots[`${platform}:${selfId}`]
+    const img_url = pathToFileURL(resolve(__dirname, "0.jpg")).href
+    console.dir(rank[0].username + " 是今天的瓷砖王")
+    bot?.sendMessage(channelId, rank[0].username + " 是今天的瓷砖王", guildId)
+    // 读取提醒语
+    const alertText = ctx.i18n.get('commands.tile.messages.tile-alert')['zh'] ?? '快起来贴瓷砖！'
+    console.dir(atList + alertText)
+    bot?.sendMessage(channelId, h.image(img_url) + "" + atList + alertText, guildId)
+  }
+}
 
 export function clearAlarm(uid: string) {
   // 清除timeOut
@@ -353,4 +351,13 @@ export function clearAlarm(uid: string) {
     if (alertList[i].userId == uid) {
       alertList.splice(i, 1)
     }
+}
+
+export function getDate() {
+  // 获取日期
+  const now = new Date();
+  const year = now.getFullYear()
+  const month = now.getMonth() + 1
+  const day = now.getDate()
+  return `${year}-${month < 10 ? "0" + month : month}-${day < 10 ? "0" + day : day}`
 }
