@@ -38,6 +38,7 @@
     }
   },
   "peerDependencies": {
-    "koishi": "^4.15.2"
+    "koishi": "^4.15.2",
+    "koishi-plugin-puppeteer": "^3.7.0"
   }
 }
