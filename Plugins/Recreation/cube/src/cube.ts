@@ -1,3 +1,9 @@
+/**
+ * 旋转矩阵的方法
+ * @param arr 二维数组
+ * @param derect 方向
+ * @returns 
+ */
 export const rot = (arr: number[][], derect: boolean) => {
     const res = []
     for (var i = 0; i < arr[0].length; i++) {
@@ -434,7 +440,7 @@ export class Cube{
         return true
 
     }
-
+    // 执行操作序列
     re_do(msg:string[]){
         for(var plain_text of msg){
             eval(`this.${plain_text}()`)

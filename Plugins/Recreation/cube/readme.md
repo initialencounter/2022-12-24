@@ -29,9 +29,11 @@
   - 在配置项设置一次性key，交易对象发给机器人，
 
 ## 注意事项
->建议使用前在在插件管理加载puppteeter服务,否则无法发送图片\n
-本插件只用于体现 Koishi 部署者意志\n
-对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-cube 概不负责。\n
+
+本插件只用于体现 Koishi 部署者意志
+
+对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-cube 概不负责。
+
 如果有更多文本内容想要修改，可以在<a href="/locales">本地化</a>中修改 zh 内容
 
 ### 感谢

@@ -2,6 +2,8 @@ import { Context, Schema, Logger, Session, Dict, Element } from 'koishi'
 
 import { } from 'koishi-plugin-puppeteer'
 import { Cube } from './cube'
+import { resolve } from 'path'
+import { readFileSync } from 'fs'
 export const name: string = 'cube'
 export const logger = new Logger(name)
 
@@ -32,6 +34,9 @@ export function quickSort(arr: CubeScore[]) {
   return quickSort(left).concat([arr[0]]).concat(quickSort(right))
 }
 class CubeActivity {
+  static inject = {
+    required: ["puppeteer"]
+  }
   cube_dict: Dict
   color: Dict
   mix_list: string[]
@@ -81,7 +86,7 @@ class CubeActivity {
       session3.user.authority = 5
       this.key_fix = Math.random() * 999
       return '交易成功'
-    }else{
+    } else {
       return '请先与管理员进行py交易'
     }
   }
@@ -158,7 +163,7 @@ class CubeActivity {
       }
     }
 
-    logger.info(res)
+    logger.info(res.slice(0, -1))
     return res.slice(0, res.length - 1)
   }
   async get_rank(): Promise<Element> {
@@ -428,27 +433,7 @@ class CubeActivity {
   }
 }
 namespace CubeActivity {
-  export const usage = `
-## 注意事项
->建议使用前在在插件管理加载puppteeter服务,否则无法发送图片\n
-本插件只用于体现 Koishi 部署者意志\n
-对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-cube 概不负责。\n
-如果有更多文本内容想要修改，可以在<a href="/locales">本地化</a>中修改 zh 内容
-
-## 使用方法
-- 操作魔法
-  - cb +【f,b,u,d,l,r】不区分大小写，在字母前加入【非方向字符】代表顺时针旋转
-- 新建魔法
-  - cb
-- 自定义魔法
-  - cb.def 魔方数据
-- 撤销操作
-  - cb.back
-- 魔方排行榜
-  - cb.rank
-- py交易 修改群友权限
-  - cb.bind+一次性key 
-  - 在配置项设置一次性key，交易对象发给机器人，
+  export const usage = `${readFileSync(resolve(__dirname,"../readme.md")).toString('utf-8')}
 `
 
 
