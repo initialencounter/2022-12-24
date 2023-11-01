@@ -1,5 +1,5 @@
 import { Schema } from 'koishi';
-import fs from "fs";
+import { readFileSync} from "fs";
 import { resolve } from "path";
 
 export const MineConfig = Schema.intersect([
@@ -54,4 +54,4 @@ export interface MineConfig {
     minesC: number
 
 }
-export const mineUsage = fs.readFileSync(resolve(__dirname, '../readme.md'))
+export const mineUsage = readFileSync(resolve(__dirname, '../readme.md'))

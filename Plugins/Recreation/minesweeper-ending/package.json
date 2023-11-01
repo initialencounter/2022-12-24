@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-minesweeper-ending",
   "description": "扫雷残局，无猜，高性能原生图像处理",
-  "version": "1.5.6",
+  "version": "1.5.7",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -33,7 +33,7 @@
     "endgame"
   ],
   "peerDependencies": {
-    "koishi": "^4.13.0"
+    "koishi": "^4.15.2"
   },
   "koishi": {
     "description": {

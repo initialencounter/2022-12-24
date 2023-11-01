@@ -41,15 +41,17 @@ declare module 'koishi' {
 }
 
 class EndingGame {
-  static using = ['puppeteer']
+  static inject = {
+    required: ['database']
+  }
   minefieldDict: Dict
   banList: Dict
   theme: string
-  constructor(private ctx: Context, private config: MineConfig) {
+  constructor(ctx: Context, private config: MineConfig) {
     setTheme(config)
     this.banList = {}
     this.theme = this.config.theme
-    ctx = ctx.guild()
+
     // 拓展 Minesweeper 排行榜表
     ctx.model.extend('minesweeper_ending_rank', {
       // 各字段类型
@@ -71,7 +73,7 @@ class EndingGame {
     this.minefieldDict = {}
 
 
-    ctx.command("扫雷生涯 [at]", "查看自己或其他玩家的生涯").alias("我的信息", "生涯").action(async ({ session }) => {
+    ctx.command("ed.生涯 [at]", "查看自己或其他玩家的生涯").action(async ({ session }) => {
       const target = session.content.match(/(?<=<at id=")([\s\S]*?)(?="\/>)/g)
       let uid: string = session.userId
       if (target?.length > 0) {
@@ -82,8 +84,7 @@ class EndingGame {
     })
 
     // 挑战玩法
-    ctx.command("fight", "开启扫雷挑战模式")
-      .alias("挑战模式")
+    ctx.command("ed.fight", "开启扫雷挑战模式")
       .action(async ({ session }) => {
         let last = await ctx.model.get('minesweeper_ending_rank', { userId: session.userId })
         const now = new Date().getDate()
@@ -193,7 +194,7 @@ class EndingGame {
 
 
       })
-    ctx.command('flag', '开启或关闭标记模式,仅对自己生效').alias('切换标记模式')
+    ctx.command('ed.flag', '开启或关闭标记模式,仅对自己生效')
       .action(async ({ session }) => {
         const target = await ctx.model.get('minesweeper_ending_rank', { userId: session.userId }, ["isFlag"])
         if (target.length > 0) {
@@ -205,7 +206,7 @@ class EndingGame {
         }
       })
     ctx.command("ed [行:number] [列:number] [雷:number]", "开启残局，默认是4*4*6")
-      .alias('残局', "minesweeper-ending")
+      .alias('扫雷残局', "minesweeper-ending")
       .option("force", "-f")
       .action(async ({ session, options }, ...args) => {
         const m: Minefield = this.minefieldDict[session.channelId]
@@ -250,18 +251,18 @@ class EndingGame {
         }
         return await this.renew(session as Session, x, y, z)
       })
-    ctx.command("ed.end", "结束 ed").alias('不玩了').action(({ session }) => {
+    ctx.command("ed.end", "结束 ed").action(({ session }) => {
       this.minefieldDict[session.guildId] = null
       return "游戏结束"
     })
-    ctx.command("ed.n", "刷新 ed").alias("刷新残局", "重开").action(async ({ session }) => {
+    ctx.command("ed.n", "刷新 ed").action(async ({ session }) => {
       const m: Minefield = this.minefieldDict[session.channelId]
       if (!m) {
         return "不存在残局"
       }
       return await this.renew(session as Session, m.width, m.height, m.mines)
     })
-    ctx.command("ed.l", "查看地雷").alias("揭晓").action(({ session }) => {
+    ctx.command("ed.l", "查看地雷").action(({ session }) => {
       let m = this.minefieldDict[session.channelId]
       return this.getHint(m, session as Session)
     })
@@ -272,7 +273,7 @@ class EndingGame {
      * 1.发送雷图
      * 2.接收玩家的指令，将残局的所有雷标记出来的玩家获胜
      */
-    ctx.command("ed.s [numberString:string]", "打开格子").alias("破解", "开", "打开", "破", "open").action(async ({ session, options }, inputString) => {
+    ctx.command("ed.s [numberString:string]", "打开格子").action(async ({ session, options }, inputString) => {
 
       //检查是否拥有操作权限
       const dt = this.checkPermision(session.userId)
@@ -353,7 +354,7 @@ class EndingGame {
         return `破解成功！恭喜你喵~ 获得 ${tmp.length * 2} 点积分喵~`
       }
     })
-    ctx.command("ed.f [numberString:string]", "标记地雷").alias("标记", "标").action(async ({ session, options }, inputString) => {
+    ctx.command("ed.f [numberString:string]", "标记地雷").action(async ({ session, options }, inputString) => {
 
       //检查是否拥有操作权限
       const dt = this.checkPermision(session.userId)
@@ -479,7 +480,7 @@ class EndingGame {
 
     })
 
-    ctx.command('ed.r', '查看最强扫雷榜单').alias("雷神殿", "雷神榜", "排行榜", "排名")
+    ctx.command('ed.r', '查看最强扫雷榜单')
       .action(async ({ }) => {
         // 获取游戏信息
         const rankInfo: MinesweeperRank[] = await ctx.model.get('minesweeper_ending_rank', {})
@@ -502,7 +503,7 @@ ${rankInfo.map((player, index) => ` ${String(index + 1).padStart(2, ' ')}   ${pl
         }
       })
 
-    ctx.command('ed.cr', '查看挑战榜').alias("挑战榜")
+    ctx.command('ed.cr', '查看挑战榜')
       .action(async ({ }) => {
         // 获取游戏信息
         const rankInfo: MinesweeperRank[] = await ctx.model.get('minesweeper_ending_rank', {})
