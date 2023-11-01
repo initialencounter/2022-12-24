@@ -1,14 +1,14 @@
+import { readFileSync } from 'fs';
 import { Context, Schema, Logger } from 'koishi'
 import { } from 'koishi-plugin-rate-limit'
+import { resolve } from 'path';
 export const name = 'couplet'
 export const logger = new Logger(name);
 
 const headers: object = {
   "headers": { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64); AppleWebKit/537.36 (KHTML, like Gecko); Chrome/54.0.2840.99 Safari/537.36" }
 }
-export const usage = `
-
-`
+export const usage = `${readFileSync(resolve(__dirname, '../readme.md')).toString('utf-8')}`
 export interface Config {
   authority: number
   usage: number
