@@ -10,7 +10,7 @@ export interface Config { }
 export const Config: Schema<Config> = Schema.object({})
 
 export function apply(ctx: Context) {
-    ctx.command('雷网 <id:number>', '查看雷网帖子', { checkArgCount: true }).action(async ({ }, id) => {
+    ctx.command('stnb.雷网 <id:number>', '查看雷网帖子', { checkArgCount: true }).action(async ({ }, id) => {
         const res: Buffer = await ctx.http.get(`http://saolei.wang/BBS/Title.asp?Id=${id}`, { responseType: "arraybuffer" })
         const buf = iconv.decode(res, 'gb2312');
         const html = buf.toString()
@@ -21,7 +21,7 @@ export function apply(ctx: Context) {
         const msg = titles + '\n' + author + '\n' + content
         return msg
     })
-    ctx.command('雷网用户 <id:number>', '查看雷网用户',{checkArgCount:true}).action(async({},id)=>{
+    ctx.command('stnb.雷网用户 <id:number>', '查看雷网用户',{checkArgCount:true}).action(async({},id)=>{
         const res: Buffer = await ctx.http.get(`http://saolei.wang/Player/Info.asp?Id=${id}`, { responseType: "arraybuffer" })
         const buf = iconv.decode(res, 'gb2312');
         const html = buf.toString()
