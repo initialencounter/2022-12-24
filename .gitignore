@@ -24,6 +24,6 @@ tsconfig.tsbuildinfo
 koishi.yml
 *.lock
 package-lock.json
-
+*.bak
 
 personality.json
