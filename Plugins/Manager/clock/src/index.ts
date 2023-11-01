@@ -1,58 +1,15 @@
+import { readFileSync } from 'fs';
 import { Context, Logger, Schema, Session } from 'koishi'
 var cron = require('node-cron');
 import * as shutdown from "koishi-plugin-shutdown"
+import { resolve } from 'path';
 export const using = ['database']
 
 export const name = 'clock'
+const TABLE_NAME = 'clock'
 export const logger = new Logger(name)
 
-export const usage = `
-### [Allowed fields](https://github.com/node-cron/node-cron)
-
-\`\`\`
- # ┌────────────── second (optional)
- # │ ┌──────────── minute
- # │ │ ┌────────── hour
- # │ │ │ ┌──────── day of month
- # │ │ │ │ ┌────── month
- # │ │ │ │ │ ┌──── day of week
- # │ │ │ │ │ │
- # │ │ │ │ │ │
- # * * * * * *
-\`\`\`
-
-### Allowed values
-
-|     field    |        value        |
-|--------------|---------------------|
-|    second    |         0-59        |
-|    minute    |         0-59        |
-|     hour     |         0-23        |
-| day of month |         1-31        |
-|     month    |     1-12 (or names) |
-|  day of week |     0-7 (or names, 0 or 7 are sunday)  |
-
-### 注意事项
-
-### 示例
-#### 在工作日 17:30 发送下班了
-  - User: clock 0 30 17 * * 1,2,3,4,5
-  - Koishi: 请输入提醒消息
-  - User: 下班了
-
-
-#### 在每天 00:00 发送晚安
-  - User: clock 0 0 0 * * *
-  - Koishi: 请输入提醒消息
-  - User: 晚安
-
-
-#### 在每天早上 8:00 发送早安
-  - User: cloak 0 0 8 * * * 
-  - Koishi: 请输入提醒消息
-  - User: 早安
-
-`
+export const usage = `${readFileSync(resolve(__dirname, '../readme.md')).toString('utf-8')}`
 declare module 'koishi' {
   interface Tables {
     clock: Clock
@@ -83,16 +40,16 @@ export interface Clock {
   time: string
   msg: string
   enable: boolean
-  rules: Rule[]
+  rule: Rule
 }
 export function apply(ctx: Context, config: Config) {
-  ctx.model.extend('clock', {
+  ctx.model.extend(TABLE_NAME, {
     // 各字段类型
     id: 'unsigned',
     time: "text",
     msg: "text",
     enable: "boolean",
-    rules: "json"
+    rule: "json"
   }, {
     primary: 'id', //设置 uid 为主键
     autoInc: true
@@ -100,7 +57,7 @@ export function apply(ctx: Context, config: Config) {
   // 重新启用 闹钟
   ctx.on('ready', async () => {
     ctx.plugin(shutdown)
-    const clocks = await ctx.database.get('clock', {})
+    const clocks = await ctx.database.get(TABLE_NAME, {})
     for (var i of clocks) {
       if (i.enable) {
         schedule_cron(ctx, config, i)
@@ -114,7 +71,7 @@ export function apply(ctx: Context, config: Config) {
     })
   ctx.command('clock.r [id:number]', "删除闹钟", { checkArgCount: true, authority: 4 })
     .action(async ({ session }, id) => {
-      await ctx.database.remove('clock', [id])
+      await ctx.database.remove(TABLE_NAME, [id])
       return `闹钟 ${id} 删除成功`
     })
   ctx.command('clock.l', "列出所有闹钟").action(async ({ session }) => {
@@ -132,11 +89,11 @@ export function apply(ctx: Context, config: Config) {
  * @returns 
  */
 async function clock_switch(ctx: Context, session: Session, id: number) {
-  const target = await ctx.database.get('clock', [id])
+  const target = await ctx.database.get(TABLE_NAME, [id])
   if (target.length < 1) {
     return '闹钟id 错误'
   }
-  await ctx.database.set('clock', [id], { enable: target[0].enable ? false : true })
+  await ctx.database.set(TABLE_NAME, [id], { enable: target[0].enable ? false : true })
   const msg = `闹钟 ${id}，已${target[0].enable ? "关闭" : "开启"},重启后生效`
   // 重启 koishi
   session.execute('shutdown -r now')
@@ -150,7 +107,7 @@ async function clock_switch(ctx: Context, session: Session, id: number) {
  * @returns 
  */
 async function list_clock(ctx: Context, session: Session) {
-  const list = await ctx.database.get('clock', {})
+  const list = await ctx.database.get(TABLE_NAME, {})
   let msg = '当前存在闹钟'
   let count = 0
   for (var i of list) {
@@ -196,19 +153,17 @@ async function add_clock(
     msg = '时间到啦'
   }
   if (anyway) {
-    ctx.database.create('clock', {
+    ctx.database.create(TABLE_NAME, {
       time: time,
       msg: msg,
       enable: true,
-      rules:
-        [
-          {
-            selfId: session.bot.selfId,
-            platform: session.platform,
-            guildId: session.guildId,
-            channelId: session.channelId
-          }
-        ]
+      rule:
+      {
+        selfId: session.bot.selfId,
+        platform: session.platform,
+        guildId: session.guildId,
+        channelId: session.channelId
+      }
     })
   }
 
@@ -219,15 +174,13 @@ async function add_clock(
       msg: msg,
       time: time,
       enable: true,
-      rules:
-        [
-          {
-            selfId: session.bot.selfId,
-            platform: session.platform,
-            guildId: session.guildId,
-            channelId: session.channelId
-          }
-        ]
+      rule:
+      {
+        selfId: session.bot.selfId,
+        platform: session.platform,
+        guildId: session.guildId,
+        channelId: session.channelId
+      }
     })
   return '闹钟添加成功'
 
@@ -241,13 +194,12 @@ async function add_clock(
  */
 function schedule_cron(ctx: Context, config: Config, clock: Clock) {
   const targets = config.rules
-  for (var i of clock.rules) {
-    if (!targets.includes(i)) {
-      targets.push(i)
-    }
-  }
+  targets.push(clock.rule)
   cron.schedule(clock.time, async () => {
     for (let { channelId, platform, selfId, guildId } of targets) {
+      if ((!guildId) || (!platform) || (!channelId)) {
+        continue
+      }
       if (!selfId) {
         const channel = await ctx.database.getChannel(platform, channelId, ['assignee', 'guildId'])
         if (!channel || !channel.assignee) return
