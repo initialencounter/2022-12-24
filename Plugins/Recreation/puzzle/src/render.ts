@@ -1,7 +1,6 @@
 import { resolve } from "path";
 import fs from 'fs';
 import { PNG } from 'pngjs';
-import { Context } from "koishi";
 import Pz from './index';
 
 export const theme = [['#000000FF', '#707070FF', '#707070FF', '#707070FF', '#707070FF',],
@@ -10,11 +9,7 @@ export const theme = [['#000000FF', '#707070FF', '#707070FF', '#707070FF', '#707
 ['#006FFFFF', '#444444FF', '#008314FF', '#001EE1FF', '#FF0000FF',],
 ['#FF0000FF', '#444444FF', '#008314FF', '#001EE1FF', '#BB0000FF',]]
 
-// export const theme = [['#707070FF', '#707070FF', '#707070FF', '#707070FF','#707070FF'],
-// ['#444444FF', '#00C91AFF', '#00C91AFF', '#00C91AFF','#00C91AFF',],
-// [ '#444444FF', '#008314FF', '#006FFFFF', '#006FFFFF','#006FFFFF',],
-// [ '#444444FF', '#008314FF', '#001EE1FF', '#FF0000FF','#FF0000FF',],
-// [ '#444444FF', '#008314FF', '#001EE1FF', '#BB0000FF','#FFFFFFFF']]
+
 const imgArr = {}
 const NumImg = {}
 let textColor = [0, 0, 0, 255]

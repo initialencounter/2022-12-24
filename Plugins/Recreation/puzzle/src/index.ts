@@ -1,5 +1,4 @@
 import { Context, Dict, Schema, Session, Element, Logger, h } from 'koishi'
-import { } from 'koishi-plugin-puppeteer'
 import { Klotsk } from './puzzle'
 import { setTheme, renderX } from './render'
 export const name: string = 'puzzle'
