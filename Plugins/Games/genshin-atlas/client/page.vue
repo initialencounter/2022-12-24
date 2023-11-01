@@ -36,7 +36,7 @@ const current: any = inject('manager.settings.current')
 const data: Data = (() => {
 
   // 判断插件配置页面的逻辑
-  const plgNanme = toRaw(current._value).label
+  const plgNanme = toRaw(current._value)["name"]
   // 将 client 改为你想要显示的插件页面
   if (plgNanme !== "genshin-atlas") return
   return toRaw(store.genshinatlas)

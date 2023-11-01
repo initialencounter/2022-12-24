@@ -45,17 +45,17 @@ class GenshinAtlas extends DataService<GenshinAtlas.Data> {
     })
     let keys = ['material', 'specialty', 'up', 'enemy', 'effect', 'card', 'weapon', 'food', 'material for role', 'form', 'artifact'];
     let alias = [
-      ['boss材料'],
-      ['突破材料', '特殊材料'],
-      ['up'],
-      ['怪', '原魔'],
-      ['效果', 'buff'],
-      ['卡片', '七圣召唤'],
-      ['武器'],
-      ['食物', '菜'],
-      ['角色材料'],
-      ['遗物表'],
-      ['圣遗物']
+      this.config.alias.material ?? ['副本'],
+      this.config.alias.specialty ?? ['突破材料', '特殊材料'],
+      this.config.alias.up ?? ['up'],
+      this.config.alias.enemy ?? ['怪', '原魔'],
+      this.config.alias.effect ?? ['效果', 'buff'],
+      this.config.alias.card ?? ['卡片', '七圣召唤'],
+      this.config.alias.weapon ?? ['武器'],
+      this.config.alias.food ?? ['食物', '菜'],
+      this.config.alias["material for role"] ?? ['角色材料'],
+      this.config.alias.form ?? ['遗物表'],
+      this.config.alias.artifact ?? ['圣遗物']
     ]
     ctx.middleware((session, next) => {
       const target = this.getTarget(session.content);
@@ -112,13 +112,40 @@ namespace GenshinAtlas {
     src_path: string
     engine: boolean
     repo: string
+    alias: {
+      material: string[]
+      specialty: string[]
+      up: string[]
+      enemy: string[]
+      effect: string[]
+      card: string[]
+      weapon: string[]
+      food: string[]
+      'material for role': string[]
+      form: string[]
+      artifact: string[]
+    }
   }
+  export const Alias = Schema.object({
+    material: Schema.array(String).default(['副本']).description('副本'),
+    specialty: Schema.array(String).default(['突破材料', '特殊材料']).description('突破材料'),
+    up: Schema.array(String).default(['up']).description('up'),
+    enemy: Schema.array(String).default(['怪', '原魔']).description('原魔'),
+    effect: Schema.array(String).default(['效果', 'buff']).description('buff'),
+    card: Schema.array(String).default(['卡片', '七圣召唤']).description('卡片'),
+    weapon: Schema.array(String).default(['武器']).description('武器'),
+    food: Schema.array(String).default(['食物', '菜']).description('食物'),
+    'material for role': Schema.array(String).default(['角色材料']).description("角色材料"),
+    form: Schema.array(String).default(['遗物表']).description("遗物表"),
+    artifact: Schema.array(String).default(['圣遗物']).description("圣遗物"),
+  })
   export const Config: Schema<Config> =
     Schema.object({
       prefix: Schema.string().default('#').description('匹配命令的前缀字符'),
       engine: Schema.boolean().default(true).description('是否使用在线引擎'),
       src_path: Schema.string().default('genshin-atlas').description('资源文件的路径'),
       repo: Schema.string().default('https://gitee.com/IKUN-HUANG/genshin-atlas/raw/master').description('gitee在线资源的地址'),
+      alias: Alias
     }).description('进阶设置')
 
 }

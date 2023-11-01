@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-genshin-atlas",
   "description": "基于[Nwflower](https://gitee.com/Nwflower/genshin-atlas)仓库的轻量《原神》图鉴引擎",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -34,7 +34,7 @@
   },
   "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Games/genshin-atlas#readme",
   "peerDependencies": {
-    "koishi": "^4.12.0",
+    "koishi": "^4.15.2",
     "@koishijs/plugin-console": "^5.11.0"
   },
   "koishi": {
