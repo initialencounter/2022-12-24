@@ -1,4 +1,7 @@
+import { readFileSync } from 'fs'
 import { Argv, Command, Computed, Context, FieldCollector, h, Schema, Session } from 'koishi'
+import { } from 'koishi-plugin-puppeteer'
+import { resolve } from 'path'
 
 declare module 'koishi' {
   interface Events {
@@ -34,11 +37,13 @@ interface HelpOptions {
 export interface Config {
   shortcut?: boolean
   options?: boolean
+  imageHelp?: boolean
 }
 
 export const Config: Schema<Config> = Schema.object({
   shortcut: Schema.boolean().default(true).description('是否启用快捷调用。'),
   options: Schema.boolean().default(true).description('是否为每个指令添加 `-h, --help` 选项。'),
+  imageHelp: Schema.boolean().default(false).description('是否渲染指令列表。'),
 })
 
 function executeHelp(session: Session<never, never>, name: string) {
@@ -49,7 +54,11 @@ function executeHelp(session: Session<never, never>, name: string) {
   })
 }
 
-export const name = 'help'
+export const name = 'help-pro'
+export const inject = {
+  optional: ['puppeteer']
+}
+export const usage = `${readFileSync(resolve(__dirname, '../readme.md')).toString('utf-8')}`
 
 export function apply(ctx: Context, config: Config) {
   ctx.i18n.define('zh-CN', require('./locales/zh-CN'))
@@ -148,12 +157,12 @@ export function apply(ctx: Context, config: Config) {
     .option('showHidden', '-H')
     .action(async ({ session, options }, target) => {
       if (!target) {
-        const prefix = session.resolve(session.app.config.prefix)[0] ?? ''
         const commands = $._commandList.filter(cmd => cmd.parent === null)
+        // Todo
+        if (ctx.puppeteer && config.imageHelp) {
+         return renderImage()
+        }
         const output = formatCommands('.global-prolog', session, commands, options)
-        const epilog = session.text('.global-epilog', [prefix])
-        if (epilog) output.push(epilog)
-        console.dir(output)
         return output.filter(Boolean).join('\n')
       }
 
@@ -188,8 +197,9 @@ function formatCommands(path: string, session: Session<'authority'>, children: C
 
   const prefix = session.resolve(session.app.config.prefix)[0] ?? ''
   const output = commands.map(({ name, displayName, config }) => {
-    let output = '    ' + prefix + displayName
-    output += '  ' + session.text([`commands.${name}.description`, ''], config.params)
+    const desc = session.text([`commands.${name}.description`, ''], config.params)
+    let output = session.text('.display-prefix') + prefix + displayName;
+    output += session.text('.display-mid') + lenLessThan8Text(desc);
     return output
   })
   const hints: string[] = []
@@ -198,6 +208,25 @@ function formatCommands(path: string, session: Session<'authority'>, children: C
     : ''
   output.unshift(session.text(path, [hintText]))
   return output
+}
+/**
+ * 省略长度大于8的字符
+ * @param input 
+ * @returns 
+ */
+function lenLessThan8Text(input: string) {
+  if (input.length < 8) {
+    return input
+  } else {
+    return input.slice(0, 8) + '...'
+  }
+}
+/**
+ * 渲染help
+ * @returns 
+ */
+function renderImage(){
+  return "该方法正在施工中..."
 }
 
 function getOptionVisibility(option: Argv.OptionConfig, session: Session<'authority'>) {
