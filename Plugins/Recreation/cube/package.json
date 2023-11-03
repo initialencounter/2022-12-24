@@ -30,7 +30,6 @@
     "cube"
   ],
   "koishi": {
-    "browser": true,
     "service": {
       "required": [
         "puppeteer"
