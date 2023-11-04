@@ -1,12 +1,22 @@
 import { readFileSync } from 'fs'
-import { Argv, Command, Computed, Context, FieldCollector, h, Schema, Session } from 'koishi'
+import { Argv, Command, Computed, Context, FieldCollector, h, Schema, Session, Dict } from 'koishi'
 import { } from 'koishi-plugin-puppeteer'
 import { resolve } from 'path'
+import { render } from './render'
+
+
+type DailyField = typeof dailyFields[number]
+const dailyFields = [
+  'command', 'dialogue', 'botSend', 'botReceive', 'group',
+] as const
 
 declare module 'koishi' {
   interface Events {
     'help/command'(output: string[], command: Command, session: Session<never, never>): void
     'help/option'(output: string, option: Argv.OptionVariant, command: Command, session: Session<never, never>): string
+  }
+  interface Tables {
+    stats_daily: Record<DailyField, Dict<number>> & { time: Date }
   }
 
   namespace Command {
@@ -62,6 +72,11 @@ export const usage = `${readFileSync(resolve(__dirname, '../readme.md')).toStrin
 
 export function apply(ctx: Context, config: Config) {
   ctx.i18n.define('zh-CN', require('./locales/zh-CN'))
+  ctx.model.extend('stats_daily', {
+    time: 'date',
+    ...Object.fromEntries(dailyFields.map((key) => [key, 'json'])),
+  }, { primary: 'time' })
+
 
   function enableHelp(command: Command) {
     command[Context.current] = ctx
@@ -158,11 +173,13 @@ export function apply(ctx: Context, config: Config) {
     .action(async ({ session, options }, target) => {
       if (!target) {
         const commands = $._commandList.filter(cmd => cmd.parent === null)
+        const output = formatCommands('.global-prolog', session, commands, options)
         // Todo
         if (ctx.puppeteer && config.imageHelp) {
-         return renderImage()
+          return await renderImage(ctx,commands, session)
         }
-        const output = formatCommands('.global-prolog', session, commands, options)
+
+        console.dir(output)
         return output.filter(Boolean).join('\n')
       }
 
@@ -199,7 +216,7 @@ function formatCommands(path: string, session: Session<'authority'>, children: C
   const output = commands.map(({ name, displayName, config }) => {
     const desc = session.text([`commands.${name}.description`, ''], config.params)
     let output = session.text('.display-prefix') + prefix + displayName;
-    output += session.text('.display-mid') + lenLessThan8Text(desc);
+    output += session.text('.display-mid') + lenLessThanXText(desc,8);
     return output
   })
   const hints: string[] = []
@@ -214,19 +231,23 @@ function formatCommands(path: string, session: Session<'authority'>, children: C
  * @param input 
  * @returns 
  */
-function lenLessThan8Text(input: string) {
-  if (input.length < 8) {
+function lenLessThanXText(input: string,X:number) {
+  if (input.length < X) {
     return input
   } else {
-    return input.slice(0, 8) + '...'
+    return input.slice(0, X) + '...'
   }
 }
 /**
  * 渲染help
  * @returns 
  */
-function renderImage(){
-  return "该方法正在施工中..."
+async function renderImage(ctx:Context, cmds: Command[], session: Session<'authority'>) {
+  const cmdStats = await getCommandsStats(ctx)
+  const cmdArray = formatCommandsArray(session,cmds,{})
+  const sortedCmds = sortCommands(cmdArray,cmdStats)
+  console.dir(sortedCmds)
+  return await render(sortedCmds, session)
 }
 
 function getOptionVisibility(option: Argv.OptionConfig, session: Session<'authority'>) {
@@ -303,4 +324,43 @@ async function showHelp(command: Command, session: Session<'authority'>, config:
 
   output.push(...formatCommands('.subcommand-prolog', session, command.children, config))
   return output.filter(Boolean).join('\n')
+}
+
+
+async function getCommandsStats(ctx: Context) {
+  const commandStats = (await ctx.database.get('stats_daily', {}, ['command']))
+  const record = commandStats.slice(0, 7).reduce((acc, curr) => {
+    for (const [key, value] of Object.entries(curr.command)) {
+      acc[key] = (acc[key] || 0) + value;
+    }
+    return acc;
+  }, {});
+  return record
+}
+
+function sortCommands(prev: (string | number)[][], frequencyCommands: Dict) {
+  console.dir(frequencyCommands)
+  for (var i = 0; i < prev.length; i++) {
+    
+    prev[i][2] = frequencyCommands[prev[i][0]] ?? 0
+  }
+  const sorted = prev.sort((a, b) => {
+    return (b[2] as number) - (a[2] as number)
+  })
+  return sorted
+}
+
+function formatCommandsArray(session: Session<'authority'>, children: Command[], options: HelpOptions) {
+  const commands = Array
+    .from(getCommands(session, children, options.showHidden))
+    .sort((a, b) => a.displayName > b.displayName ? 1 : -1)
+  if (!commands.length) return []
+
+  const prefix = session.resolve(session.app.config.prefix)[0] ?? ''
+  const output = commands.map(({ name, displayName, config }) => {
+    const desc = session.text([`commands.${name}.description`, ''], config.params)
+    let output = prefix + displayName;
+    return [output,lenLessThanXText(desc, 16),0]
+  })
+  return output
 }
