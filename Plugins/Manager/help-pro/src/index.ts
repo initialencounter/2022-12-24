@@ -478,8 +478,6 @@ async function renderImage1(ctx: Context, cmds: Command[], session: Session<'aut
   return await render(sortedCmds, session, color)
 }
 async function renderImage2(ctx: Context, cmds: Command[], session: Session<'authority'>, color: string) {
-  const cmdStats = await getCommandsStats(ctx)
   const cmdGrid: PluginGrid = await formatCommandsGrid(ctx, session, cmds, {})
-
   return await render2(cmdGrid, color)
 }
