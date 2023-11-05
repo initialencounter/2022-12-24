@@ -1,15 +1,60 @@
 import { readFileSync } from 'fs'
-import { Argv, Command, Computed, Context, FieldCollector, h, Schema, Session, Dict } from 'koishi'
+import { Argv, Command, Computed, Context, FieldCollector, h, Schema, Session, Dict, EffectScope } from 'koishi'
 import { } from 'koishi-plugin-puppeteer'
 import { resolve } from 'path'
-import { render } from './render'
-
+import { render, render2 } from './render'
+import { } from '@koishijs/loader'
 
 type DailyField = typeof dailyFields[number]
 const dailyFields = [
   'command', 'dialogue', 'botSend', 'botReceive', 'group',
 ] as const
 
+interface Package {
+  package: {
+    name: string
+    scope: string
+    version: string
+    description: string
+    keywords: string[]
+    date: string
+    links: {
+      npm: string
+    },
+    publisher: { username: string, email: string },
+    maintainers: [{ username: string, email: string }]
+  },
+  score: { final: number, detail: { quality: number, popularity: number, maintenance: number } },
+  searchScore: number
+  ignored: boolean
+  insecure: boolean
+  category: string
+  createdAt: string
+  updatedAt: string
+  rating: number
+  portable: boolean
+  downloads: {
+    lastMonth: number
+  },
+  installSize: number
+  publishSize: number
+}
+export interface PluginGrid {
+  game: (string | number)[][],
+  manage: (string | number)[][],
+  tool: (string | number)[][],
+  extension: (string | number)[][],
+  ai: (string | number)[][],
+  preset: (string | number)[][],
+  storage: (string | number)[][],
+  adapter: (string | number)[][],
+  image: (string | number)[][],
+  console: (string | number)[][],
+  gametool: (string | number)[][],
+  meme: (string | number)[][],
+  media: (string | number)[][],
+  unknown: (string | number)[][],
+}
 declare module 'koishi' {
   interface Events {
     'help/command'(output: string[], command: Command, session: Session<never, never>): void
@@ -47,13 +92,19 @@ interface HelpOptions {
 export interface Config {
   shortcut?: boolean
   options?: boolean
-  imageHelp?: boolean
+  output?: string
+  color?: string
 }
 
 export const Config: Schema<Config> = Schema.object({
   shortcut: Schema.boolean().default(true).description('是否启用快捷调用。'),
   options: Schema.boolean().default(true).description('是否为每个指令添加 `-h, --help` 选项。'),
-  imageHelp: Schema.boolean().default(false).description('是否渲染指令列表。'),
+  output: Schema.union([
+    Schema.const('text').description('纯文本'),
+    Schema.const('image1').description('蓝色双列随机'),
+    Schema.const('image2').description('分类圆角'),
+  ]).description("输出方式").default('image2'),
+  color: Schema.string().role('color').default('rgba(82, 149, 128, 1)'),
 })
 
 function executeHelp(session: Session<never, never>, name: string) {
@@ -63,7 +114,8 @@ function executeHelp(session: Session<never, never>, name: string) {
     args: [name],
   })
 }
-
+export const pluginCategory = {}
+export const categorys = ['']
 export const name = 'help-pro'
 export const inject = {
   optional: ['puppeteer']
@@ -77,7 +129,12 @@ export function apply(ctx: Context, config: Config) {
     ...Object.fromEntries(dailyFields.map((key) => [key, 'json'])),
   }, { primary: 'time' })
 
-
+  ctx.on('ready', async () => {
+    const packages: Package[] = (await ctx.http.get('https://registry.koishi.chat/index.json'))['objects']
+    for (var i of packages) {
+      pluginCategory[i.package.name] = i.category
+    }
+  })
   function enableHelp(command: Command) {
     command[Context.current] = ctx
     command.option('help', '-h', {
@@ -173,13 +230,14 @@ export function apply(ctx: Context, config: Config) {
     .action(async ({ session, options }, target) => {
       if (!target) {
         const commands = $._commandList.filter(cmd => cmd.parent === null)
-        const output = formatCommands('.global-prolog', session, commands, options)
+        const output = formatCommands(ctx, '.global-prolog', session, commands, options)
         // Todo
-        if (ctx.puppeteer && config.imageHelp) {
-          return await renderImage(ctx,commands, session)
+        if (ctx.puppeteer && config.output == 'image1') {
+          return await renderImage1(ctx, commands, session, config.color)
         }
-
-        console.dir(output)
+        if (ctx.puppeteer && config.output == 'image2') {
+          return await renderImage2(ctx, commands, session, config.color)
+        }
         return output.filter(Boolean).join('\n')
       }
 
@@ -189,7 +247,7 @@ export function apply(ctx: Context, config: Config) {
       if (!await ctx.permissions.test(permissions, session as any)) {
         return session.text('internal.low-authority')
       }
-      return showHelp(command, session, options)
+      return showHelp(ctx, command, session, options)
     })
 
   if (config.shortcut !== false) cmd.shortcut('help', { i18n: true, fuzzy: true })
@@ -206,7 +264,7 @@ function* getCommands(session: Session<'authority'>, commands: Command[], showHi
   }
 }
 
-function formatCommands(path: string, session: Session<'authority'>, children: Command[], options: HelpOptions) {
+function formatCommands(ctx: Context, path: string, session: Session<'authority'>, children: Command[], options: HelpOptions) {
   const commands = Array
     .from(getCommands(session, children, options.showHidden))
     .sort((a, b) => a.displayName > b.displayName ? 1 : -1)
@@ -216,7 +274,7 @@ function formatCommands(path: string, session: Session<'authority'>, children: C
   const output = commands.map(({ name, displayName, config }) => {
     const desc = session.text([`commands.${name}.description`, ''], config.params)
     let output = session.text('.display-prefix') + prefix + displayName;
-    output += session.text('.display-mid') + lenLessThanXText(desc,8);
+    output += session.text('.display-mid') + lenLessThanXText(desc, 8);
     return output
   })
   const hints: string[] = []
@@ -226,29 +284,7 @@ function formatCommands(path: string, session: Session<'authority'>, children: C
   output.unshift(session.text(path, [hintText]))
   return output
 }
-/**
- * 省略长度大于8的字符
- * @param input 
- * @returns 
- */
-function lenLessThanXText(input: string,X:number) {
-  if (input.length < X) {
-    return input
-  } else {
-    return input.slice(0, X) + '...'
-  }
-}
-/**
- * 渲染help
- * @returns 
- */
-async function renderImage(ctx:Context, cmds: Command[], session: Session<'authority'>) {
-  const cmdStats = await getCommandsStats(ctx)
-  const cmdArray = formatCommandsArray(session,cmds,{})
-  const sortedCmds = sortCommands(cmdArray,cmdStats)
-  console.dir(sortedCmds)
-  return await render(sortedCmds, session)
-}
+
 
 function getOptionVisibility(option: Argv.OptionConfig, session: Session<'authority'>) {
   if (session.user && option.authority > session.user.authority) return false
@@ -284,7 +320,7 @@ function getOptions(command: Command, session: Session<'authority'>, config: Hel
   return output
 }
 
-async function showHelp(command: Command, session: Session<'authority'>, config: HelpOptions) {
+async function showHelp(ctx: Context, command: Command, session: Session<'authority'>, config: HelpOptions) {
   const output = [session.text('.command-title', [command.displayName + command.declaration])]
 
   const description = session.text([`commands.${command.name}.description`, ''], command.config.params)
@@ -322,7 +358,7 @@ async function showHelp(command: Command, session: Session<'authority'>, config:
     if (text) output.push(...text.split('\n').map(line => '    ' + line))
   }
 
-  output.push(...formatCommands('.subcommand-prolog', session, command.children, config))
+  output.push(...formatCommands(ctx, '.subcommand-prolog', session, command.children, config))
   return output.filter(Boolean).join('\n')
 }
 
@@ -339,9 +375,7 @@ async function getCommandsStats(ctx: Context) {
 }
 
 function sortCommands(prev: (string | number)[][], frequencyCommands: Dict) {
-  console.dir(frequencyCommands)
   for (var i = 0; i < prev.length; i++) {
-    
     prev[i][2] = frequencyCommands[prev[i][0]] ?? 0
   }
   const sorted = prev.sort((a, b) => {
@@ -360,7 +394,92 @@ function formatCommandsArray(session: Session<'authority'>, children: Command[],
   const output = commands.map(({ name, displayName, config }) => {
     const desc = session.text([`commands.${name}.description`, ''], config.params)
     let output = prefix + displayName;
-    return [output,lenLessThanXText(desc, 16),0]
+    return [output, lenLessThanXText(desc, 16), 0]
   })
   return output
+}
+
+async function formatCommandsGrid(ctx: Context, session: Session<'authority'>, children: Command[], options: HelpOptions) {
+  const pluginGrid: PluginGrid = {
+    game: [],
+    manage: [],
+    tool: [],
+    extension: [],
+    ai: [],
+    preset: [],
+    storage: [],
+    adapter: [],
+    image: [],
+    console: [],
+    gametool: [],
+    meme: [],
+    media: [],
+    unknown: []
+  }
+  const commands = Array
+    .from(getCommands(session, children, options.showHidden))
+    .sort((a, b) => a.displayName > b.displayName ? 1 : -1)
+  if (!commands.length) return pluginGrid
+  const prefix = session.resolve(session.app.config.prefix)[0] ?? ''
+  const output = commands.map(({ name, displayName, config, ctx: { scope } }) => {
+    const scopeName = ctx.loader.paths(scope)[0]
+    let _category: string
+    if (scopeName.includes('@')) {
+      const pluginName: string = scopeName.split('@').slice(-1)[0]
+      const idStart = pluginName.indexOf('/')
+      const idEnd = pluginName.indexOf(':')
+      const pluginFullName: string = `@${pluginName.slice(0, idStart)}/koishi-plugin-${idEnd > -1 ? pluginName.slice(idStart + 1, idEnd) : pluginName.slice(idStart + 1)}`
+
+      _category = pluginCategory[pluginFullName]
+    } else {
+      const pluginName: string = scopeName.split('/').slice(-1)[0]
+      const idEnd = pluginName.indexOf(':')
+      let pluginFullName = `koishi-plugin-${idEnd > -1 ? pluginName.slice(0, idEnd) : pluginName}`
+      if (!pluginCategory[pluginFullName]) {
+        pluginFullName = `@koishijs/plugin-${idEnd > -1 ? pluginName.slice(0, idEnd) : pluginName}`
+      }
+      _category = pluginCategory[pluginFullName] ?? 'unknow'
+    }
+
+    const desc = session.text([`commands.${name}.description`, ''], config.params)
+    let output = prefix + displayName;
+    pluginGrid[_category].push([output, lenLessThanXText(desc, 16), 0])
+    return [output, lenLessThanXText(desc, 16), _category] ?? 'unknow'
+  })
+
+  const cmdStats = await getCommandsStats(ctx)
+  for (var [keys, values] of Object.entries(pluginGrid)) {
+    const sortedCmds = sortCommands(values, cmdStats)
+    pluginGrid[keys] = sortedCmds
+  }
+  return pluginGrid
+}
+
+/**
+ * 省略长度大于8的字符
+ * @param input 
+ * @returns 
+ */
+function lenLessThanXText(input: string, X: number) {
+  if (input.length < X) {
+    return input
+  } else {
+    return input.slice(0, X) + '...'
+  }
+}
+/**
+ * 渲染help
+ * @returns 
+ */
+async function renderImage1(ctx: Context, cmds: Command[], session: Session<'authority'>, color: string) {
+  const cmdArray = formatCommandsArray(session, cmds, {})
+  const cmdStats = await getCommandsStats(ctx)
+  const sortedCmds = sortCommands(cmdArray, cmdStats)
+  return await render(sortedCmds, session, color)
+}
+async function renderImage2(ctx: Context, cmds: Command[], session: Session<'authority'>, color: string) {
+  const cmdStats = await getCommandsStats(ctx)
+  const cmdGrid: PluginGrid = await formatCommandsGrid(ctx, session, cmds, {})
+
+  return await render2(cmdGrid, color)
 }
