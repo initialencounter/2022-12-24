@@ -4,7 +4,7 @@ import { PluginGrid } from '.'
 export async function render(
   commands: (string | number)[][],
   session: Session,
-  theme:string
+  theme: string
 ): Promise<Element> {
   const theme_color = parseColor(theme)
   const width = 14 * 220 + 5 * (commands.length + 1)
@@ -51,11 +51,11 @@ export async function render(
     }
   })
 }
-function parseColor(color:string){
-  color = color.slice(5,-1)
-  return color.split(', ').map((v)=>{return parseInt(v)})
+function parseColor(color: string) {
+  color = color.slice(5, -1)
+  return color.split(', ').map((v) => { return parseInt(v) })
 }
-async function getRandomColor(theme_color:number[]) {
+async function getRandomColor(theme_color: number[]) {
   // 生成随机的十六进制颜色代码
   const randomColorRed = () => (Math.floor(Math.random() * 20) + theme_color[0]).toString(16).padStart(2, '0');
   const randomColorGreen = () => (Math.floor(Math.random() * 100) + theme_color[1]).toString(16).padStart(2, '0');
@@ -64,7 +64,7 @@ async function getRandomColor(theme_color:number[]) {
   let color = `#${randomColorRed()}${randomColorGreen()}${randomColorBlue()}`;
   return color;
 }
-async function getRandomColor2(theme_color:number[]) {
+async function getRandomColor2(theme_color: number[]) {
   // 生成随机的十六进制颜色代码
   const randomColorRed = () => (Math.floor(Math.random() * 50) + theme_color[0]).toString(16).padStart(2, '0');
   const randomColorGreen = () => (Math.floor(Math.random() * 50) + theme_color[1]).toString(16).padStart(2, '0');
