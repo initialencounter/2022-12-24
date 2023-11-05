@@ -1,6 +1,6 @@
 import { Context } from 'koishi'
 import { exit } from 'process'
-import Jimpp from 'koishi-plugin-jimp'
+import Jimpp from '@initencounter/koishi-plugin-jimp'
 import { resolve } from 'path';
 
 const app = new Context()

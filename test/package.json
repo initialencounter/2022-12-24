@@ -17,5 +17,12 @@
   ],
   "peerDependencies": {
     "koishi": "^4.15.2"
+  },
+  "koishi":{
+    "service": {
+      "required": [
+        "jimp"
+      ]
+    }
   }
 }
