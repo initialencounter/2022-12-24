@@ -444,7 +444,7 @@ async function formatCommandsGrid(ctx: Context, session: Session<'authority'>, c
     const desc = session.text([`commands.${name}.description`, ''], config.params)
     let output = prefix + displayName;
     pluginGrid[_category].push([output, lenLessThanXText(desc, 16), 0])
-    return [output, lenLessThanXText(desc, 16), _category] ?? 'unknow'
+    return [output, lenLessThanXText(desc, 30), _category] ?? 'unknow'
   })
 
   const cmdStats = await getCommandsStats(ctx)
