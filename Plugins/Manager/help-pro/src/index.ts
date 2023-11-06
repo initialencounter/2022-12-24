@@ -105,7 +105,7 @@ export const Config: Schema<Config> = Schema.object({
     Schema.const('image1').description('带插件分类'),
     Schema.const('image2').description('按调用频率排序'),
   ]).description("输出方式").default('image1'),
-  color: Schema.string().role('color').default('rgba(62, 192, 149, 1)'),
+  color: Schema.string().role('color').default('rgba(62, 192, 149, 1)').description("主题色"),
   background: Schema.string().role('link').default('https://gitee.com/initencunter/mykoishi/raw/master/Plugins/Manager/help-pro/1.png').description('背景图片')
 })
 
