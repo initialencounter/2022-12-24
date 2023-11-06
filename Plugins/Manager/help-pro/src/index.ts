@@ -101,10 +101,10 @@ export const Config: Schema<Config> = Schema.object({
   options: Schema.boolean().default(true).description('是否为每个指令添加 `-h, --help` 选项。'),
   output: Schema.union([
     Schema.const('text').description('纯文本'),
-    Schema.const('image1').description('蓝色双列随机'),
-    Schema.const('image2').description('分类圆角'),
+    Schema.const('image1').description('带背景图'),
+    Schema.const('image2').description('带分类'),
   ]).description("输出方式").default('image2'),
-  color: Schema.string().role('color').default('rgba(82, 149, 128, 1)'),
+  color: Schema.string().role('color').default('rgba(62, 192, 149, 1)'),
 })
 
 function executeHelp(session: Session<never, never>, name: string) {
@@ -394,7 +394,7 @@ function formatCommandsArray(session: Session<'authority'>, children: Command[],
   const output = commands.map(({ name, displayName, config }) => {
     const desc = session.text([`commands.${name}.description`, ''], config.params)
     let output = prefix + displayName;
-    return [output, lenLessThanXText(desc, 16), 0]
+    return [output, lenLessThanXText(desc, 10), 0]
   })
   return output
 }
@@ -475,7 +475,7 @@ async function renderImage1(ctx: Context, cmds: Command[], session: Session<'aut
   const cmdArray = formatCommandsArray(session, cmds, {})
   const cmdStats = await getCommandsStats(ctx)
   const sortedCmds = sortCommands(cmdArray, cmdStats)
-  return await render(sortedCmds, session, color)
+  return await render(sortedCmds, color)
 }
 async function renderImage2(ctx: Context, cmds: Command[], session: Session<'authority'>, color: string) {
   const cmdGrid: PluginGrid = await formatCommandsGrid(ctx, session, cmds, {})
