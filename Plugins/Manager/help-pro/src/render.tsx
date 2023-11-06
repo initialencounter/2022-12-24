@@ -11,7 +11,7 @@ export async function render(
   const step = Math.floor(255/commands.length)
   let bgc = theme
   let [red,green,blue] = parseColor(theme)
-  let [ro, go, bo] = [true, true, true]
+  let [ro, go] = [true, true]
   for (let i = 0; i < commands.length; i++) {
     if (red > 0 && ro) {
       red += step
@@ -38,8 +38,8 @@ export async function render(
           blue = parseInt(bgc.slice(5, 7), 16);
         }
       }
-
     }
+
     const text_color = calculateColorBrightness(red, green, blue) < 126 ? "#FFFFFF" : "#000000"
     const tmp = []
     const item_style0 = `width:${400}px;height:${80}px;border-radius: 1rem 1rem 1rem 1rem`
@@ -90,18 +90,47 @@ export async function render2(
   const imgs: Element[] = []
   let y = 0
   let postId=1
+  let [red,green,blue] = parseColor(theme)
+  const step = Math.floor(255/Object.keys(pluginGrid).length)
+  let bgc = theme
+  let [ro, go] = [true, true]
   for (var [keys, commands] of Object.entries(pluginGrid)) {
     if (!commands.length) {
       continue
     }
     // Set background color to white
     const items = []
-    const bgc = await getRandomColor(theme_color)
     let _y = 0
-    y += 140
-    for (let i = 0; i < commands.length; i += 3) {
-      const item_style1 = `width:${350}px;height:${120}px;background:${bgc};text-align: center;font-size: 70px;border-radius: 2rem 2rem 2rem 2rem;`
-      const item_style2 = `text-align: center;font-size:25px;position:relative;top:0px`
+    y += 70
+    if (red > 0 && ro) {
+      red += step
+      if (red > 255) {
+        red = 255
+        ro = false
+      }
+    } else if (go) {
+      green += step
+      if (green > 255) {
+        green = 255
+        go = false
+      }
+    } else {
+      blue += step
+      if (blue > 255) {
+        blue = 255
+        if(!ro){
+          ro = true
+        }
+        if (!ro && !go) {
+          red = parseInt(bgc.slice(1, 3), 16);
+          green = parseInt(bgc.slice(3, 5), 16);
+          blue = parseInt(bgc.slice(5, 7), 16);
+        }
+      }
+    }
+    for (let i = 0; i < commands.length; i += 4) {
+      const item_style1 = `width:${175}px;height:${60}px;background:${await getRandomColor(theme_color)};text-align: center;font-size: 35px;border-radius: 1rem 1rem 1rem 1rem;`
+      const item_style2 = `text-align: center;font-size:12px;position:relative;top:0px`
       items.push(<div style={item_style1}>{commands[i][0]}<div style={item_style2}>{commands[i]?.[1] == '' ? '该指令无描述' : commands[i]?.[1]}</div></div>)
       if (i + 1 < commands.length) {
         items.push(<div style={item_style1}>{commands[i + 1][0]}<div style={item_style2}>{commands?.[i + 1][1] == '' ? '该指令无描述' : commands[i + 1]?.[1]}</div></div>)
@@ -109,13 +138,16 @@ export async function render2(
       if (i + 2 < commands.length) {
         items.push(<div style={item_style1}>{commands[i + 2][0]}<div style={item_style2}>{commands[i + 2]?.[1] == '' ? '该指令无描述' : commands[i + 2]?.[1]}</div></div>)
       }
-      _y += 140
-      y += 170
+      if (i + 3 < commands.length) {
+        items.push(<div style={item_style1}>{commands[i + 3][0]}<div style={item_style2}>{commands[i + 3]?.[1] == '' ? '该指令无描述' : commands[i + 3]?.[1]}</div></div>)
+      }
+      _y += 70
+      y += 85
 
     }
-    const items_style = `width: ${1200}px;height: ${_y + 120}px;background:${await getRandomColor(theme_color)};position: relative;left:40px;top:40px;border-radius: 2rem 2rem 2rem 2rem;padding:20px;opacity:0.6`
-    const item_style = `width:${400}px;height:${80}px;text-align: center;font: small-caps bold 80px/1 sans-serif;border-radius: 2rem 2rem 2rem 2rem;align-self: center;padding:30px;`
-    const bg_style = `width: ${1000}px;height: ${_y}px;display:grid;grid-template-columns: 370px 370px 370px;border-radius: 2rem 2rem 2rem 2rem;padding:10px;`
+    const items_style = `width: ${750}px;height: ${_y + 60}px;background:rgba(${red}, ${green}, ${blue}, 255);position: relative;left:20px;top:20px;border-radius: 1rem 1rem 1rem 1rem;padding:10px;opacity:0.6`
+    const item_style = `width:${400}px;height:${80}px;text-align: center;font: small-caps bold 40px/1 sans-serif;border-radius: 1rem 1rem 1rem 1rem;align-self: center;padding:15px;position: relative;left: -100px;top: -10px;`
+    const bg_style = `width: ${750}px;height: ${_y}px;display:grid;grid-template-columns: 185px 185px 185px 185px;border-radius: 1rem 1rem 1rem 1rem;padding:5px;position: relative;top:-55px;`
     postId ++
     const bg =
       <div>
@@ -127,7 +159,7 @@ export async function render2(
       </div>
     imgs.push(bg)
   }
-  const html_style = `width:${1300}px;height:${y + 220}px;align-items: center;;background-image:url(${backgroundImage});background-size: cover;background-repeat: no-repeat`
+  const html_style = `width:${800}px;height:${y + 110}px;align-items: center;;background-image:url(${backgroundImage});background-size: cover;background-repeat: no-repeat`
   return <html>
     <div style={html_style}>{imgs}</div>
   </html>
