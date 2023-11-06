@@ -3,7 +3,8 @@ import { Element } from 'koishi'
 import { PluginGrid } from '.'
 export async function render(
   commands: (string | number)[][],
-  theme: string
+  theme: string,
+  backgroundImage: string
 ): Promise<Element> {
   let y = 100
   const items = []
@@ -57,7 +58,7 @@ export async function render(
   const title_style = `width:${200}px;height:${40}px;text-align: center;font: small-caps bold 40px/1 sans-serif;border-radius: 1rem 1rem 1rem 1rem;align-self: center;padding:15px;position: relative;left:20px;top:40px;opacity:0.6`
   const title = <div style={title_style}>指令列表</div>
 
-  const html_style = `width:${1100}px;height:${y}px;background:${theme};align-items: center;background-image:url(https://gitee.com/initencunter/mykoishi/raw/master/Plugins/Manager/help-pro/1.png);background-size: cover;background-repeat: no-repeat;`
+  const html_style = `width:${1100}px;height:${y}px;background:${theme};align-items: center;background-image:url(${backgroundImage});background-size: cover;background-repeat: no-repeat;`
   return <html>
     <div style={html_style}>
       <div>{title}</div>
@@ -83,6 +84,7 @@ async function getRandomColor(theme_color: number[]) {
 export async function render2(
   pluginGrid: PluginGrid,
   theme: string,
+  backgroundImage: string,
 ): Promise<Element> {
   const theme_color = parseColor(theme)
   const imgs: Element[] = []
@@ -111,9 +113,9 @@ export async function render2(
       y += 170
 
     }
-    const items_style = `width: ${1200}px;height: ${_y + 120}px;background:${await getRandomColor(theme_color)};position: relative;left:40px;top:40px;border-radius: 2rem 2rem 2rem 2rem;padding:20px;background-image:url(./1.png);background-size: cover;background-repeat: no-repeat`
-    const item_style = `width:${400}px;height:${80}px;text-align: center;font: small-caps bold 80px/1 sans-serif;border-radius: 2rem 2rem 2rem 2rem;align-self: center;padding:30px;opacity:0.8`
-    const bg_style = `width: ${1000}px;height: ${_y}px;display:grid;grid-template-columns: 370px 370px 370px;border-radius: 2rem 2rem 2rem 2rem;padding:10px;opacity:0.6`
+    const items_style = `width: ${1200}px;height: ${_y + 120}px;background:${await getRandomColor(theme_color)};position: relative;left:40px;top:40px;border-radius: 2rem 2rem 2rem 2rem;padding:20px;opacity:0.6`
+    const item_style = `width:${400}px;height:${80}px;text-align: center;font: small-caps bold 80px/1 sans-serif;border-radius: 2rem 2rem 2rem 2rem;align-self: center;padding:30px;`
+    const bg_style = `width: ${1000}px;height: ${_y}px;display:grid;grid-template-columns: 370px 370px 370px;border-radius: 2rem 2rem 2rem 2rem;padding:10px;`
     postId ++
     const bg =
       <div>
@@ -125,7 +127,7 @@ export async function render2(
       </div>
     imgs.push(bg)
   }
-  const html_style = `width:${1300}px;height:${y + 220}px;background:${theme};align-items: center;`
+  const html_style = `width:${1300}px;height:${y + 220}px;align-items: center;;background-image:url(${backgroundImage});background-size: cover;background-repeat: no-repeat`
   return <html>
     <div style={html_style}>{imgs}</div>
   </html>
