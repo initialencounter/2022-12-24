@@ -5,6 +5,9 @@
 本插件魔改自[help](https://github.com/koishijs/koishi/tree/master/plugins/common/help)
 
 ### 已经做好了的
+
 - [x] 显示前缀
 - [x] 描述省略
-- [x] 图片渲染（正在制作, 比较粗糙）
+- [x] 图片渲染
+- [x] 指令分类
+- [x] 指令排序
