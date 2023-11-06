@@ -102,9 +102,9 @@ export const Config: Schema<Config> = Schema.object({
   options: Schema.boolean().default(true).description('是否为每个指令添加 `-h, --help` 选项。'),
   output: Schema.union([
     Schema.const('text').description('纯文本'),
-    Schema.const('image1').description('带背景图'),
-    Schema.const('image2').description('带分类'),
-  ]).description("输出方式").default('image2'),
+    Schema.const('image1').description('带插件分类'),
+    Schema.const('image2').description('按调用频率排序'),
+  ]).description("输出方式").default('image1'),
   color: Schema.string().role('color').default('rgba(62, 192, 149, 1)'),
   background: Schema.string().role('link').default('https://gitee.com/initencunter/mykoishi/raw/master/Plugins/Manager/help-pro/1.png').description('背景图片')
 })
@@ -234,10 +234,10 @@ export function apply(ctx: Context, config: Config) {
         const commands = $._commandList.filter(cmd => cmd.parent === null)
         const output = formatCommands(ctx, '.global-prolog', session, commands, options)
         // Todo
-        if (ctx.puppeteer && config.output == 'image1') {
+        if (ctx.puppeteer && config.output == 'image2') {
           return await renderImage1(ctx, commands, session, config.color)
         }
-        if (ctx.puppeteer && config.output == 'image2') {
+        if (ctx.puppeteer && config.output == 'image1') {
           return await renderImage2(ctx, commands, session, config.color)
         }
         return output.filter(Boolean).join('\n')
