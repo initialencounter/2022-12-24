@@ -94,6 +94,7 @@ export interface Config {
   options?: boolean
   output?: string
   color?: string
+  background?: string
 }
 
 export const Config: Schema<Config> = Schema.object({
@@ -105,6 +106,7 @@ export const Config: Schema<Config> = Schema.object({
     Schema.const('image2').description('带分类'),
   ]).description("输出方式").default('image2'),
   color: Schema.string().role('color').default('rgba(62, 192, 149, 1)'),
+  background: Schema.string().role('link').default('https://gitee.com/initencunter/mykoishi/raw/master/Plugins/Manager/help-pro/1.png').description('背景图片')
 })
 
 function executeHelp(session: Session<never, never>, name: string) {
