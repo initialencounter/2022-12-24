@@ -98,8 +98,8 @@ export interface Config {
 }
 
 export const Config: Schema<Config> = Schema.object({
-  shortcut: Schema.boolean().default(true).description('是否启用快捷调用。'),
-  options: Schema.boolean().default(true).description('是否为每个指令添加 `-h, --help` 选项。'),
+  shortcut: Schema.boolean().default(false).description('是否启用快捷调用。').hidden(true),
+  options: Schema.boolean().default(false).description('是否为每个指令添加 `-h, --help` 选项。').hidden(true),
   output: Schema.union([
     Schema.const('text').description('纯文本'),
     Schema.const('image1').description('带插件分类'),
@@ -224,21 +224,21 @@ export function apply(ctx: Context, config: Config) {
     return $.resolve(name)
   }
 
-  const cmd = ctx.command('help [command:string]', { authority: 0, ...config })
+  const cmd = ctx.command('help-pro [command:string]', { authority: 0, ...config })
     .userFields(['authority'])
     .userFields(createCollector('user'))
     .channelFields(createCollector('channel'))
     .option('showHidden', '-H')
+    .option('output', '-o <output:string>', { fallback: config.output })
     .action(async ({ session, options }, target) => {
       if (!target) {
         const commands = $._commandList.filter(cmd => cmd.parent === null)
         const output = formatCommands(ctx, '.global-prolog', session, commands, options)
-        // Todo
-        if (ctx.puppeteer && config.output == 'image2') {
-          return await renderImage1(ctx, commands, session, config.color)
-        }
-        if (ctx.puppeteer && config.output == 'image1') {
+        if (ctx.puppeteer && config.output == 'image1' || options?.output === 'image1') {
           return await renderImage2(ctx, commands, session, config.color)
+        }
+        if (ctx.puppeteer && (config.output == 'image2' || options?.output === 'image2')) {
+          return await renderImage1(ctx, commands, session, config.color)
         }
         return output.filter(Boolean).join('\n')
       }
@@ -477,9 +477,9 @@ async function renderImage1(ctx: Context, cmds: Command[], session: Session<'aut
   const cmdArray = formatCommandsArray(session, cmds, {})
   const cmdStats = await getCommandsStats(ctx)
   const sortedCmds = sortCommands(cmdArray, cmdStats)
-  return await render(sortedCmds, color,ctx.config.background)
+  return await render(sortedCmds, color, ctx.config.background)
 }
 async function renderImage2(ctx: Context, cmds: Command[], session: Session<'authority'>, color: string) {
   const cmdGrid: PluginGrid = await formatCommandsGrid(ctx, session, cmds, {})
-  return await render2(cmdGrid, color,ctx.config.background)
+  return await render2(cmdGrid, color, ctx.config.background)
 }
