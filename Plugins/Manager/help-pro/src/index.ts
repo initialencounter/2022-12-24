@@ -53,7 +53,8 @@ export interface PluginGrid {
   gametool: (string | number)[][],
   meme: (string | number)[][],
   media: (string | number)[][],
-  unknown: (string | number)[][],
+  other: (string | number)[][],
+  unknow: (string | number)[][],
 }
 declare module 'koishi' {
   interface Events {
@@ -416,7 +417,8 @@ async function formatCommandsGrid(ctx: Context, session: Session<'authority'>, c
     gametool: [],
     meme: [],
     media: [],
-    unknown: []
+    other: [],
+    unknow: []
   }
   const commands = Array
     .from(getCommands(session, children, options.showHidden))
@@ -446,7 +448,7 @@ async function formatCommandsGrid(ctx: Context, session: Session<'authority'>, c
     const desc = session.text([`commands.${name}.description`, ''], config.params)
     let output = prefix + displayName;
     pluginGrid[_category].push([output, lenLessThanXText(desc, 16), 0])
-    return [output, lenLessThanXText(desc, 30), _category] ?? 'unknow'
+    return [output, lenLessThanXText(desc, 30), _category]
   })
 
   const cmdStats = await getCommandsStats(ctx)

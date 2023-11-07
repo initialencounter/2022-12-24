@@ -166,7 +166,7 @@ export async function render2(
 
 }
 
-const category_map = {
+const category_map  = {
   game: '娱乐玩法',
   manage: '管理工具',
   tool: '实用工具',
@@ -180,13 +180,13 @@ const category_map = {
   gametool: '游戏辅助',
   meme: '趣味交互',
   media: '资讯服务',
-  unknown: '未知'
+  other:"其他",
+  unknow: '未知',
 }
 
 
 function calculateColorBrightness(r: number, g: number, b: number) {
   // 计算亮度
   const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-
   return brightness;
 }
