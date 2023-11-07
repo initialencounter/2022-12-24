@@ -96,20 +96,31 @@ export interface Config {
   output?: string
   color?: string
   background?: string
+  maxRenderPeerPage?: number
 }
 
-export const Config: Schema<Config> = Schema.object({
-  shortcut: Schema.boolean().default(false).description('是否启用快捷调用。').hidden(true),
-  options: Schema.boolean().default(false).description('是否为每个指令添加 `-h, --help` 选项。').hidden(true),
-  output: Schema.union([
-    Schema.const('text').description('纯文本'),
-    Schema.const('image1').description('带插件分类'),
-    Schema.const('image2').description('按调用频率排序'),
-  ]).description("输出方式").default('image1'),
-  color: Schema.string().role('color').default('rgba(62, 192, 149, 1)').description("主题色"),
-  background: Schema.string().role('link').default('https://gitee.com/initencunter/mykoishi/raw/master/Plugins/Manager/help-pro/1.png').description('背景图片')
-})
-
+export const Config: Schema<Config> = Schema.intersect([
+  Schema.object({
+    shortcut: Schema.boolean().default(false).description('是否启用快捷调用。').hidden(true),
+    options: Schema.boolean().default(false).description('是否为每个指令添加 `-h, --help` 选项。').hidden(true),
+    output: Schema.union([
+      Schema.const('text').description('纯文本'),
+      Schema.const('image1').description('带插件分类'),
+      Schema.const('image2').description('按调用频率排序'),
+    ]).description("输出方式").default('image1'),
+    color: Schema.string().role('color').default('rgba(62, 192, 149, 1)').description("主题色"),
+    background: Schema.string().role('link').default('https://gitee.com/initencunter/mykoishi/raw/master/Plugins/Manager/help-pro/1.png').description('背景图片')
+  }),
+  Schema.union([
+    Schema.object({
+      output: Schema.const('image1'),
+    }),
+    Schema.object({
+      output: Schema.const('image2'),
+      maxRenderPeerPage: Schema.number().default(30).description("每页最多显示的插件数量")
+    })
+  ])
+])
 function executeHelp(session: Session<never, never>, name: string) {
   if (!session.app.$commander.get('help')) return
   return session.execute({
@@ -239,7 +250,7 @@ export function apply(ctx: Context, config: Config) {
           return await renderImage2(ctx, commands, session, config.color)
         }
         if (ctx.puppeteer && (config.output == 'image2' || options?.output === 'image2')) {
-          return await renderImage1(ctx, commands, session, config.color)
+          return await renderImage1(ctx, commands, session, config.color,config.maxRenderPeerPage)
         }
         return output.filter(Boolean).join('\n')
       }
@@ -475,11 +486,20 @@ function lenLessThanXText(input: string, X: number) {
  * 渲染help
  * @returns 
  */
-async function renderImage1(ctx: Context, cmds: Command[], session: Session<'authority'>, color: string) {
+async function renderImage1(ctx: Context, cmds: Command[], session: Session<'authority'>, color: string, PulginsPeerPage: number = 30) {
   const cmdArray = formatCommandsArray(session, cmds, {})
   const cmdStats = await getCommandsStats(ctx)
   const sortedCmds = sortCommands(cmdArray, cmdStats)
-  return await render(sortedCmds, color, ctx.config.background)
+  const step = PulginsPeerPage
+  if (sortedCmds.length > step) {
+    for (var i = 0; i < sortedCmds.length; i += step) {
+      session.send(await render(sortedCmds.slice(i, i + step), color, ctx.config.background))
+    }
+  } else {
+    return await render(sortedCmds, color, ctx.config.background)
+  }
+
+
 }
 async function renderImage2(ctx: Context, cmds: Command[], session: Session<'authority'>, color: string) {
   const cmdGrid: PluginGrid = await formatCommandsGrid(ctx, session, cmds, {})
