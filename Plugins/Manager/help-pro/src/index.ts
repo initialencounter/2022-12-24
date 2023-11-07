@@ -246,10 +246,17 @@ export function apply(ctx: Context, config: Config) {
       if (!target) {
         const commands = $._commandList.filter(cmd => cmd.parent === null)
         const output = formatCommands(ctx, '.global-prolog', session, commands, options)
-        if (ctx.puppeteer && config.output == 'image1' || options?.output === 'image1') {
+        if(ctx.puppeteer && options.output){
+          if(options?.output === 'image1'){
+            return await renderImage2(ctx, commands, session, config.color)
+          }else if( options?.output === 'image2'){
+            return await renderImage1(ctx, commands, session, config.color,config.maxRenderPeerPage)
+          }
+        }
+        if (ctx.puppeteer && config.output == 'image1') {
           return await renderImage2(ctx, commands, session, config.color)
         }
-        if (ctx.puppeteer && (config.output == 'image2' || options?.output === 'image2')) {
+        if (ctx.puppeteer && (config.output == 'image2')) {
           return await renderImage1(ctx, commands, session, config.color,config.maxRenderPeerPage)
         }
         return output.filter(Boolean).join('\n')
