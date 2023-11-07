@@ -129,8 +129,8 @@ export async function render2(
       }
     }
     for (let i = 0; i < commands.length; i += 4) {
-      const item_style1 = `width:${175}px;height:${60}px;background:${await getRandomColor(theme_color)};text-align: center;font-size: 35px;border-radius: 1rem 1rem 1rem 1rem;`
-      const item_style2 = `text-align: center;font-size:12px;position:relative;top:0px`
+      const item_style1 = `width:${175}px;height:${60}px;background:${await getRandomColor(theme_color)};text-align: center;font-size: 30px;border-radius: 1rem 1rem 1rem 1rem;`
+      const item_style2 = `text-align: center;font-size:18px;position:relative;top:0px`
       items.push(<div style={item_style1}>{commands[i][0]}<div style={item_style2}>{commands[i]?.[1] == '' ? '该指令无描述' : commands[i]?.[1]}</div></div>)
       if (i + 1 < commands.length) {
         items.push(<div style={item_style1}>{commands[i + 1][0]}<div style={item_style2}>{commands?.[i + 1][1] == '' ? '该指令无描述' : commands[i + 1]?.[1]}</div></div>)
