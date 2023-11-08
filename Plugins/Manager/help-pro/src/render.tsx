@@ -49,7 +49,7 @@ export async function render(
     const text_style2 = `text-align: center;font-size: 30px;position: relative;top:10px;color:${text_color}`
 
     tmp.push(<div style={item_style1}><div style={text_style}>{commands[i][0]}</div></div>)
-    tmp.push(<div style={item_style2}><div style={text_style2}>{commands?.[i][1] == '' ? '该指令无描述' : commands[i]?.[1]}</div></div>)
+    tmp.push(<div style={item_style2}><div style={text_style2}>{commands?.[i][1] == '' ? 'n/a' : commands[i]?.[1]}</div></div>)
     items.push(<div style={item_style0}>{tmp}</div>)
     y += 45
   }
@@ -129,17 +129,17 @@ export async function render2(
       }
     }
     for (let i = 0; i < commands.length; i += 4) {
-      const item_style1 = `width:${175}px;height:${60}px;background:${await getRandomColor(theme_color)};text-align: center;font-size: 30px;border-radius: 1rem 1rem 1rem 1rem;`
+      const item_style1 = `width:${175}px;height:${60}px;background:${await getRandomColor(theme_color)};text-align: center;border-radius: 1rem 1rem 1rem 1rem;;font-size: `
       const item_style2 = `text-align: center;font-size:18px;position:relative;top:0px`
-      items.push(<div style={item_style1}>{commands[i][0]}<div style={item_style2}>{commands[i]?.[1] == '' ? '该指令无描述' : commands[i]?.[1]}</div></div>)
+      items.push(<div style={item_style1+(isChinese(commands[i][0])?'25px':'30px')}>{commands[i][0]}<div style={item_style2}>{commands[i]?.[1] == '' ? 'n/a' : commands[i]?.[1]}</div></div>)
       if (i + 1 < commands.length) {
-        items.push(<div style={item_style1}>{commands[i + 1][0]}<div style={item_style2}>{commands?.[i + 1][1] == '' ? '该指令无描述' : commands[i + 1]?.[1]}</div></div>)
+        items.push(<div style={item_style1+(isChinese(commands[i + 1][0])?'25px':'30px')}>{commands[i + 1][0]}<div style={item_style2}>{commands?.[i + 1][1] == '' ? 'n/a' : commands[i + 1]?.[1]}</div></div>)
       }
       if (i + 2 < commands.length) {
-        items.push(<div style={item_style1}>{commands[i + 2][0]}<div style={item_style2}>{commands[i + 2]?.[1] == '' ? '该指令无描述' : commands[i + 2]?.[1]}</div></div>)
+        items.push(<div style={item_style1+(isChinese(commands[i + 2][0])?'25px':'30px')}>{commands[i + 2][0]}<div style={item_style2}>{commands[i + 2]?.[1] == '' ? 'n/a' : commands[i + 2]?.[1]}</div></div>)
       }
       if (i + 3 < commands.length) {
-        items.push(<div style={item_style1}>{commands[i + 3][0]}<div style={item_style2}>{commands[i + 3]?.[1] == '' ? '该指令无描述' : commands[i + 3]?.[1]}</div></div>)
+        items.push(<div style={item_style1+(isChinese(commands[i + 3][0])?'25px':'30px')}>{commands[i + 3][0]}<div style={item_style2}>{commands[i + 3]?.[1] == '' ? 'n/a' : commands[i + 3]?.[1]}</div></div>)
       }
       _y += 70
       y += 85
@@ -183,7 +183,9 @@ const category_map  = {
   other:"其他",
   unknow: '未知',
 }
-
+function isChinese(s: string): boolean {
+  return /[\u4e00-\u9fa5]/.test(s);
+}
 
 function calculateColorBrightness(r: number, g: number, b: number) {
   // 计算亮度

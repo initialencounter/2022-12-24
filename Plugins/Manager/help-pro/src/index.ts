@@ -246,18 +246,18 @@ export function apply(ctx: Context, config: Config) {
       if (!target) {
         const commands = $._commandList.filter(cmd => cmd.parent === null)
         const output = formatCommands(ctx, '.global-prolog', session, commands, options)
-        if(ctx.puppeteer && options.output){
-          if(options?.output === 'image1'){
+        if (ctx.puppeteer && options.output) {
+          if (options?.output === 'image1') {
             return await renderImage2(ctx, commands, session, config.color)
-          }else if( options?.output === 'image2'){
-            return await renderImage1(ctx, commands, session, config.color,config.maxRenderPeerPage)
+          } else if (options?.output === 'image2') {
+            return await renderImage1(ctx, commands, session, config.color, config.maxRenderPeerPage)
           }
         }
         if (ctx.puppeteer && config.output == 'image1') {
           return await renderImage2(ctx, commands, session, config.color)
         }
         if (ctx.puppeteer && (config.output == 'image2')) {
-          return await renderImage1(ctx, commands, session, config.color,config.maxRenderPeerPage)
+          return await renderImage1(ctx, commands, session, config.color, config.maxRenderPeerPage)
         }
         return output.filter(Boolean).join('\n')
       }
@@ -452,7 +452,7 @@ async function formatCommandsGrid(ctx: Context, session: Session<'authority'>, c
       const idEnd = pluginName.indexOf(':')
       const pluginFullName: string = `@${pluginName.slice(0, idStart)}/koishi-plugin-${idEnd > -1 ? pluginName.slice(idStart + 1, idEnd) : pluginName.slice(idStart + 1)}`
 
-      _category = pluginCategory[pluginFullName]
+      _category = pluginCategory[pluginFullName] ?? 'unknow'
     } else {
       const pluginName: string = scopeName.split('/').slice(-1)[0]
       const idEnd = pluginName.indexOf(':')
@@ -465,7 +465,7 @@ async function formatCommandsGrid(ctx: Context, session: Session<'authority'>, c
 
     const desc = session.text([`commands.${name}.description`, ''], config.params)
     let output = prefix + displayName;
-    pluginGrid[_category].push([output, lenLessThanXText(desc, 16), 0])
+    pluginGrid[_category].push([output, lenLessThanXText(desc, 10), 0])
     return [output, lenLessThanXText(desc, 30), _category]
   })
 
