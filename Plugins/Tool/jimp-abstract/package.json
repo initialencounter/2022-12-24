@@ -1,0 +1,24 @@
+{
+  "name": "@initencounter/jimp",
+  "description": "jimp abstract for koishi service",
+  "version": "0.0.1",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "MIT",
+  "scripts": {},
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.15.2"
+  },
+  "devDependencies": {
+    "jimp": "^0.22.10"
+  }
+}
