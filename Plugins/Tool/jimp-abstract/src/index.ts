@@ -3,11 +3,84 @@ import type Jm from 'jimp'
 
 declare module 'koishi' {
   interface Context {
-    jimp: Jimpp
+    jimp: Jimp
   }
 }
 
-abstract class Jimpp extends Service {
+export interface Font {
+  chars: {
+    [char: string]: FontChar;
+  };
+  kernings: {
+    [firstString: string]: {
+      [secondString: string]: number;
+    };
+  };
+  pages: string[];
+  common: FontCommon;
+  info: FontInfo;
+}
+export interface FontChar {
+  id: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  xoffset: number;
+  yoffset: number;
+  xadvance: number;
+  page: number;
+  chnl: number;
+}
+export interface FontInfo {
+  face: string;
+  size: number;
+  bold: number;
+  italic: number;
+  charset: string;
+  unicode: number;
+  stretchH: number;
+  smooth: number;
+  aa: number;
+  padding: [number, number, number, number];
+  spacing: [number, number];
+}
+
+export interface FontCommon {
+  lineHeight: number;
+  base: number;
+  scaleW: number;
+  scaleH: number;
+  pages: number;
+  packed: number;
+  alphaChnl: number;
+  redChnl: number;
+  greenChnl: number;
+  blueChnl: number;
+}
+export interface RGBA {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+}
+export interface RGBA {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+}
+interface DiffReturn<This> {
+  percent: number;
+  image: This;
+}
+export interface RGB {
+  r: number;
+  g: number;
+  b: number;
+}
+
+abstract class Jimp extends Service {
   FONT_SANS_8_BLACK: string;
   FONT_SANS_10_BLACK: string;
   FONT_SANS_12_BLACK: string;
@@ -77,86 +150,100 @@ abstract class Jimpp extends Service {
    */
   abstract read(path: string, cb?: (err, img: Jm) => void): Promise<Jm>
   /**
-   * 调整图片大小
-   * @param jm 
-   * @param w 
-   * @param h 
-   * @param cb 
-   * @returns 
+   * 加载字体
+   * @param file 字体路径
    */
-  abstract resize(jm: Jm, w: number, h: number, cb?: (err, img: Jm) => void): Jm
-  /**
-   * 裁剪图片
-   * @param jm 
-   */
-  abstract crop(jm: Jm, x: number, y: number, w: number, h: number, cb?: (err, img: Jm) => void): Jm
-  /**
-   * 旋转图片
-   * @param jm 
-   * @param deg 
-   * @param callback 
-   * @returns 
-   */
-  abstract rotate(jm: Jm, deg: number, cb?: (err, img: Jm) => void): Jm
+  abstract loadFont(file: string): Promise<Font>
   /**
    * 
-   * @param jm Jimp对象
-   * @param path 保存的路径
+   * @param r red
+   * @param g green
+   * @param b blue
+   * @param a alpha
+   * @param cb callback function
+   */
+  abstract rgbaToInt(r: number, g: number, b: number, a: number): number
+  /**
+   * 不知道干什么的方法
+   * @param name 
+   * @param test 
+   * @param run 
+   */
+  abstract appendConstructorOption(name: string, test: (...args: any[]) => boolean, run: (this: Jm, resolve: (jimp?: Jm) => any, reject: (reason: Error) => any, ...args: any[]) => any): void
+  /**
+   * 
+   * @param font 
+   * @param text 
+   * @param maxWidth 
    * @returns 
    */
-  abstract writeAsync(jm: Jm, path: string): Promise<Jm>
-  abstract loadFont(file: string): Promise<Font>
-}
-export interface Font {
-  chars: {
-    [char: string]: FontChar;
-  };
-  kernings: {
-    [firstString: string]: {
-      [secondString: string]: number;
-    };
-  };
-  pages: string[];
-  common: FontCommon;
-  info: FontInfo;
-}
-export interface FontChar {
-  id: number;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  xoffset: number;
-  yoffset: number;
-  xadvance: number;
-  page: number;
-  chnl: number;
-}
-export interface FontInfo {
-  face: string;
-  size: number;
-  bold: number;
-  italic: number;
-  charset: string;
-  unicode: number;
-  stretchH: number;
-  smooth: number;
-  aa: number;
-  padding: [number, number, number, number];
-  spacing: [number, number];
+  /**
+   * 
+   * @param font 字体
+   * @param text 文本
+   * @param maxWidth 宽带
+   * @returns 
+   */
+  abstract measureTextHeight(font: Font, text: any, maxWidth: number): number
+  /**
+   * 
+   * @param font 字体
+   * @param text 文本
+   * @returns 
+   */
+  abstract measureText(font: Font, text: any): number
+  /**
+   * 
+   * @param n 
+   * @returns 
+   */
+  abstract limit255(n: number): number
+  /**
+   * 
+   * @param i 要转为RGBA的数字
+   * @returns 
+   */
+  abstract intToRGBA(i: number): RGBA
+  /**
+   * 
+   * @param img1 图片1
+   * @param img2 
+   * @returns 
+   */
+  abstract distance(img1: Jm, img2: Jm): number
+  /**
+   * 
+   * @param img1 图片1
+   * @param img2 
+   * @param threshold 相似度，阈值
+   * @returns 
+   */
+  abstract diff(img1: Jm, img2: Jm, threshold?: number): DiffReturn<Jm>
+  /**
+   * 
+   * @param cssColor css格式颜色
+   * @returns 
+   */
+  abstract cssColorToHex(cssColor: string): number
+  /** 
+  * @param path 路径
+  * @returns 
+  */
+  abstract create(path: string): Promise<Jm>
+  /**
+   * 
+   * @param hash1 
+   * @param hash2 
+   * @returns 
+   */
+  abstract compareHashes(hash1: string, hash2: string): number
+  /**
+   * 
+   * @param rgba1 
+   * @param rgba2 
+   * @returns 
+   */
+  abstract colorDiff(rgba1: RGB, rgba2: RGB): number
 }
 
-export interface FontCommon {
-  lineHeight: number;
-  base: number;
-  scaleW: number;
-  scaleH: number;
-  pages: number;
-  packed: number;
-  alphaChnl: number;
-  redChnl: number;
-  greenChnl: number;
-  blueChnl: number;
-}
-
-export default Jimpp
+export default Jimp
