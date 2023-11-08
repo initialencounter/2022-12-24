@@ -1,201 +1,292 @@
-import { Context, Schema, Service } from 'koishi'
-import Jm from 'jimp'
-
+import { Context, Schema } from 'koishi'
+import Jimpp from 'jimp'
+import Jm from '@initencounter/jimp';
 export const name = 'jimp'
 
-
-declare module 'koishi' {
-  interface Context {
-    jimp: Jimpp
-  }
-}
-class Jimpp extends Service {
-  FONT_SANS_8_BLACK: string;
-  FONT_SANS_10_BLACK: string;
-  FONT_SANS_12_BLACK: string;
-  FONT_SANS_14_BLACK: string;
-  FONT_SANS_16_BLACK: string;
-  FONT_SANS_32_BLACK: string;
-  FONT_SANS_64_BLACK: string;
-  FONT_SANS_128_BLACK: string;
-
-  FONT_SANS_8_WHITE: string;
-  FONT_SANS_16_WHITE: string;
-  FONT_SANS_32_WHITE: string;
-  FONT_SANS_64_WHITE: string;
-  FONT_SANS_128_WHITE: string;
-
-  AUTO: -1;
-  // blend modes
-  BLEND_SOURCE_OVER: string;
-  BLEND_DESTINATION_OVER: string;
-  BLEND_MULTIPLY: string;
-  BLEND_ADD: string;
-  BLEND_SCREEN: string;
-  BLEND_OVERLAY: string;
-  BLEND_DARKEN: string;
-  BLEND_LIGHTEN: string;
-  BLEND_HARDLIGHT: string;
-  BLEND_DIFFERENCE: string;
-  BLEND_EXCLUSION: string;
-  // Align modes for cover, contain, bit masks
-  HORIZONTAL_ALIGN_LEFT: 1;
-  HORIZONTAL_ALIGN_CENTER: 2;
-  HORIZONTAL_ALIGN_RIGHT: 4;
-  VERTICAL_ALIGN_TOP: 8;
-  VERTICAL_ALIGN_MIDDLE: 16;
-  VERTICAL_ALIGN_BOTTOM: 32;
-  // Edge Handling
-  EDGE_EXTEND: 1;
-  EDGE_WRAP: 2;
-  EDGE_CROP: 3;
-
-  MIME_BMP: "image/bmp";
-  MIME_X_MS_BMP: "image/x-ms-bmp";
-  MIME_GIF: "image/gif";
-  MIME_JPEG: "image/jpeg";
-  MIME_PNG: "image/png";
-  MIME_TIFF: "image/tiff";
-
-  PNG_FILTER_AUTO: -1;
-  PNG_FILTER_NONE: 0;
-  PNG_FILTER_SUB: 1;
-  PNG_FILTER_UP: 2;
-  PNG_FILTER_AVERAGE: 3;
-  PNG_FILTER_PATH: 4;
-
-  RESIZE_NEAREST_NEIGHBOR: "nearestNeighbor";
-  RESIZE_BILINEAR: "bilinearInterpolation";
-  RESIZE_BICUBIC: "bicubicInterpolation";
-  RESIZE_HERMITE: "hermiteInterpolation";
-  RESIZE_BEZIER: "bezierInterpolation";
-
+class Jimp extends Jm {
   constructor(ctx: Context) {
-    super(ctx, 'jimp', true)
-    this.FONT_SANS_8_BLACK = Jm.FONT_SANS_8_BLACK
-    this.FONT_SANS_10_BLACK = Jm.FONT_SANS_10_BLACK
-    this.FONT_SANS_12_BLACK = Jm.FONT_SANS_12_BLACK
-    this.FONT_SANS_14_BLACK = Jm.FONT_SANS_14_BLACK
-    this.FONT_SANS_16_BLACK = Jm.FONT_SANS_16_BLACK
-    this.FONT_SANS_32_BLACK = Jm.FONT_SANS_32_BLACK
-    this.FONT_SANS_128_BLACK = Jm.FONT_SANS_128_BLACK
+    super(ctx)
+    this.FONT_SANS_8_BLACK = Jimpp.FONT_SANS_8_BLACK
+    this.FONT_SANS_10_BLACK = Jimpp.FONT_SANS_10_BLACK
+    this.FONT_SANS_12_BLACK = Jimpp.FONT_SANS_12_BLACK
+    this.FONT_SANS_14_BLACK = Jimpp.FONT_SANS_14_BLACK
+    this.FONT_SANS_16_BLACK = Jimpp.FONT_SANS_16_BLACK
+    this.FONT_SANS_32_BLACK = Jimpp.FONT_SANS_32_BLACK
+    this.FONT_SANS_128_BLACK = Jimpp.FONT_SANS_128_BLACK
 
-    this.FONT_SANS_8_WHITE = Jm.FONT_SANS_8_WHITE
-    this.FONT_SANS_16_WHITE = Jm.FONT_SANS_16_WHITE
-    this.FONT_SANS_32_WHITE = Jm.FONT_SANS_32_WHITE
-    this.FONT_SANS_64_WHITE = Jm.FONT_SANS_64_WHITE
-    this.FONT_SANS_128_WHITE = Jm.FONT_SANS_128_WHITE
+    this.FONT_SANS_8_WHITE = Jimpp.FONT_SANS_8_WHITE
+    this.FONT_SANS_16_WHITE = Jimpp.FONT_SANS_16_WHITE
+    this.FONT_SANS_32_WHITE = Jimpp.FONT_SANS_32_WHITE
+    this.FONT_SANS_64_WHITE = Jimpp.FONT_SANS_64_WHITE
+    this.FONT_SANS_128_WHITE = Jimpp.FONT_SANS_128_WHITE
 
-    this.AUTO = Jm.AUTO
-    this.BLEND_SOURCE_OVER = Jm.BLEND_SOURCE_OVER
-    this.BLEND_DESTINATION_OVER = Jm.BLEND_DESTINATION_OVER
-    this.BLEND_MULTIPLY = Jm.BLEND_MULTIPLY
-    this.BLEND_ADD = Jm.BLEND_ADD
-    this.BLEND_SCREEN = Jm.BLEND_SCREEN
-    this.BLEND_OVERLAY = Jm.BLEND_OVERLAY
-    this.BLEND_DARKEN = Jm.BLEND_DARKEN
-    this.BLEND_LIGHTEN = Jm.BLEND_LIGHTEN
-    this.BLEND_HARDLIGHT = Jm.BLEND_HARDLIGHT
-    this.BLEND_DIFFERENCE = Jm.BLEND_DIFFERENCE
-    this.BLEND_EXCLUSION = Jm.BLEND_EXCLUSION
-    this.HORIZONTAL_ALIGN_LEFT = Jm.HORIZONTAL_ALIGN_LEFT
-    this.HORIZONTAL_ALIGN_CENTER = Jm.HORIZONTAL_ALIGN_CENTER
-    this.HORIZONTAL_ALIGN_RIGHT = Jm.HORIZONTAL_ALIGN_RIGHT
-    this.VERTICAL_ALIGN_TOP = Jm.VERTICAL_ALIGN_TOP
-    this.VERTICAL_ALIGN_MIDDLE = Jm.VERTICAL_ALIGN_MIDDLE
-    this.VERTICAL_ALIGN_BOTTOM = Jm.VERTICAL_ALIGN_BOTTOM
+    this.AUTO = Jimpp.AUTO
+    this.BLEND_SOURCE_OVER = Jimpp.BLEND_SOURCE_OVER
+    this.BLEND_DESTINATION_OVER = Jimpp.BLEND_DESTINATION_OVER
+    this.BLEND_MULTIPLY = Jimpp.BLEND_MULTIPLY
+    this.BLEND_ADD = Jimpp.BLEND_ADD
+    this.BLEND_SCREEN = Jimpp.BLEND_SCREEN
+    this.BLEND_OVERLAY = Jimpp.BLEND_OVERLAY
+    this.BLEND_DARKEN = Jimpp.BLEND_DARKEN
+    this.BLEND_LIGHTEN = Jimpp.BLEND_LIGHTEN
+    this.BLEND_HARDLIGHT = Jimpp.BLEND_HARDLIGHT
+    this.BLEND_DIFFERENCE = Jimpp.BLEND_DIFFERENCE
+    this.BLEND_EXCLUSION = Jimpp.BLEND_EXCLUSION
+    this.HORIZONTAL_ALIGN_LEFT = Jimpp.HORIZONTAL_ALIGN_LEFT
+    this.HORIZONTAL_ALIGN_CENTER = Jimpp.HORIZONTAL_ALIGN_CENTER
+    this.HORIZONTAL_ALIGN_RIGHT = Jimpp.HORIZONTAL_ALIGN_RIGHT
+    this.VERTICAL_ALIGN_TOP = Jimpp.VERTICAL_ALIGN_TOP
+    this.VERTICAL_ALIGN_MIDDLE = Jimpp.VERTICAL_ALIGN_MIDDLE
+    this.VERTICAL_ALIGN_BOTTOM = Jimpp.VERTICAL_ALIGN_BOTTOM
 
-    this.EDGE_EXTEND = Jm.EDGE_EXTEND
-    this.EDGE_WRAP = Jm.EDGE_WRAP
-    this.EDGE_CROP = Jm.EDGE_CROP
+    this.EDGE_EXTEND = Jimpp.EDGE_EXTEND
+    this.EDGE_WRAP = Jimpp.EDGE_WRAP
+    this.EDGE_CROP = Jimpp.EDGE_CROP
 
-    this.MIME_BMP = Jm.MIME_BMP
-    this.MIME_X_MS_BMP = Jm.MIME_X_MS_BMP
-    this.MIME_GIF = Jm.MIME_GIF
-    this.MIME_JPEG = Jm.MIME_JPEG
-    this.MIME_PNG = Jm.MIME_PNG
-    this.MIME_TIFF = Jm.MIME_TIFF
+    this.MIME_BMP = Jimpp.MIME_BMP
+    this.MIME_X_MS_BMP = Jimpp.MIME_X_MS_BMP
+    this.MIME_GIF = Jimpp.MIME_GIF
+    this.MIME_JPEG = Jimpp.MIME_JPEG
+    this.MIME_PNG = Jimpp.MIME_PNG
+    this.MIME_TIFF = Jimpp.MIME_TIFF
 
-    this.PNG_FILTER_AUTO = Jm.PNG_FILTER_AUTO
-    this.PNG_FILTER_AVERAGE = Jm.PNG_FILTER_AVERAGE
-    this.PNG_FILTER_NONE = Jm.PNG_FILTER_NONE
-    this.PNG_FILTER_PATH = Jm.PNG_FILTER_PATH
-    this.PNG_FILTER_SUB = Jm.PNG_FILTER_SUB
-    this.PNG_FILTER_UP = Jm.PNG_FILTER_UP
+    this.PNG_FILTER_AUTO = Jimpp.PNG_FILTER_AUTO
+    this.PNG_FILTER_AVERAGE = Jimpp.PNG_FILTER_AVERAGE
+    this.PNG_FILTER_NONE = Jimpp.PNG_FILTER_NONE
+    this.PNG_FILTER_PATH = Jimpp.PNG_FILTER_PATH
+    this.PNG_FILTER_SUB = Jimpp.PNG_FILTER_SUB
+    this.PNG_FILTER_UP = Jimpp.PNG_FILTER_UP
 
-    this.RESIZE_NEAREST_NEIGHBOR = Jm.RESIZE_NEAREST_NEIGHBOR
-    this.RESIZE_BILINEAR = Jm.RESIZE_BILINEAR
-    this.RESIZE_BICUBIC = Jm.RESIZE_BICUBIC
-    this.RESIZE_HERMITE = Jm.RESIZE_HERMITE
-    this.RESIZE_BEZIER = Jm.RESIZE_BEZIER
-  }
-  test() {
-    return 'test'
+    this.RESIZE_NEAREST_NEIGHBOR = Jimpp.RESIZE_NEAREST_NEIGHBOR
+    this.RESIZE_BILINEAR = Jimpp.RESIZE_BILINEAR
+    this.RESIZE_BICUBIC = Jimpp.RESIZE_BICUBIC
+    this.RESIZE_HERMITE = Jimpp.RESIZE_HERMITE
+    this.RESIZE_BEZIER = Jimpp.RESIZE_BEZIER
   }
   /**
    * 读取图片
    * @param path 路径
    */
-  async read(path: string, cb?: (err, img: Jm) => void): Promise<Jm> {
+  async read(path: string, cb?: (err, img: Jimpp) => void): Promise<Jimpp> {
     if (cb) {
-      await Jm.read(path, cb)
+      await Jimpp.read(path, cb)
     }
-    return await Jm.read(path)
+    return await Jimpp.read(path)
   }
   /**
    * 调整图片大小
-   * @param jm 
+   * @param Jimpp 
    * @param w 
    * @param h 
    * @param cb 
    * @returns 
    */
-  resize(jm: Jm, w: number, h: number, cb?: (err, img: Jm) => void): Jm {
+  resize(Jimpp: Jimpp, w: number, h: number, cb?: (err, img: Jimpp) => void): Jimpp {
     if (cb) {
-      return jm.resize(w, h, cb)
+      return Jimpp.resize(w, h, cb)
     }
-    return jm.resize(w, h)
+    return Jimpp.resize(w, h)
   }
   /**
    * 裁剪图片
-   * @param jm 
+   * @param Jimpp 
    */
-  crop(jm: Jm, x: number, y: number, w: number, h: number, cb?: (err, img: Jm) => void): Jm {
+  crop(Jimpp: Jimpp, x: number, y: number, w: number, h: number, cb?: (err, img: Jimpp) => void): Jimpp {
     if (cb) {
-      return jm.crop(x, y, w, h, cb)
+      return Jimpp.crop(x, y, w, h, cb)
     }
-    return jm.crop(x, y, w, h)
+    return Jimpp.crop(x, y, w, h)
   }
   /**
    * 旋转图片
-   * @param jm 
+   * @param Jimpp 
    * @param deg 
    * @param callback 
    * @returns 
    */
-  rotate(jm: Jm, deg: number, cb?: (err, img: Jm) => void): Jm {
+  rotate(Jimpp: Jimpp, deg: number, cb?: (err, img: Jimpp) => void): Jimpp {
     if (cb) {
-      jm.rotate(deg, cb)
+      Jimpp.rotate(deg, cb)
     }
-    return jm.rotate(deg)
+    return Jimpp.rotate(deg)
   }
   /**
    * 
-   * @param jm Jimp对象
+   * @param Jimpp Jimp对象
    * @param path 保存的路径
    * @returns 
    */
-  async writeAsync(jm: Jm, path: string): Promise<Jm> {
-    return await jm.writeAsync(path)
+  async writeAsync(Jimpp: Jimpp, path: string): Promise<Jimpp> {
+    return await Jimpp.writeAsync(path)
   }
+  /**
+   * 
+   * @param file 要加载的字体路径
+   * @returns 
+   */
   async loadFont(file: string) {
-    return await Jm.loadFont(file)
+    return await Jimpp.loadFont(file)
   }
+  /**
+   * 
+   * @param r red
+   * @param g green
+   * @param b blue
+   * @param a alpha
+   * @param cb callback function
+   */
+  rgbaToInt(r: number, g: number, b: number, a: number): number {
+    return Jimpp.rgbaToInt(r, g, b, a)
+  }
+  appendConstructorOption(name: string, test: (...args: any[]) => boolean, run: (this: Jimpp, resolve: (jimp?: Jimpp) => any, reject: (reason: Error) => any, ...args: any[]) => any): void {
+    return Jimpp.appendConstructorOption(name, test, run)
+  }
+  /**
+   * 
+   * @param font 
+   * @param text 
+   * @param maxWidth 
+   * @returns 
+   */
+  /**
+   * 
+   * @param font 字体
+   * @param text 文本
+   * @param maxWidth 宽带
+   * @returns 
+   */
+  measureTextHeight(font: Font, text: any, maxWidth: number): number {return Jimpp.measureTextHeight(font, text, maxWidth)}
+  /**
+   * 
+   * @param font 字体
+   * @param text 文本
+   * @returns 
+   */
+  measureText(font: Font, text: any): number {return Jimpp.measureText(font, text)}
+  /**
+   * 
+   * @param n 
+   * @returns 
+   */
+  limit255(n: number): number {return Jimpp.limit255(n)}
+  /**
+   * 
+   * @param i 要转为RGBA的数字
+   * @returns 
+   */
+  intToRGBA(i: number): RGBA {return Jimpp.intToRGBA(i)}
+  /**
+   * 
+   * @param img1 图片1
+   * @param img2 
+   * @returns 
+   */
+  distance(img1: Jimpp, img2: Jimpp): number {return Jimpp.distance(img1, img2)}
+  /**
+   * 
+   * @param img1 图片1
+   * @param img2 
+   * @param threshold 相似度，阈值
+   * @returns 
+   */
+  diff(img1: Jimpp, img2: Jimpp, threshold?: number): DiffReturn<Jimpp> { return Jimpp.diff(img1, img2, threshold) }
+  /**
+   * 
+   * @param cssColor css格式颜色
+   * @returns 
+   */
+  cssColorToHex(cssColor: string): number { return Jimpp.cssColorToHex(cssColor) }
+  /**
+   * 
+   * @param path 路径
+   * @returns 
+   */
+  create(path: string): Promise<Jimpp>{return Jimpp.create(path)}
+  /**
+   * 
+   * @param hash1 
+   * @param hash2 
+   * @returns 
+   */
+  compareHashes(hash1: string, hash2: string): number{return Jimpp.compareHashes(hash1,hash2)}
+  /**
+   * 
+   * @param rgba1 
+   * @param rgba2 
+   * @returns 
+   */
+  colorDiff(rgba1: RGB, rgba2: RGB): number{return Jimpp.colorDiff(rgba1,rgba2)}
 }
-namespace Jimpp {
+namespace Jimp {
   export interface Config { }
-
   export const Config: Schema<Config> = Schema.object({})
 }
 
-export default Jimpp
+export default Jimp
+
+export interface Font {
+  chars: {
+    [char: string]: FontChar;
+  };
+  kernings: {
+    [firstString: string]: {
+      [secondString: string]: number;
+    };
+  };
+  pages: string[];
+  common: FontCommon;
+  info: FontInfo;
+}
+export interface FontChar {
+  id: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  xoffset: number;
+  yoffset: number;
+  xadvance: number;
+  page: number;
+  chnl: number;
+}
+export interface FontInfo {
+  face: string;
+  size: number;
+  bold: number;
+  italic: number;
+  charset: string;
+  unicode: number;
+  stretchH: number;
+  smooth: number;
+  aa: number;
+  padding: [number, number, number, number];
+  spacing: [number, number];
+}
+
+export interface FontCommon {
+  lineHeight: number;
+  base: number;
+  scaleW: number;
+  scaleH: number;
+  pages: number;
+  packed: number;
+  alphaChnl: number;
+  redChnl: number;
+  greenChnl: number;
+  blueChnl: number;
+}
+export interface RGBA {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+}
+interface DiffReturn<This> {
+  percent: number;
+  image: This;
+}
+export interface RGB {
+  r: number;
+  g: number;
+  b: number;
+}
