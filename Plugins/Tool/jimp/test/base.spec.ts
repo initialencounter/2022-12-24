@@ -16,7 +16,7 @@ app.plugin(Jimpp);
     const a = await app.jimp.read("Plugins\\News\\gh-tile\\src\\0.jpg")
     a.crop(20,20,20,20)
     a.rotate(45)
-    await app.jimp.writeAsync(a,resolve(__dirname,'0.jpg'))
+    await a.writeAsync(resolve(__dirname,'0.jpg'))
     console.log('done4')
     exit()
 })()
