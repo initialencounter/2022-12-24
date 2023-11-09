@@ -1,5 +1,5 @@
 import { Schema } from 'koishi';
-import { readFileSync} from "fs";
+import { readFileSync } from "fs";
 import { resolve } from "path";
 
 export const MineConfig = Schema.intersect([

@@ -1,6 +1,7 @@
 import { Context, Schema, Logger, Dict, Session, h, Keys } from 'koishi';
 import Minefield from "./minesweeper";
-import { renderX, setTheme } from './render'
+import { } from '@initencounter/jimp';
+import { renderX, setTheme } from './renderJimp'
 export const name = 'minesweeper-ending';
 
 import { MineConfig, mineUsage } from "./config"
@@ -42,13 +43,13 @@ declare module 'koishi' {
 
 class EndingGame {
   static inject = {
-    required: ['database']
+    required: ['database', 'jimp']
   }
   minefieldDict: Dict
   banList: Dict
   theme: string
   constructor(ctx: Context, private config: MineConfig) {
-    setTheme(config)
+    setTheme(ctx, config)
     this.banList = {}
     this.theme = this.config.theme
 
@@ -124,7 +125,7 @@ class EndingGame {
         const nowStamp = Date.now()
         let m = new Minefield(this.config.widthC, this.config.heightC, this.config.minesC)
         m = makePool(m)
-        session.send(h.at(session.userId) + `|\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}` + h.image(await renderX(m), "image/png"))
+        session.send(h.at(session.userId) + `|\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}` + h.image(await renderX(m, ctx), "image/png"))
         const cell = await session.prompt(86400000)
         if (!cell) {
           return "挑战失败"
@@ -141,7 +142,7 @@ class EndingGame {
         m["goingOn"] = true
         while (m["goingOn"] == true) {
           m = makePool(m)
-          session.send(h.at(session.userId) + `|\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}` + h.image(await renderX(m), "image/png"))
+          session.send(h.at(session.userId) + `|\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}` + h.image(await renderX(m, ctx), "image/png"))
           var input = await session.prompt(86400000)
           if (!input) {
             return h.at(session.userId) + "输入超时, 挑战失败"
@@ -213,7 +214,7 @@ class EndingGame {
         if (options.force) {
           logger.info("强制重开")
         } else if (m?.isGoingOn()) {
-          session.send(h.at(session.userId) + `|\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}` + h.image(await renderX(m), "image/png"))
+          session.send(h.at(session.userId) + `|\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}` + h.image(await renderX(m, ctx), "image/png"))
           return "已存在残局"
         }
         const info: GameInfo = {
@@ -249,7 +250,7 @@ class EndingGame {
             z = getMineNums(x, y)
           }
         }
-        return await this.renew(session as Session, x, y, z)
+        return await this.renew(session as Session, x, y, z, ctx)
       })
     ctx.command("ed.end", "结束 ed").action(({ session }) => {
       this.minefieldDict[session.guildId] = null
@@ -260,11 +261,11 @@ class EndingGame {
       if (!m) {
         return "不存在残局"
       }
-      return await this.renew(session as Session, m.width, m.height, m.mines)
+      return await this.renew(session as Session, m.width, m.height, m.mines, ctx)
     })
     ctx.command("ed.l", "查看地雷").action(({ session }) => {
       let m = this.minefieldDict[session.channelId]
-      return this.getHint(m, session as Session)
+      return this.getHint(m, session as Session, ctx)
     })
 
 
@@ -308,7 +309,7 @@ class EndingGame {
       }
       // 更新 雷 和 空
       m = makePool(m)
-      await session.send(h.at(session.userId) + `|\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}` + h.image(await renderX(m), "image/png"))
+      await session.send(h.at(session.userId) + `|\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}` + h.image(await renderX(m, ctx), "image/png"))
       // 猜错了
       if (wrong.length > 0) {
         await this.ban(session.userId)
@@ -391,7 +392,7 @@ class EndingGame {
 
       // 更新 雷 和 空
       m = makePool(m)
-      await session.send(h.at(session.userId) + `|\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}` + h.image(await renderX(m), "image/png"))
+      await session.send(h.at(session.userId) + `|\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}` + h.image(await renderX(m, ctx), "image/png"))
 
       // 猜错了
       if (wrong.length > 0) {
@@ -568,7 +569,7 @@ ${rankInfo.map((player, index) => ` ${String(index + 1).padStart(2, ' ')}   ${pl
    * @param session 
    * @returns 
    */
-  async getHint(m: Minefield, session: Session) {
+  async getHint(m: Minefield, session: Session, ctx: Context) {
     if (!m.isGoingOn()) return "不存在残局"
     const now = Date.now()
     if (now - m.start_time < this.config.MinHintTime) {
@@ -577,7 +578,7 @@ ${rankInfo.map((player, index) => ` ${String(index + 1).padStart(2, ' ')}   ${pl
     for (var i of m["keyPool"]) {
       m.openCell(i)
     }
-    return h.at(session.userId) + `|\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}` + h.image(await renderX(m), "image/png")
+    return h.at(session.userId) + `|\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}` + h.image(await renderX(m, ctx), "image/png")
   }
 
 
@@ -729,10 +730,10 @@ ${rankInfo.map((player, index) => ` ${String(index + 1).padStart(2, ' ')}   ${pl
    * @param z 
    * @returns 
    */
-  async renew(session: Session, x: number = this.config.width, y: number = this.config.height, z: number = this.config.mines) {
+  async renew(session: Session, x: number = this.config.width, y: number = this.config.height, z: number = this.config.mines, ctx: Context) {
     let m: Minefield = this.initialize(x, y, z)
     this.minefieldDict[session.channelId] = m
-    return h.at(session.userId) + `|\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}` + h.image(await renderX(m), "image/png")
+    return h.at(session.userId) + `|\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}` + h.image(await renderX(m, ctx), "image/png")
   }
 
 
