@@ -1,7 +1,7 @@
 {
   "name": "@initencounter/koishi-plugin-jimp",
   "description": "jimp service",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "jimp": "^0.22.10",
-    "@initencounter/jimp": "^0.0.2"
+    "@initencounter/jimp": "^0.0.3"
   },
   "koishi": {
     "preview": true,

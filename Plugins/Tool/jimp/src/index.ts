@@ -1,8 +1,10 @@
 import { Context, Schema } from 'koishi'
 import Jimpp from 'jimp'
 import Jm from '@initencounter/jimp';
+import { resolve } from 'path';
+import { readFileSync } from 'fs';
 export const name = 'jimp'
-
+export const usage = readFileSync(resolve(__dirname, '../readme.md'))
 class Jimp extends Jm {
   constructor(ctx: Context) {
     super(ctx)
@@ -62,6 +64,16 @@ class Jimp extends Jm {
     this.RESIZE_BICUBIC = Jimpp.RESIZE_BICUBIC
     this.RESIZE_HERMITE = Jimpp.RESIZE_HERMITE
     this.RESIZE_BEZIER = Jimpp.RESIZE_BEZIER
+    // 中文字体
+    this.PingFang_24_BLACK = resolve(__dirname,'PingFang_24_BLACK_CHINESE3500/PingFang_24_BLACK.fnt')
+  }
+  /**
+   * 实例化 Jimp
+   * @param args 
+   * @returns Jimp
+   */
+  newJimp(...args: any[]): Jimpp{
+    return new Jimpp(...args)
   }
   /**
    * 读取图片
