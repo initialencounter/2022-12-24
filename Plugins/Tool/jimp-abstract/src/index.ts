@@ -140,10 +140,18 @@ abstract class Jimp extends Service {
   RESIZE_BICUBIC: "bicubicInterpolation";
   RESIZE_HERMITE: "hermiteInterpolation";
   RESIZE_BEZIER: "bezierInterpolation";
+  // 中文zit
+  PingFang_24_BLACK: string
 
   constructor(ctx: Context) {
     super(ctx, 'jimp', true)
   }
+  /**
+   * 实例化 Jimp
+   * @param args 
+   * @returns Jimp
+   */
+  abstract newJimp(...args: any[]): Jm
   /**
    * 读取图片
    * @param path 路径
