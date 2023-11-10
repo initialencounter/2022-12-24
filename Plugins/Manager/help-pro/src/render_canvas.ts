@@ -1,54 +1,14 @@
 import { Context } from 'koishi';
-import { SikaCanvas } from "koishi-plugin-canvas";
-import fs from 'fs'
-const pluginGrid = {
-    game: [
-        ['pz', '数字华容道', 3],
-        ['couplet', 'AI对对联', 0],
-        ['cube', '三阶魔方', 0],
-        ['ed', '', 0]
-    ],
-    manage: [
-        ['help-pro', '显示帮助信息', 7],
-        ['echo', '发送消息', 4],
-        ['clock', '添加闹钟', 0],
-        ['command', '指令管理', 0],
-        ['loader', '更新所有插件', 0],
-        ['shutdown', '关闭或重启 Kois...', 0],
-        ['timer', '定时器信息', 0],
-        ['usage', '调用次数信息', 0]
-    ],
-    tool: [],
-    extension: [],
-    ai: [['facercg', '人脸识别,百度api...', 0]],
-    preset: [],
-    storage: [['备份db', '', 0], ['恢复db', '', 0]],
-    adapter: [],
-    image: [],
-    console: [
-        ['clear', '清空聊天记录', 27],
-        ['info', '查看运行状态', 0],
-        ['plugin', '插件管理', 0]
-    ],
-    gametool: [
-        ['trad', 'Steam挂刀行情', 3],
-        ['stnb', '扫雷stnb计算~', 0],
-        ['ys', '', 0]
-    ],
-    meme: [['thursday', '随机输出 KFC 疯...', 0]],
-    media: [['fur', '随机毛图', 3]],
-    other: [],
-    unknow: []
-};
+import { PluginGrid } from '.';
 
-// (async () => {
-
-// })()
-
-export async function render3(ctx1: Context, theme: string) {
-    console.time("mytime")
-    let x = 10, y = 10
-    const bg = await ctx1.canvas.loadImage('C:\\Users\\29115\\dev\\ks\\Plugins\\Manager\\help-pro\\1.png')
+export async function render3(ctx1: Context, theme: string, pluginGrid: PluginGrid) {
+    // console.time("mytime")
+    let y = 10
+    let bgImg:string = ctx1.config.background
+    if(bgImg.startsWith('file:///')){
+        bgImg = bgImg.replace('file:///','')
+    }
+    const bg = await ctx1.canvas.loadImage(bgImg)
     const [width, height]: number[] = [bg["width"], bg["height"]]
     const a = await ctx1.canvas.render(width, height, async (ctx) => {
         const pluginsPeerRow = Math.floor(width / 185)
@@ -76,20 +36,27 @@ export async function render3(ctx1: Context, theme: string) {
                     x2 = 30
                 }
                 ctx.font = 'bold 30px sans-serif'
-                // ctx.textAlign = 'center'
-                // ctx.textBaseline = 'middle'
+                ctx.textBaseline = 'middle'
                 ctx.fillStyle = '#000'
                 ctx.fillText(
                     value[i][0].replace(/^./, (p) => p.toLocaleUpperCase()),
                     x2,
                     y,
                 )
+                ctx.font = 'bold 18px sans-serif'
+                ctx.textBaseline = 'middle'
+                ctx.fillStyle = '#000'
+                ctx.fillText(
+                    value[i][1].replace(/^./, (p) => p.toLocaleUpperCase()),
+                    x2,
+                    y+30,
+                )
                 x2 += 185
             }
             y += 70
         }
     })
-    console.timeEnd("mytime")
+    // console.timeEnd("mytime")
     return a
 }
 const category_map = {

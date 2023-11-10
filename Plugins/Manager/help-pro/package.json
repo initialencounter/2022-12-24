@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-help-pro",
-  "description": "进阶指令帮助",
-  "version": "1.0.4",
+  "description": "进阶指令帮助, 使用 canvas 渲染",
+  "version": "1.0.4-beta",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -35,7 +35,7 @@
   "koishi":{
     "service": {
       "optional": [
-        "puppeteer"
+        "puppeteer","canvas"
       ]
     }
   }

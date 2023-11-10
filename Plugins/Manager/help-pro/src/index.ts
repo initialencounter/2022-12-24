@@ -4,7 +4,7 @@ import { } from 'koishi-plugin-puppeteer'
 import { resolve } from 'path'
 import { render, render2 } from './render'
 import { } from '@koishijs/loader'
-import {render3} from './render_canvas'
+import { render3 } from './render_canvas'
 
 type DailyField = typeof dailyFields[number]
 const dailyFields = [
@@ -133,7 +133,7 @@ export const pluginCategory = {}
 export const categorys = ['']
 export const name = 'help-pro'
 export const inject = {
-  optional: ['puppeteer','canvas']
+  optional: ['puppeteer', 'canvas']
 }
 export const usage = `${readFileSync(resolve(__dirname, '../readme.md')).toString('utf-8')}`
 
@@ -511,6 +511,6 @@ async function renderImage1(ctx: Context, cmds: Command[], session: Session<'aut
 }
 async function renderImage2(ctx: Context, cmds: Command[], session: Session<'authority'>, color: string) {
   const cmdGrid: PluginGrid = await formatCommandsGrid(ctx, session, cmds, {})
-  return await render3(ctx,color)
+  return await render3(ctx, color, cmdGrid)
   return await render2(cmdGrid, color, ctx.config.background)
 }
