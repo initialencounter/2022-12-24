@@ -4,6 +4,8 @@ data
 locales
 cache
 external
+node-rs
+downloads
 
 node_modules
 npm-debug.log
@@ -25,5 +27,6 @@ koishi.yml
 *.lock
 package-lock.json
 *.bak
+*.log
 
 personality.json

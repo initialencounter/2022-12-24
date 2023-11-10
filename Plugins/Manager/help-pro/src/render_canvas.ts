@@ -19,7 +19,7 @@ export async function render3(ctx1: Context, theme: string, pluginGrid: PluginGr
                 continue
             }
             ctx.fillStyle = theme
-            ctx.font = 'bold 40px sans-serif'
+            ctx.font = '40px'
             ctx.textAlign = 'left'
             ctx.textBaseline = 'middle'
             ctx.fillStyle = '#000'
@@ -35,7 +35,7 @@ export async function render3(ctx1: Context, theme: string, pluginGrid: PluginGr
                     y += 70
                     x2 = 30
                 }
-                ctx.font = 'bold 30px sans-serif'
+                ctx.font = '30px'
                 ctx.textBaseline = 'middle'
                 ctx.fillStyle = '#000'
                 ctx.fillText(
@@ -43,7 +43,7 @@ export async function render3(ctx1: Context, theme: string, pluginGrid: PluginGr
                     x2,
                     y,
                 )
-                ctx.font = 'bold 18px sans-serif'
+                ctx.font = '18px'
                 ctx.textBaseline = 'middle'
                 ctx.fillStyle = '#000'
                 ctx.fillText(
