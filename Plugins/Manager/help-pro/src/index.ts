@@ -2,9 +2,8 @@ import { readFileSync } from 'fs'
 import { Argv, Command, Computed, Context, FieldCollector, h, Schema, Session, Dict, EffectScope } from 'koishi'
 import { } from 'koishi-plugin-puppeteer'
 import { resolve } from 'path'
-import { render, render2 } from './render'
 import { } from '@koishijs/loader'
-import { render3 } from './render_canvas'
+import { render_list, render_categroy } from './render_canvas'
 
 type DailyField = typeof dailyFields[number]
 const dailyFields = [
@@ -109,7 +108,7 @@ export const Config: Schema<Config> = Schema.intersect([
       Schema.const('image1').description('带插件分类'),
       Schema.const('image2').description('按调用频率排序'),
     ]).description("输出方式").default('image1'),
-    color: Schema.string().role('color').default('rgba(62, 192, 149, 1)').description("主题色"),
+    color: Schema.string().role('color').default('rgba(62, 192, 149, 255)').description("主题色"),
     background: Schema.string().role('link').default('https://gitee.com/initencunter/mykoishi/raw/master/Plugins/Manager/help-pro/1.png').description('背景图片')
   }),
   Schema.union([
@@ -133,7 +132,7 @@ export const pluginCategory = {}
 export const categorys = ['']
 export const name = 'help-pro'
 export const inject = {
-  optional: ['puppeteer', 'canvas']
+  optional: ['canvas']
 }
 export const usage = `${readFileSync(resolve(__dirname, '../readme.md')).toString('utf-8')}`
 
@@ -247,18 +246,18 @@ export function apply(ctx: Context, config: Config) {
       if (!target) {
         const commands = $._commandList.filter(cmd => cmd.parent === null)
         const output = formatCommands(ctx, '.global-prolog', session, commands, options)
-        if (ctx.puppeteer && options.output) {
+        if (ctx.canvas && options.output) {
           if (options?.output === 'image1') {
-            return await renderImage2(ctx, commands, session, config.color)
+            return await renderCategroy(ctx, commands, session, config.color)
           } else if (options?.output === 'image2') {
-            return await renderImage1(ctx, commands, session, config.color, config.maxRenderPeerPage)
+            return await renderList(ctx, commands, session, config.color, config.maxRenderPeerPage)
           }
         }
         if (ctx.canvas && config.output == 'image1') {
-          return await renderImage2(ctx, commands, session, config.color)
+          return await renderCategroy(ctx, commands, session, config.color)
         }
-        if (ctx.puppeteer && (config.output == 'image2')) {
-          return await renderImage1(ctx, commands, session, config.color, config.maxRenderPeerPage)
+        if (ctx.canvas && (config.output == 'image2')) {
+          return await renderList(ctx, commands, session, config.color, config.maxRenderPeerPage)
         }
         return output.filter(Boolean).join('\n')
       }
@@ -444,30 +443,14 @@ async function formatCommandsGrid(ctx: Context, session: Session<'authority'>, c
     .sort((a, b) => a.displayName > b.displayName ? 1 : -1)
   if (!commands.length) return pluginGrid
   const prefix = session.resolve(session.app.config.prefix)[0] ?? ''
-  const output = commands.map(({ name, displayName, config, ctx: { scope } }) => {
+  commands.map(({ name, displayName, config, ctx: { scope } }) => {
     const scopeName = ctx.loader.paths(scope)[0]
-    let _category: string
-    if (scopeName.includes('@')) {
-      const pluginName: string = scopeName.split('@').slice(-1)[0]
-      const idStart = pluginName.indexOf('/')
-      const idEnd = pluginName.indexOf(':')
-      const pluginFullName: string = `@${pluginName.slice(0, idStart)}/koishi-plugin-${idEnd > -1 ? pluginName.slice(idStart + 1, idEnd) : pluginName.slice(idStart + 1)}`
-
-      _category = pluginCategory[pluginFullName] ?? 'unknow'
-    } else {
-      const pluginName: string = scopeName.split('/').slice(-1)[0]
-      const idEnd = pluginName.indexOf(':')
-      let pluginFullName = `koishi-plugin-${idEnd > -1 ? pluginName.slice(0, idEnd) : pluginName}`
-      if (!pluginCategory[pluginFullName]) {
-        pluginFullName = `@koishijs/plugin-${idEnd > -1 ? pluginName.slice(0, idEnd) : pluginName}`
-      }
-      _category = pluginCategory[pluginFullName] ?? 'unknow'
-    }
-
+    // 获取插件分类
+    let category: string = getPluginCategory(scopeName)
     const desc = session.text([`commands.${name}.description`, ''], config.params)
     let output = prefix + displayName;
-    pluginGrid[_category].push([output, lenLessThanXText(desc, 10), 0])
-    return [output, lenLessThanXText(desc, 30), _category]
+    pluginGrid[category].push([output, lenLessThanXText(desc, 10), 0])
+    return [output, lenLessThanXText(desc, 30), category]
   })
 
   const cmdStats = await getCommandsStats(ctx)
@@ -490,27 +473,63 @@ function lenLessThanXText(input: string, X: number) {
     return input.slice(0, X) + '...'
   }
 }
+
+/**
+ * 获取插件的分类
+ * @param scopeName 
+ * @returns 
+ */
+function getPluginCategory(scopeName:string){
+  let category: string
+    // 获取插件的全名
+    if (scopeName.includes('@')) {
+      const pluginName: string = scopeName.split('@').slice(-1)[0]
+      const idStart = pluginName.indexOf('/')
+      const idEnd = pluginName.indexOf(':')
+      const pluginFullName: string = `@${pluginName.slice(0, idStart)}/koishi-plugin-${idEnd > -1 ? pluginName.slice(idStart + 1, idEnd) : pluginName.slice(idStart + 1)}`
+
+      category = pluginCategory[pluginFullName] ?? 'unknow'
+    } else {
+      const pluginName: string = scopeName.split('/').slice(-1)[0]
+      const idEnd = pluginName.indexOf(':')
+      let pluginFullName = `koishi-plugin-${idEnd > -1 ? pluginName.slice(0, idEnd) : pluginName}`
+      if (!pluginCategory[pluginFullName]) {
+        pluginFullName = `@koishijs/plugin-${idEnd > -1 ? pluginName.slice(0, idEnd) : pluginName}`
+      }
+      category = pluginCategory[pluginFullName] ?? 'unknow'
+    }
+    return category
+}
+
 /**
  * 渲染help
  * @returns 
  */
-async function renderImage1(ctx: Context, cmds: Command[], session: Session<'authority'>, color: string, PulginsPeerPage: number = 30) {
+async function renderList(ctx: Context, cmds: Command[], session: Session<'authority'>, color: string, PulginsPeerPage: number = 30) {
   const cmdArray = formatCommandsArray(session, cmds, {})
   const cmdStats = await getCommandsStats(ctx)
   const sortedCmds = sortCommands(cmdArray, cmdStats)
   const step = PulginsPeerPage
+  // 分页发送
   if (sortedCmds.length > step) {
     for (var i = 0; i < sortedCmds.length; i += step) {
-      session.send(await render(sortedCmds.slice(i, i + step), color, ctx.config.background))
+      session.send(await render_list(ctx, sortedCmds.slice(i, i + step), color))
     }
   } else {
-    return await render(sortedCmds, color, ctx.config.background)
+    return await render_list(ctx, sortedCmds, color)
   }
 
 
 }
-async function renderImage2(ctx: Context, cmds: Command[], session: Session<'authority'>, color: string) {
+/**
+ * 渲染带分类图片
+ * @param ctx 
+ * @param cmds 
+ * @param session 
+ * @param color 
+ * @returns 
+ */
+async function renderCategroy(ctx: Context, cmds: Command[], session: Session<'authority'>, color: string) {
   const cmdGrid: PluginGrid = await formatCommandsGrid(ctx, session, cmds, {})
-  return await render3(ctx, color, cmdGrid)
-  return await render2(cmdGrid, color, ctx.config.background)
+  return await render_categroy(ctx, color, cmdGrid)
 }
