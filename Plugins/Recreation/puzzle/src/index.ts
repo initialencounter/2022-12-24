@@ -84,9 +84,9 @@ class Pz {
 
     ctx.command('pz [mode:number]', '开始 puzzle 游戏')
       .alias('puzzle')
-      .action(async ({ session, options }, mode) => {
+      .action(async ({ session }, mode) => {
         if (!mode) {
-          mode = 4
+          mode = config.mode
         }
         if (mode > 5) {
           return session.text('commands.pz.messages.bad-mode')
@@ -108,7 +108,6 @@ class Pz {
         if (!prompt) {
           return session.send(session.text('commands.pz.messages.nodata'))
         }
-        session = session
         return this.def(session, prompt)
       })
   }
@@ -264,7 +263,6 @@ namespace Pz {
   export interface Config {
     mode: number
     size: number
-    colorForSerialNum: string
     maxConcurrency: number
   }
 
@@ -274,7 +272,6 @@ namespace Pz {
       Schema.const(4 as number).description('15p'),
       Schema.const(3 as number).description('8p'),
     ]).default(4 as number).description('默认的游戏模式'),
-    colorForSerialNum: Schema.string().default("#000000FF").description('数字颜色'),
     maxConcurrency: Schema.number().default(50).description('最大存在游戏局数'),
     size: Schema.number().default(50).description('图片大小')
   })
