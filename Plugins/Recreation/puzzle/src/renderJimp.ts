@@ -1,7 +1,3 @@
-import { resolve } from "path";
-import fs from 'fs';
-import { PNG } from 'pngjs';
-import Pz from './index';
 import { Context } from "koishi";
 import { } from "@initencounter/jimp"
 import type Jimp from "jimp";
@@ -65,15 +61,13 @@ interface ImgArr {
     "5-23"?: Jimp
     "5-24"?: Jimp
 }
-const NumImg = {}
-let FONT
 
 /**
  * 初始化
  * @param config 
  */
 export async function setTheme(ctx: Context) {
-    FONT = await ctx.jimp.loadFont(ctx.jimp.FONT_SANS_64_WHITE)
+    const FONT = await ctx.jimp.loadFont(ctx.jimp.FONT_SANS_64_WHITE)
     // 十六进制颜色转RGBA
     for (var j = 3; j < 6; j++) {
         for (var i = 0; i < j * j; i++) {

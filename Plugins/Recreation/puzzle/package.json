@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-puzzle",
   "description": "数字华容道, 使用 Jimp 渲染",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [

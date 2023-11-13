@@ -1,6 +1,5 @@
-import { Context, Dict, Schema, Session, Element, Logger, h } from 'koishi'
+import { Context, Dict, Schema, Session, Logger, h } from 'koishi'
 import { Klotsk } from './puzzle'
-// import { setTheme, renderX } from './render'
 import { setTheme, renderX } from './renderJimp'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
