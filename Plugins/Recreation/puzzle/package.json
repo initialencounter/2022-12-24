@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-puzzle",
-  "description": "拼图游戏，数字华容道",
-  "version": "1.1.1",
+  "description": "数字华容道",
+  "version": "1.2.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -30,7 +30,7 @@
     "puzzle"
   ],
   "koishi": {
-    "description": "拼图游戏，数字华容道",
+    "description": "数字华容道",
     "service": {
       "required": [
         "database",

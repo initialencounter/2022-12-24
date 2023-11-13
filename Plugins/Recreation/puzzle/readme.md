@@ -6,20 +6,19 @@
 
 在QQ群里面玩华容
 
+原游戏: [扫雷联萌](http://tapsss.com)
+
 ## 指令
-<br>
+
 
 |描述|示例|
 |----|----|
-|开始puzzle|pz -m 4|
+|开始puzzle|pz 4|
 |加入puzzle|pz.join|
 |退出puzzle|pz.quit|
 |自定应puzzle|pz.def + puzzle导出数据|
 |puzzle排行榜|pz.rank|
 
-## 安装方法
-
-`npm i koishi-plugin-puzzle`
 
 
 ## 更新日志

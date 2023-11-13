@@ -2,6 +2,8 @@ import { Context, Dict, Schema, Session, Element, Logger, h } from 'koishi'
 import { Klotsk } from './puzzle'
 // import { setTheme, renderX } from './render'
 import { setTheme, renderX } from './renderJimp'
+import { readFileSync } from 'fs'
+import { resolve } from 'path'
 
 export const name: string = 'puzzle'
 export const logger = new Logger(name)
@@ -246,13 +248,7 @@ class Pz {
 
 }
 namespace Pz {
-  export const usage = `
-## 注意事项
-> 原游戏 <a href="http://tapsss.com">扫雷联萌</a>
-本插件仅供学习参考，请勿用于商业行为
-对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-puzzle 概不负责。
-如果有更多文本内容想要修改，可以在<a href="/locales">本地化</a>中修改 zh 内容
-`
+  export const usage = readFileSync(resolve(__dirname, "../readme.md")).toString('utf-8').split("更新日志")[0];
   export interface Rankls {
     uid: string
     score: number
