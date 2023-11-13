@@ -104,7 +104,6 @@ export async function setTheme(ctx: Context) {
 function find_color(num: number, mode: number) {
     const y = num % mode
     const x = Math.floor(num / mode)
-    // console.log(num,mode)
     return theme[x][y]
 
 }
@@ -116,7 +115,6 @@ function find_color(num: number, mode: number) {
  * @returns Arraybuffer
  */
 export async function renderX(ctx: Context, k): Promise<Buffer> {
-    console.dir(k)
     const mode = k.length
     const bg = ctx.jimp.newJimp(mode * 94, mode * 94)
     for (let i = 0; i < mode; i++) {

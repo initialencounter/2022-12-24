@@ -23,7 +23,6 @@ class Pz {
   options: Dict
   globalTasks: Dict
   game_data: number[][]
-  game_img_size: number
   wait: number
   players: string[]
   done: boolean
@@ -49,24 +48,22 @@ class Pz {
       if (this.players.indexOf(session.userId) == -1) {
         return next()
       }
-      session = session
-      this.game_img_size = config.size
       const prompt = session.content ? session.content : ''
       if (!Object.keys(this.globalTasks).includes(session.channelId)) {
         return next()
       }
       return await this.puzzle(session, prompt)
     })
-    ctx.command('pz.stop', '结束puzzle').alias('结束华容道').action(({ session }) => {
+    ctx.command('pz.stop', '结束 puzzle').alias('结束华容道').action(({ session }) => {
       session = session
       return this.stop(session)
     })
 
-    ctx.command('pz.join', '加入puzzle').alias('加入pz').action(({ session }) => {
+    ctx.command('pz.join', '加入 puzzle 游戏').alias('加入pz').action(({ session }) => {
       this.players.push(session.userId)
     })
 
-    ctx.command('pz.quit', '退出puzzle').alias('退出pz').action(({ session }) => {
+    ctx.command('pz.quit', '退出 puzzle').alias('退出pz').action(({ session }) => {
       const index: number = this.players.indexOf(session.userId)
       if (index == -1) {
         return session.text('commands.pz.messages.not-player')
@@ -76,19 +73,20 @@ class Pz {
       }
     })
 
-    ctx.command('pz.rank <prompt:number>', '查看puzzle排行榜').alias('华容排行榜')
+    ctx.command('pz.rank <prompt:number>', '查看 puzzle 排行榜').alias('华容排行榜')
       .action(({ session }, prompt) => {
         session = session
         return this.get_rank(session, prompt ? prompt : config.mode)
       })
 
 
-    ctx.command('pz', '开始puzzle')
+    ctx.command('pz [mode:number]', '开始 puzzle 游戏')
       .alias('puzzle')
-      .option('mode', '-m <mode:number>', { fallback: config.mode })
-      .option('size', '-s <size:number>', { fallback: config.size })
-      .action(async ({ session, options }) => {
-        if (options.mode > 5) {
+      .action(async ({ session, options }, mode) => {
+        if (!mode) {
+          mode = 4
+        }
+        if (mode > 5) {
           return session.text('commands.pz.messages.bad-mode')
         }
         if (Object.keys(this.globalTasks).indexOf(session.channelId) !== -1) {
@@ -100,9 +98,7 @@ class Pz {
           }
         }
         this.players.push(session.userId)
-        this.game_img_size = options.size
-        session = session
-        return await this.puzzle(session, '', options)
+        return await this.puzzle(session, '', mode)
       })
     ctx.command('pz.def <prompt:text>', '自定义puzzle')       //自定义画puzzle
       .option('size', '-s <size:number>', { fallback: config.size })
@@ -114,7 +110,7 @@ class Pz {
         return this.def(session, prompt)
       })
   }
-  async puzzle(session, prompt, options: Dict = {}) {
+  async puzzle(session: Session, prompt: string, mode?: number) {
     if (Object.keys(this.globalTasks).includes(session.channelId)) {
       const game_info = await this.game(session, prompt) //更新游戏进度
       if (this.done) {
@@ -125,14 +121,13 @@ class Pz {
       return await this.draw_img()
     } else {
       // return this.game_img
-
       if (this.config.maxConcurrency) {
         if (Object.keys(this.globalTasks).length >= this.config.maxConcurrency) {
           return session.text('commands.pz.messages.concurrent-jobs')
         } else {
-          const new_klotsk: Klotsk = new Klotsk(options.mode ? options.mode : 5)
+          const new_klotsk: Klotsk = new Klotsk(mode)
           this.globalTasks[session.channelId] = new_klotsk
-          const game_info = await this.game(session,'')
+          const game_info = await this.game(session, '')
           session.send(game_info)
           return await this.draw_img()
         }
@@ -155,8 +150,8 @@ class Pz {
     }
     return this.quickSort(left).concat([arr[0]]).concat(this.quickSort(right))
   }
-  async game(session: Session, prompt: string) {    
-    let game_info:string = '' //游戏逻辑
+  async game(session: Session, prompt: string) {
+    let game_info: string = '' //游戏逻辑
     const ktk = this.globalTasks[session.channelId]
     const upper_str: string = prompt.toUpperCase()
     const str_list: string[] = upper_str.split('')
@@ -170,7 +165,7 @@ class Pz {
 
     if (ktk.move_sqnc(op_str)) {
       await this.add_score(session, ktk.mode)
-      game_info = session.text('commands.pz.messages.done', [op_str, ktk.duration()])
+      game_info = session.text('commands.pz.messages.done', [h.at(session.userId), ktk.duration()])
       this.done = true
     } else {
       game_info = session.text('commands.pz.messages.info', [op_str, ktk.duration()])

@@ -86,7 +86,6 @@ export class Klotsk {
             if (this.check()) {
                 const dt = this.duration()
                 logger.info(`已还原,用时${dt}`)
-                this.logf()
                 return true
             }
         }

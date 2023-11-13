@@ -27,7 +27,7 @@ commands:
       newgame: 新pz!
       ifreset: 当前已存在puzzle,是否重新开始(Y/n)
       nodata: 请提供导出puzzle
-      done: 已还原,执行操作{0},用时{1}
+      done: 恭喜{0}还原了 puzzle 用时{1}
       info: 执行操作{0},用时{1}
       no-rank: \{0}x{0}暂无排名
   pz.def:
