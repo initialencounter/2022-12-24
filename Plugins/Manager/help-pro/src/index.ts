@@ -1,8 +1,6 @@
 import { readFileSync } from 'fs'
-import { Argv, Command, Computed, Context, FieldCollector, h, Schema, Session, Dict, EffectScope } from 'koishi'
-import { } from 'koishi-plugin-puppeteer'
+import { Argv, Command, Computed, Context, FieldCollector, h, Schema, Session, Dict } from 'koishi'
 import { resolve } from 'path'
-import { } from '@koishijs/loader'
 import { render_list, render_categroy } from './render_canvas'
 
 type DailyField = typeof dailyFields[number]
@@ -479,26 +477,26 @@ function lenLessThanXText(input: string, X: number) {
  * @param scopeName 
  * @returns 
  */
-function getPluginCategory(scopeName:string){
+function getPluginCategory(scopeName: string) {
   let category: string
-    // 获取插件的全名
-    if (scopeName.includes('@')) {
-      const pluginName: string = scopeName.split('@').slice(-1)[0]
-      const idStart = pluginName.indexOf('/')
-      const idEnd = pluginName.indexOf(':')
-      const pluginFullName: string = `@${pluginName.slice(0, idStart)}/koishi-plugin-${idEnd > -1 ? pluginName.slice(idStart + 1, idEnd) : pluginName.slice(idStart + 1)}`
+  // 获取插件的全名
+  if (scopeName.includes('@')) {
+    const pluginName: string = scopeName.split('@').slice(-1)[0]
+    const idStart = pluginName.indexOf('/')
+    const idEnd = pluginName.indexOf(':')
+    const pluginFullName: string = `@${pluginName.slice(0, idStart)}/koishi-plugin-${idEnd > -1 ? pluginName.slice(idStart + 1, idEnd) : pluginName.slice(idStart + 1)}`
 
-      category = pluginCategory[pluginFullName] ?? 'unknow'
-    } else {
-      const pluginName: string = scopeName.split('/').slice(-1)[0]
-      const idEnd = pluginName.indexOf(':')
-      let pluginFullName = `koishi-plugin-${idEnd > -1 ? pluginName.slice(0, idEnd) : pluginName}`
-      if (!pluginCategory[pluginFullName]) {
-        pluginFullName = `@koishijs/plugin-${idEnd > -1 ? pluginName.slice(0, idEnd) : pluginName}`
-      }
-      category = pluginCategory[pluginFullName] ?? 'unknow'
+    category = pluginCategory[pluginFullName] ?? 'unknow'
+  } else {
+    const pluginName: string = scopeName.split('/').slice(-1)[0]
+    const idEnd = pluginName.indexOf(':')
+    let pluginFullName = `koishi-plugin-${idEnd > -1 ? pluginName.slice(0, idEnd) : pluginName}`
+    if (!pluginCategory[pluginFullName]) {
+      pluginFullName = `@koishijs/plugin-${idEnd > -1 ? pluginName.slice(0, idEnd) : pluginName}`
     }
-    return category
+    category = pluginCategory[pluginFullName] ?? 'unknow'
+  }
+  return category
 }
 
 /**
