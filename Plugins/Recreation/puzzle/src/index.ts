@@ -1,14 +1,12 @@
 import { Context, Dict, Schema, Session, Element, Logger, h } from 'koishi'
 import { Klotsk } from './puzzle'
-import { setTheme, renderX } from './render'
+// import { setTheme, renderX } from './render'
+import { setTheme, renderX } from './renderJimp'
+
 export const name: string = 'puzzle'
 export const logger = new Logger(name)
 
-export const theme = [['#FFFFFF', '#707070', '#707070', '#707070', '#707070',],
-['#707070', '#444444', '#00C91A', '#00C91A', '#00C91A',],
-['#00C91A', '#444444', '#008314', '#006FFF', '#006FFF',],
-['#006FFF', '#444444', '#008314', '#001EE1', '#FF0000',],
-['#FF0000', '#444444', '#008314', '#001EE1', '#BB0000',]]
+
 export const drctn_list: string[] = ['U', 'D', 'L', 'R']
 
 declare module 'koishi' {
@@ -19,24 +17,21 @@ declare module 'koishi' {
 
 
 class Pz {
-  session: Session
+  static inject = {
+    required: ['jimp', "database"],
+  };
   options: Dict
-  prompt: string
-  mode: number
   globalTasks: Dict
-  game_info: string
   game_data: number[][]
-  game_img: Element[] | Element
   game_img_size: number
   wait: number
   players: string[]
   done: boolean
   constructor(private ctx: Context, private config: Pz.Config) {
     this.globalTasks = {}
-    this.mode = config.mode
     this.players = []
     this.done = false
-    setTheme(config)
+    setTheme(ctx)
     // this.wait = new Date().getSeconds()
     ctx.i18n.define('zh', require('./locales/zh'))
     ctx.model.extend('puzzle', {
@@ -54,17 +49,17 @@ class Pz {
       if (this.players.indexOf(session.userId) == -1) {
         return next()
       }
-      this.session = session
+      session = session
       this.game_img_size = config.size
-      this.prompt = session.content ? session.content : ''
-      if (!Object.keys(this.globalTasks).includes(this.session.channelId)) {
+      const prompt = session.content ? session.content : ''
+      if (!Object.keys(this.globalTasks).includes(session.channelId)) {
         return next()
       }
-      return await this.puzzle()
+      return await this.puzzle(session, prompt)
     })
     ctx.command('pz.stop', '结束puzzle').alias('结束华容道').action(({ session }) => {
-      this.session = session
-      return this.stop()
+      session = session
+      return this.stop(session)
     })
 
     ctx.command('pz.join', '加入puzzle').alias('加入pz').action(({ session }) => {
@@ -83,18 +78,18 @@ class Pz {
 
     ctx.command('pz.rank <prompt:number>', '查看puzzle排行榜').alias('华容排行榜')
       .action(({ session }, prompt) => {
-        this.session = session
-        return this.get_rank(prompt ? prompt : config.mode)
+        session = session
+        return this.get_rank(session, prompt ? prompt : config.mode)
       })
 
 
-    ctx.command('pz <prompt:string>', '开始puzzle')
+    ctx.command('pz', '开始puzzle')
       .alias('puzzle')
       .option('mode', '-m <mode:number>', { fallback: config.mode })
       .option('size', '-s <size:number>', { fallback: config.size })
-      .action(async ({ session, options }, prompt) => {
+      .action(async ({ session, options }) => {
         if (options.mode > 5) {
-          return this.session.text('commands.pz.messages.bad-mode')
+          return session.text('commands.pz.messages.bad-mode')
         }
         if (Object.keys(this.globalTasks).indexOf(session.channelId) !== -1) {
           session.send(session.text('commands.pz.messages.ifreset'))
@@ -104,12 +99,10 @@ class Pz {
             session.send(session.text('commands.pz.messages.newgame'))
           }
         }
-        this.mode = options.mode
         this.players.push(session.userId)
         this.game_img_size = options.size
-        this.session = session
-        this.prompt = ''
-        return await this.puzzle(options)
+        session = session
+        return await this.puzzle(session, '', options)
       })
     ctx.command('pz.def <prompt:text>', '自定义puzzle')       //自定义画puzzle
       .option('size', '-s <size:number>', { fallback: config.size })
@@ -117,37 +110,31 @@ class Pz {
         if (!prompt) {
           return session.send(session.text('commands.pz.messages.nodata'))
         }
-        this.session = session
-        this.prompt = prompt
-        return this.def(options)
+        session = session
+        return this.def(session, prompt)
       })
   }
-  async puzzle(options: Dict = {}) {
-    await this.add_score()
-    const pass_score: Pz.Rankls[] = await this.ctx.database.get('puzzle', { mode: [4] }, ["uid", "score"])
-    if (Object.keys(this.globalTasks).includes(this.session.channelId)) {
-      await this.game() //更新游戏进度
-      this.draw_img() //更新游戏图片
-      const rec_klotsk: Klotsk = this.globalTasks[this.session.channelId]
+  async puzzle(session, prompt, options: Dict = {}) {
+    if (Object.keys(this.globalTasks).includes(session.channelId)) {
+      const game_info = await this.game(session, prompt) //更新游戏进度
       if (this.done) {
-        delete this.globalTasks[this.session.channelId]
+        delete this.globalTasks[session.channelId]
         this.done = false
       }
-      this.session.send(this.game_info)
-      return this.game_img
+      session.send(game_info)
+      return await this.draw_img()
     } else {
       // return this.game_img
 
       if (this.config.maxConcurrency) {
         if (Object.keys(this.globalTasks).length >= this.config.maxConcurrency) {
-          return this.session.text('commands.pz.messages.concurrent-jobs')
+          return session.text('commands.pz.messages.concurrent-jobs')
         } else {
           const new_klotsk: Klotsk = new Klotsk(options.mode ? options.mode : 5)
-          this.globalTasks[this.session.channelId] = new_klotsk
-          await this.game()
-          this.draw_img()
-          this.session.send(this.game_info)
-          return this.game_img
+          this.globalTasks[session.channelId] = new_klotsk
+          const game_info = await this.game(session,'')
+          session.send(game_info)
+          return await this.draw_img()
         }
       }
     }
@@ -168,9 +155,10 @@ class Pz {
     }
     return this.quickSort(left).concat([arr[0]]).concat(this.quickSort(right))
   }
-  async game() {     //游戏逻辑
-    const ktk = this.globalTasks[this.session.channelId]
-    const upper_str: string = this.prompt.toUpperCase()
+  async game(session: Session, prompt: string) {    
+    let game_info:string = '' //游戏逻辑
+    const ktk = this.globalTasks[session.channelId]
+    const upper_str: string = prompt.toUpperCase()
     const str_list: string[] = upper_str.split('')
     let op_str: string = ''
     str_list.forEach((i) => {
@@ -181,35 +169,29 @@ class Pz {
     this.game_data = [].concat(ktk.klotsk)
 
     if (ktk.move_sqnc(op_str)) {
-      await this.add_score()
-      this.game_info = this.session.text('commands.pz.messages.done', [op_str, ktk.duration()])
+      await this.add_score(session, ktk.mode)
+      game_info = session.text('commands.pz.messages.done', [op_str, ktk.duration()])
       this.done = true
     } else {
-      this.game_info = this.session.text('commands.pz.messages.info', [op_str, ktk.duration()])
+      game_info = session.text('commands.pz.messages.info', [op_str, ktk.duration()])
     }
+    return game_info
   }
-  async draw_img(data: number[][] = this.game_data, type: number = 1) {
-    const mode = this.game_data.length
-    const img = renderX(data)
-    return this.game_img = h.image(img, 'image/png')
+  async draw_img(data: number[][] = this.game_data) {
+    const img = await renderX(this.ctx, data)
+    return h.image(img, 'image/png')
   }
-  find_color(num: number, mode: number) {
-    const y = num % mode
-    const x = Math.floor(num / mode)
-    return theme[x][y]
-
-  }
-  async add_score() {
+  async add_score(session: Session, mode: number) {
     const pass_score: Pz.Rankls[] = await this.ctx.database.get('puzzle', {
-      mode: [this.mode],
-      uid: [this.session.userId]
+      mode: [mode],
+      uid: [session.userId]
     }, ["uid", "score"])
     if (pass_score.length == 0) {
-      await this.ctx.database.create('puzzle', { gid: this.session.channelId, uid: this.session.userId, mode: this.mode, score: 1 })
+      await this.ctx.database.create('puzzle', { gid: session.channelId, uid: session.userId, mode: mode, score: 1 })
     } else {
       await this.ctx.database.set('puzzle', {
-        mode: [this.mode],
-        uid: [this.session.userId]
+        mode: [mode],
+        uid: [session.userId]
       }, { score: (pass_score[0]["score"] + 1) })
     }
   }
@@ -222,10 +204,10 @@ class Pz {
     }
 
   }
-  async get_rank(mode: number) {
+  async get_rank(session: Session, mode: number) {
     const rank_arr: Pz.Rankls[] = await this.ctx.database.get('puzzle', { mode: [mode] }, ["uid", "score"])
     if (rank_arr.length < 1) {
-      return this.session.text('commands.pz.messages.no-rank', [mode])
+      return session.text('commands.pz.messages.no-rank', [mode])
     }
     const sorted_arr: Pz.Rankls[] = this.quickSort(rank_arr)
     let rank_div = `${mode}x${mode}排行榜\n`
@@ -236,21 +218,21 @@ class Pz {
   }
 
 
-  stop() {
-    if (Object.keys(this.globalTasks).includes(this.session.channelId)) {
-      delete this.globalTasks[this.session.channelId]
-      return this.session.text('commands.pz.messages.gameover')
+  stop(session: Session) {
+    if (Object.keys(this.globalTasks).includes(session.channelId)) {
+      delete this.globalTasks[session.channelId]
+      return session.text('commands.pz.messages.gameover')
     } else {
-      return this.session.text('commands.pz.messages.notFound')
+      return session.text('commands.pz.messages.notFound')
     }
   }
 
-  def(options: Dict) {
-    const filt_data: string = this.replace_n(this.prompt)
+  async def(session: Session, prompt: string) {
+    const filt_data: string = this.replace_n(prompt)
     const filt_arr: string[] = filt_data.split(' ')
     const def_mode: number = Math.sqrt(filt_arr.length)
     if (def_mode > 5) {
-      return this.session.text('commands.pz.messages.bad-mode')
+      return session.text('commands.pz.messages.bad-mode')
     }
     const def_koi: number[][] = []
     var count: number = 0
@@ -262,8 +244,8 @@ class Pz {
       }
       def_koi.push(temp)
     }
-    this.draw_img(def_koi, 2)
-    return this.game_img
+
+    return await this.draw_img(def_koi)
   }
 
 
