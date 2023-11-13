@@ -39,7 +39,7 @@
     }
   },
   "dependencies": {
-    "@initencounter/jimp": "^0.0.3"
+    "@initencounter/jimp": "^0.0.4"
   },
   "peerDependencies": {
     "koishi": "^4.15.2"
