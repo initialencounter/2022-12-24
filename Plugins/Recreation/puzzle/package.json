@@ -31,7 +31,15 @@
   ],
   "koishi": {
     "description": "拼图游戏，数字华容道",
-    "browser": true
+    "service": {
+      "required": [
+        "database",
+        "jimp"
+      ]
+    }
+  },
+  "dependencies": {
+    "@initencounter/jimp": "^0.0.3"
   },
   "peerDependencies": {
     "koishi": "^4.15.2"
