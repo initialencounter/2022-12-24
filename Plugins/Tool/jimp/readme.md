@@ -7,3 +7,4 @@ jimp service
 ## 使用了此服务的插件:
 
 - [koishi-plugin-minesweeper-ending](https://github.com/initialencounter/mykoishi/tree/master/Plugins/Recreation/minesweeper-ending#readme)
+- [koishi-plugin-puzzle](https://github.com/initialencounter/mykoishi/tree/master/Plugins/Recreation/puzzle#readme.md)
