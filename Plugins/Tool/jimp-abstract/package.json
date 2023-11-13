@@ -1,7 +1,7 @@
 {
   "name": "@initencounter/jimp",
   "description": "jimp abstract for koishi service",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
