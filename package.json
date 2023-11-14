@@ -94,6 +94,7 @@
     "@ltxhhz/koishi-plugin-imagify-skia": "0.0.5",
     "@ltxhhz/koishi-plugin-skia-canvas": "0.0.1",
     "@octokit/openapi-types": "^19.0.2",
+    "@seidko/koishi-plugin-puppeteer": "3.5.1",
     "@types/chai": "^4.3.9",
     "@types/mocha": "^10.0.3",
     "chai": "^4.3.10",
