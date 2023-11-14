@@ -1,0 +1,42 @@
+{
+  "name": "@initencounter/koishi-plugin-jimp",
+  "description": "jimp service",
+  "version": "0.0.4",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Tool/jimp#readme",
+  "license": "MIT",
+  "scripts": {
+    "test": "node -r esbuild-register jimp/test/base.spec.ts"
+  },
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.15.2"
+  },
+  "dependencies": {
+    "jimp": "^0.22.10",
+    "@initencounter/jimp": "^0.0.3"
+  },
+  "koishi": {
+    "service": {
+      "implements": [
+        "jimp"
+      ]
+    }
+  }
+}
