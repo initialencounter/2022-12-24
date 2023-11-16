@@ -13,9 +13,9 @@ app.plugin(inspect);
 
 (async () => {
     await app.start()
-    const t = await getTileNums(app,'initialencounter','2025-01-06')
-    console.log('tile',t)
-    exit()
+    // const t = await getTileNums(app,'initialencounter','2025-01-06')
+    // console.log('tile',t)
+    // exit()
     await app.database.create('github_tile', {
         username: "initialencounter",
         enable: true,
@@ -58,6 +58,17 @@ app.plugin(inspect);
             "platform": "mock",
             "guildId": "399899914",
             "channelId": "399899914"
+        }
+    });
+    await app.database.create('github_tile', {
+        username: "shigma",
+        enable: true,
+        userId: "2837314711",
+        rules: {
+            "selfId": "514",
+            "platform": "mock",
+            "guildId": "111",
+            "channelId": "111"
         }
     });
 

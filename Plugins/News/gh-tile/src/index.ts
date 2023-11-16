@@ -76,16 +76,11 @@ export function apply(ctx: Context, config: Config) {
       let nums: number | boolean
       let username: string = options?.username
       let date: string = options?.date
-      const now = new Date();
-      const year = now.getFullYear()
-      const month = now.getMonth() + 1
-      const day = now.getDate()
-      const nowadate = `${year}-${month < 10 ? "0" + month : month}-${day < 10 ? "0" + day : day}`
 
       let token: string
 
       if (!date) {
-        date = nowadate
+        date = getDate()
       }
       if (!username) {
         const clocks = await ctx.database.get('github_tile', { userId: session.userId })
