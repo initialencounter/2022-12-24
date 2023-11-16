@@ -1,20 +1,6 @@
 commands:
   pz:
     description: 数字华容道
-    usage: |-
-      <>
-        <message forward>
-          <message id=1> 原游戏: 扫雷联萌http://tapsss.com</a> </message>
-          <message id=2>项目地址https://github.com/initialencounter/mykoishi/blob/master/puzzle#readme.md </message>
-          <message id=3>对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-puzzle 概不负责</message>
-          <message id=4>指令如下：</message>
-          <message id=5>1.[开始puzzle] 请发送 "pz -m 4"</message>
-          <message id=6>2.[加入puzzle] 请发送 "pz.join"</message>
-          <message id=7>3.[退出puzzle] 请发送 "pz.quit"</message>
-          <message id=8>4.[自定应puzzle] 请发送 "pz.def + puzzle导出数据"</message>
-          <message id=9>5.[puzzle排行榜] 请发送 "pz.rank"</message>
-        </message>
-      </>
     options:
       mode: 模式,示例：pz -m 5
       size: 图片大小，单位：px，示例：pz -s 100

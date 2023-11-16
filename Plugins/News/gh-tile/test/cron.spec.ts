@@ -3,7 +3,7 @@ import * as tile from 'koishi-plugin-gh-tile'
 import memory from '@koishijs/plugin-database-memory'
 import * as inspect from '@koishijs/plugin-inspect'
 import { exit } from 'process'
-
+import { getTileNums } from 'koishi-plugin-gh-tile/lib/utils'
 const app = new Context()
 
 app.plugin(memory);
@@ -13,7 +13,9 @@ app.plugin(inspect);
 
 (async () => {
     await app.start()
-
+    const t = await getTileNums(app,'initialencounter','2025-01-06')
+    console.log('tile',t)
+    exit()
     await app.database.create('github_tile', {
         username: "initialencounter",
         enable: true,
