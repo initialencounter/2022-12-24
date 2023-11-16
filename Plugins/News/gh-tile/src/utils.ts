@@ -1,4 +1,4 @@
-import { Context, Logger,trimSlash } from "koishi";
+import { Context, Logger, trimSlash } from "koishi";
 import fs from "fs";
 const logger = new Logger("gh-tile")
 
@@ -7,34 +7,52 @@ export async function getTileNums(ctx: Context, username: string, date: string, 
   let html: string
   try {
     html = await ctx.http.get(`${trimSlash(forwardServer)}/${username}`)
-    // fs.writeFileSync('text.html',html)
+    // fs.writeFileSync('text.html', html)
   } catch (e) {
     return false
   }
   date = (date.split('-').map((i) => {
     if (parseInt(i) < 10) {
-      return "0" + i.replace('0','')
+      return "0" + i.replace('0', '')
     } else {
       return i
     }
   })).join('-')
-  // 构建正则表达式
-  const reg = new RegExp(`(?<=class="ContributionCalendar-day".*?data-date="${date}" data-level=".*?"><span class="sr-only">)([\\s\\S]*?)(?=</span></td>)`, 'g')
+  // html = fs.readFileSync('text.html').toString('utf-8')
   // 匹配瓷砖
-  const dr = html.match(reg)
-  // console.log(dr)
-  if (!dr) {
-    return false
-  }
+  const num = getMatch(html, date)
   // 数据清洗
-  const num = dr[0].split(" ")[0]
-  if (num?.startsWith("No")) {
+  if (num?.startsWith("No")||!num) {
     return -1
   }
   return Number(num)
 
 }
+export function getMatch(s: string, date: string) {
+  const start = s.indexOf(`data-date="${date}"`)
+  let tmpString = s.slice(start)
+  const tiler = " on "+formatDate(date)
+  const end = tmpString.indexOf(tiler)
+  tmpString = tmpString.slice(0, end)
+  const start2 = tmpString.lastIndexOf('>')
+  const end2 = tmpString.lastIndexOf(' contribution')
+  const tile = tmpString.slice(start2+1,end2)
+  return tile
+}
+function formatDate(inputDate:string) {
+  // 将输入日期字符串分割成月份和日期
+  const [_,month, day] = inputDate.split('-');
+  // 将月份数字转换为对应的月份名
+  const months = [
+    'January', 'February', 'March', 'April',
+    'May', 'June', 'July', 'August',
+    'September', 'October', 'November', 'December'
+  ];
+  const monthName = months[parseInt(month, 10) - 1];
 
+  // 返回格式化后的日期字符串
+  return `${monthName} ${parseInt(day, 10)}`;
+}
 
 export async function getContributions(ctx: Context, token: string, username: string, data: string) {
   const headers = {
