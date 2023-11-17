@@ -3,10 +3,10 @@ import fs from "fs";
 const logger = new Logger("gh-tile")
 
 // 获取今日瓷砖数，
-export async function getTileNums(ctx: Context, username: string, date: string, forwardServer: string = 'https://initencunter-node-server.hf.space/?method=get&url=https://github.com') {
+export async function getTileNums(ctx: Context, username: string, date: string, cookie:string, forwardServer: string) {
   let html: string
   try {
-    html = await ctx.http.get(`${trimSlash(forwardServer)}/${username}`)
+    html = await ctx.http.get(`${trimSlash(forwardServer)}/${username}&cookie=${cookie}`)
     // fs.writeFileSync('text.html', html)
   } catch (e) {
     return false

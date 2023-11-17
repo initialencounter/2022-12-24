@@ -18,11 +18,14 @@ export interface Rule {
 
 export const Config: Schema<Config> = Schema.object({
   corn: Schema.string().default("23-30").description("默认的提醒时间,UTC时间"),
-  forwardServer: Schema.string().default("https://initencunter-node-server.hf.space/?method=get&url=https://github.com").description("转发服务")
+  forwardServer: Schema.string().default("https://initencunter-node-server.hf.space/?method=get&url=https://github.com").description("转发服务"),
+  cookie: Schema.string().default("logged_in=yes;tz=Asia%2FShanghai;").description("cookie")
 })
 
 export interface Config {
   corn: string
+  forwardServer: string
+  cookie: string
 }
 declare module 'koishi' {
   interface Tables {
@@ -97,7 +100,7 @@ export function apply(ctx: Context, config: Config) {
       if (token) {
         nums = await getContributions(ctx, token, username, date)
       } else {
-        nums = await getTileNums(ctx, username, date)
+        nums = await getTileNums(ctx, username, date, config.cookie, config.forwardServer)
       }
 
       if (nums === false) {
@@ -151,7 +154,7 @@ function channelIdDict<T>(channelIdselfId: T): Array<{
   userId: T,
   token: T,
   username: T,
-  nickname:T,
+  nickname: T,
   rules:
   {
     selfId: T,
@@ -296,14 +299,14 @@ export async function alertCallbackFunctionasync(ctx: Context) {
       if (k?.token) {
         nums = await getContributions(ctx, k.token, k.username, date)
       } else {
-        nums = await getTileNums(ctx, k.username, date)
+        nums = await getTileNums(ctx, k.username, date, ctx.config.cookie, ctx.config.forwardServer)
       }
       // 记录瓷砖
       if (nums as number > 0) {
         rank.push({ username: k.username, tile: nums })
       }
       if (nums === -1) {
-        atList += h.at(k.userId,{name: k.nickname}) + ' '
+        atList += h.at(k.userId, { name: k.nickname }) + ' '
       } else if (!nums) {
         logger.warn(`${(k.userId)}-${k.username} 瓷砖查询失败, 建议配置 token 或 proxy`)
       }
@@ -334,10 +337,6 @@ export function getDate() {
   // 获取日期 如果在8点之前，则返回昨天的日期
   const now = new Date();
   const hour = now.getHours()
-  if (hour<8){
-    const date = getYesterdayDate()
-    return date
-  }
   const year = now.getFullYear()
   const month = now.getMonth() + 1
   const day = now.getDate()
