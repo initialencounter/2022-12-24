@@ -117,6 +117,7 @@
     "koishi-plugin-skia-canvas": "0.3.6",
     "koishi-plugin-status-pro": "1.1.7",
     "koishi-plugin-theme-vanilla": "^1.0.6",
+    "lodash": "^4.17.21",
     "mocha": "^10.2.0"
   }
 }
