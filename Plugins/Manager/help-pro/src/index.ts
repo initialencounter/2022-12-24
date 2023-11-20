@@ -2,12 +2,19 @@ import { readFileSync } from 'fs'
 import { Argv, Command, Computed, Context, FieldCollector, h, Schema, Session, Dict } from 'koishi'
 import { resolve } from 'path'
 import { render_list, render_categroy } from './render_canvas'
+import { calculateHash } from './utils'
 
 type DailyField = typeof dailyFields[number]
 const dailyFields = [
   'command', 'dialogue', 'botSend', 'botReceive', 'group',
 ] as const
 
+const imgCache = {
+  image1_hash: null,
+  image2_hash: null,
+  image1: null,
+  image2: null
+}
 interface Package {
   package: {
     name: string
@@ -119,6 +126,7 @@ export const Config: Schema<Config> = Schema.intersect([
     })
   ])
 ])
+
 function executeHelp(session: Session<never, never>, name: string) {
   if (!session.app.$commander.get('help')) return
   return session.execute({
@@ -485,7 +493,6 @@ function getPluginCategory(scopeName: string) {
     const idStart = pluginName.indexOf('/')
     const idEnd = pluginName.indexOf(':')
     const pluginFullName: string = `@${pluginName.slice(0, idStart)}/koishi-plugin-${idEnd > -1 ? pluginName.slice(idStart + 1, idEnd) : pluginName.slice(idStart + 1)}`
-
     category = pluginCategory[pluginFullName] ?? 'unknow'
   } else {
     const pluginName: string = scopeName.split('/').slice(-1)[0]
@@ -508,13 +515,28 @@ async function renderList(ctx: Context, cmds: Command[], session: Session<'autho
   const cmdStats = await getCommandsStats(ctx)
   const sortedCmds = sortCommands(cmdArray, cmdStats)
   const step = PulginsPeerPage
+
+  const obj = { ...sortedCmds, ...ctx.config, color, step }
+  const hash1 = calculateHash(obj)
+  if (hash1 == imgCache.image1_hash) {
+    for (var img of imgCache.image1) {
+      session.send(img)
+    }
+    return
+  }
   // 分页发送
+  imgCache.image1_hash = hash1
+  imgCache.image1 = []
   if (sortedCmds.length > step) {
     for (var i = 0; i < sortedCmds.length; i += step) {
-      session.send(await render_list(ctx, sortedCmds.slice(i, i + step), color))
+      const a = await render_list(ctx, sortedCmds.slice(i, i + step), color)
+      imgCache.image1.push(a)
+      session.send(a)
     }
   } else {
-    return await render_list(ctx, sortedCmds, color)
+    const a = await render_list(ctx, sortedCmds, color)
+    imgCache.image1.push(a)
+    return a
   }
 
 
@@ -529,5 +551,14 @@ async function renderList(ctx: Context, cmds: Command[], session: Session<'autho
  */
 async function renderCategroy(ctx: Context, cmds: Command[], session: Session<'authority'>, color: string) {
   const cmdGrid: PluginGrid = await formatCommandsGrid(ctx, session, cmds, {})
-  return await render_categroy(ctx, color, cmdGrid)
+  const obj = { ...cmdGrid, ...ctx.config, color }
+  const hash2 = calculateHash(obj)
+  // 如果渲染的参数一致，则无需渲染，直接发送缓存
+  if (hash2 == imgCache.image2_hash) {
+    return imgCache.image2
+  }
+  const a = await render_categroy(ctx, color, cmdGrid)
+  imgCache.image2_hash = hash2
+  imgCache.image2 = a
+  return a
 }
