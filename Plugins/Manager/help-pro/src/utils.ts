@@ -63,7 +63,7 @@ function isPointInRoundedRect(x: number, y: number, width: number, height: numbe
 
     // 检查左上角圆角区域
     if (Math.pow(x - borderRadius, 2) + Math.pow(y - borderRadius, 2) <= Math.pow(borderRadius, 2)) {
-        return false;
+        return true;
     }
 
     // 检查右上角圆角区域
