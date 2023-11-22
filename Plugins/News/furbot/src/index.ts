@@ -1,4 +1,6 @@
-import { Context, Schema, Logger, segment, Session, Dict, Next } from 'koishi'
+import { readFileSync } from 'fs';
+import { Context, Schema, Logger, Session, Dict, Next, h } from 'koishi'
+import { resolve } from 'path';
 export const name = 'furbot'
 const logger = new Logger(name)
 const BASE_URL = 'https://cloud.foxtail.cn/api';
@@ -38,7 +40,7 @@ class FurBot {
         let picture_url: string | boolean
         if (picture) picture_url = await this.get_url(picture)
         if (picture_url) {
-          const msg_id: string[] = await session.bot.sendMessage(session.channelId, picture + segment('image', { url: picture_url }), session.guildId)
+          const msg_id: string[] = await session.bot.sendMessage(session.channelId, picture + h.image(picture_url as string), session.guildId)
           this.message_box[msg_id[0]] = picture
         }
       })
@@ -75,7 +77,7 @@ class FurBot {
       .action(async ({ session }, arg) => {
         const picture_url: string = await this.get_url(arg)
         if (picture_url) {
-          const msg_id: string[] = await session.bot.sendMessage(session.channelId, segment('image', { url: picture_url }), session.guildId)
+          const msg_id: string[] = await session.bot.sendMessage(session.channelId, h.image(picture_url as string), session.guildId)
           this.message_box[msg_id[0]] = arg
         } else {
           return session.text('messages.download.failure', ['Image not found.'])
@@ -176,7 +178,7 @@ class FurBot {
     const registrationData = { account, password, mailbox };
     // 发送验证码
     const checkResponse = await this.makeGetRequest_buffer(`${BASE_URL}/check`);
-    session.send(session.text('messages.check', [60]) + segment.image(checkResponse.data, 'image/png'));
+    session.send(session.text('messages.check', [60]) + h.image(checkResponse.data, 'image/png'));
     const userResponse = await session.prompt();
 
     // 验证超时
@@ -302,7 +304,7 @@ class FurBot {
     }
     if (!option.model) {
       const checkResponse = await this.makeGetRequest_buffer(`${BASE_URL}/check`);
-      session.send(session.text('messages.check', [60]) + segment.image(checkResponse.data, 'image/png'));
+      session.send(session.text('messages.check', [60]) + h.image(checkResponse.data, 'image/png'));
       const proving: string = await session.prompt()
       if (!proving && (proving.length !== 5)) {
         return session.text('messages.login.failure', ['!proving'])
@@ -399,51 +401,7 @@ class FurBot {
 }
 
 namespace FurBot {
-  export const usage = `
-兽云祭，作为 兽耳工作室 的其中一个子项目，目前该项目已经投入试运行. .
-
-## 机器人功能
-### 已经做好了的
-- [x] 账号注册
-- [x] 账号登录
-- [x] 图片下载
-- [x] 随机毛图
-- [x] 图片点赞
-- [x] 图片收藏
-- [x] 取消收藏
-- [x] 收藏列表
-- [x] 更新cookie
-
-- [ ] 图片上载（正在制作）
-
-
-## 使用说明
-API文档 <a style="color:blue" href="https://console-docs.apipost.cn/preview/6bf01cfebd3e5f96/c4e20a5d1a5db86c?target_id=ba49a931-663a-4341-fc98-37ab95cbc6ee">兽云祭</a><br>
-
-命令示例：
-- 账号注册
-    - fur.register 账号名 密码 邮箱
-- 账号登录
-    - fur.login 账号名 密码
-- 随机毛图
-    - fur
-
-
-### 问题反馈
-* QQ群：399899914<br>
-* 小伙伴如果遇到问题或者有新的想法，欢迎到[这里](https://github.com/initialencounter/mykoishi/issues)反馈哦~
-
-### 支持
-
-如果你支持本项目，可以给个[star](https://github.com/initialencounter/mykoishi)，你的支持不会获得额外内容，但会提高本项目的更新积极性
-
-本机器人目前仅供学习交流使用。
-
-您不应以任何形式使用本仓库进行盈利性活动。
-
-对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-furbot 概不负责。
-
-  `
+  export const usage = `${readFileSync(resolve(__dirname, '../readme.md'))}`
   export interface RegisterOPT {
     account: string
     password: string
