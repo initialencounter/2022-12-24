@@ -72,3 +72,5 @@ API文档 <a style="color:blue" href="https://console-docs.apipost.cn/preview/6b
 
 - v0.0.2
     -  fix: database create failure
+- v1.0.2
+    - fix: image send fail

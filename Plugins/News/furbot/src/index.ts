@@ -41,7 +41,7 @@ class FurBot {
         let picture_url: string | boolean
         if (picture) picture_url = await this.get_url(picture)
         if (picture_url) {
-          const msg_id: string[] = await session.bot.sendMessage(session.channelId, picture + h.image(picture_url as string), session.guildId)
+          const msg_id: string[] = await session.send(picture + h.image(picture_url as string))
           this.message_box[msg_id[0]] = picture
         }
       })
@@ -78,7 +78,7 @@ class FurBot {
       .action(async ({ session }, arg) => {
         const picture_url: string = await this.get_url(arg)
         if (picture_url) {
-          const msg_id: string[] = await session.bot.sendMessage(session.channelId, h.image(picture_url as string), session.guildId)
+          const msg_id: string[] = await session.send(h.image(picture_url as string))
           this.message_box[msg_id[0]] = arg
         } else {
           return session.text('messages.download.failure', ['Image not found.'])
@@ -260,7 +260,7 @@ class FurBot {
     }
 
     const messageType = response ? response.msg : type + ' failure';
-    const msg_id: string[] = await session.bot.sendMessage(session.channelId, messageType, session.guildId);
+    const msg_id: string[] = await session.send(messageType);
     this.message_box[msg_id[0]] = picture;
   }
 
