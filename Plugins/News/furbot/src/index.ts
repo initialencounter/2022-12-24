@@ -1,3 +1,4 @@
+import { BlobOptions } from 'buffer';
 import { readFileSync } from 'fs';
 import { Context, Schema, Logger, Session, Dict, Next, h } from 'koishi'
 import { resolve } from 'path';
@@ -11,7 +12,7 @@ declare module 'koishi' {
 }
 class FurBot {
   message_box: Dict
-  private constructor(private ctx: Context, config: FurBot.Config) {
+  private constructor(private ctx: Context, private config: FurBot.Config) {
     this.message_box = {}
     ctx.i18n.define('zh', require('./locales/zh'))
     ctx.model.extend('furry_account', {
@@ -24,7 +25,7 @@ class FurBot {
       cookies: 'list'
     }, {
       primary: 'id', //设置 uid 为主键
-      unique: ['uid','id'], //设置 uid及id 为唯一键
+      unique: ['uid', 'id'], //设置 uid及id 为唯一键
       autoInc: true
     })
     ctx.before('attach-user', async ({ }, fields) => {
@@ -170,7 +171,7 @@ class FurBot {
    */
 
   async register(session: Session, option: FurBot.RegisterOPT): Promise<string> {
-    if (session.subtype !== 'private') {
+    if (session.subtype !== 'private' && this.config.security) {
       return session.text('messages.register.failure', ['不安全的操作，请私信机器人操作']);
     }
     // 设置请求参数
@@ -287,7 +288,7 @@ class FurBot {
   public async login(session: Session, option: FurBot.LoginOPT): Promise<string> {
 
     // 为了保证登录安全，只能私信机器人操作
-    if (!(session.subtype == 'private')) {
+    if (!(session.subtype == 'private') && this.config.security) {
       return session.text('messages.login.failure', ['不安全的操作，请私信机器人操作'])
     }
 
@@ -338,7 +339,9 @@ class FurBot {
         } else {
           await this.ctx.database.create('furry_account', { uid: session.userId, token: token.token, cookies: response.headers['set-cookie'], account: option.account, password: option.password })
         }
-        return session.text('messages.login.success', [token.token])
+        const msg_id = (await session.send(session.text('messages.login.success', [token.token])))[0]
+        this.recall(session,msg_id,5000)
+        return 
       }
       return session.text('messages.login.failure', [token.msg])
     }
@@ -388,6 +391,12 @@ class FurBot {
     }));
   }
 
+  /**
+   * 撤回消息
+   * @param session 
+   * @param messageId 
+   * @param time 
+   */
   async recall(session: Session, messageId: string, time: number) {
     new Promise(resolve => setTimeout(() => {
       session.bot.deleteMessage(session.channelId, messageId)
@@ -401,7 +410,7 @@ class FurBot {
 }
 
 namespace FurBot {
-  export const usage = `${readFileSync(resolve(__dirname, '../readme.md'))}`
+  export const usage = `${readFileSync(resolve(__dirname, '../readme.md')).toString("utf-8").split("更新日志")[0]}`
   export interface RegisterOPT {
     account: string
     password: string
@@ -487,9 +496,13 @@ namespace FurBot {
     msg: string
     code: string
   }
-  export interface Config { }
+  export interface Config {
+    security: boolean
+  }
 
-  export const Config: Schema<Config> = Schema.object({})
+  export const Config: Schema<Config> = Schema.object({
+    security: Schema.boolean().default(true).description("安全模式，开启此项后，只有私聊才能注册和登录")
+  })
 
 }
 
