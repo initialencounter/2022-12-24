@@ -1,5 +1,6 @@
 import { Context, Schema, h, Session, Logger} from 'koishi'
 import Vits from '@initencounter/vits'
+import { slice } from 'lodash';
 const tencentcloud = require("tencentcloud-sdk-nodejs-tts");
 const AsrClient = tencentcloud.tts.v20190823.Client;
 
@@ -53,6 +54,14 @@ class TencentTts extends Vits {
           this.recall(session, this.temp_msg)
         }
         const speaker_id: number = options.speaker?options.speaker:config.speaker_id
+        if(input.length>config.max_length){
+          let lastid = 0
+          for(var i = this.max_length; i< input.length; i+= this.max_length){
+            const result: TencentTts.Result = { input: input.slice(lastid,i), speaker_id }
+            session.send(await this.say(result))
+          }
+          return
+        }
         const result: TencentTts.Result = { input, speaker_id }
         return await this.say(result)
       })
