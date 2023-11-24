@@ -1215,7 +1215,7 @@ namespace Dvc {
         Schema.array(String).role('secret'),
         Schema.transform(String, value => [value]),
       ]).default([]).role('secret').description('api_key'),
-      appointModel: Schema.string().default("gpt-3.5-turbo").description("切换模型")
+      appointModel: Schema.string().default("gpt-3.5-turbo").description("模型")
     }).description('基础设置'),
 
     Schema.object({
