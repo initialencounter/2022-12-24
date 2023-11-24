@@ -61,7 +61,7 @@ class Dvc extends Service {
         logger.warn('未启用puppter,将无法输出语音');
       }
     })
-    ctx.using(['console'], (ctx) => {
+    ctx.inject(['console'], (ctx) => {
       ctx.console.addEntry({
         dev: resolve(__dirname, '../client/index.ts'),
         prod: resolve(__dirname, '../dist'),
@@ -438,7 +438,7 @@ class Dvc extends Service {
         },
         responseType: 'stream',
         data: {
-          model: 'gpt-4',
+          model: this.config.appointModel,
           messages: message
         },
         timeout: 600000
@@ -488,7 +488,7 @@ class Dvc extends Service {
             Authorization: `Bearer ${this.key[this.key_number]}`
           },
           data: {
-            model: 'gpt-4',
+            model: this.config.appointModel,
             messages: message
           },
           timeout: 600000
@@ -521,7 +521,7 @@ class Dvc extends Service {
             'Content-Type': 'application/json'
           },
           data: {
-            model: "gpt-3.5-turbo",
+            model: this.config.appointModel,
             temperature: this.config.temperature,
             top_p: 1,
             frequency_penalty: 0,
@@ -614,7 +614,7 @@ class Dvc extends Service {
         },
         responseType: 'stream',
         data: {
-          model: "gpt-3.5-turbo",
+          model: this.config.appointModel,
           temperature: this.config.temperature,
           top_p: 1,
           frequency_penalty: 0,
@@ -1162,6 +1162,7 @@ namespace Dvc {
   export interface Config {
     type: string
     key: string[]
+    appointModel: string
 
     preset_pro: boolean
     single_session: boolean
@@ -1205,15 +1206,16 @@ namespace Dvc {
   export const Config: Schema<Config> = Schema.intersect([
     Schema.object({
       type: Schema.union([
-        Schema.const('gpt3.5-js' as const).description('GPT-3.5turbo-js,推荐模式'),
-        Schema.const('gpt3.5-unit' as const).description('GPT-3.5turbo-unit,超级节俭模式'),
+        Schema.const('gpt3.5-js' as const).description('GPT-3.5 推荐模式'),
+        Schema.const('gpt3.5-unit' as const).description('GPT-3.5 超级节俭模式'),
         Schema.const('gpt4' as const).description('GPT-4'),
-        Schema.const('gpt4-unit' as const).description('GPT-4-unit,超级节俭模式')
+        Schema.const('gpt4-unit' as const).description('GPT-4 超级节俭模式')
       ] as const).default('gpt3.5-js').description('引擎选择'),
       key: Schema.union([
         Schema.array(String).role('secret'),
         Schema.transform(String, value => [value]),
       ]).default([]).role('secret').description('api_key'),
+      appointModel: Schema.string().default("gpt-3.5-turbo").description("切换模型")
     }).description('基础设置'),
 
     Schema.object({
