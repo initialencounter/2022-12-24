@@ -1,0 +1,28 @@
+{
+  "name": "koishi-plugin-adapter-wechaty",
+  "description": "wechaty",
+  "version": "0.0.1",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "AGPL-3.0",
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.15.6"
+  },
+  "dependencies": {
+    "raven": "^2.6.4",
+    "type-fest": "^4.8.2",
+    "wechaty": "^1.20.2"
+  },
+  "devDependencies": {
+    "@types/raven": "^2"
+  }
+}
