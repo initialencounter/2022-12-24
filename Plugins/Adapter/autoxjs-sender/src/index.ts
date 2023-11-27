@@ -45,7 +45,7 @@ class AutoX {
         }, heartbeatInterval);
         // 监听 send
         ctx.before('send', async (session) => {
-          const { platform, guildId, id } = await session.getChannel()
+          const { platform, id } = await session.getChannel()
           if (session.content == "close_client") {
             ws_client.close(1000, '被动关闭')
             connected = false
@@ -55,7 +55,7 @@ class AutoX {
           if (connected && platform == 'onebot' && session.content.length < 3000) {
             const msg = {
               content: session.content,
-              guildId: guildId || 0,
+              chanelId: session.channelId,
               id: id
             }
             ws_client.send(JSON.stringify(msg), (err) => {
@@ -95,7 +95,7 @@ class AutoX {
         }
       }, heartbeatInterval);
       ctx.before('send', async (session) => {
-        const { platform, guildId, id } = await session.getChannel()
+        const { platform, id } = await session.getChannel()
         if (session.content == "close_client") {
           wss.close(1000, '被动关闭')
           connected = false
@@ -105,7 +105,7 @@ class AutoX {
         if (connected && platform == 'onebot' && session.content.length < 3000) {
           const msg = {
             content: session.content,
-            guildId: guildId || 0,
+            chanelId: session.channelId,
             id: id
           }
           wss.send(JSON.stringify(msg))
