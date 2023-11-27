@@ -136,7 +136,7 @@ class Jimp extends Jm {
    * @param file 要加载的字体路径
    * @returns 
    */
-  async loadFont(file: string) {
+  async loadFont(file: string): Promise<Font> {
     return await Jimpp.loadFont(file)
   }
   /**
