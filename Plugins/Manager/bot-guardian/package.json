@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-bot-guardian",
   "description": "机器人守护者",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
