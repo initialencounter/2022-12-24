@@ -1,0 +1,47 @@
+{
+  "name": "koishi-plugin-baidu-tts",
+  "description": "百度智能云语音合成服务",
+  "version": "0.0.2",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "AGPL-3.0",
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Tool/baidu-tts#readme",
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "tts",
+    "baidu",
+    "service"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.15.2"
+  },
+  "dependencies": {
+    "@initencounter/vits": "^0.0.2"
+  },
+  "koishi": {
+    "description": "百度智能云语音合成服务",
+    "service": {
+      "implements": [
+        "vits"
+      ]
+    }
+  }
+}

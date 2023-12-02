@@ -1,0 +1,58 @@
+{
+  "name": "koishi-plugin-blockly-registry",
+  "description": "blockly插件镜像站",
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "scripts": {
+    "build:console": "koishi-console build"
+  },
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "contributors": [
+    "initencounter <2911583893@qq.com>",
+    "t4wefan <guanghoushi@gmail.com>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Console/blockly-registry#readme",
+  "license": "AGPL-3.0",
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin"
+  ],
+  "peerDependencies": {
+    "@koishijs/plugin-console": "^5.17.0",
+    "koishi": "^4.15.2",
+    "koishi-plugin-blockly": "^0.6.3"
+  },
+  "devDependencies": {
+    "@koishijs/client": "^5.17.0"
+  },
+  "koishi": {
+    "description": "blockly插件镜像站",
+    "browser": true,
+    "service": {
+      "required": [
+        "blockly",
+        "console"
+      ]
+    }
+  },
+  "dependencies": {
+    "spark-md5": "^3.0.2"
+  }
+}

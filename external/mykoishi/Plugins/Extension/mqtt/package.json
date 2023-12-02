@@ -1,0 +1,50 @@
+{
+  "name": "koishi-plugin-mqtt",
+  "description": "mqtt订阅推送",
+  "version": "1.0.2",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "AGPL-3.0",
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Extension/mqtt#readme",
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "mqtt",
+    "物联网",
+    "订阅",
+    "publish/subscribe",
+    "publish",
+    "subscribe"
+  ],
+  "koishi": {
+    "description": "mqtt订阅推送",
+    "service": {
+      "implements": [
+        "mqtt"
+      ]
+    }
+  },
+  "peerDependencies": {
+    "koishi": "^4.15.2"
+  },
+  "dependencies": {
+    "mqtt": "^4.3.7"
+  }
+}

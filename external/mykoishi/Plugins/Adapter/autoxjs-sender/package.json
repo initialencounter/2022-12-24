@@ -1,0 +1,36 @@
+{
+  "name": "koishi-plugin-autoxjs-sender",
+  "description": "使用 [autoxjs](https://github.com/kkevsekk1/AutoX) 发送消息，风控的解决方法",
+  "version": "1.4.0",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "AGPL-3.0",
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Adapter/autoxjs-sender#readme",
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.15.2"
+  },
+  "koishi": {
+    "description": "使用 [autoxjs](https://github.com/kkevsekk1/AutoX) 发送消息，风控的解决方法"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "name": "koishi-plugin-sd-taylor",
+  "description": "[stabe_diffusion](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/API)绘图插件,支持controlnet,lora,AI-Tag增强",
+  "version": "1.2.8",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "AGPL-3.0",
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/AI/steam-trading#readme.md",
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "stabe diffusion",
+    "AI"
+  ],
+  "koishi": {
+    "service": {
+      "optional": [
+        "puppeteer",
+        "dvc"
+      ]
+    },
+    "description": "[stabe_diffusion](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/API)绘图插件,支持controlnet,lora,AI-Tag增强"
+  },
+  "peerDependencies": {
+    "koishi": "^4.15.2"
+  }
+}

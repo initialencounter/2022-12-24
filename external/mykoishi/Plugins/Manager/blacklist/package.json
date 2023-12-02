@@ -1,0 +1,44 @@
+{
+  "name": "koishi-plugin-blacklist",
+  "description": "[EULA](https://github.com/Lipraty/koishi-plugin-eula/)+[黑名单](https://github.com/initialencounter/mykoishi/tree/main/blacklist),剥夺违规用户权限",
+  "version": "2.1.0",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Manager/blacklist#readme.md",
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "EULA"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.15.2"
+  },
+  "koishi": {
+    "service": {
+      "required": [
+        "eula"
+      ]
+    }
+  },
+  "dependencies": {
+    "koishi-plugin-eula": "^1.2.0"
+  }
+}

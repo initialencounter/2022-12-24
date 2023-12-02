@@ -1,0 +1,75 @@
+{
+  "name": "koishi-plugin-gocqhttp-dev",
+  "description": "go-cqhttp-dev launcher for Koishi",
+  "version": "1.2.0",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist",
+    "versions",
+    "captcha.html",
+    "install.js",
+    "template.yml"
+  ],
+  "scripts": {
+    "build:server": "tsc -b",
+    "build:client": "koishi-console build",
+    "build": "yarn build:server && yarn build:client"
+  },
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "packageManager": "yarn@1.22.19",
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/koishi-plugin-gocqhttp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Adapter/gocqhttp-dev",
+  "keywords": [
+    "bot",
+    "qqbot",
+    "cqhttp",
+    "gocqhttp",
+    "coolq",
+    "chatbot",
+    "koishi",
+    "launcher",
+    "plugin"
+  ],
+  "koishi": {
+    "description": {
+      "zh": "[go-cqhttp-dev](https://github.com/Mrs4s/go-cqhttp/tree/dev) 启动器",
+      "en": "[go-cqhttp-dev](https://github.com/Mrs4s/go-cqhttp/tree/dev) launcher"
+    },
+    "service": {
+      "optional": [
+        "console",
+        "qsign"
+      ]
+    }
+  },
+  "peerDependencies": {
+    "koishi": "^4.13.5"
+  },
+  "devDependencies": {
+    "@koishijs/client": "^5.13.1",
+    "@koishijs/plugin-console": "^5.13.1",
+    "@koishijs/plugin-market": "^2.2.10",
+    "@types/node": "^18.17.4",
+    "koishi": "^4.14.1",
+    "koishi-plugin-adapter-onebot": "6.1.2",
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "@yunkuangao/koishi-plugin-qsign": "^0.7.2",
+    "koishi-plugin-qsign": "^1.2.4",
+    "strip-ansi": "^6.0.1"
+  }
+}

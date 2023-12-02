@@ -1,0 +1,37 @@
+{
+  "name": "koishi-plugin-loader",
+  "description": "安装 koishi.yml 内的所有插件",
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "AGPL-3.0",
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Manager/loader#readme",
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "installer"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.15.2"
+  },
+  "koishi": {
+    "description": "更新所有插件"
+  }
+}

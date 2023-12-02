@@ -1,0 +1,49 @@
+{
+  "name": "koishi-plugin-paddlespeech",
+  "description": "百度飞桨语音服务,需要ffmpeg环境",
+  "version": "0.0.3",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "AGPL-3.0",
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Tool/paddlespeech#readme",
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "paddlespeech",
+    "paddle",
+    "speech",
+    "tts",
+    "asr"
+  ],
+  "peerDependencies": {
+    "@initencounter/sst": "^0.0.1",
+    "@initencounter/vits": "^0.0.3",
+    "koishi": "^4.15.2"
+  },
+  "koishi": {
+    "description": "百度飞桨语音服务,需要ffmpeg环境",
+    "service": {
+      "implements": [
+        "vits",
+        "sst"
+      ]
+    }
+  }
+}

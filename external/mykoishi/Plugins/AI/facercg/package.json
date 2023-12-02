@@ -1,0 +1,42 @@
+{
+  "name": "koishi-plugin-facercg",
+  "description": "AI 颜值打分",
+  "version": "1.2.9",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/koishi-plugin-facercg.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/koishi-plugin-facercg/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/AI/facercg#readme",
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "Face-recognition"
+  ],
+  "koishi": {
+    "browser": true,
+    "service": {
+      "optional": [
+        "puppeteer"
+      ]
+    }
+  },
+  "peerDependencies": {
+    "koishi": "^4.15.2"
+  }
+}

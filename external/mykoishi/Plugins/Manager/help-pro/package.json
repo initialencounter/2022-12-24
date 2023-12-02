@@ -1,0 +1,44 @@
+{
+  "name": "koishi-plugin-help-pro",
+  "description": "进阶指令帮助, 使用 canvas 渲染",
+  "version": "1.2.1",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin"
+  ],
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/News/help-pro#readme",
+  "peerDependencies": {
+    "koishi": "^4.15.2"
+  },
+  "dependencies": {
+    "@koishijs/canvas": "^0.2.0",
+    "pngjs": "^7.0.0"
+  },
+  "koishi": {
+    "service": {
+      "optional": [
+        "canvas"
+      ]
+    }
+  }
+}

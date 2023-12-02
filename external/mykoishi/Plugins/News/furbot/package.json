@@ -1,0 +1,41 @@
+{
+  "name": "koishi-plugin-furbot",
+  "description": "[兽云祭](http://m.zh.furrywiki.cn)API,毛毛机器人",
+  "version": "1.0.3",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "AGPL-3.0",
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/News/furbot#readme",
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "furry",
+    "福瑞",
+    "兽云祭",
+    "furrywiki",
+    "毛毛"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.15.2"
+  },
+  "koishi": {
+    "description": "[兽云祭](http://m.zh.furrywiki.cn)API,毛毛机器人"
+  }
+}
