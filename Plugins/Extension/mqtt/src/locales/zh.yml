@@ -1,7 +1,0 @@
-commands:
-  mqtt:
-    description: mqtt发布与订阅
-    messages:
-      err: 发送错误{0}
-      suc: 发送成功{0}
-      off: 连接关闭

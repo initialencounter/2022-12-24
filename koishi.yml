@@ -1,0 +1,53 @@
+port: 5140
+maxPort: 5149
+
+plugins:
+  group:basic:
+    ~admin: {}
+    ~bind: {}
+    commands: {}
+    help: {}
+    ~inspect: {}
+    locales: {}
+    rate-limit: {}
+    telemetry: {}
+  group:console:
+    actions: {}
+    analytics: {}
+    ~auth: {}
+    config: {}
+    console:
+      open: true
+    dataview: {}
+    desktop:
+      $if: env.KOISHI_AGENT?.includes('Desktop')
+    explorer: {}
+    logger: {}
+    insight: {}
+    market:
+      search:
+        endpoint: https://registry.koishi.chat/index.json
+    oobe: {}
+    sandbox: {}
+    status: {}
+    theme-vanilla: {}
+  group:storage:
+    database-sqlite: {}
+    ~database-mysql: {}
+    ~database-mongo: {}
+    assets-local: {}
+  group:adapter:
+    ~adapter-discord: {}
+    ~adapter-kook: {}
+    ~adapter-lark: {}
+    ~adapter-line: {}
+    ~adapter-matrix: {}
+    ~adapter-qq: {}
+    ~adapter-satori: {}
+    ~adapter-slack: {}
+    ~adapter-telegram: {}
+    ~server: {}
+  group:develop:
+    $if: env.NODE_ENV === 'development'
+    hmr:
+      root: '.'

@@ -1,7 +1,0 @@
-commands:
-  asr:
-    messages:
-      thinking: 计算中...
-  tts:
-    messages:
-      thinking: 计算中...

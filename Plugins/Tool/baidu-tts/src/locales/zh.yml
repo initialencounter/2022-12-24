@@ -1,5 +1,0 @@
-commands:
-  say:
-    description: 百度智能云语音合成
-    messages:
-      waiting: 合成中...
