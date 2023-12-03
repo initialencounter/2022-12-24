@@ -107,7 +107,8 @@ yarn clone initialencounter/mykoishi
       ],
       "@initencounter/vits": [
         "external/mykoishi/plugins/Tool/vits/src",
-      ],"@initencounter/sst": [
+      ],
+      "@initencounter/sst": [
         "external/mykoishi/plugins/Tool/sst/src",
       ],
 ```

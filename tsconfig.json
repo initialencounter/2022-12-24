@@ -34,7 +34,8 @@
       ],
       "@initencounter/vits": [
         "plugins/Tool/vits/src",
-      ],"@initencounter/sst": [
+      ],
+      "@initencounter/sst": [
         "plugins/Tool/sst/src",
       ],
       // If you are developing a scoped plugin,
