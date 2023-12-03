@@ -1,7 +1,7 @@
 lib
 dist
 data
-locales
+/locales
 cache
 external
 node-rs

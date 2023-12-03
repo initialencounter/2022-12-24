@@ -15,12 +15,28 @@
       // The `external` directory is used to store created plugins.
       // Try `npm run setup` or `yarn setup` to create a new plugin.
       "koishi-plugin-*": [
-        "external/*/src",
-        "external/*/packages/core/src",
-        "packages/*/src",
-        "plugins/*/src",
+        "plugins/Adapter/*/src",
+        "plugins/AI/*/src",
+        "plugins/Behavior/*/src",
+        "plugins/Console/*/src",
+        "plugins/Extension/*/src",
+        "plugins/Games/*/src",
+        "plugins/Manager/*/src",
+        "plugins/News/*/src",
+        "plugins/Recreation/*/src",
+        "plugins/Tool/*/src"
       ],
-
+      "@initencounter/koishi-plugin-jimp": [
+        "plugins/Extension/jimp/src*",
+      ],
+      "@initencounter/jimp": [
+        "plugins/Extension/jimp-abstract/src*",
+      ],
+      "@initencounter/vits": [
+        "plugins/Tool/vits/src*",
+      ],"@initencounter/sst": [
+        "plugins/Tool/sst/src*",
+      ],
       // If you are developing a scoped plugin,
       // just uncomment the next line and change `@scope`
       // to the scope name (i.e. npm account or organization).

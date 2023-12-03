@@ -1,6 +1,5 @@
 import { Context, Logger, Schema, Session, Dict } from 'koishi'
-
-import { } from '@koishijs/plugin-adapter-onebot'
+import { } from 'koishi-plugin-adapter-onebot'
 
 import fs from "fs"
 export const name = 'specialtitle'

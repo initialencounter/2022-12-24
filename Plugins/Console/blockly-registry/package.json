@@ -36,8 +36,7 @@
   ],
   "peerDependencies": {
     "@koishijs/plugin-console": "^5.17.0",
-    "koishi": "^4.15.2",
-    "koishi-plugin-blockly": "^0.6.3"
+    "koishi": "^4.15.2"
   },
   "devDependencies": {
     "@koishijs/client": "^5.17.0"
@@ -53,6 +52,7 @@
     }
   },
   "dependencies": {
-    "spark-md5": "^3.0.2"
+    "spark-md5": "^3.0.2",
+    "koishi-plugin-blockly": "^0.6.3"
   }
 }
