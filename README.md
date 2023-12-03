@@ -46,6 +46,8 @@
   * [闹钟](./Plugins/Manager/clock/readme.md)
   * [loader](./Plugins/Manager/loader/readme.md)
   * [blacklist](./Plugins/Manager/blacklist/readme.md)
+  * [进阶指令帮助](./Plugins/Manager/help-pro/readme.md)
+  * [机器人守护者](./Plugins/Manager/bot-guardian/readme.md)
 * 行为预设
   * [群主插件](./Plugins/Behavior/specialtile/readme.md)
 * 资讯服务
