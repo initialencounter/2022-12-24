@@ -17,7 +17,7 @@
     "external/*/plugins/*",
     "external/koishi/plugins/*",
     "external/koishi/plugins/database/*",
-    "external/mykoishi/Plugins/*/*",
+    "external/mykoishi/packages/*/*",
     "external/mykoishi/external/*/external/*",
     "external/mykoishi/external/*/external/*/packages/*",
     "external/mykoishi/external/*/external/*/packages/@*/*",
