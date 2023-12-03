@@ -100,14 +100,14 @@ yarn clone initialencounter/mykoishi
         "external/mykoishi/plugins/Tool/*/src"
       ],
       "@initencounter/koishi-plugin-jimp": [
-        "external/mykoishi/plugins/Extension/jimp/src*",
+        "external/mykoishi/plugins/Extension/jimp/src/*",
       ],
       "@initencounter/jimp": [
-        "external/mykoishi/plugins/Extension/jimp-abstract/src*",
+        "external/mykoishi/plugins/Extension/jimp-abstract/src/*",
       ],
       "@initencounter/vits": [
-        "external/mykoishi/plugins/Tool/vits/src*",
+        "external/mykoishi/plugins/Tool/vits/src/*",
       ],"@initencounter/sst": [
-        "external/mykoishi/plugins/Tool/sst/src*",
+        "external/mykoishi/plugins/Tool/sst/src/*",
       ],
 ```
