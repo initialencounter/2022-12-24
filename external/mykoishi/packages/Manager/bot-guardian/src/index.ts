@@ -1,15 +1,22 @@
 import { readFileSync } from 'fs';
 import { Context, Dict, Logger, Schema, Universal } from 'koishi'
 import { resolve } from 'path';
+import { } from '@koishijs/plugin-console'
 
 export const name = 'bot-guardian'
 const logger = new Logger(name);
 export const usage = `${readFileSync(resolve(__dirname, '../readme.md')).toString('utf-8')}`
+declare module '@koishijs/plugin-console' {
+  interface Events {
+    'wechat4u/qrcode'(): Data
+  }
+}
 
 export interface Config {
   rules: Rule[]
   interval: number
   webhooks: Webhook[]
+  selfId: string
 }
 export interface Rule {
   platform: string
@@ -34,10 +41,24 @@ export const Rule: Schema<Rule> = Schema.object({
   selfId: Schema.string().description('机器人 ID。'),
 })
 export const Config: Schema<Config> = Schema.object({
+  selfId: Schema.string().required(true).description("随便填"),
   rules: Schema.array(Rule).description('推送规则。'),
   interval: Schema.number().default(60000).description('监听时间间隔'),
   webhooks: Schema.array(Webhook),
 })
+
+export interface Bot {
+  name: string
+  status: number
+  avatar?: string
+}
+
+export interface Data {
+  selfId: string
+  bots: Bot[]
+}
+
+export const inject = { required:["console"]}
 export function apply(ctx: Context, config: Config) {
   ctx.i18n.define('zh', require('./locales/zh'))
   let lastBotStat: BotData = {}
@@ -50,6 +71,20 @@ export function apply(ctx: Context, config: Config) {
       error: bot?.error
     }
   }
+  ctx.inject(['console'], (ctx) => {
+    ctx.console.addEntry({
+      dev: resolve(__dirname, '../client/index.ts'),
+      prod: resolve(__dirname, '../dist'),
+    })
+  })
+  ctx.console.addListener('wechat4u/qrcode', () => {
+    let bots = []
+    for (const bot of ctx.bots) {
+      bots.push({name: bot?.user?.name??'',avatar:bot?.user?.avatar??'',status: bot.status})
+    }
+
+    return { selfId: config.selfId, bots: bots }
+  })
   setInterval(async () => {
     const bots: BotData = {}
     let msg = ''

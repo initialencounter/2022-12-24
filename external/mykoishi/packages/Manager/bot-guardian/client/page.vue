@@ -1,14 +1,7 @@
 <template>
-  <k-comment class="wechat4u" v-if="data" :type="type">
-    <template v-if="data?.url === 'success'">
-      <p>已成功接入 PuppetWechat4u</p>
-    </template>
-    <template v-else-if="data?.url.startsWith('https://')">
-      <p>请使用手机登录 Wechat 扫描二维码：</p>
-      <iframe :src="data.url" height="258" width="258"></iframe>
-    </template>
-    <template v-else-if="data?.url === 'error'">
-      <p>未知错误, 问题反馈: 399899914</p>
+  <k-comment class="wechat4u" v-if="data">
+    <template v-for="(bot, botid) in data">
+      <p class="bot-guardiany-avatar"><img :src="bot.avatar" />{{ bot.name }}</p>
     </template>
     <p></p>
     <el-button type="primary" @click="refresh()">刷新</el-button>
@@ -23,37 +16,38 @@ import { inject, computed, ref } from 'vue'
 
 declare module '@koishijs/plugin-console' {
   interface Events {
-    'wechat4u/qrcode'(): { selfId: string, url: string }
+    'wechat4u/qrcode'(): Data
   }
+}
+
+export interface Bot {
+  name: string
+  status: number
+  avatar?: string
 }
 
 export interface Data {
   selfId: string
-  url: string
+  bots: Bot[]
 }
 
 defineProps<{
   data: any
 }>()
-const data = ref<Data>();
+const data = ref<Bot[]>();
 const local: any = inject('manager.settings.local')
 const config: any = inject('manager.settings.config')
 
 const refresh = () => {
   send('wechat4u/qrcode').then((res) => {
     if (local.value.name !== 'koishi-plugin-bot-guardian') return
+    console.log("111111111111111",res.selfId,config.value?.selfId)
     if (config.value?.selfId !== res.selfId) return
-    data.value = res
+    data.value = res.bots
     message.success("刷新成功！")
   })
 }
 
-const type = computed(() => {
-  if (!data.value?.url) return
-  if (data.value?.url === 'error') return 'error'
-  if (data.value?.url === 'success') return 'success'
-  return 'warning'
-})
 
 refresh()
 
@@ -117,5 +111,16 @@ refresh()
   :deep(textarea) {
     box-shadow: 0 0 0 1px var(--el-color-danger) inset;
   }
+}
+.bot-guardiany-avatar {
+    display: flex;
+    gap: 0.25rem;
+
+    img {
+        height: 1.5rem;
+        width: 1.5rem;
+        border-radius: 100%;
+        vertical-align: middle;
+    }
 }
 </style>
