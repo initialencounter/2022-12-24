@@ -2,7 +2,7 @@
   <a href="https://github.com/initialencounter/mykoishi">
     <a href="https://koishi.chat/" target="_blank">
     <img  width="100rem" src="https://koishi.chat/logo.png">
-    <h2><div style="font-size: 8rem"><strong>Koishi 插件集</strong></div></h2>
+    <h2><div style="font-size: 8rem"><strong>机机总动员</strong></div></h2>
   </a>
   </a>
   <br>
