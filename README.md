@@ -2,8 +2,8 @@
 <div align="center">
   <a href="https://github.com/initialencounter/mykoishi">
     <a href="https://koishi.chat/" target="_blank">
-    <img  width="200rem" src="https://koishi.chat/logo.png">
-    <div align="center"><div style="font-size: 2rem"><strong>Koishi 插件集</strong></div></div>
+    <img  width="100rem" src="https://koishi.chat/logo.png">
+    <div align="center"><div style="font-size: 8rem"><strong>Koishi 插件集</strong></div></div>
   </a>
   </a>
   <br>
@@ -39,8 +39,7 @@
 | 娱乐玩法 | [☕数字华容道](./Plugins/Recreation/puzzle/readme.md)[☕魔方](./Plugins/Recreation/cube/readme.md)[☕对对联](./Plugins/Recreation/couplet/readme.md)[☕扫雷残局](./Plugins/Recreation/minesweeper-ending/readme.md) ||
 | 游戏辅助 | [☕斯坦牛逼](./Plugins/Games/stnb/readme.md)[☕Steam 挂刀](./Plugins/Games/steam-trading/readme.md)[☕原神图鉴](./Plugins/Games/genshin-atlas/readme.md) |
 
-
-
+</div>
 ## 在你的工作区引入此仓库
 
 - 克隆本仓库到你的工作区
@@ -76,4 +75,3 @@ yarn clone initialencounter/mykoishi
   "external/mykoishi/plugins/Tool/sst/src",
 ],
 ```
-</div>
