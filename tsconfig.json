@@ -27,15 +27,15 @@
         "plugins/Tool/*/src"
       ],
       "@initencounter/koishi-plugin-jimp": [
-        "plugins/Extension/jimp/src/*",
+        "plugins/Extension/jimp/src",
       ],
       "@initencounter/jimp": [
-        "plugins/Extension/jimp-abstract/src/*",
+        "plugins/Extension/jimp-abstract/src",
       ],
       "@initencounter/vits": [
-        "plugins/Tool/vits/src/*",
+        "plugins/Tool/vits/src",
       ],"@initencounter/sst": [
-        "plugins/Tool/sst/src/*",
+        "plugins/Tool/sst/src",
       ],
       // If you are developing a scoped plugin,
       // just uncomment the next line and change `@scope`
