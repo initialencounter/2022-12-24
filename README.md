@@ -1,9 +1,8 @@
-<br />
 <div align="center">
   <a href="https://github.com/initialencounter/mykoishi">
     <a href="https://koishi.chat/" target="_blank">
     <img  width="100rem" src="https://koishi.chat/logo.png">
-    <div align="center"><div style="font-size: 8rem"><strong>Koishi 插件集</strong></div></div>
+    <h2><div style="font-size: 8rem"><strong>Koishi 插件集</strong></div></h2>
   </a>
   </a>
   <br>
@@ -40,6 +39,7 @@
 | 游戏辅助 | [☕斯坦牛逼](./Plugins/Games/stnb/readme.md)[☕Steam 挂刀](./Plugins/Games/steam-trading/readme.md)[☕原神图鉴](./Plugins/Games/genshin-atlas/readme.md) |
 
 </div>
+
 ## 在你的工作区引入此仓库
 
 - 克隆本仓库到你的工作区
