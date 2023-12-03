@@ -25,125 +25,25 @@
   </p>
 </div>
 
+## Koishi 插件
 
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Koishi 插件</title>
-  <style>
-    body {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
-      padding: 20px;
-    }
+| 分类   | 链接    |
+| :----: | :----: |
+| 人工智能  | [☕ChatGPT](./Plugins/AI/davinci-003/readme.md)[☕颜值评分](./Plugins/AI/facercg/readme.md)[☕Stable Diffusion](./Plugins/AI/sd-taylor/readme.md) | 
+|          | [☕意间 AI](./Plugins/AI/arcadia/readme.md)[☕知数云](./Plugins/AI/arcadia/readme.md) |
+| 适配器 | [☕gocq-dev](./Plugins/Adapter/gocqhttp-dev/readme.md)[☕qsign](./Plugins/Adapter/qsign/readme.md)[☕autoxjs-sender](./Plugins/Adapter/autoxjs-sender/readme.md)|
+| 拓展功能 | [☕mqtt](./Plugins/Extension/mqtt/readme.md) |
+| 控制台 | [☕blockly 市场](./Plugins/Console/blockly-registry/readme.md) |
+| 管理工具 | [☕闹钟](./Plugins/Manager/clock/readme.md)[☕loader](./Plugins/Manager/loader/readme.md)[☕blacklist](./Plugins/Manager/blacklist/readme.md) | 
+|         | [☕进阶指令帮助](./Plugins/Manager/help-pro/readme.md) [☕机器人守护者](./Plugins/Manager/bot-guardian/readme.md) |
+| 行为预设 | [☕群主插件](./Plugins/Behavior/specialtile/readme.md) |
+| 资讯服务 | [☕兽云祭](./Plugins/News/furbot/readme.md)[☕fraud-db](./Plugins/News/fraud-db/readme.md)[☕瓷砖提醒](./Plugins/News/gh-tile/readme.md) |
+| 实用工具 | [☕飞桨语音](./Plugins/Tool/paddlespeech/readme.md)[☕OpenAI 语音](./Plugins/Tool/whisper-asr/readme.md)[☕语音-克隆](./Plugins/Tool/paddlespeech-finetune/readme.md) |
+|         | [☕百度TTS](./Plugins/Tool/baidu-tts/readme.md)[☕百度STT](./Plugins/Tool/baidu-sst/readme.md)[☕腾讯TTS](./Plugins/Tool/tencent-tts/readme.md) |
+|         |  [☕腾讯STT](./Plugins/Tool/tc-sst/readme.md)[☕vits 服务](./Plugins/Tool/vits/readme.md)[☕sst 服务](./Plugins/Tool/sst/readme.md) |
+| 娱乐玩法 | [☕数字华容道](./Plugins/Recreation/puzzle/readme.md)[☕魔方](./Plugins/Recreation/cube/readme.md)[☕对对联](./Plugins/Recreation/couplet/readme.md)[☕扫雷残局](./Plugins/Recreation/minesweeper-ending/readme.md) ||
+| 游戏辅助 | [☕斯坦牛逼](./Plugins/Games/stnb/readme.md)[☕Steam 挂刀](./Plugins/Games/steam-trading/readme.md)[☕原神图鉴](./Plugins/Games/genshin-atlas/readme.md) |
 
-    section {
-      border: 1px solid #ccc;
-      padding: 10px;
-    }
-  </style>
-</head>
-<body>
-  <section>
-    <h2>人工智能</h2>
-    <ul>
-      <li><a href="./Plugins/AI/davinci-003/readme.md">ChatGPT</a></li>
-      <li><a href="./Plugins/AI/facercg/readme.md">颜值评分</a></li>
-      <li><a href="./Plugins/AI/sd-taylor/readme.md">Stable Diffusion</a></li>
-      <li><a href="./Plugins/AI/arcadia/readme.md">意间 AI</a></li>
-      <li><a href="./Plugins/AI/arcadia/readme.md">知数云</a></li>
-    </ul>
-  </section>
-
-  <section>
-    <h2>适配器</h2>
-    <ul>
-      <li><a href="./Plugins/Adapter/gocqhttp-dev/readme.md">go-cqhttp-dev</a></li>
-      <li><a href="./Plugins/Adapter/qsign/readme.md">qsign</a></li>
-      <li><a href="./Plugins/Adapter/autoxjs-sender/readme.md">autoxjs-sender</a></li>
-    </ul>
-  </section>
-
-  <section>
-    <h2>拓展功能</h2>
-    <ul>
-      <li><a href="./Plugins/Extension/mqtt/readme.md">mqtt</a></li>
-    </ul>
-  </section>
-
-  <section>
-    <h2>控制台</h2>
-    <ul>
-      <li><a href="./Plugins/Console/blockly-registry/readme.md">blockly 插件市场</a></li>
-    </ul>
-  </section>
-
-  <section>
-    <h2>管理工具</h2>
-    <ul>
-      <li><a href="./Plugins/Manager/clock/readme.md">闹钟</a></li>
-      <li><a href="./Plugins/Manager/loader/readme.md">loader</a></li>
-      <li><a href="./Plugins/Manager/blacklist/readme.md">blacklist</a></li>
-      <li><a href="./Plugins/Manager/help-pro/readme.md">进阶指令帮助</a></li>
-      <li><a href="./Plugins/Manager/bot-guardian/readme.md">机器人守护者</a></li>
-    </ul>
-  </section>
-
-  <section>
-    <h2>行为预设</h2>
-    <ul>
-      <li><a href="./Plugins/Behavior/specialtile/readme.md">群主插件</a></li>
-    </ul>
-  </section>
-
-  <section>
-    <h2>资讯服务</h2>
-    <ul>
-      <li><a href="./Plugins/News/furbot/readme.md">兽云祭</a></li>
-      <li><a href="./Plugins/News/fraud-db/readme.md">fraud-db</a></li>
-      <li><a href="./Plugins/News/gh-tile/readme.md">瓷砖提醒</a></li>
-    </ul>
-  </section>
-
-  <section>
-    <h2>实用工具</h2>
-    <ul>
-      <li><a href="./Plugins/Tool/paddlespeech/readme.md">飞桨语音</a></li>
-      <li><a href="./Plugins/Tool/whisper-asr/readme.md">OpenAI 语音</a></li>
-      <li><a href="./Plugins/Tool/paddlespeech-finetune/readme.md">飞桨语音-克隆</a></li>
-      <li><a href="./Plugins/Tool/baidu-tts/readme.md">百度TTS</a></li>
-      <li><a href="./Plugins/Tool/baidu-sst/readme.md">百度STT</a></li>
-      <li><a href="./Plugins/Tool/tencent-tts/readme.md">腾讯TTS</a></li>
-      <li><a href="./Plugins/Tool/tc-sst/readme.md">腾讯STT</a></li>
-      <li><a href="./Plugins/Tool/vits/readme.md">@initencounter/vits</a></li>
-      <li><a href="./Plugins/Tool/sst/readme.md">@initencounter/sst</a></li>
-    </ul>
-  </section>
-
-  <section>
-    <h2>娱乐玩法</h2>
-    <ul>
-      <li><a href="./Plugins/Recreation/puzzle/readme.md">数字华容道</a></li>
-      <li><a href="./Plugins/Recreation/cube/readme.md">魔方</a></li>
-      <li><a href="./Plugins/Recreation/couplet/readme.md">对对联</a></li>
-      <li><a href="./Plugins/Recreation/minesweeper-ending/readme.md">扫雷残局</a></li>
-    </ul>
-  </section>
-
-  <section>
-    <h2>游戏辅助</h2>
-    <ul>
-      <li><a href="./Plugins/Games/stnb/readme.md">斯坦牛逼</a></li>
-      <li><a href="./Plugins/Games/steam-trading/readme.md">Steam 挂刀行情</a></li>
-      <li><a href="./Plugins/Games/genshin-atlas/readme.md">原神图鉴</a></li>
-    </ul>
-  </section>
-
-</body>
-</html>
 
 
 ## 在你的工作区引入此仓库
@@ -159,7 +59,7 @@ yarn clone initialencounter/mykoishi
 ```json
       // The `external` directory is used to store created plugins.
       // Try `npm run setup` or `yarn setup` to create a new plugin.
-      "koishi-plugin-*": [
+      "koishi-plugin-*": [☕
         "external/mykoishi/plugins/Adapter/*/src",
         "external/mykoishi/plugins/AI/*/src",
         "external/mykoishi/plugins/Behavior/*/src",
@@ -171,16 +71,16 @@ yarn clone initialencounter/mykoishi
         "external/mykoishi/plugins/Recreation/*/src",
         "external/mykoishi/plugins/Tool/*/src"
       ],
-      "@initencounter/koishi-plugin-jimp": [
+      "@initencounter/koishi-plugin-jimp": [☕
         "external/mykoishi/plugins/Extension/jimp/src",
       ],
-      "@initencounter/jimp": [
+      "@initencounter/jimp": [☕
         "external/mykoishi/plugins/Extension/jimp-abstract/src",
       ],
-      "@initencounter/vits": [
+      "@initencounter/vits": [☕
         "external/mykoishi/plugins/Tool/vits/src",
       ],
-      "@initencounter/sst": [
+      "@initencounter/sst": [☕
         "external/mykoishi/plugins/Tool/sst/src",
       ],
 ```
