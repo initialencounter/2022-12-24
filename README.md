@@ -39,7 +39,7 @@
 | 娱乐玩法 | [☕数字华容道](./Plugins/Recreation/puzzle/readme.md)[☕魔方](./Plugins/Recreation/cube/readme.md)[☕对对联](./Plugins/Recreation/couplet/readme.md)[☕扫雷残局](./Plugins/Recreation/minesweeper-ending/readme.md) ||
 | 游戏辅助 | [☕斯坦牛逼](./Plugins/Games/stnb/readme.md)[☕Steam 挂刀](./Plugins/Games/steam-trading/readme.md)[☕原神图鉴](./Plugins/Games/genshin-atlas/readme.md) |
 
-</div>
+
 
 ## 在你的工作区引入此仓库
 
@@ -49,33 +49,31 @@
 yarn clone initialencounter/mykoishi
 ```
 
-- 修改tsconfig.json
-
+- 修改根工作区的 tsconfig.json
 ```json
-      // The `external` directory is used to store created plugins.
-      // Try `npm run setup` or `yarn setup` to create a new plugin.
-      "koishi-plugin-*": [☕
-        "external/mykoishi/plugins/Adapter/*/src",
-        "external/mykoishi/plugins/AI/*/src",
-        "external/mykoishi/plugins/Behavior/*/src",
-        "external/mykoishi/plugins/Console/*/src",
-        "external/mykoishi/plugins/Extension/*/src",
-        "external/mykoishi/plugins/Games/*/src",
-        "external/mykoishi/plugins/Manager/*/src",
-        "external/mykoishi/plugins/News/*/src",
-        "external/mykoishi/plugins/Recreation/*/src",
-        "external/mykoishi/plugins/Tool/*/src"
-      ],
-      "@initencounter/koishi-plugin-jimp": [☕
-        "external/mykoishi/plugins/Extension/jimp/src",
-      ],
-      "@initencounter/jimp": [☕
-        "external/mykoishi/plugins/Extension/jimp-abstract/src",
-      ],
-      "@initencounter/vits": [☕
-        "external/mykoishi/plugins/Tool/vits/src",
-      ],
-      "@initencounter/sst": [☕
-        "external/mykoishi/plugins/Tool/sst/src",
-      ],
+"koishi-plugin-*": [
+  "external/mykoishi/plugins/Adapter/*/src",
+  "external/mykoishi/plugins/AI/*/src",
+  "external/mykoishi/plugins/Behavior/*/src",
+  "external/mykoishi/plugins/Console/*/src",
+  "external/mykoishi/plugins/Extension/*/src",
+  "external/mykoishi/plugins/Games/*/src",
+  "external/mykoishi/plugins/Manager/*/src",
+  "external/mykoishi/plugins/News/*/src",
+  "external/mykoishi/plugins/Recreation/*/src",
+  "external/mykoishi/plugins/Tool/*/src"
+],
+"@initencounter/koishi-plugin-jimp": [
+  "external/mykoishi/plugins/Extension/jimp/src",
+],
+"@initencounter/jimp": [
+  "external/mykoishi/plugins/Extension/jimp-abstract/src",
+],
+"@initencounter/vits": [
+  "external/mykoishi/plugins/Tool/vits/src",
+],
+"@initencounter/sst": [
+  "external/mykoishi/plugins/Tool/sst/src",
+],
 ```
+</div>
