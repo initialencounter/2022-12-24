@@ -23,14 +23,14 @@
 
 |   分类   | 名称    |
 | :------: | :---- |
-| 人工智能  | [☕ChatGPT](./Plugins/AI/davinci-003/readme.md)[☕颜值评分](./Plugins/AI/facercg/readme.md)[☕Stable Diffusion](./Plugins/AI/sd-taylor/readme.md)[☕意间 AI](./Plugins/AI/arcadia/readme.md)[☕知数云](./Plugins/AI/arcadia/readme.md) |
+| 人工智能  | [☕ChatGPT](./Plugins/AI/davinci-003/readme.md)[☕AI 颜值打分](./Plugins/AI/facercg/readme.md)[☕Stable Diffusion](./Plugins/AI/sd-taylor/readme.md)[☕意间绘画](./Plugins/AI/arcadia/readme.md)[☕知数云](./Plugins/AI/arcadia/readme.md) |
 | 适配器 | [☕gocq-dev](./Plugins/Adapter/gocqhttp-dev/readme.md)[☕qsign](./Plugins/Adapter/qsign/readme.md)[☕autoxjs-sender](./Plugins/Adapter/autoxjs-sender/readme.md)|
 | 拓展功能 | [☕mqtt](./Plugins/Extension/mqtt/readme.md) |
 | 控制台 | [☕blockly 市场](./Plugins/Console/blockly-registry/readme.md) |
 | 管理工具 | [☕闹钟](./Plugins/Manager/clock/readme.md)[☕loader](./Plugins/Manager/loader/readme.md)[☕blacklist](./Plugins/Manager/blacklist/readme.md)[☕进阶指令帮助](./Plugins/Manager/help-pro/readme.md) [☕机器人守护者](./Plugins/Manager/bot-guardian/readme.md) |
 | 行为预设 | [☕群主插件](./Plugins/Behavior/specialtile/readme.md) |
 | 资讯服务 | [☕兽云祭](./Plugins/News/furbot/readme.md)[☕fraud-db](./Plugins/News/fraud-db/readme.md)[☕瓷砖提醒](./Plugins/News/gh-tile/readme.md) |
-| 实用工具 | [☕飞桨语音](./Plugins/Tool/paddlespeech/readme.md)[☕OpenAI 语音](./Plugins/Tool/whisper-asr/readme.md)[☕百度TTS](./Plugins/Tool/baidu-tts/readme.md)[☕百度STT](./Plugins/Tool/baidu-sst/readme.md)[☕腾讯TTS](./Plugins/Tool/tencent-tts/readme.md)[☕腾讯STT](./Plugins/Tool/tc-sst/readme.md)[☕vits 服务](./Plugins/Tool/vits/readme.md)[☕sst 服务](./Plugins/Tool/sst/readme.md) |
+| 实用工具 | [☕飞桨语音](./Plugins/Tool/paddlespeech/readme.md)[☕OpenAI语音](./Plugins/Tool/whisper-asr/readme.md)[☕百度TTS](./Plugins/Tool/baidu-tts/readme.md)[☕百度STT](./Plugins/Tool/baidu-sst/readme.md)[☕腾讯TTS](./Plugins/Tool/tencent-tts/readme.md)[☕腾讯STT](./Plugins/Tool/tc-sst/readme.md)[☕vits服务](./Plugins/Tool/vits/readme.md)[☕sst服务](./Plugins/Tool/sst/readme.md) |
 | 娱乐玩法 | [☕数字华容道](./Plugins/Recreation/puzzle/readme.md)[☕魔方](./Plugins/Recreation/cube/readme.md)[☕对对联](./Plugins/Recreation/couplet/readme.md)[☕扫雷残局](./Plugins/Recreation/minesweeper-ending/readme.md) ||
 | 游戏辅助 | [☕斯坦牛逼](./Plugins/Games/stnb/readme.md)[☕Steam 挂刀](./Plugins/Games/steam-trading/readme.md)[☕原神图鉴](./Plugins/Games/genshin-atlas/readme.md) |
 
