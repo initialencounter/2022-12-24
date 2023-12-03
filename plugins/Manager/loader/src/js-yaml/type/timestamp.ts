@@ -52,11 +52,11 @@ function constructYamlTimestamp(data) {
   second = +(match[6]);
 
   if (match[7]) {
-    fraction = match[7].slice(0, 3);
+    let fraction: string = match[7].slice(0, 3);
     while (fraction.length < 3) { // milli-seconds
       fraction += '0';
     }
-    fraction = +fraction;
+    fraction = ''+fraction;
   }
 
   // match: [8] tz [9] tz_sign [10] tz_hour [11] tz_minute

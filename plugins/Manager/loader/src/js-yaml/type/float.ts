@@ -43,7 +43,7 @@ function constructYamlFloat(data) {
   } else if (value === '.nan') {
     return NaN;
   }
-  return sign * parseFloat(value, 10);
+  return sign * parseFloat(value);
 }
 
 

@@ -1,9 +1,9 @@
-'use strict';
+'use strict';Type
 
 /*eslint-disable max-len*/
 
 var YAMLException = require('./exception');
-var Type          = require('./type');
+var Type = require('./type');
 
 
 function compileList(schema, name) {
@@ -82,26 +82,26 @@ Schema.prototype.extend = function extend(definition) {
 
   } else {
     throw new YAMLException('Schema.extend argument should be a Type, [ Type ], ' +
-      'or a schema definition ({ implicit: [...], explicit: [...] })');
+      'or a schema definition ({ implicit: [...], explicit: [...] })',{});
   }
 
   implicit.forEach(function (type) {
     if (!(type instanceof Type)) {
-      throw new YAMLException('Specified list of YAML types (or a single Type object) contains a non-Type object.');
+      throw new YAMLException('Specified list of YAML types (or a single Type object) contains a non-Type object.',{});
     }
 
     if (type.loadKind && type.loadKind !== 'scalar') {
-      throw new YAMLException('There is a non-scalar type in the implicit list of a schema. Implicit resolving of such types is not supported.');
+      throw new YAMLException('There is a non-scalar type in the implicit list of a schema. Implicit resolving of such types is not supported.',{});
     }
 
     if (type.multi) {
-      throw new YAMLException('There is a multi type in the implicit list of a schema. Multi tags can only be listed as explicit.');
+      throw new YAMLException('There is a multi type in the implicit list of a schema. Multi tags can only be listed as explicit.',{});
     }
   });
 
   explicit.forEach(function (type) {
     if (!(type instanceof Type)) {
-      throw new YAMLException('Specified list of YAML types (or a single Type object) contains a non-Type object.');
+      throw new YAMLException('Specified list of YAML types (or a single Type object) contains a non-Type object.',{});
     }
   });
 
@@ -112,7 +112,7 @@ Schema.prototype.extend = function extend(definition) {
 
   result.compiledImplicit = compileList(result, 'implicit');
   result.compiledExplicit = compileList(result, 'explicit');
-  result.compiledTypeMap  = compileMap(result.compiledImplicit, result.compiledExplicit);
+  result.compiledTypeMap  = compileMap();
 
   return result;
 };

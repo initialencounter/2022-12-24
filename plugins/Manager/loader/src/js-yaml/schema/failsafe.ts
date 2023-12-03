@@ -5,10 +5,10 @@
 'use strict';
 
 
-var Schema = require('../schema');
+var Schema1 = require('../schema');
 
 
-module.exports = new Schema({
+module.exports = new Schema1({
   explicit: [
     require('../type/str'),
     require('../type/seq'),

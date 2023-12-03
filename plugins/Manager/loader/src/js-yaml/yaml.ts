@@ -2,7 +2,7 @@
 
 var common = require('./common');
 var YAMLException = require('./exception');
-var makeSnippet = require('./snippet');
+var makeSnippet1 = require('./snippet');
 var DEFAULT_SCHEMA = require('./schema/default');
 
 var _hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -174,8 +174,6 @@ function generateError(state, message) {
     line: state.line,
     column: state.position - state.lineStart
   };
-
-  mark.snippet = makeSnippet(mark);
 
   return new YAMLException(message, mark);
 }
@@ -1706,7 +1704,7 @@ function loadAll(input, iterator, options) {
   }
 }
 
-function load(input, options) {
+export function load(input, options) {
     var documents = loadDocuments(input, options);
 
     if (documents.length === 0) {

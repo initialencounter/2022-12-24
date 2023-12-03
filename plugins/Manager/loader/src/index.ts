@@ -25,7 +25,7 @@ class Loader {
     await fs.writeFile('./koishi.yml.bak', yaml_data, 'utf8');
     // 解析插件
     this.mainfest = await JSON.parse(json_data)
-    this.added_plugin = await this.get_plugins((await yaml_load(yaml_data)).plugins)
+    this.added_plugin = await this.get_plugins((await yaml_load(yaml_data,{})).plugins)
     this.installed_plugin = await JSON.parse(JSON.stringify(this.mainfest.dependencies))
     // 只安装 koishi.yml 内的插件
     if(this.config.just_added){
