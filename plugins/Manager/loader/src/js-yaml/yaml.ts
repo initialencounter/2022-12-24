@@ -1704,15 +1704,14 @@ function loadAll(input, iterator, options) {
   }
 }
 
-export function load(input, options) {
-    var documents = loadDocuments(input, options);
+export function load(input) {
+  var documents = loadDocuments(input, {});
 
-    if (documents.length === 0) {
-      /*eslint-disable no-undefined*/
-      return undefined;
-    } else if (documents.length === 1) {
-      return documents[0];
-    }
-    throw new YAMLException('expected a single document in the stream, but found more');
+  if (documents.length === 0) {
+    /*eslint-disable no-undefined*/
+    return undefined;
+  } else if (documents.length === 1) {
+    return documents[0];
   }
-module.exports.load = load
+  throw new YAMLException('expected a single document in the stream, but found more');
+}
