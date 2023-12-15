@@ -21,7 +21,8 @@
     "plugins/Tool/*",
     "plugins/@*/*",
     "external/wechaty-satori-sdk/packages/adapter-wechat4u",
-    "external/client"
+    "external/client",
+    "external/open-vits"
   ],
   "scripts": {
     "set-proxy": "npm config set registry https://registry.npmmirror.com",
