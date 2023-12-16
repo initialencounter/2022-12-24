@@ -29,8 +29,8 @@
     "koishi": "^4.15.2"
   },
   "dependencies": {
-    "jimp": "^0.22.10",
-    "@initencounter/jimp": "^0.0.3"
+    "@initencounter/jimp": "^0.0.3",
+    "jimp": "^0.22.10"
   },
   "koishi": {
     "service": {

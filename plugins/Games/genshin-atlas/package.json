@@ -9,7 +9,6 @@
     "dist"
   ],
   "license": "AGPL-3.0",
-  "scripts": {},
   "keywords": [
     "chatbot",
     "koishi",
@@ -34,8 +33,8 @@
   },
   "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Games/genshin-atlas#readme",
   "peerDependencies": {
-    "koishi": "^4.15.2",
-    "@koishijs/plugin-console": "^5.11.0"
+    "@koishijs/plugin-console": "^5.11.0",
+    "koishi": "^4.15.2"
   },
   "koishi": {
     "description": {

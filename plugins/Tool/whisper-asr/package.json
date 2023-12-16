@@ -23,7 +23,6 @@
     "url": "https://github.com/initialencounter/mykoishi/issues"
   },
   "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Tool/whisper-asr#readme",
-  "scripts": {},
   "keywords": [
     "chatbot",
     "koishi",

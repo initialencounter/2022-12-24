@@ -22,15 +22,14 @@
     "url": "https://github.com/initialencounter/mykoishi/issues"
   },
   "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Manager/bot-guardian#readme",
-  "scripts": {},
   "keywords": [
     "chatbot",
     "koishi",
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.15.6",
-    "@koishijs/plugin-console": "^5.11.0"
+    "@koishijs/plugin-console": "^5.11.0",
+    "koishi": "^4.15.6"
   },
   "devDependencies": {
     "@koishijs/client": "^5.11.0"

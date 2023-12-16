@@ -60,16 +60,16 @@
   },
   "devDependencies": {
     "@koishijs/client": "^5.13.1",
-    "koishi-plugin-adapter-onebot": "6.1.2",
     "@koishijs/plugin-console": "^5.13.1",
     "@koishijs/plugin-market": "^2.2.10",
     "@types/node": "^18.17.4",
     "koishi": "^4.14.1",
+    "koishi-plugin-adapter-onebot": "6.1.2",
     "typescript": "^5.1.6"
   },
   "dependencies": {
-    "koishi-plugin-qsign": "^1.2.4",
     "@yunkuangao/koishi-plugin-qsign": "^0.7.2",
+    "koishi-plugin-qsign": "^1.2.4",
     "strip-ansi": "^6.0.1"
   }
 }

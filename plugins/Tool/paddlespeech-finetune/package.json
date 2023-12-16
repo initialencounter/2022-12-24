@@ -22,7 +22,6 @@
     "url": "https://github.com/initialencounter/mykoishi/issues"
   },
   "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Tool/paddlespeech-finetune#readme",
-  "scripts": {},
   "keywords": [
     "chatbot",
     "koishi",
@@ -33,8 +32,8 @@
     "tts"
   ],
   "peerDependencies": {
-    "koishi": "^4.15.2",
-    "@initencounter/vits": "^0.0.3"
+    "@initencounter/vits": "^0.0.3",
+    "koishi": "^4.15.2"
   },
   "koishi": {
     "description": "将[PaddleSpeech克隆的声音](https://aistudio.baidu.com/aistudio/projectdetail/6406138?forkThirdPart=1)接入 Koishi",

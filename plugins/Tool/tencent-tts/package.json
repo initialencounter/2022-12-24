@@ -22,7 +22,6 @@
     "url": "https://github.com/initialencounter/mykoishi/issues"
   },
   "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Tool/tencent-tts#readme",
-  "scripts": {},
   "keywords": [
     "chatbot",
     "koishi",
@@ -35,8 +34,8 @@
     "koishi": "^4.15.2"
   },
   "dependencies": {
-    "tencentcloud-sdk-nodejs-tts": "^4.0.711",
-    "@initencounter/vits": "^0.0.2"
+    "@initencounter/vits": "^0.0.2",
+    "tencentcloud-sdk-nodejs-tts": "^4.0.711"
   },
   "koishi": {
     "description": "腾讯语音合成服务",

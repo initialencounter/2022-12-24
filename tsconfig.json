@@ -38,6 +38,10 @@
       "@initencounter/sst": [
         "plugins/Tool/sst/src",
       ],
+      "koishi-plugin-adapter-wechat4u": ["external/wechaty-satori-sdk/packages/adapter-wechat4u/src"],
+      "koishi-plugin-client": ["external/client/src"],
+      "koishi-plugin-open-vits": ["external/open-vits/src"],
+
       // If you are developing a scoped plugin,
       // just uncomment the next line and change `@scope`
       // to the scope name (i.e. npm account or organization).

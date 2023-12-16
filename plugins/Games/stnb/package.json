@@ -22,7 +22,6 @@
     "url": "https://github.com/initialencounter/mykoishi/issues"
   },
   "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Games/stnb#readme.md",
-  "scripts": {},
   "keywords": [
     "chatbot",
     "koishi",
@@ -32,8 +31,8 @@
     "koishi": "^4.15.2"
   },
   "dependencies": {
-    "xpath": "^0.0.32",
+    "iconv-lite": "^0.6.3",
     "xmldom": "^0.6.0",
-    "iconv-lite": "^0.6.3"
+    "xpath": "^0.0.32"
   }
 }

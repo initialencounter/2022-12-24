@@ -1,3 +1,0 @@
-[submodule "plugins/Adapter/wechaty-satori-sdk"]
-	path = plugins/Adapter/wechaty-satori-sdk
-	url = https://git.yka.moe/initialencounter/wechaty-satori-sdk

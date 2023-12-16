@@ -22,7 +22,6 @@
     "url": "https://github.com/initialencounter/mykoishi/issues"
   },
   "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Tool/tc-sst#readme",
-  "scripts": {},
   "keywords": [
     "chatbot",
     "koishi",
@@ -44,7 +43,7 @@
     }
   },
   "dependencies": {
-    "tencentcloud-sdk-nodejs-asr": "^4.0.711",
-    "@initencounter/sst": "^0.0.1"
+    "@initencounter/sst": "^0.0.1",
+    "tencentcloud-sdk-nodejs-asr": "^4.0.711"
   }
 }

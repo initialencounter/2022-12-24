@@ -22,14 +22,13 @@
     "url": "https://github.com/initialencounter/mykoishi/issues"
   },
   "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Behavior/specialtitle#readme",
-  "scripts": {},
   "keywords": [
     "chatbot",
     "koishi",
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.15.2",
-    "@koishijs/plugin-adapter-onebot": "^6.0.2"
+    "@koishijs/plugin-adapter-onebot": "^6.0.2",
+    "koishi": "^4.15.2"
   }
 }
