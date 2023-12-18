@@ -21,7 +21,8 @@
     "plugins/Tool/*",
     "plugins/@*/*",
     "external/wechaty-satori-sdk/packages/adapter-wechat4u",
-    "external/open-vits"
+    "external/open-vits",
+    "external/test"
   ],
   "scripts": {
     "new": "koishi-scripts new",
@@ -57,11 +58,7 @@
   },
   "dependencies": {
     "@koishijs/plugin-actions": "^0.0.2",
-    "@koishijs/plugin-adapter-discord": "^4.1.7",
-    "@koishijs/plugin-adapter-kook": "^4.3.0",
-    "@koishijs/plugin-adapter-qq": "^4.2.0",
     "@koishijs/plugin-adapter-satori": "^1.0.3",
-    "@koishijs/plugin-adapter-telegram": "^4.2.0",
     "@koishijs/plugin-admin": "^2.0.0-alpha.5",
     "@koishijs/plugin-analytics": "^1.0.8",
     "@koishijs/plugin-auth": "^4.1.6",
