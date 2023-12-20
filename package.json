@@ -22,8 +22,7 @@
     "plugins/@*/*",
     "external/wechaty-satori-sdk/packages/adapter-wechat4u",
     "external/open-vits",
-    "external/test",
-    "external/chess"
+    "external/test"
   ],
   "scripts": {
     "new": "koishi-scripts new",
