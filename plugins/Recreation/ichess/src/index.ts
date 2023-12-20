@@ -3,6 +3,8 @@ import { } from 'koishi-plugin-puppeteer'
 import { } from '@koishijs/plugin-help'
 import {  MoveResult, ChessPiece, chessHeader, ChessMap, Ichess } from './type'
 import { ChessState } from './chess'
+import { resolve } from 'path'
+import { readFileSync } from 'fs'
 
 
 declare module 'koishi' {
@@ -22,6 +24,8 @@ export const inject = {
 export interface Config { }
 
 export const Config: Schema<Config> = Schema.object({})
+
+export const usage = readFileSync(resolve(__dirname, "../readme.md")).toString('utf-8').split("更新日志")[0];
 
 export function apply(ctx: Context) {
   ctx.model.extend('channel', {
