@@ -1,9 +1,8 @@
-import { Context, isInteger, segment, Dict, Schema } from 'koishi'
+import { Context, segment, Dict, Schema } from 'koishi'
 import { } from 'koishi-plugin-puppeteer'
 import { } from '@koishijs/plugin-help'
 import {  MoveResult, ChessPiece, chessHeader, ChessMap, Ichess } from './type'
 import { ChessState } from './chess'
-import { Chess } from 'chess.js'
 
 
 declare module 'koishi' {
