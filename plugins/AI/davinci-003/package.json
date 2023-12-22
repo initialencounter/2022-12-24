@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-davinci-003",
   "description": "AI 聊天",
-  "version": "6.3.6",
+  "version": "6.4.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "types": "lib/index.d.ts",
@@ -33,8 +33,8 @@
     "chatgpt4"
   ],
   "peerDependencies": {
-    "@koishijs/plugin-console": "^5.17.0",
-    "koishi": "^4.15.2"
+    "@koishijs/plugin-console": "^5.22.3",
+    "koishi": "^4.16.1"
   },
   "koishi": {
     "description": "AI 聊天",
@@ -60,6 +60,6 @@
     "@koishijs/censor": "^1.0.2"
   },
   "devDependencies": {
-    "@koishijs/client": "^5.17.0"
+    "@koishijs/client": "^5.22.3"
   }
 }
