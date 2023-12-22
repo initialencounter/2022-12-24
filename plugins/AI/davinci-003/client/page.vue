@@ -25,7 +25,7 @@
 // 将 koishi-plugin-client 改为你的插件全称
 import { send } from '@koishijs/client';
 import { } from '../lib/index'
-import { ref } from "vue";
+import { ref, inject } from "vue";
 
 
 const input_text = ref<string>();
@@ -47,11 +47,11 @@ declare module '@koishijs/plugin-console' {
   }
 }
 
+const local: any = inject('manager.settings.local')
 
 show.value = (() => {
   // 判断插件配置页面的逻辑
-  const pageUrl = window.location.href
-  if (pageUrl.indexOf('davinci-003') === -1) return false
+  if (local.value.name !== 'koishi-plugin-davinci-003') return false
   // 将 client 改为你想要显示的插件页面
   return true
 })()
