@@ -219,6 +219,7 @@ class Dvc extends Service {
       })
     ctx.command('dvc.update', '一键加载400条极品预设')
       .alias('dvc.更新预设')
+      .option('displace', '-d')
       .action(async ({ session, options }) => {
         let prompts_latest = (await ctx.http.axios({
           method: 'GET',
@@ -226,9 +227,17 @@ class Dvc extends Service {
           responseType: "json"
         })).data;
         prompts_latest = JSON.parse(Buffer.from(prompts_latest, 'base64').toString('utf-8'));
-        logger.info(prompts_latest);
-        for (const i of Object.keys(prompts_latest)) {
-          this.personality[i] = prompts_latest[i];
+        logger.info("更新预设成功");
+        if (options.displace) {
+          await session.send("该选项将会导致人格丢失，其否继续[Y/n]?")
+          const confirm = await session.prompt(60000)
+          if (!confirm) return
+          if (confirm.toLowerCase() !== 'y') return
+          this.personality = prompts_latest;
+        } else {
+          for (const i of Object.keys(prompts_latest)) {
+            this.personality[i] = prompts_latest[i];
+          }
         }
         fs.writeFileSync('./personality.json', JSON.stringify(this.personality));
         return session.execute('切换人格');
@@ -247,7 +256,7 @@ class Dvc extends Service {
       }
       return await this.get_credit2(key ?? this.key[this.key_number])
     })
-    ctx.console.addListener('davinci-003/getusage',()=>{
+    ctx.console.addListener('davinci-003/getusage', () => {
       return localUsage
     })
   }
