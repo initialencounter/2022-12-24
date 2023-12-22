@@ -227,12 +227,11 @@ class Dvc extends Service {
           responseType: "json"
         })).data;
         prompts_latest = JSON.parse(Buffer.from(prompts_latest, 'base64').toString('utf-8'));
-        logger.info("更新预设成功");
         if (options.displace) {
           await session.send("该选项将会导致人格丢失，其否继续[Y/n]?")
           const confirm = await session.prompt(60000)
           if (!confirm) return
-          if (confirm.toLowerCase() !== 'y') return
+          if (confirm.toLowerCase() !== 'y') return session.send("取消切换")
           this.personality = prompts_latest;
         } else {
           for (const i of Object.keys(prompts_latest)) {
@@ -240,6 +239,7 @@ class Dvc extends Service {
           }
         }
         fs.writeFileSync('./personality.json', JSON.stringify(this.personality));
+        logger.info("更新预设成功");
         return session.execute('切换人格');
       })
     ctx.console.addListener('davinci-003/getproxy', () => {
@@ -813,7 +813,7 @@ class Dvc extends Service {
     if (nick_name && nick_names.indexOf(nick_name) > -1) {
       return this.personality_rm(session, nick_name)
     }
-    const input = await this.switch_menu(session, nick_names, '人格')
+    const input = await this.switch_menu_grid(session, nick_names, '人格')
     if (!input) {
       return session.text('commands.dvc.messages.menu-err')
     }
@@ -866,7 +866,7 @@ class Dvc extends Service {
    * @returns 
    */
   async switch_menu(session: Session, type_arr: string[], name: string): Promise<string> {
-    let type_str: string = '\n'
+    let type_str: string = '\n' + name+'\n'
     let count = 0
     const result = segment('figure')
     type_arr.forEach((i, id) => {
@@ -882,6 +882,64 @@ class Dvc extends Service {
       type_str += String(id + 1) + ' ' + i + '\n'
       count++
     })
+    result.children.push(
+      segment('message', {
+        userId: '1114039391',
+        nickname: 'AI',
+      }, type_str))
+    await session.send(result)
+    const input = await session.prompt()
+    if (!input || Number.isNaN(+input)) return ''
+    const index: number = parseInt(input) - 1
+    if ((index < 0) || (index > type_arr.length - 1)) return ''
+    return type_arr[index]
+  }
+  /**
+   * grid布局
+   * @param session 
+   * @param type_arr 
+   * @param name 
+   * @returns 
+   */
+  async switch_menu_grid(session: Session, type_arr: string[], name: string): Promise<string> {
+    let type_str: string = '\n' + name+'\n\n'
+    let count = 0
+    function getActualLength(str) {
+      let actualLength = 0;
+    
+      for (let i = 0; i < str.length; i++) {
+        const charCode = str.charCodeAt(i);
+    
+        // 如果字符编码在全角范围内，长度加2，否则加1
+        if ((charCode >= 0xff01 && charCode <= 0xff5e) || (charCode >= 0x3000 && charCode <= 0x303f)) {
+          actualLength += 2;
+        } else {
+          actualLength += 1;
+        }
+      }
+    
+      return actualLength;
+    }
+    function multiplyStrings(str, n) {
+      return Array.from({ length: n }, () => str).join('');
+    }
+    const result = segment('figure')
+    for (let id = 0; id < type_arr.length; id += 2) {
+      if (count > 50) {
+        count = 0
+        result.children.push(
+          segment('message', {
+            userId: '1114039391',
+            nickname: 'AI',
+          }, type_str))
+        type_str = ''
+      }
+      const firstLen = getActualLength(String(id + 1) + ' ' + type_arr[id])
+      const spaceString = multiplyStrings('   ', 20 - firstLen)
+      type_str += String(id + 1) + ' ' + type_arr[id] + spaceString + String(id + 2) + ' ' + type_arr[id + 1] + '\n'
+      count++
+    }
+
     result.children.push(
       segment('message', {
         userId: '1114039391',
@@ -1062,7 +1120,7 @@ class Dvc extends Service {
     if (prompt && nick_names.indexOf(prompt) > -1) {
       return this.set_personality(session, prompt)
     }
-    const input = await this.switch_menu(session, nick_names, '人格')
+    const input = await this.switch_menu_grid(session, nick_names, '人格')
     if (!input) {
       return session.text('commands.dvc.messages.menu-err')
     }
