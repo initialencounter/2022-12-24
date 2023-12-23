@@ -1,7 +1,7 @@
 import { Context, segment, Dict, Schema } from 'koishi'
 import { } from 'koishi-plugin-puppeteer'
 import { } from '@koishijs/plugin-help'
-import {  MoveResult, ChessPiece, chessHeader, ChessMap, Ichess } from './type'
+import {  MoveResult, ChessPiece, chessHeader, ChessMap, Ichess, ChessMoveString } from './type'
 import { ChessState } from './chess'
 import { resolve } from 'path'
 import { readFileSync } from 'fs'
@@ -16,7 +16,7 @@ declare module 'koishi' {
 const states: Dict<ChessState> = {}
 
 
-export const name = 'chess'
+export const name = 'ichess'
 export const inject = {
   optional: ['puppeteer', 'database'],
 }
@@ -44,7 +44,6 @@ export function apply(ctx: Context) {
     .alias('停止下棋', { options: { stop: true } })
     .alias('跳过回合', { options: { skip: true } })
     .alias('查看棋盘', { options: { show: true } })
-    .option('skip', '跳过回合')
     .option('repent', '悔棋')
     .option('show', '-v, --show, --view  显示棋盘')
     .option('stop', '-e, --stop, --end  停止游戏')
@@ -54,9 +53,9 @@ export function apply(ctx: Context) {
       '输入“国际象棋”开始对应的一局游戏。',
     ].join('\n'))
     .action(async ({ session, options }, position) => {
-      const { cid, userId, channel = { chess: null } } = session
+      const { cid, userId, channel = { ichess: null } } = session
       if (!states[cid]) {
-        if (position || options.stop || options.repent || options.skip) {
+        if (position || options.stop || options.repent) {
           return '没有正在进行的游戏。输入“国际象棋”开始对应的一局游戏。'
         }
 
@@ -68,6 +67,7 @@ export function apply(ctx: Context) {
       }
 
       if (options.stop) {
+        channel.ichess =null
         delete states[cid]
         return '游戏已停止。'
       }
@@ -88,17 +88,12 @@ export function apply(ctx: Context) {
         return '游戏已经开始，无法加入。'
       }
 
-      if (options.skip) {
-        if (!state.next) return '对局尚未开始。'
-        if (state.next !== userId) return '当前不是你的回合。'
-        state.next = state.p1 === userId ? state.p2 : state.p1
-      }
-
       if (options.repent) {
         if (!state.next) return '对局尚未开始。'
         const last = state.p1 === state.next ? state.p2 : state.p1
         if (last !== userId) return '上一手棋不是你所下。'
         state.next = last
+        channel.ichess = state.serial()
         return `${session.username} 进行了悔棋。`
       }
 
@@ -106,18 +101,10 @@ export function apply(ctx: Context) {
 
       if (state.p2 && userId !== state.next) return '当前不是你的回合。'
 
-      let chessPiece: ChessPiece
-
-      const rawChessPiece = position.slice(0, 1).toLowerCase();
-      if (!chessHeader.has(rawChessPiece)) {
-        return "未指定棋子，示例: pe4, pf3"
-      }
-      chessPiece = rawChessPiece as ChessPiece
-      if (position.length !== 3) {
-        return "坐标不合法"
+      if(!/^[pnbrqk][1-8a-h][a-h1-8]$/i.test(position)){
+        return "输入不合法，示例: pe4, pf3"
       }
 
-      console.log(chessPiece)
       const [x, y] = [
         ChessMap[position.slice(1, 2)] ?? parseInt(position.slice(1, 2)),
         ChessMap[position.slice(2, position.length)] ?? parseInt(position.slice(2, position.length))
@@ -137,10 +124,10 @@ export function apply(ctx: Context) {
       }
 
       const value = userId === state.p1 ? 1 : -1
-      let result = state.update(x, y, value, chessPiece)
+      let result = state.update(position as ChessMoveString)
 
 
-      switch (result) {
+      switch (result.res) {
         case MoveResult.illegal:
           state.next = userId
           return '非法落子。'
@@ -148,12 +135,15 @@ export function apply(ctx: Context) {
           message += `下一手依然轮到 ${segment.at(userId)}。`
           break
         case MoveResult.p1Win:
+          channel.ichess =null
           delete states[cid]
           return message + `恭喜 ${segment.at(state.p1)} 获胜！`
         case MoveResult.p2Win:
+          channel.ichess =null
           delete states[cid]
           return message + `恭喜 ${segment.at(state.p2)} 获胜！`
         case MoveResult.draw:
+          channel.ichess =null
           delete states[cid]
           return message + '本局游戏平局。'
         case undefined:
@@ -169,7 +159,7 @@ export function apply(ctx: Context) {
           return `非法落子（${result}）。`
       }
 
-
+      channel.ichess =state.serial()
       return state.draw(session, message, x, y)
     })
 
