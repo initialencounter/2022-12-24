@@ -1,49 +1,54 @@
-import type * as puppeteer from 'koishi-plugin-puppeteer'
-import { Context, Session } from 'koishi'
-import { Chess } from 'chess.js'
-import { ChessMoveString, ChessPiece, Ichess, MoveResult } from './type'
+import { Chess, Move } from 'chess.js'
+import {Ichess, MoveResult, Player } from './type'
 
 
 
 export class ChessState {
-    serial():Ichess {
-        return { p1: this.p1, p2: this.p2, next: this.next, history: this.history, imageMode: this.imageMode }
+    serial(): Ichess {
+        // 序列化
+        return { p1: this.p1, p2: this.p2, next: this.next,pgn: this.board.pgn()}
     }
     p1: string
     p2: string
+    player1: Player
+    player2: Player
     next: string
-    history: string = ""
-    imageMode: boolean
+    pgn: string = ''
     board: Chess
-    update(chessPieces: ChessMoveString):{res:MoveResult,boardString:string}{
-        this.board.move(chessPieces)
-        return {res:MoveResult.draw,boardString:''}
+    update(chessMoveString: string): { res: MoveResult, ascii: string, move?: Move } {
+        try {
+            const move = this.board.move(chessMoveString)
+            const res = this.board.ascii()
+            if (!this.board.isGameOver()) {
+                return { res: MoveResult.next, ascii: res, move }
+            } else {
+                return { res: MoveResult.end, ascii: res, move }
+            }
+        } catch (e) {
+            console.log(e)
+            return { res: MoveResult.illegal, ascii: e }
+        }
+    }
+
+    async undo(){
+        try {
+            this.board.undo()
+            const res = this.board.ascii()
+            return { res: MoveResult.next, ascii: res}
+        } catch (e) {
+            return { res: MoveResult.illegal, ascii: e }
+        }
+
     }
 
     constructor(ichess?: Ichess) {
         if (ichess && typeof ichess === 'object') {
-            Object.assign(this, { ...ichess });
+            Object.assign(this, { ...ichess })
 
         }
-        this.board = new Chess(this.history)
-    }
-
-
-    drawSvg(x?: number, y?: number) {
-
-    }
-
-    drawText(x?: number, y?: number) {
-
-    }
-
-    async draw(session: Session, message = '', x?: number, y?: number) {
-        if (message) message += '\n'
-        if (this.imageMode && session.app.puppeteer) {
-            message += this.drawSvg(x, y)
-        } else {
-            message += this.drawText(x, y)
+        this.board = new Chess()
+        if(this.pgn){
+            this.board.loadPgn(this.pgn)
         }
-        await session.send(message)
     }
 }
