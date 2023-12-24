@@ -1,24 +1,49 @@
 {
   "name": "koishi-plugin-ichess",
-  "description": "真正的国际象棋",
-  "version": "0.0.1",
+  "description": "国际象棋",
+  "version": "1.0.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
     "lib",
     "dist"
   ],
-  "license": "MIT",
-  "scripts": {},
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Recreation/ichess#readme.md",
+  "license": "AGPL-3.0",
   "keywords": [
     "chatbot",
     "koishi",
-    "plugin"
+    "plugin",
+    "chess"
   ],
   "peerDependencies": {
-    "koishi": "4.16.1"
+    "koishi": "4.16.1",
+    "koishi-plugin-puppeteer": "^3.7.3"
   },
   "dependencies": {
     "chess.js": "^1.0.0-beta.7"
+  },
+  "koishi": {
+    "description": "国际象棋",
+    "service": {
+      "optional": [
+        "database"
+      ],
+      "required": [
+        "puppeteer"
+      ]
+    }
   }
 }
