@@ -7,6 +7,9 @@ import { } from '@initencounter/sst'
 import { } from '@koishijs/censor'
 import { } from '@koishijs/plugin-console'
 import { resolve } from 'path';
+import { recall, switch_menu, switch_menu_grid } from './utils'
+import { Dvc } from './type'
+import test from 'node:test';
 const name = 'davinci-003';
 const logger = new Logger(name);
 
@@ -20,30 +23,14 @@ declare module '@koishijs/plugin-console' {
 
 declare module 'koishi' {
   interface Context {
-    dvc: Dvc
+    dvc: DVc
   }
 }
 const version = require('../package.json')["version"]
 const localUsage = readFileSync(resolve(__dirname, "../readme.md")).toString('utf-8').split("更新日志")[0];
-class Dvc extends Service {
-  static inject = {
-    required: ['console'],
-    optional: ['puppeteer', 'vits', 'sst', 'censor']
-  }
-  output_type: string;
-  session_config: Dvc.Msg[];
-  sessions: Dict;
-  personality: Dict;
-  sessions_cmd: string[];
-  aliasMap: any;
-  type: string
-  l6k: boolean;
-  key_number: number;
-  key: string[];
-  retry: Dict;
-  maxRetryTimes: number;
+class DVc extends Dvc {
   constructor(ctx: Context, private config: Dvc.Config) {
-    super(ctx, 'dvc', true)
+    super(ctx)
     this.output_type = this.config.output
     this.type = this.config.type
     this.key_number = 0
@@ -70,7 +57,7 @@ class Dvc extends Service {
 
     ctx.on('send', (session) => {
       if (this.config.recall_all) {
-        this.recall(session, session.messageId, this.config.recall_all_time)
+        recall(session, session.messageId, this.config.recall_all_time)
       }
     })
     try {
@@ -218,10 +205,13 @@ class Dvc extends Service {
         }
         return await this.translate(session as Session, options.lang, prompt)
       })
-    ctx.command('dvc.update', '一键加载400条极品预设')
+    ctx.command('dvc.update', '一键加载400条极品预设', { authority: 4 })
       .alias('dvc.更新预设')
       .option('displace', '-d')
       .action(async ({ session, options }) => {
+        if (this.block(session as Session)) {
+          return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
+        }
         let prompts_latest = (await ctx.http.axios({
           method: 'GET',
           url: 'https://gitee.com/initencunter/ChatPrompts/raw/master/safe',
@@ -243,6 +233,23 @@ class Dvc extends Service {
         logger.info("更新预设成功");
         return session.execute('切换人格');
       })
+
+    ctx.command('dvc.cat', '显示一个对话')
+      .alias('dvc.会话人格')
+      .option('all', '-a --all 显示所有字数')
+      .option('id', '-i <id:number> 指定会话ID，默认为0')
+      .action(async ({ session, options }) => {
+        if (this.block(session as Session)) {
+          return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
+        }
+        const sid = options.id ?? 0
+        let text = (this.sessions[session.userId]?.[sid] ?? this.session_config[0]).content
+        if (!options.all && text.length > 200) {
+          text = text.slice(0, 200) + '...'
+        }
+        return text
+      })
+
     ctx.console.addListener('davinci-003/getproxy', () => {
 
       if (this.config.type == 'gpt3.5') {
@@ -360,7 +367,7 @@ class Dvc extends Service {
     if (this.config.waiting) {
       const msgid = (await session.bot.sendMessage(session.channelId, h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.thinking'), session.guildId))[0]
       if (this.config.recall && (!this.config.recall_all)) {
-        await this.recall(session, msgid, this.config.recall_time)
+        await recall(session, msgid, this.config.recall_time)
       }
     }
     // 文本审核
@@ -786,19 +793,7 @@ class Dvc extends Service {
       return true
     }
   }
-  /**
-   * 撤回消息
-   * @param session 
-   * @param messageId 
-   * @param time 
-   */
-  async recall(session: Session, messageId: string, time: number) {
-    new Promise(resolve => setTimeout(() => {
-      session.bot.deleteMessage(session.channelId, messageId)
-    }
-      , time));
 
-  }
   /**
    * 删除人格逻辑
    * @param session 
@@ -814,7 +809,7 @@ class Dvc extends Service {
     if (nick_name && nick_names.indexOf(nick_name) > -1) {
       return this.personality_rm(session, nick_name)
     }
-    const input = await this.switch_menu_grid(session, nick_names, '人格')
+    const input = await switch_menu_grid(session, nick_names, '人格')
     if (!input) {
       return session.text('commands.dvc.messages.menu-err')
     }
@@ -851,107 +846,13 @@ class Dvc extends Service {
       this.output_type = type
       return session.text('commands.dvc.messages.switch-success', [type])
     }
-    const input = await this.switch_menu(session, type_arr, '输出模式')
+    const input = await switch_menu(session, type_arr, '输出模式')
     if (!input) {
       return session.text('commands.dvc.messages.menu-err')
     }
     this.output_type = input
     return session.text('commands.dvc.messages.switch-success', ['输出模式', input])
 
-  }
-  /**
-   * 发送选择菜单
-   * @param session 
-   * @param type_arr 
-   * @param name 
-   * @returns 
-   */
-  async switch_menu(session: Session, type_arr: string[], name: string): Promise<string> {
-    let type_str: string = '\n' + name+'\n'
-    let count = 0
-    const result = segment('figure')
-    type_arr.forEach((i, id) => {
-      if (count > 50) {
-        count = 0
-        result.children.push(
-          segment('message', {
-            userId: '1114039391',
-            nickname: 'AI',
-          }, type_str))
-        type_str = ''
-      }
-      type_str += String(id + 1) + ' ' + i + '\n'
-      count++
-    })
-    result.children.push(
-      segment('message', {
-        userId: '1114039391',
-        nickname: 'AI',
-      }, type_str))
-    await session.send(result)
-    const input = await session.prompt()
-    if (!input || Number.isNaN(+input)) return ''
-    const index: number = parseInt(input) - 1
-    if ((index < 0) || (index > type_arr.length - 1)) return ''
-    return type_arr[index]
-  }
-  /**
-   * grid布局
-   * @param session 
-   * @param type_arr 
-   * @param name 
-   * @returns 
-   */
-  async switch_menu_grid(session: Session, type_arr: string[], name: string): Promise<string> {
-    let type_str: string = '\n' + name+'\n\n'
-    let count = 0
-    function getActualLength(str) {
-      let actualLength = 0;
-    
-      for (let i = 0; i < str.length; i++) {
-        const charCode = str.charCodeAt(i);
-    
-        // 如果字符编码在全角范围内，长度加2，否则加1
-        if ((charCode >= 0xff01 && charCode <= 0xff5e) || (charCode >= 0x3000 && charCode <= 0x303f)) {
-          actualLength += 2;
-        } else {
-          actualLength += 1;
-        }
-      }
-    
-      return actualLength;
-    }
-    function multiplyStrings(str, n) {
-      return Array.from({ length: n }, () => str).join('');
-    }
-    const result = segment('figure')
-    for (let id = 0; id < type_arr.length; id += 2) {
-      if (count > 50) {
-        count = 0
-        result.children.push(
-          segment('message', {
-            userId: '1114039391',
-            nickname: 'AI',
-          }, type_str))
-        type_str = ''
-      }
-      const firstLen = getActualLength(String(id + 1) + ' ' + type_arr[id])
-      const spaceString = multiplyStrings('   ', 20 - firstLen)
-      type_str += String(id + 1) + ' ' + type_arr[id] + spaceString + String(id + 2) + ' ' + type_arr[id + 1] + '\n'
-      count++
-    }
-
-    result.children.push(
-      segment('message', {
-        userId: '1114039391',
-        nickname: 'AI',
-      }, type_str))
-    await session.send(result)
-    const input = await session.prompt()
-    if (!input || Number.isNaN(+input)) return ''
-    const index: number = parseInt(input) - 1
-    if ((index < 0) || (index > type_arr.length - 1)) return ''
-    return type_arr[index]
   }
 
 
@@ -1100,7 +1001,7 @@ class Dvc extends Service {
       this.type = type
       return session.text('commands.dvc.messages.switch-success', ['引擎', type])
     }
-    const input = await this.switch_menu(session, type_arr, '引擎')
+    const input = await switch_menu(session, type_arr, '引擎')
     if (!input) {
       return session.text('commands.dvc.messages.menu-err')
     }
@@ -1121,7 +1022,7 @@ class Dvc extends Service {
     if (prompt && nick_names.indexOf(prompt) > -1) {
       return this.set_personality(session, prompt)
     }
-    const input = await this.switch_menu_grid(session, nick_names, '人格')
+    const input = await switch_menu_grid(session, nick_names, '人格')
     if (!input) {
       return session.text('commands.dvc.messages.menu-err')
     }
@@ -1204,138 +1105,10 @@ class Dvc extends Service {
   }
 
 }
+namespace DVc {
 
-namespace Dvc {
-  export interface Personality {
-    nick_name: string
-    descirption: string
-  }
-  export const Personality: Schema<Personality> = Schema.object({
-    nick_name: Schema.string().description('人格昵称').required(),
-    descirption: Schema.string().description('人格描述').required(),
-  })
-  export interface Msg {
-    role: string
-    content: string
-  }
-  export interface Payload {
-    engine: string
-    prompt: string
-    temperature: number
-    max_tokens?: number
-    top_p: number
-    frequency_penalty: number
-    presence_penalty: number
-  }
-  export interface Config {
-    type: string
-    key: string[]
-    appointModel: string
-
-    preset_pro: boolean
-    single_session: boolean
-    waiting: boolean
-    whisper: boolean
-    nickwake: boolean
-
-    recall: boolean
-    recall_time: number
-    recall_all: boolean
-    recall_all_time: number
-
-    lang: string
-    selfid: string
-
-    max_tokens: number
-    temperature: number
-    authority: number
-    superusr: string[]
-    usage?: number
-    minInterval?: number
-
-    alias: string[]
-    resolution?: string
-    output: string
-    stream_output: boolean
-
-    if_private: boolean
-    if_at: boolean
-    randnum: number
-    proxy_reverse: string
-    proxy_reverse4: string
-
-    blockuser: string[]
-    blockchannel: string[]
-
-    maxRetryTimes: number
-
-
-  }
-  export const Config: Schema<Config> = Schema.intersect([
-    Schema.object({
-      type: Schema.union([
-        Schema.const('gpt3.5-js' as const).description('GPT-3.5 推荐模式'),
-        Schema.const('gpt3.5-unit' as const).description('GPT-3.5 超级节俭模式'),
-        Schema.const('gpt4' as const).description('GPT-4'),
-        Schema.const('gpt4-unit' as const).description('GPT-4 超级节俭模式')
-      ] as const).default('gpt3.5-js').description('引擎选择'),
-      key: Schema.union([
-        Schema.array(String).role('secret'),
-        Schema.transform(String, value => [value]),
-      ]).default([]).role('secret').description('api_key'),
-      appointModel: Schema.string().default("gpt-3.5-turbo").description("模型, 选 GPT4 时需要将模型切换为 gpt4")
-    }).description('基础设置'),
-
-    Schema.object({
-      preset_pro: Schema.boolean().default(false).description('所有人共用一个人设'),
-      single_session: Schema.boolean().default(false).description('所有人共用一个会话'),
-      whisper: Schema.boolean().default(false).description('语音输入功能,需要加载sst服务,启用插件tc-sst即可实现'),
-      waiting: Schema.boolean().default(true).description('消息反馈，会发送思考中...'),
-      nickwake: Schema.boolean().default(false).description('人格昵称唤醒'),
-
-      recall: Schema.boolean().default(true).description('一段时间后会撤回“思考中”'),
-      recall_time: Schema.number().default(5000).description('撤回的时间'),
-      recall_all: Schema.boolean().default(false).description('一段时间后会撤回所有消息'),
-      recall_all_time: Schema.number().default(5000).description('撤回所有消息的时间'),
-
-      lang: Schema.string().description('要翻译的目标语言').default('英文'),
-      selfid: Schema.string().description('聊天记录头像的QQ号').default('3118087750'),
-
-      max_tokens: Schema.number().description('请求长度,否则报错').default(3000),
-      temperature: Schema.number().role('slider').min(0).max(1).step(0.01).default(0).description('创造力'),
-      authority: Schema.number().role('slider').min(0).max(5).step(1).description('允许使用的最低权限').default(1),
-      superusr: Schema.array(String).default(['3118087750']).description('可以无限调用的用户'),
-      usage: Schema.number().description('每人每日可用次数').default(100),
-      minInterval: Schema.number().default(5000).description('连续调用的最小间隔,单位毫秒。'),
-
-      alias: Schema.array(String).default(['ai', 'alowel']).description('触发命令;别名'),
-      resolution: Schema.union([
-        Schema.const('256x256').description('256x256'),
-        Schema.const('512x512').description('512x512'),
-        Schema.const('1024x1024').description('1024x1024')
-      ]).default('1024x1024').description('生成图像的默认比例'),
-      output: Schema.union([
-        Schema.const('minimal').description('只发送文字消息'),
-        Schema.const('quote').description('引用消息'),
-        Schema.const('figure').description('以聊天记录形式发送'),
-        Schema.const('image').description('将对话转成图片'),
-        Schema.const('voice').description('发送语音,需要安装ffmpeg')
-      ]).description('输出方式。').default('minimal'),
-      stream_output: Schema.boolean().default(false).description('流式输出'),
-
-      if_private: Schema.boolean().default(true).description('开启后私聊可触发ai'),
-      if_at: Schema.boolean().default(true).description('开启后被提及(at/引用)可触发ai'),
-      randnum: Schema.number().role('slider').min(0).max(1).step(0.01).default(0).description('随机回复概率，如需关闭可设置为0'),
-      proxy_reverse: Schema.string().role('link').default('https://gpt.lucent.blog').description('GPT3反向代理地址'),
-      proxy_reverse4: Schema.string().role('link').default('https://chatgpt.nextweb.fun/api/openai').description('GPT4反向代理地址'),
-      maxRetryTimes: Schema.number().default(30).description('报错后最大重试次数')
-    }).description('进阶设置'),
-
-    Schema.object({
-      blockuser: Schema.array(String).default([]).description('屏蔽的用户'),
-      blockchannel: Schema.array(String).default([]).description('屏蔽的频道')
-    }).description('过滤器'),
-  ])
 }
 
-export default Dvc
+
+
+export default DVc
