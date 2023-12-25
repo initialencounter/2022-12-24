@@ -77,7 +77,7 @@ class Dvc extends Service {
       this.personality = JSON.parse(fs.readFileSync('./personality.json', 'utf-8'));
     } catch (e) {
       this.personality = { "预设人格": [{ "role": "system", "content": "你是我的全能AI助理" }] }
-      fs.writeFileSync('./personality.json', JSON.stringify(this.personality));
+      fs.writeFileSync('./personality.json', JSON.stringify(this.personality, null, 2));
     }
     this.session_config = Object.values(this.personality)[0]
     this.sessions_cmd = Object.keys(this.personality)
@@ -135,9 +135,10 @@ class Dvc extends Service {
       authority: 1
     }).action(({ session }, prompt) => {
       if (this.block(session as Session)) {
-        session.send("添加人格失败？看这里！\n https://forum.koishi.xyz/t/topic/2349/4")
         return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
-      } return this.add_personality(session as Session, prompt)
+      }
+      session.send("添加人格失败？看这里！\n https://forum.koishi.xyz/t/topic/2349/4")
+      return this.add_personality(session as Session, prompt)
     })
 
 
@@ -238,7 +239,7 @@ class Dvc extends Service {
             this.personality[i] = prompts_latest[i];
           }
         }
-        fs.writeFileSync('./personality.json', JSON.stringify(this.personality));
+        fs.writeFileSync('./personality.json', JSON.stringify(this.personality, null, 2));
         logger.info("更新预设成功");
         return session.execute('切换人格');
       })
@@ -832,7 +833,7 @@ class Dvc extends Service {
     this.sessions_cmd.splice(index, 1)
     delete this.personality[nick_name]
     this.sessions[session.userId] = [{ "role": "system", "content": "你是我的全能AI助理" }]
-    fs.writeFileSync('./personality.json', JSON.stringify(this.personality))
+    fs.writeFileSync('./personality.json', JSON.stringify(this.personality, null, 2))
     return '人格删除成功'
   }
 
@@ -1168,7 +1169,7 @@ class Dvc extends Service {
     }
     this.sessions_cmd.push(nick_name)
     this.personality[nick_name] = personality_session
-    fs.writeFileSync('./personality.json', JSON.stringify(this.personality))
+    fs.writeFileSync('./personality.json', JSON.stringify(this.personality, null, 2))
     return this.set_personality(session, nick_name)
   }
 
