@@ -25,7 +25,6 @@ export class ChessState {
                 return { res: MoveResult.end, ascii: res, move }
             }
         } catch (e) {
-            console.log(e)
             return { res: MoveResult.illegal, ascii: e }
         }
     }

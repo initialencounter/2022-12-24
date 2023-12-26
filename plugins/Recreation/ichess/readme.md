@@ -19,8 +19,10 @@
 
 - [vipchess](https://www.bilibili.com/video/BV1S7411M7vy)
 - 棋盘主题参考自 [lichess](https://lichess.org/)
-- 加群和我下棋：399899914
+- 加群和我下棋：582903256
 
 ## 更新日志
 
-- 0.0.1
+- v1.0.1
+    - 修复棋子不居中
+    - 新增对局提醒

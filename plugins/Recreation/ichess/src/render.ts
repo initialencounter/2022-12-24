@@ -3,6 +3,7 @@ import { } from 'koishi-plugin-puppeteer'
 import { Context } from 'koishi'
 import { ChessState } from './chess'
 import { MoveResult } from './type'
+import { writeFileSync } from 'fs'
 
 const ChessMapR = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 function drawHTML(chessboard: {
@@ -44,7 +45,7 @@ function drawHTML(chessboard: {
     }
 
     return `<!DOCTYPE html>
-    <html lang="zh-CN" style="width: 512px;height: 500px">
+    <html lang="zh-CN" style="width: 462px;height: 450px">
     
     <head>
         <meta charset="UTF-8">
@@ -99,13 +100,13 @@ function drawHTML(chessboard: {
             }
             .chessboard {
                 display: grid;
-                grid-template-columns: repeat(10, 50px);
-                grid-template-rows: repeat(10, 50px);
+                grid-template-columns: repeat(10, 45px);
+                grid-template-rows: repeat(10, 45px);
             }
     
             .square {
-                width: 50px;
-                height: 50px;
+                width: 45px;
+                height: 45px;
                 display: flex;
                 align-items: center;
                 justify-content: center;

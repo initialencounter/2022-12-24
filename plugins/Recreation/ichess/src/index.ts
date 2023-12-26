@@ -25,16 +25,16 @@ export const inject = {
 }
 
 export interface Config {
-  prefix:string
- }
+  prefix: string
+}
 
 export const Config: Schema<Config> = Schema.object({
-  prefix:Schema.string().default('i').description('棋谱前缀，【创建/加入对局】 不会受影响')
+  prefix: Schema.string().default('i').description('棋谱前缀，【创建对局】 不会受影响')
 })
 
 export const usage = readFileSync(resolve(__dirname, '../readme.md')).toString('utf-8').split('更新日志')[0]
 
-export function apply(ctx: Context,config:Config) {
+export function apply(ctx: Context, config: Config) {
   ctx.model.extend('channel', {
     // do not use shorthand because the initial value is `null`
     ichess: { type: 'json' },
@@ -43,10 +43,10 @@ export function apply(ctx: Context,config:Config) {
   ctx = ctx.guild()
 
   ctx.middleware(async (session, next) => {
-    let position: string = session.content.replace(config.prefix,'')
+    let position: string = session.content.replace(config.prefix, '')
     if (session.content.startsWith(config.prefix)) {
-      if (position?.length>1) {
-        session.execute('ichess '+position)
+      if (position?.length > 1) {
+        session.execute('ichess ' + position)
         return
       }
     }
@@ -63,7 +63,7 @@ export function apply(ctx: Context,config:Config) {
     .option('repent', '悔棋')
     .option('show', '-v, --show, --view  显示棋盘')
     .option('stop', '-e, --stop, --end  停止游戏')
-    .option('pgn','-p 显示 pgn')
+    .option('pgn', '-p 显示 pgn')
     .usage([
       '输入“国际象棋”开始对应的一局游戏。',
     ].join('\n'))
@@ -78,7 +78,7 @@ export function apply(ctx: Context,config:Config) {
         state.p1 = userId
         state.player1 = { id: userId, name: session.username, avatar: session?.event?.member?.avatar ?? '' }
         states[cid] = state
-        session.send(`${session.username} 发起了国际象棋, 输入指令 chess 加入对局！`)
+        session.send(`${session.username} 发起了国际象棋, 输入指令 ichess 加入对局！`)
         const boardImg = await drawBoard(ctx, state, { res: 1 })
         return boardImg
       }
@@ -113,7 +113,7 @@ export function apply(ctx: Context,config:Config) {
           return `${session.username} 进行了悔棋。`
         }
       }
-      if(options.pgn){
+      if (options.pgn) {
         return state.board.pgn()
       }
       if (!position && !state.p2) {
@@ -160,6 +160,7 @@ export function apply(ctx: Context,config:Config) {
           message += `下一手轮到 ${segment.at(state.next) ?? state.next}。`
       }
       channel.ichess = state.serial()
+      session.send(message)
       return await drawBoard(ctx, state, result)
 
     })
