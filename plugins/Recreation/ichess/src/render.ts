@@ -3,7 +3,6 @@ import { } from 'koishi-plugin-puppeteer'
 import { Context } from 'koishi'
 import { ChessState } from './chess'
 import { MoveResult } from './type'
-import { writeFileSync } from 'fs'
 
 const ChessMapR = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 function drawHTML(chessboard: {
