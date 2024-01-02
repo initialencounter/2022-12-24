@@ -9,38 +9,71 @@ function drawHTML(chessboard: {
     square: Square;
     type: PieceSymbol;
     color: Color;
-}[][], from: string, to: string) {
+}[][], from: string, to: string, r: boolean = false) {
     // 遍历每一行
     let innerHTMLChess = ''
-    for (let i = 1; i < 9; i++) {
-        // 遍历每一行中的每一个方格
-        innerHTMLChess += `<div class="index-r square">${9 - i}</div>`
-        for (let j = 1; j < 9; j++) {
-            const square_className1 = `square ${(i + j) % 2 === 0 ? 'white' : 'black'}`;
-            const pieceObj = chessboard[i - 1]?.[j - 1]
-            let piece = ''
-            let square_className = square_className1
-            const square = ChessMapR[j - 1] + (9 - i)
-            if (square === from) {
-                //console.log(square, 'from',i,j)
-                square_className = 'square yellow'
-            }
-            if (square === to) {
-                //console.log(square,'to',i,j)
-                square_className = 'square yellow'
-            }
-            if (!pieceObj) {
-                piece = `<div class="${square_className}"></div>`
-            }
+    if (r) {
+        for (let i = 9; i > 1; i--) {
+            // 遍历每一行中的每一个方格
+            innerHTMLChess += `<div class="index-r square">${9 - i}</div>`
+            for (let j = 9; j > 1; j--) {
+                const square_className1 = `square ${(i + j) % 2 === 0 ? 'white' : 'black'}`;
+                const pieceObj = chessboard[i - 2]?.[j - 2]
+                let piece = ''
+                let square_className = square_className1
+                const square = ChessMapR[j - 2] + (9 - 2)
+                if (square === from) {
+                    //console.log(square, 'from',i,j)
+                    square_className = 'square yellow'
+                }
+                if (square === to) {
+                    //console.log(square,'to',i,j)
+                    square_className = 'square yellow'
+                }
+                if (!pieceObj) {
+                    piece = `<div class="${square_className}"></div>`
+                }
 
-            else {
-                piece = `<div class="${pieceObj.color}-${pieceObj.type} ${square_className}" ></div>`
+                else {
+                    piece = `<div class="${pieceObj.color}-${pieceObj.type} ${square_className}" ></div>`
+                }
+                // 如果方格中有棋子，将SVG添加到方格中
+                innerHTMLChess += piece
             }
-            // 如果方格中有棋子，将SVG添加到方格中
-            innerHTMLChess += piece
+            innerHTMLChess += `<div class="index-r square"></div>`
+
         }
-        innerHTMLChess += `<div class="index-r square"></div>`
+    } else {
+        for (let i = 1; i < 9; i++) {
+            // 遍历每一行中的每一个方格
+            innerHTMLChess += `<div class="index-r square">${9 - i}</div>`
+            for (let j = 1; j < 9; j++) {
+                const square_className1 = `square ${(i + j) % 2 === 0 ? 'white' : 'black'}`;
+                const pieceObj = chessboard[i - 1]?.[j - 1]
+                let piece = ''
+                let square_className = square_className1
+                const square = ChessMapR[j - 1] + (9 - i)
+                if (square === from) {
+                    //console.log(square, 'from',i,j)
+                    square_className = 'square yellow'
+                }
+                if (square === to) {
+                    //console.log(square,'to',i,j)
+                    square_className = 'square yellow'
+                }
+                if (!pieceObj) {
+                    piece = `<div class="${square_className}"></div>`
+                }
 
+                else {
+                    piece = `<div class="${pieceObj.color}-${pieceObj.type} ${square_className}" ></div>`
+                }
+                // 如果方格中有棋子，将SVG添加到方格中
+                innerHTMLChess += piece
+            }
+            innerHTMLChess += `<div class="index-r square"></div>`
+
+        }
     }
 
     return `<!DOCTYPE html>
@@ -162,13 +195,17 @@ function drawHTML(chessboard: {
 }
 
 
-export async function drawBoard(ctx: Context, state: ChessState, result: { res: MoveResult, move?: Move }) {
+export async function drawBoard(ctx: Context, state: ChessState, result: { res: MoveResult, move?: Move },dor:boolean=true) {
     let html: string
+    let r:boolean
+    if(state.next===state.p2&&dor){
+        r = true
+    }
     if (!result.move) {
-        html = drawHTML(state.board.board(), '', '')
+        html = drawHTML(state.board.board(), '', '',r)
     }
     else {
-        html = drawHTML(state.board.board(), result.move.from, result.move.to)
+        html = drawHTML(state.board.board(), result.move.from, result.move.to,r)
     }
     return await ctx.puppeteer.render(html)
 }
