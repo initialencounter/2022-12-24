@@ -1,7 +1,7 @@
 import { Context, segment, Dict, Schema } from 'koishi'
 import { } from 'koishi-plugin-puppeteer'
 import { } from '@koishijs/plugin-help'
-import { MoveResult, Ichess } from './type'
+import { MoveResult, Ichess, Theme } from './type'
 import { ChessState } from './chess'
 import { resolve } from 'path'
 import { readFileSync } from 'fs'
@@ -26,10 +26,21 @@ export const inject = {
 
 export interface Config {
   prefix: string
+  reserve_board: boolean
+  theme: Theme
 }
+export const ThemeConfig: Schema<Theme> = Schema.object({
+  black_grid: Schema.string().role("color").default("#f0d9b5").description("白色格字的颜色"),
+  white_grid: Schema.string().role("color").default("#b58863").description("黑色格字的颜色"),
+  hight_light: Schema.string().role("color").default("#85d38a").description("高亮的颜色"),
+  white_chess: Schema.string().role("color").default("#fff").description("白棋的颜色"),
+  black_chess: Schema.string().role("color").default("#000").description("黑棋的颜色"),
+}).description("主题设置")
 
 export const Config: Schema<Config> = Schema.object({
-  prefix: Schema.string().default('i').description('棋谱前缀，【创建对局】 不会受影响')
+  prefix: Schema.string().default('i').description('棋谱前缀，【创建对局】 不会受影响'),
+  reserve_board: Schema.boolean().default(true).description("视角优化，翻转棋盘"),
+  theme: ThemeConfig
 })
 
 export const usage = readFileSync(resolve(__dirname, '../readme.md')).toString('utf-8').split('更新日志')[0]
@@ -45,7 +56,11 @@ export function apply(ctx: Context, config: Config) {
   ctx.middleware(async (session, next) => {
     let position: string = session.content.replace(config.prefix, '')
     if (session.content.startsWith(config.prefix)) {
-      if (position?.length > 1) {
+      const { cid, userId, channel = { ichess: null } } = session
+      if (!states[cid]) {
+        return next()
+      }
+      if ((position?.length > 1) && (states[cid]?.next === userId)) {
         session.execute('ichess ' + position)
         return
       }
@@ -79,7 +94,7 @@ export function apply(ctx: Context, config: Config) {
         state.player1 = { id: userId, name: session.username, avatar: session?.event?.member?.avatar ?? '' }
         states[cid] = state
         session.send(`${session.username} 发起了国际象棋, 输入指令 ichess 加入对局！`)
-        const boardImg = await drawBoard(ctx, state, { res: 1 })
+        const boardImg = await drawBoard(ctx, state, { res: 1 }, config)
         return boardImg
       }
 
@@ -92,7 +107,7 @@ export function apply(ctx: Context, config: Config) {
       const state = states[cid]
 
       if (options.show) {
-        const boardImg = await drawBoard(ctx, state, { res: 1 })
+        const boardImg = await drawBoard(ctx, state, { res: 1 }, config)
         return boardImg
       }
 
@@ -119,7 +134,7 @@ export function apply(ctx: Context, config: Config) {
       if (!position && !state.p2) {
         if (userId == state.p1) {
           session.send(`${session.username} 发起了国际象棋, 输入指令 chess 加入对局！`)
-          const boardImg = await drawBoard(ctx, state, { res: 1 })
+          const boardImg = await drawBoard(ctx, state, { res: 1 }, config)
           return boardImg
         }
         state.p2 = userId
@@ -161,7 +176,7 @@ export function apply(ctx: Context, config: Config) {
       }
       channel.ichess = state.serial()
       session.send(message)
-      return await drawBoard(ctx, state, result)
+      return await drawBoard(ctx, state, result, config)
 
     })
 
