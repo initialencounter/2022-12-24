@@ -15,7 +15,7 @@ function drawHTML(chessboard: {
     if (r) {
         for (let i = 9; i > 1; i--) {
             // 遍历每一行中的每一个方格
-            innerHTMLChess += `<div class="index-r square">${9 - i}</div>`
+            innerHTMLChess += `<div class="index-r square">${9-i}</div>`
             for (let j = 9; j > 1; j--) {
                 const square_className1 = `square ${(i + j) % 2 === 0 ? 'white' : 'black'}`;
                 const pieceObj = chessboard[i - 2]?.[j - 2]
@@ -43,6 +43,16 @@ function drawHTML(chessboard: {
             innerHTMLChess += `<div class="index-r square"></div>`
 
         }
+        innerHTMLChess += `<div class="index-c square"></div>
+        <div class="index-c square">h</div>
+        <div class="index-c square">g</div>
+        <div class="index-c square">f</div>
+        <div class="index-c square">e</div>
+        <div class="index-c square">d</div>
+        <div class="index-c square">c</div>
+        <div class="index-c square">b</div>
+        <div class="index-c square">a</div>
+        <div class="index-c square"></div>`
     } else {
         for (let i = 1; i < 9; i++) {
             // 遍历每一行中的每一个方格
@@ -74,6 +84,16 @@ function drawHTML(chessboard: {
             innerHTMLChess += `<div class="index-r square"></div>`
 
         }
+        innerHTMLChess += `<div class="index-c square"></div>
+        <div class="index-c square">a</div>
+        <div class="index-c square">b</div>
+        <div class="index-c square">c</div>
+        <div class="index-c square">d</div>
+        <div class="index-c square">e</div>
+        <div class="index-c square">f</div>
+        <div class="index-c square">g</div>
+        <div class="index-c square">h</div>
+        <div class="index-c square"></div>`
     }
 
     return `<!DOCTYPE html>
@@ -178,16 +198,6 @@ function drawHTML(chessboard: {
             <div class="index-c square"></div>
             <div class="index-c square"></div>
             ${innerHTMLChess}
-            <div class="index-c square"></div>
-            <div class="index-c square">a</div>
-            <div class="index-c square">b</div>
-            <div class="index-c square">c</div>
-            <div class="index-c square">d</div>
-            <div class="index-c square">e</div>
-            <div class="index-c square">f</div>
-            <div class="index-c square">g</div>
-            <div class="index-c square">h</div>
-            <div class="index-c square"></div>
         </div>
     </body>
     
