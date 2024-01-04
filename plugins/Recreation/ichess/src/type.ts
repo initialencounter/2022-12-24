@@ -52,3 +52,11 @@ export interface Player {
   avatar?:string,
   timeUsage?:string
 }
+
+export interface Theme {
+  black_grid: string
+  white_grid: string
+  hight_light: string
+  white_chess: string
+  black_chess: string
+}
