@@ -15,13 +15,14 @@ function drawHTML(chessboard: {
     if (r) {
         for (let i = 9; i > 1; i--) {
             // 遍历每一行中的每一个方格
-            innerHTMLChess += `<div class="index-r square">${9-i}</div>`
+            innerHTMLChess += `<div class="index-r square">${10 - i}</div>`
             for (let j = 9; j > 1; j--) {
                 const square_className1 = `square ${(i + j) % 2 === 0 ? 'white' : 'black'}`;
                 const pieceObj = chessboard[i - 2]?.[j - 2]
                 let piece = ''
                 let square_className = square_className1
-                const square = ChessMapR[j - 2] + (9 - 2)
+                const square = ChessMapR[j-2] + (10-i)
+                console.log(square,ChessMapR[9 - j])
                 if (square === from) {
                     //console.log(square, 'from',i,j)
                     square_className = 'square yellow'
@@ -205,17 +206,17 @@ function drawHTML(chessboard: {
 }
 
 
-export async function drawBoard(ctx: Context, state: ChessState, result: { res: MoveResult, move?: Move },dor:boolean=true) {
+export async function drawBoard(ctx: Context, state: ChessState, result: { res: MoveResult, move?: Move }, dor: boolean = true) {
     let html: string
-    let r:boolean
-    if(state.next===state.p2&&dor){
+    let r: boolean
+    if (state.next === state.p2 && dor) {
         r = true
     }
     if (!result.move) {
-        html = drawHTML(state.board.board(), '', '',r)
+        html = drawHTML(state.board.board(), '', '')
     }
     else {
-        html = drawHTML(state.board.board(), result.move.from, result.move.to,r)
+        html = drawHTML(state.board.board(), result.move.from, result.move.to, r)
     }
     return await ctx.puppeteer.render(html)
 }
