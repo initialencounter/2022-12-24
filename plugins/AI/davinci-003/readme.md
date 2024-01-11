@@ -1,11 +1,17 @@
-# koishi-plugin-davinci-003
+# davinci-003
 
-> 使用前在 <a style="color:blue" href="https://beta.openai.com/account/api-keys">beta.openai.com</a> 中获取api-key<br>
-或者前往<a style="color:blue" href="https://peiqi.shop/">chatgptanywhere.com</a> 中获取api-key<br>
-如果 api-key 来源是 chatanywhere.com ,需将反代地址修改为https://api.chatanywhere.com.cn<br>
-对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-davinci-003 概不负责。<br>
-如果有更多文本内容想要修改，可以在<a style="color:blue" href="/locales">本地化</a>中修改 zh 内容</br>
+使用前在[beta.openai.com](https://beta.openai.com/account/api-keys) 中获取api-key
+
+或者前往[chatgptanywhere.com](https://peiqi.shop)中获取api-key
+
+如果 api-key 来源是 chatanywhere.com ,需将反代地址修改为 https://api.chatanywhere.com.cn
+
+对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-davinci-003 概不负责。
+
+如果有更多文本内容想要修改，可以在 本地化 中修改 zh 内容
+
 # 使用方法
+
 ### 指令如下：
 | 功能 | 指令 |
 |  ----  | ----  |
@@ -22,6 +28,7 @@
   - -o 输出方式
 
 ## 设置多个 key 的方法
+
 1. 直接修改
 2. 在配置文件修改
   打开koishi.yml  (可以使用 explorer 插件)
@@ -33,12 +40,20 @@
         - sk-ItGRonJPTa6sp9QYhN*
         - sk-sgadtiasyn2ouoi1n*
     ```
+
 ## 添加人格的方法
+
+* 使用 [`explorer`](https://koishi.chat/zh-CN/plugins/console/explorer.html) 插件直接编辑, [*点我*](../files/personality.json) 跳转到编译页面
+    - 编辑后记得保存哟
 * 在聊天中发送“dvc.添加人格”可以添加并自动保存人格
 * [添加人格教程](https://forum.koishi.xyz/t/topic/2349/4)
+* 使用 `dvc.update` 指令(需要4级权限)，该指令会加载 [*ChatPrompts*](https://github.com/initialencounter/ChatPrompts) 里的所有人格
+    - 分享你的人格！，可以到 [*ChatPrompts/Pulls*](https://github.com/initialencounter/ChatPrompts//pulls) 创建一个 Pr
 
 # 问题反馈
-QQ群：399899914<br>
+
+QQ群：399899914
+
 小伙伴如果遇到问题或者有新的想法，欢迎到[这里](https://github.com/initialencounter/mykoishi/issues)反馈哦~
 
 
@@ -274,4 +289,5 @@ QQ群：399899914<br>
 
 
 # 感谢
-反代默认使用的是<a class="panel-cover__title panel-title"><a href="https://github.com/Yidadaa/ChatGPT-Next-Web">Yidadaa佬</a>的，感谢！
+
+反代默认使用的是[Yidadaa佬](https://github.com/Yidadaa/ChatGPT-Next-Web)的，感谢！
