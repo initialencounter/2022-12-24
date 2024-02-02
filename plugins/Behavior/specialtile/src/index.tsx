@@ -1,5 +1,4 @@
 import { Context, Logger, Schema, Session, Dict } from 'koishi'
-import { } from 'koishi-plugin-adapter-onebot'
 
 import fs from "fs"
 export const name = 'specialtitle'
@@ -130,41 +129,30 @@ class Special {
       fields.add('authority')
       fields.add('id')
     })
-    ctx.command('设置管理 [nickname:string]', '通过QQ号设置管理员', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
-      if (session.platform !== 'onebot') {
-        return
-      }
+    ctx.command('kick').action(async ({session})=>{
+      const list = await session.bot.getGuildMemberList(session.guildId)
+      console.dir(list)
+    })
+    ctx.command('设置管理 [nickname:string]', '通过userId设置管理员', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
       session.bot.internal?.setGroupAdmin(session.guildId, args[0], true)
       return "嗯！已经设置了"
     })
-    ctx.command('取消管理 [nickname:string]', '通过QQ号取消管理员', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
-      if (session.platform !== 'onebot') {
-        return
-      }
+    ctx.command('取消管理 [nickname:string]', '通过userId取消管理员', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
       session.bot.internal?.setGroupAdmin(session.guildId, args[0], false)
       return "嗯！已经取消了"
     })
     ctx.command('修改昵称 [uid:string] [nickname:string]', '修改群友昵称', { checkArgCount: true, authority: 1 }).action(async ({ session }, ...args) => {
-      if (session.platform !== 'onebot') {
-        return
-      }
       session.bot.internal?.setGroupCard(session.guildId, args[0], args[1])
       return "嗯！已经修改了"
     })
     ctx.command('修改头衔 [uid:string] [nickname:string]', '修改群友头衔', { checkArgCount: true, authority: 1 }).action(async ({ session }, ...args) => {
-      if (session.platform !== 'onebot') {
-        return
-      }
       session.bot.internal?.setGroupSpecialTitle(session.guildId, args[0], args[1])
       return "嗯！已经修改了"
     })
     ctx.command('口球大礼包').action(async ({ session }) => {
-      if (session.platform !== 'onebot') {
-        return
-      }
-      const dt = Math.floor((Math.random() * 300))
-      await this.add_score(session.channelId, session.userId, dt)
-      session.bot.internal?.setGroupBan(session.channelId, session.userId, dt)
+      const dt = Math.floor((Math.random() * 300000))
+      await this.add_score(session.guildId, session.userId, dt)
+      await session.bot.muteGuildMember(session.guildId, session.userId, dt)
       return "嗯！"
     })
     ctx.command('封神榜', '谁才是本群的运气王').action(async ({ session }) => {
@@ -200,17 +188,14 @@ class Special {
       if (!session.content.startsWith('捆绑')) {
         return next()
       }
-      if (session.platform !== 'onebot') {
-        return next()
-      }
       const target = session.content.match(/(?<=<at id=")([\s\S]*?)(?="\/>)/g)
       if (!target) {
         return next()
       }
       for (var i of target) {
-        const dt = Math.floor((Math.random() * 60))
+        const dt = Math.floor((Math.random() * 60000))
         await this.add_score(session.channelId, i, dt)
-        session.bot.internal?.setGroupBan(session.channelId, i, dt)
+        session.bot.muteGuildMember(session.channelId, i, dt)
       }
       return next()
 
@@ -229,20 +214,17 @@ class Special {
       for (var i of target) {
         await this.add_score(session.channelId, i, 0 - (this.map[i + session.channelId] ? this.map[i + session.channelId] : 0))
         this.map[i + session.channelId] = 0
-        session.bot.internal?.setGroupBan(session.channelId, i, 0)
+        session.bot.muteGuildMember(session.channelId, i, 0)
       }
       return next()
     })
     ctx.middleware(async (session, next) => {
-      if (session.platform !== 'onebot') {
-        return next()
-      }
       const session_auth: Session<"authority"> = session as Session<"authority">
       const authority = session_auth.user.authority
       if (authority == 0) {
-        const dt = Math.floor((Math.random() * 60))
+        const dt = Math.floor((Math.random() * 60000))
         await this.add_score(session.channelId, session.userId, dt)
-        session.bot.internal?.setGroupBan(session.channelId, session.userId, dt)
+        session.bot.muteGuildMember(session.channelId, session.userId, dt)
       }
       return next()
     })
