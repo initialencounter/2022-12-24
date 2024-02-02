@@ -129,10 +129,6 @@ class Special {
       fields.add('authority')
       fields.add('id')
     })
-    ctx.command('kick').action(async ({session})=>{
-      const list = await session.bot.getGuildMemberList(session.guildId)
-      console.dir(list)
-    })
     ctx.command('设置管理 [nickname:string]', '通过userId设置管理员', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
       session.bot.internal?.setGroupAdmin(session.guildId, args[0], true)
       return "嗯！已经设置了"
@@ -156,9 +152,6 @@ class Special {
       return "嗯！"
     })
     ctx.command('封神榜', '谁才是本群的运气王').action(async ({ session }) => {
-      if (session.platform !== 'onebot') {
-        return
-      }
       const list = await ctx.database.get('ban_rank', { gid: session.channelId })
       if (list.length < 1) {
         return '本群无人封神'
@@ -193,6 +186,9 @@ class Special {
         return next()
       }
       for (var i of target) {
+        if(i.indexOf('" name=')>-1){
+          i = i.split('" name=')[0]
+        }
         const dt = Math.floor((Math.random() * 60000))
         await this.add_score(session.channelId, i, dt)
         session.bot.muteGuildMember(session.channelId, i, dt)
@@ -204,14 +200,14 @@ class Special {
       if (!session.content.startsWith('解绑')) {
         return next()
       }
-      if (session.platform !== 'onebot') {
-        return next()
-      }
       const target = session.content.match(/(?<=<at id=")([\s\S]*?)(?="\/>)/g)
       if (!target) {
         return next()
       }
       for (var i of target) {
+        if(i.indexOf('" name=')>-1){
+          i = i.split('" name=')[0]
+        }
         await this.add_score(session.channelId, i, 0 - (this.map[i + session.channelId] ? this.map[i + session.channelId] : 0))
         this.map[i + session.channelId] = 0
         session.bot.muteGuildMember(session.channelId, i, 0)
