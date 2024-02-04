@@ -31,7 +31,7 @@
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.14.0"
+    "koishi": "^4.16.8"
   },
   "koishi": {
     "description": {
@@ -46,9 +46,9 @@
   },
   "dependencies": {
     "adm-zip": "^0.5.10",
-    "axios": "^1.4.0",
+    "axios": "^1.6.7",
     "env-paths": "^2.2.1",
-    "tar": "^6.1.15",
+    "tar": "^6.2.0",
     "zlib": "^1.0.5"
   }
 }

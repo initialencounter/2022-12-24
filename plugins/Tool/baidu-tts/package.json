@@ -31,7 +31,7 @@
     "service"
   ],
   "peerDependencies": {
-    "koishi": "^4.15.2"
+    "koishi": "^4.16.8"
   },
   "dependencies": {
     "@initencounter/vits": "^0.0.2"

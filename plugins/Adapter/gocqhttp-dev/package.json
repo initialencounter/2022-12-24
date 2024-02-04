@@ -56,14 +56,14 @@
     }
   },
   "peerDependencies": {
-    "koishi": "^4.16.1"
+    "koishi": "^4.16.8"
   },
   "devDependencies": {
-    "@koishijs/client": "^5.22.3",
-    "@koishijs/plugin-console": "^5.22.3",
-    "@koishijs/plugin-market": "^2.7.4",
-    "@types/node": "^18.19.3",
-    "koishi": "^4.16.1",
+    "@koishijs/client": "^5.27.9",
+    "@koishijs/plugin-console": "^5.27.9",
+    "@koishijs/plugin-market": "^2.11.1",
+    "@types/node": "^18.19.14",
+    "koishi": "^4.16.8",
     "koishi-plugin-adapter-onebot": "6.1.2",
     "typescript": "^5.3.3"
   },

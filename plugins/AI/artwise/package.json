@@ -31,6 +31,6 @@
     "zhushuyun"
   ],
   "peerDependencies": {
-    "koishi": "^4.15.2"
+    "koishi": "^4.16.8"
   }
 }

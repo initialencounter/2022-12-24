@@ -46,6 +46,9 @@ class Pz {
       autoInc: true,
     })
     ctx.middleware(async (session, next) => {
+      if(session.content.indexOf("-h")>-1){
+        return next()
+      }
       if (this.players.indexOf(session.userId) == -1) {
         return next()
       }

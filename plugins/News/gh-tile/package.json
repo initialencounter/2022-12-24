@@ -28,12 +28,12 @@
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.15.2"
+    "koishi": "^4.16.8"
   },
   "dependencies": {
-    "node-cron": "^3.0.2"
+    "node-cron": "^3.0.3"
   },
   "devDependencies": {
-    "@types/node-cron": "^3.0.10"
+    "@types/node-cron": "^3.0.11"
   }
 }

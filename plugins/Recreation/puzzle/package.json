@@ -41,6 +41,6 @@
     "@initencounter/jimp": "^0.0.4"
   },
   "peerDependencies": {
-    "koishi": "^4.15.2"
+    "koishi": "^4.16.8"
   }
 }

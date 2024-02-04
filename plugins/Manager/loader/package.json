@@ -29,7 +29,7 @@
     "installer"
   ],
   "peerDependencies": {
-    "koishi": "^4.15.2"
+    "koishi": "^4.16.8"
   },
   "koishi": {
     "description": "更新所有插件"

@@ -35,11 +35,11 @@
     "plugin"
   ],
   "peerDependencies": {
-    "@koishijs/plugin-console": "^5.17.0",
-    "koishi": "^4.15.2"
+    "@koishijs/plugin-console": "^5.27.9",
+    "koishi": "^4.16.8"
   },
   "devDependencies": {
-    "@koishijs/client": "^5.17.0"
+    "@koishijs/client": "^5.27.9"
   },
   "koishi": {
     "description": "blockly插件镜像站",
