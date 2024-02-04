@@ -1,6 +1,6 @@
 # koishi-plugin-gocqhttp-dev
 
-# 版本 1.1.1-dev-0.5.1 以下版本存在致命bug, 请尽快更新到 1.1.1-dev-0.5.1
+# 此插件已废弃
 
 [登录教程](https://www.bilibili.com/video/BV15H4y1f7nu), 视频从1:44开始
 
