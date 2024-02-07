@@ -1,14 +1,15 @@
 import { Context, Schema, Session, h, Logger } from 'koishi'
-
+import { } from 'koishi-plugin-cron';
 import { mainUsage } from './config'
 import { pathToFileURL } from 'node:url'
 import { resolve } from "path";
-import { getTileNums, getContributions } from "./utils"
-import cron from 'node-cron'
-import { log } from 'node:console';
+import { getTileNums, getContributions, getDate, getYesterdayDate } from "./utils"
 export const name = 'gh-tile'
 export const logger = new Logger(name)
 
+export const inject = {
+  required: ['cron', 'database']
+}
 export const usage = `${mainUsage}`
 export interface Rule {
   platform: string
@@ -42,16 +43,13 @@ export interface Gh_tile {
   username: string
   nickname: string
   userId: string
-  repeat: boolean
 }
 
 type StringKeyObject<T> = {
   [key: string]: T;
 };
 
-export const alertList: Gh_tile[] = []
-let channelIdObj:StringKeyObject<Gh_tile[]> = {}
-export const using = ['database']
+let channelIdObj: StringKeyObject<Gh_tile[]> = {}
 export function apply(ctx: Context, config: Config) {
   ctx.model.extend('github_tile', {
     // 各字段类型
@@ -62,7 +60,6 @@ export function apply(ctx: Context, config: Config) {
     username: "text",
     nickname: "text",
     userId: "string",
-    repeat: "boolean",
   }, {
     primary: 'id', //设置 uid 为主键
     autoInc: true,
@@ -72,12 +69,11 @@ export function apply(ctx: Context, config: Config) {
   ctx.on('ready', async () => {
     const clocks = await ctx.database.get('github_tile', { enable: { $eq: true } })
     for (var j of clocks) {
-      alertList.push(j)
       logger.info(`${(j.userId)}-${j.username} 瓷砖提醒设置成功！`)
     }
     const [hour, minute] = config.corn.split('-')
     const cronExp = `0 ${minute} ${hour} * * *`
-    cron.schedule(cronExp, () => alertCallbackFunctionasync(ctx))
+    ctx.cron(cronExp, () => alertCallbackFunctionasync(ctx))
   })
   ctx.command('tile', "查看群友今天贴了多少瓷砖").alias("瓷砖")
     .option("username", "-u <username:string>")
@@ -184,7 +180,6 @@ async function add_clock(
       return
     }
     cover = true
-    clearAlarm(session.userId)
     token = target[0]?.token
   }
 
@@ -233,20 +228,6 @@ async function add_clock(
       }
     })
   }
-  alertList.push({
-    enable: true,
-    userId: session.userId,
-    token: token,
-    username: username,
-    nickname: session.username,
-    repeat: false,
-    rules: {
-      selfId: session.bot.selfId,
-      platform: session.platform,
-      guildId: session.guildId,
-      channelId: session.channelId
-    }
-  })
   return session.text('commands.tile.messages.tile-set-success')
 
 }
@@ -262,19 +243,14 @@ async function clock_switch(ctx: Context, session: Session) {
   if (target.length === 0) {
     return session.text('commands.tile.messages.no-such-user')
   }
-  if (target?.[0].enable) {
-    clearAlarm(session.userId)
-  } else {
-    alertList.push(target?.[0])
-  }
   await ctx.database.set(TABLE_NAME, { userId: session.userId }, { enable: target[0].enable ? false : true })
-
   return session.text('commands.tile.messages.tile-switch', [target?.[0].username, target[0].enable ? "关闭" : "开启"])
 
 }
 export async function alertCallbackFunctionasync(ctx: Context) {
   const date = getDate()
   channelIdObj = {}
+  const alertList: Gh_tile[] = await ctx.database.get('github_tile', { enable: { $eq: true } })
   for (var i of alertList) {
     let { channelId, selfId } = i.rules
     const channelIdList = channelIdDict<string>(`${channelId}-${selfId}`)
@@ -285,11 +261,6 @@ export async function alertCallbackFunctionasync(ctx: Context) {
     }
   }
   for (var j of Object.keys(channelIdObj)) {
-    const repeat = await ctx.database.get(TABLE_NAME, { userId: channelIdObj[j][0].userId }, ['repeat'])
-    if(repeat[0]){
-      logger.warn('检测到重复触发 cron, 请重启 Koishi')
-      return
-    }
     let atList = ''
     let { channelId, platform, selfId, guildId } = channelIdDict<string>(j)[0].rules
     let rank = []
@@ -315,58 +286,13 @@ export async function alertCallbackFunctionasync(ctx: Context) {
     rank.sort((a, b) => b.tile - a.tile)
     const bot = ctx.bots[`${platform}:${selfId}`]
     const img_url = pathToFileURL(resolve(__dirname, "0.jpg")).href
-    bot?.sendMessage(channelId, `${rank[0].username} 是今天的瓷砖王，居然贴了${rank[0]?.tile}块瓷砖!`, guildId)
+    if(rank[0]?.username){
+      bot?.sendMessage(channelId, `${rank[0]?.username} 是今天的瓷砖王，居然贴了 ${rank[0]?.tile} 块瓷砖!`, guildId)
+    }
     // 读取提醒语
     const alertText = ctx.i18n.get('commands.tile.messages.tile-alert')['zh'] ?? '快起来贴瓷砖！'
     if (atList) {
       bot?.sendMessage(channelId, h.image(img_url) + "" + atList + alertText, guildId)
     }
   }
-}
-
-export function clearAlarm(uid: string) {
-  // 清除timeOut
-  for (var i = 0; i < alertList.length; i++)
-    if (alertList[i].userId == uid) {
-      alertList.splice(i, 1)
-    }
-}
-
-export function getDate() {
-  // 获取日期 如果在8点之前，则返回昨天的日期
-  const now = new Date();
-  const hour = now.getHours()
-  const year = now.getFullYear()
-  const month = now.getMonth() + 1
-  const day = now.getDate()
-  return `${year}-${month < 10 ? "0" + month : month}-${day < 10 ? "0" + day : day}`
-}
-
-export function getYesterdayDate() {
-  const now = new Date();
-  let year = now.getFullYear();
-  let month = now.getMonth() + 1;
-  let day = now.getDate();
-  if (day === 1) {
-    if ([1, 2, 4, 6, 8, 9, 11].includes(month)) {
-      day = 31;
-      if (month === 1) {
-        year = now.getFullYear() - 1;
-        month = 12;
-      } else {
-        month = now.getMonth();
-      }
-    } else if (month === 3) {
-      const isLeapYear = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0));
-      day = isLeapYear ? 29 : 28;
-      month = now.getMonth();
-    } else {
-      day = 30;
-      month = now.getMonth();
-    }
-  } else {
-    day = day - 1;
-  }
-  const date = `${year}-${String(month).length < 2 ? "0" + month : month}-${String(day).length < 2 ? "0" + day : day}`
-  return date
 }

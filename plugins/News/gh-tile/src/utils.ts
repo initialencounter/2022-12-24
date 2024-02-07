@@ -118,3 +118,41 @@ function getContributionCount(contributionData, currentWeek: number) {
   }
 }
 
+export function getDate() {
+  // 获取日期 如果在8点之前，则返回昨天的日期
+  const now = new Date();
+  const hour = now.getHours()
+  const year = now.getFullYear()
+  const month = now.getMonth() + 1
+  const day = now.getDate()
+  return `${year}-${month < 10 ? "0" + month : month}-${day < 10 ? "0" + day : day}`
+}
+
+export function getYesterdayDate() {
+  const now = new Date();
+  let year = now.getFullYear();
+  let month = now.getMonth() + 1;
+  let day = now.getDate();
+  if (day === 1) {
+    if ([1, 2, 4, 6, 8, 9, 11].includes(month)) {
+      day = 31;
+      if (month === 1) {
+        year = now.getFullYear() - 1;
+        month = 12;
+      } else {
+        month = now.getMonth();
+      }
+    } else if (month === 3) {
+      const isLeapYear = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0));
+      day = isLeapYear ? 29 : 28;
+      month = now.getMonth();
+    } else {
+      day = 30;
+      month = now.getMonth();
+    }
+  } else {
+    day = day - 1;
+  }
+  const date = `${year}-${String(month).length < 2 ? "0" + month : month}-${String(day).length < 2 ? "0" + day : day}`
+  return date
+}
