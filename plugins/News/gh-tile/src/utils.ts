@@ -3,7 +3,7 @@ import fs from "fs";
 const logger = new Logger("gh-tile")
 
 // 获取今日瓷砖数，
-export async function getTileNums(ctx: Context, username: string, date: string, cookie:string, forwardServer: string) {
+export async function getTileNums(ctx: Context, username: string, date: string, cookie: string, forwardServer: string) {
   let html: string
   try {
     html = await ctx.http.get(`${trimSlash(forwardServer)}/${username}&cookie=${cookie}`)
@@ -22,7 +22,7 @@ export async function getTileNums(ctx: Context, username: string, date: string, 
   // 匹配瓷砖
   const num = getMatch(html, date)
   // 数据清洗
-  if (num?.startsWith("No")||!num) {
+  if (num?.startsWith("No") || !num) {
     return -1
   }
   return Number(num)
@@ -31,17 +31,17 @@ export async function getTileNums(ctx: Context, username: string, date: string, 
 export function getMatch(s: string, date: string) {
   const start = s.indexOf(`data-date="${date}"`)
   let tmpString = s.slice(start)
-  const tiler = " on "+formatDate(date)
+  const tiler = " on " + formatDate(date)
   const end = tmpString.indexOf(tiler)
   tmpString = tmpString.slice(0, end)
   const start2 = tmpString.lastIndexOf('>')
   const end2 = tmpString.lastIndexOf(' contribution')
-  const tile = tmpString.slice(start2+1,end2)
+  const tile = tmpString.slice(start2 + 1, end2)
   return tile
 }
-function formatDate(inputDate:string) {
+function formatDate(inputDate: string) {
   // 将输入日期字符串分割成月份和日期
-  const [_,month, day] = inputDate.split('-');
+  const [_, month, day] = inputDate.split('-');
   // 将月份数字转换为对应的月份名
   const months = [
     'January', 'February', 'March', 'April',

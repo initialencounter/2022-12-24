@@ -78,7 +78,7 @@ export function apply(ctx: Context, config: Config) {
   ctx.command('tile', "查看群友今天贴了多少瓷砖").alias("瓷砖")
     .option("username", "-u <username:string>")
     .option("date", "-d <date:string>")
-    .action(async ({ session, options } ) => {
+    .action(async ({ session, options }) => {
       let nums: number | boolean
       let username: string = options?.username
       let date: string = options?.date
@@ -286,7 +286,7 @@ export async function alertCallbackFunctionasync(ctx: Context) {
     rank.sort((a, b) => b.tile - a.tile)
     const bot = ctx.bots[`${platform}:${selfId}`]
     const img_url = pathToFileURL(resolve(__dirname, "0.jpg")).href
-    if(rank[0]?.username){
+    if (rank[0]?.username) {
       bot?.sendMessage(channelId, `${rank[0]?.username} 是今天的瓷砖王，居然贴了 ${rank[0]?.tile} 块瓷砖!`, guildId)
     }
     // 读取提醒语
