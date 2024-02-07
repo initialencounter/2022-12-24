@@ -18,7 +18,7 @@ export interface Rule {
 
 export const Config: Schema<Config> = Schema.object({
   corn: Schema.string().default("23-30").description("默认的提醒时间,UTC时间"),
-  forwardServer: Schema.string().default("https://initencunter-node-server.hf.space/?method=get&url=https://github.com").description("转发服务"),
+  forwardServer: Schema.string().default("http://tile.initencunter.com/?method=get&url=https://github.com").description("转发服务"),
   cookie: Schema.string().default("logged_in=yes;tz=Asia%2FShanghai;").description("cookie")
 })
 
