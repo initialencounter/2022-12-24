@@ -29,3 +29,4 @@ commands:
       tile-set-success: 瓷砖提醒成功,输入命令tile.switch 关闭/启动tile提醒
       tile-input: 请输入{0}：
       tile-switch: 用户{0} {1}瓷砖提醒
+      failed: 瓷砖查询失败, 请检查时区和转发服务

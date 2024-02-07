@@ -78,7 +78,7 @@ export function apply(ctx: Context, config: Config) {
   ctx.command('tile', "查看群友今天贴了多少瓷砖").alias("瓷砖")
     .option("username", "-u <username:string>")
     .option("date", "-d <date:string>")
-    .action(async ({ session, options }, ...args) => {
+    .action(async ({ session, options } ) => {
       let nums: number | boolean
       let username: string = options?.username
       let date: string = options?.date
@@ -107,7 +107,7 @@ export function apply(ctx: Context, config: Config) {
       }
 
       if (nums === false) {
-        return "获取瓷砖失败"
+        return session.text('commands.tile.messages.failed')
       }
       if (nums === -1) {
         nums = 0
@@ -278,7 +278,7 @@ export async function alertCallbackFunctionasync(ctx: Context) {
       if (nums === -1) {
         atList += h.at(k.userId, { name: k.nickname }) + ' '
       } else if (!nums) {
-        logger.warn(`${(k.userId)}-${k.username} 瓷砖查询失败, 建议配置 token 或 proxy`)
+        logger.warn(`${(k.userId)}-${k.username} ${ctx.i18n.get('commands.tile.messages.failed')['zh']}`)
       }
     }
 
