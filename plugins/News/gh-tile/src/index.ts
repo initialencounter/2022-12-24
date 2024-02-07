@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url'
 import { resolve } from "path";
 import { getTileNums, getContributions } from "./utils"
 import cron from 'node-cron'
+import { log } from 'node:console';
 export const name = 'gh-tile'
 export const logger = new Logger(name)
 
@@ -41,10 +42,15 @@ export interface Gh_tile {
   username: string
   nickname: string
   userId: string
+  repeat: boolean
 }
 
+type StringKeyObject<T> = {
+  [key: string]: T;
+};
+
 export const alertList: Gh_tile[] = []
-let channelIdObj = {}
+let channelIdObj:StringKeyObject<Gh_tile[]> = {}
 export const using = ['database']
 export function apply(ctx: Context, config: Config) {
   ctx.model.extend('github_tile', {
@@ -56,6 +62,7 @@ export function apply(ctx: Context, config: Config) {
     username: "text",
     nickname: "text",
     userId: "string",
+    repeat: "boolean",
   }, {
     primary: 'id', //设置 uid 为主键
     autoInc: true,
@@ -149,21 +156,7 @@ export function apply(ctx: Context, config: Config) {
     })
 }
 
-function channelIdDict<T>(channelIdselfId: T): Array<{
-  enable: boolean,
-  userId: T,
-  token: T,
-  username: T,
-  nickname: T,
-  rules:
-  {
-    selfId: T,
-    platform: T,
-    guildId: T,
-    channelId: T
-  }
-
-}> {
+function channelIdDict<T>(channelIdselfId: T): Gh_tile[] {
   return channelIdObj[`${channelIdselfId}`] ?? []
 }
 /**
@@ -246,6 +239,7 @@ async function add_clock(
     token: token,
     username: username,
     nickname: session.username,
+    repeat: false,
     rules: {
       selfId: session.bot.selfId,
       platform: session.platform,
@@ -280,7 +274,7 @@ async function clock_switch(ctx: Context, session: Session) {
 }
 export async function alertCallbackFunctionasync(ctx: Context) {
   const date = getDate()
-  channelIdObj = []
+  channelIdObj = {}
   for (var i of alertList) {
     let { channelId, selfId } = i.rules
     const channelIdList = channelIdDict<string>(`${channelId}-${selfId}`)
@@ -291,6 +285,11 @@ export async function alertCallbackFunctionasync(ctx: Context) {
     }
   }
   for (var j of Object.keys(channelIdObj)) {
+    const repeat = await ctx.database.get(TABLE_NAME, { userId: channelIdObj[j][0].userId }, ['repeat'])
+    if(repeat[0]){
+      logger.warn('检测到重复触发 cron, 请重启 Koishi')
+      return
+    }
     let atList = ''
     let { channelId, platform, selfId, guildId } = channelIdDict<string>(j)[0].rules
     let rank = []
