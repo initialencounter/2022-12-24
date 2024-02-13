@@ -31,7 +31,7 @@
 | 行为预设 | [☕群主插件](./Plugins/Behavior/specialtile/readme.md) |
 | 资讯服务 | [☕兽云祭](./Plugins/News/furbot/readme.md)[☕fraud-db](./Plugins/News/fraud-db/readme.md)[☕瓷砖提醒](./Plugins/News/gh-tile/readme.md) |
 | 实用工具 | [☕飞桨语音](./Plugins/Tool/paddlespeech/readme.md)[☕OpenAI语音](./Plugins/Tool/whisper-asr/readme.md)[☕百度TTS](./Plugins/Tool/baidu-tts/readme.md)[☕百度STT](./Plugins/Tool/baidu-sst/readme.md)[☕腾讯TTS](./Plugins/Tool/tencent-tts/readme.md)[☕腾讯STT](./Plugins/Tool/tc-sst/readme.md)[☕vits服务](./Plugins/Tool/vits/readme.md)[☕sst服务](./Plugins/Tool/sst/readme.md) |
-| 娱乐玩法 | [☕数字华容道](./Plugins/Recreation/puzzle/readme.md)[☕魔方](./Plugins/Recreation/cube/readme.md)[☕对对联](./Plugins/Recreation/couplet/readme.md)[☕扫雷残局](./Plugins/Recreation/minesweeper-ending/readme.md) ||
+| 娱乐玩法 | [☕数字华容道](./Plugins/Recreation/puzzle/readme.md)[☕魔方](./Plugins/Recreation/cube/readme.md)[☕对对联](./Plugins/Recreation/couplet/readme.md)[☕扫雷残局](./Plugins/Recreation/minesweeper-ending/readme.md)[☕国际象棋](./Plugins/Recreation/ichess/readme.md) ||
 | 游戏辅助 | [☕斯坦牛逼](./Plugins/Games/stnb/readme.md)[☕Steam 挂刀](./Plugins/Games/steam-trading/readme.md)[☕原神图鉴](./Plugins/Games/genshin-atlas/readme.md) |
 
 </div>
