@@ -4,6 +4,7 @@ import { Context } from 'koishi'
 import { ChessState } from './chess'
 import { MoveResult, Theme } from './type'
 import { Config } from '.'
+import { writeFileSync } from 'fs'
 
 const ChessMapR = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 function drawHTML(chessboard: {
@@ -181,6 +182,11 @@ function drawHTML(chessboard: {
             .black {
                 background-color: ${theme.black_grid};
             }
+            .avatar {
+                position: absolute;
+                right: 20%;
+                top: 20%;
+            }
         </style>
     </head>
     
@@ -197,6 +203,9 @@ function drawHTML(chessboard: {
             <div class="index-c square"></div>
             <div class="index-c square"></div>
             ${innerHTMLChess}
+        </div>
+        <div class="avatar" style="position: absolute; right: 20%; top: 20%">
+            <img src="D:\\dev\\mykoishi\\plugins\\News\\gh-tile\\src\\0.jpg">
         </div>
     </body>
     
@@ -216,5 +225,6 @@ export async function drawBoard(ctx: Context, state: ChessState, result: { res: 
     else {
         html = drawHTML(state.board.board(), result.move.from, result.move.to, r, config.theme)
     }
+    writeFileSync('./test.html',html)
     return await ctx.puppeteer.render(html)
 }
