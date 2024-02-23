@@ -85,6 +85,7 @@
     "koishi-plugin-adapter-red": "2.9.6",
     "koishi-plugin-android": "^0.0.1",
     "koishi-plugin-assets-local": "3.2.1",
+    "koishi-plugin-cron": "3.1.0",
     "koishi-plugin-dataview": "2.6.4",
     "koishi-plugin-desktop": "1.0.0",
     "koishi-plugin-group-manage": "1.0.0",

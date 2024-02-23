@@ -1,6 +1,0 @@
-commands:
-  loader:
-    description: 安装所有插件
-    messages:
-      info: 更新：{0}
-      waiting: 开始更新插件...

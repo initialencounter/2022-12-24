@@ -18,7 +18,6 @@
         "plugins/Adapter/*/src",
         "plugins/AI/*/src",
         "plugins/Behavior/*/src",
-        "plugins/Console/*/src",
         "plugins/Extension/*/src",
         "plugins/Games/*/src",
         "plugins/Manager/*/src",
