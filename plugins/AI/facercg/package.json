@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-facercg",
   "description": "AI 颜值打分",
-  "version": "1.2.9",
+  "version": "1.3.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -13,13 +13,13 @@
     "email": "2911583893@qq.com",
     "url": "https://github.com/initialencounter"
   },
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/initialencounter/koishi-plugin-facercg.git"
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
   },
   "bugs": {
-    "url": "https://github.com/initialencounter/koishi-plugin-facercg/issues"
+    "url": "https://github.com/initialencounter/mykoishi/issues"
   },
   "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/AI/facercg#readme",
   "keywords": [
@@ -31,12 +31,19 @@
   "koishi": {
     "browser": true,
     "service": {
+      "required": [
+        "http"
+      ],
       "optional": [
-        "puppeteer"
+        "puppeteer",
+        "notifier"
       ]
     }
   },
   "peerDependencies": {
-    "koishi": "^4.16.8"
+    "koishi": "^4.17.1"
+  },
+  "devDependencies": {
+    "@koishijs/plugin-notifier": "^1.2.0"
   }
 }

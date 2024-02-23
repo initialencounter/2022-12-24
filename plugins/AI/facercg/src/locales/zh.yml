@@ -3,6 +3,6 @@ commands:
     description: 人脸识别,百度api
 
     messages:
-      noimg: 缺少图片,请重试
+      noimg: 请发送图片
       running: 正在预测
       noface: 未从图片中发现人脸
