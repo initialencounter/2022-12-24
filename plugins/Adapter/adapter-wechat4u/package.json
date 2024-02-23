@@ -1,0 +1,41 @@
+{
+  "name": "koishi-plugin-adapter-wechat4u",
+  "description": "wechat for you adapter",
+  "version": "0.0.6",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "packageManager": "yarn@1.22.19",
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://git.yka.moe/initialencounter/koishi-plugin-wechaty-satori-sdk.git"
+  },
+  "bugs": {
+    "url": "https://git.yka.moe/initialencounter/koishi-plugin-wechaty-satori-sdk/issues"
+  },
+  "homepage": "https://git.yka.moe/initialencounter/koishi-plugin-wechaty-satori-sdk",
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin"
+  ],
+  "peerDependencies": {
+    "@koishijs/plugin-console": "^5.27.9",
+    "koishi": "^4.16.8"
+  },
+  "dependencies": {
+    "wechaty": "^1.20.2"
+  },
+  "devDependencies": {
+    "@koishijs/client": "^5.27.9"
+  }
+}
