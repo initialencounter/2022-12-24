@@ -29,13 +29,13 @@
     "plugin"
   ],
   "peerDependencies": {
-    "@koishijs/plugin-console": "^5.27.9",
-    "koishi": "^4.16.8"
+    "@koishijs/plugin-console": "^5.28.0",
+    "koishi": "^4.17.1"
   },
   "dependencies": {
     "wechaty": "^1.20.2"
   },
   "devDependencies": {
-    "@koishijs/client": "^5.27.9"
+    "@koishijs/client": "^5.28.0"
   }
 }

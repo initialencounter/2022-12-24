@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/News/help-pro#readme",
   "peerDependencies": {
-    "koishi": "^4.16.8"
+    "koishi": "^4.17.1"
   },
   "dependencies": {
     "@koishijs/canvas": "^0.2.0",

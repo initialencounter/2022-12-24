@@ -23,9 +23,9 @@
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.16.8"
+    "koishi": "^4.17.1"
   },
   "devDependencies": {
-    "jimp": "^0.22.10"
+    "jimp": "^0.22.12"
   }
 }

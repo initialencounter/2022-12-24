@@ -33,7 +33,7 @@
     "毛毛"
   ],
   "peerDependencies": {
-    "koishi": "^4.16.8"
+    "koishi": "^4.17.1"
   },
   "koishi": {
     "description": "[兽云祭](http://m.zh.furrywiki.cn)API,毛毛机器人"

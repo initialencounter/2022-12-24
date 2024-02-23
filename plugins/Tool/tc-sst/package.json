@@ -32,7 +32,7 @@
     "sst"
   ],
   "peerDependencies": {
-    "koishi": "^4.16.8"
+    "koishi": "^4.17.1"
   },
   "koishi": {
     "description": "语音识别服务",
@@ -44,6 +44,6 @@
   },
   "dependencies": {
     "@initencounter/sst": "^0.0.1",
-    "tencentcloud-sdk-nodejs-asr": "^4.0.793"
+    "tencentcloud-sdk-nodejs-asr": "^4.0.798"
   }
 }
