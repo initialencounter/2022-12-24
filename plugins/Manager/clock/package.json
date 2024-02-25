@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-clock",
   "description": "闹钟插件",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -32,12 +32,12 @@
   },
   "dependencies": {
     "koishi-plugin-shutdown": "^0.3.1",
-    "node-cron": "^3.0.3"
+    "koishi-plugin-cron": "^3.1.0"
   },
   "koishi": {
     "service": {
       "required": [
-        "database"
+        "database","cron"
       ]
     }
   }

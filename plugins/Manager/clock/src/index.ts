@@ -1,9 +1,11 @@
 import { readFileSync } from 'fs';
 import { Context, Logger, Schema, Session } from 'koishi'
-var cron = require('node-cron');
 import * as shutdown from "koishi-plugin-shutdown"
 import { resolve } from 'path';
-export const using = ['database']
+import { } from 'koishi-plugin-cron';
+export const inject = {
+  required: ['cron', 'database']
+}
 
 export const name = 'clock'
 const TABLE_NAME = 'clock'
@@ -195,7 +197,7 @@ async function add_clock(
 function schedule_cron(ctx: Context, config: Config, clock: Clock) {
   const targets = config.rules
   targets.push(clock.rule)
-  cron.schedule(clock.time, async () => {
+  ctx.cron(clock.time, async () => {
     for (let { channelId, platform, selfId, guildId } of targets) {
       if ((!guildId) || (!platform) || (!channelId)) {
         continue
