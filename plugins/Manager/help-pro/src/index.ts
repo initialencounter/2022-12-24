@@ -118,6 +118,9 @@ export const Config: Schema<Config> = Schema.intersect([
   }),
   Schema.union([
     Schema.object({
+      output: Schema.const('text'),
+    }),
+    Schema.object({
       output: Schema.const('image1'),
     }),
     Schema.object({

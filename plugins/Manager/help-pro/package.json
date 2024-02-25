@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-help-pro",
   "description": "进阶指令帮助, 使用 canvas 渲染",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
