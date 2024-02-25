@@ -1,6 +1,5 @@
 import { Context } from "koishi";
 import { } from "@initencounter/jimp"
-import Jimp from "jimp";
 
 export const theme = [['#000000', '#707070', '#707070', '#707070', '#707070',],
 ['#707070', '#444444', '#00C91A', '#00C91A', '#00C91A',],
