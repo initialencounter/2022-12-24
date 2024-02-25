@@ -1,7 +1,7 @@
 // Forked from https://code.mycard.moe/3rdeye/koishi-plugin-adapter-wechaty
 // AGPL-3.0 license
 
-import { segment, Universal, Element, Awaitable, base64ToArrayBuffer } from 'koishi'
+import { segment, Universal, Element, Awaitable } from 'koishi'
 import type { ContactInterface } from 'wechaty/src/user-modules/contact'
 import type { RoomInterface } from 'wechaty/src/user-modules/room'
 import { MessageInterface } from 'wechaty/impls'
@@ -9,7 +9,6 @@ import WechatyBot from './index'
 import FileType from 'file-type'
 import db from './mine-standard';
 import crypto from 'crypto'
-import { encode, getDuration } from 'silk-wasm'
 
 const mime2ext = (mime: string): string => {
 
@@ -216,22 +215,22 @@ export async function autoFilename(url: string) {
 
 export const elementToFileBox = async (element: Element) => {
   const { attrs } = element
-  const { url, file } = attrs
-  if (!url) return
-  if (url.startsWith('file://')) {
-    const filePath = url.slice(7)
-    return FileBox.fromFile(filePath, file || (await autoFilename(url)))
+  const { src, file } = attrs
+  if (!src) return
+  if (src.startsWith('file://')) {
+    const filePath = src.slice(7)
+    return FileBox.fromFile(filePath, file || (await autoFilename(src)))
   }
-  if (url.startsWith('base64://')) {
-    return FileBox.fromBase64(url.slice(9), file || (await autoFilename(url)))
+  if (src.startsWith('base64://')) {
+    return FileBox.fromBase64(src.slice(9), file || (await autoFilename(src)))
   }
-  if (url.startsWith('data:')) {
-    const [, mime, base64] = url.match(/^data:([^;]+);base64,(.+)$/)
+  if (src.startsWith('data:')) {
+    const [, mime, base64] = src.match(/^data:([^;]+);base64,(.+)$/)
     const ext = mime2ext(mime) || 'bin'
     return FileBox.fromBase64(base64, file || `file.${ext}`)
   }
-  return FileBox.fromUrl(url, {
-    name: file || (await autoFilename(url)),
+  return FileBox.fromUrl(src, {
+    name: file || (await autoFilename(src)),
   })
 }
 

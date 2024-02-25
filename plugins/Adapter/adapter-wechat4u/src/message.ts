@@ -111,7 +111,7 @@ export class WechatyMessenger extends Messenger {
                     this.text(`@${attrs.role}`)
                 }
                 break
-            case 'image':
+            case 'img':
             case 'video':
             case 'audio':
             case 'file':

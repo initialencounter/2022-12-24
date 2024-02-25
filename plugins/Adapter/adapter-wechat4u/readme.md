@@ -19,6 +19,8 @@ adapter-wechat4u
 
 # 更新日志
 
+- v0.0.6
+    - 修复：element image->img; url->src 导致的无法发送图片
 - v0.0.5
     - 新增：登录成功自动隐藏二维码
     - 新增：日志输出等级
