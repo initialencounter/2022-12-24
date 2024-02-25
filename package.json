@@ -20,7 +20,6 @@
     "plugins/Recreation/*",
     "plugins/Tool/*",
     "plugins/@*/*",
-    "external/wechaty-satori-sdk/packages/adapter-wechat4u",
     "external/open-vits",
     "external/test"
   ],
