@@ -31,13 +31,14 @@
     "koishi": "^4.17.1"
   },
   "dependencies": {
-    "koishi-plugin-shutdown": "^0.3.1",
-    "koishi-plugin-cron": "^3.1.0"
+    "koishi-plugin-cron": "^3.1.0",
+    "koishi-plugin-shutdown": "^0.3.1"
   },
   "koishi": {
     "service": {
       "required": [
-        "database","cron"
+        "database",
+        "cron"
       ]
     }
   }
