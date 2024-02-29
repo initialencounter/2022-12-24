@@ -2,7 +2,7 @@
 
 使用前在[beta.openai.com](https://beta.openai.com/account/api-keys) 中获取api-key
 
-或者前往[chatgptanywhere.com](https://peiqi.shop)中获取api-key
+或者前往[chatgptanywhere.com](https://peiqishop.me)中获取api-key
 
 如果 api-key 来源是 chatanywhere.com ,需将反代地址修改为 https://api.chatanywhere.com.cn
 
