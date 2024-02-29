@@ -6,9 +6,9 @@ const logger = new Logger("gh-tile")
 export async function getTileNums(ctx: Context, username: string, date: string, cookie: string, forwardServer: string) {
   let html: string
   try {
-    html = await ctx.http.get(`${trimSlash(forwardServer)}/${username}&cookie=${cookie}`)
-    // fs.writeFileSync('text.html', html)
+    html = await ctx.http.get(`${trimSlash(forwardServer)}/${username}&cookie=${cookie}`,{responseType:"text"})
   } catch (e) {
+    logger.error(e)
     return false
   }
   date = (date.split('-').map((i) => {
