@@ -16,7 +16,7 @@ export class Dvc extends Service {
     key: string[];
     retry: Dict;
     maxRetryTimes: number;
-    constructor(ctx: Context) {
+    constructor(ctx: Context, config: Dvc.Config) {
       super(ctx, 'dvc', true)
     }
 }
@@ -71,7 +71,6 @@ export namespace Dvc {
       alias: string[]
       resolution?: string
       output: string
-      stream_output: boolean
   
       if_private: boolean
       if_at: boolean
@@ -136,7 +135,6 @@ export namespace Dvc {
           Schema.const('image').description('将对话转成图片'),
           Schema.const('voice').description('发送语音,需要安装ffmpeg')
         ]).description('输出方式。').default('minimal'),
-        stream_output: Schema.boolean().default(false).description('流式输出'),
   
         if_private: Schema.boolean().default(true).description('开启后私聊可触发ai'),
         if_at: Schema.boolean().default(true).description('开启后被提及(at/引用)可触发ai'),
