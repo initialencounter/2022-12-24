@@ -7,6 +7,8 @@ import { } from 'koishi-plugin-rate-limit';
 export const name = 'arcadia';
 export const logger = new Logger(name);
 import * as crypto from 'crypto';
+import axios from 'axios'
+import { constants } from 'buffer';
 
 const waiting_text: string[] = [
     "轻舟已过万重山",
@@ -58,17 +60,17 @@ class Arcadia extends Service {
     is_last_layer_skip: boolean
     score: number
     // steps_mode: number
-    constructor(ctx: Context, private config: Arcadia.Config) {
+    constructor(ctx: Context) {
         super(ctx, 'arca', true)
-        this.output_type = this.config.output_type
-        this.engine = this.config.engine
-        this.style = this.config.style
-        this.ratio = this.config.ratio
+        this.output_type = this.ctx.config.output_type
+        this.engine = this.ctx.config.engine
+        this.style = this.ctx.config.style
+        this.ratio = this.ctx.config.ratio
         ctx.i18n.define('zh', require('./locales/zh'))
 
         ctx.command('arcadia <prompt:text>', '意间Ai绘画', {
-            authority: this.config.authority,
-            maxUsage: this.config.usage,
+            authority: this.ctx.config.authority,
+            maxUsage: this.ctx.config.usage,
             usageName: 'ai'
         }).option('ratio', '-r <0是4 : 3, 1是3 : 4, 2是正方形, 3是16 : 9, 4是9 : 16:number>')
             .option('engine', '-e <stable_diffusion（通用） acgn_diffusion（动漫）新动漫引擎 ：anything_diffusio\n    3D建模风格：redshift_novelai_sd_merge_diffusion 艺术感强化引擎：mid_stable_diffusion\n    剪纸艺术引擎：paper_cut_engine 真实感照片引擎：photoreal_engine:string>')
@@ -76,16 +78,16 @@ class Arcadia extends Service {
             .option('guidence_scale', '-g <引导力:number>')
             .option('enable_face_enhance', '-f <面部强化:booleam>')
             .option('is_last_layer_skip', '-l <色彩强化:booleam>')
-            .alias(this.config.cmd, 'arca', 'yjai').action(({ session, options }, prompt) => this.PostOpenApi(session, {
-                apikey: this.config.apikey,
+            .alias(this.ctx.config.cmd, 'arca', 'yjai').action(({ session, options }, prompt) => this.PostOpenApi(session, {
+                apikey: this.ctx.config.apikey,
                 prompt: prompt,
-                engine: options.engine ? options.engine : this.config.engine,
-                ratio: options.ratio ? options.ratio : this.ratio,
-                style: options.style ? options.style : this.style,
-                guidence_scale: this.config.guidence_scale,
-                enable_face_enhance: options.enable_face_enhance ? options.enable_face_enhance : this.config.enable_face_enhance,
-                is_last_layer_skip: options.is_last_layer_skip ? options.is_last_layer_skip : this.config.is_last_layer_skip,
-                // steps_mode:this.config.steps_mode
+                engine: options.engine ?? this.ctx.config.engine,
+                ratio: options.ratio ?? this.ratio,
+                style: options.style ?? this.style,
+                guidence_scale: options?.guidence_scale ?? this.ctx.config.guidence_scale,
+                enable_face_enhance: options.enable_face_enhance ?? this.ctx.config.enable_face_enhance,
+                is_last_layer_skip: options.is_last_layer_skip ?? this.ctx.config.is_last_layer_skip,
+                // steps_mode:this.ctx.config.steps_mode
             }))
         ctx.command('arca.show', '查寻任务').action(({ session }, prompt) => this.show_tasks(session, prompt))
         ctx.command('arca.style <type:string>', '切换arcadia的风格画家').action(async ({ session }, type) => this.switch_style(session, type));
@@ -95,7 +97,8 @@ class Arcadia extends Service {
         ctx.command('arca.output', '切换输出模式').action(async ({ session }, type) => this.switch_output(session, type));
     }
     async PostOpenApi(sesssion: Session, payload: Arcadia.Req) {
-        sesssion.send(waiting_text[Math.floor((Math.random()*waiting_text.length))])
+        let done = []
+        sesssion.send(waiting_text[Math.floor((Math.random() * waiting_text.length))])
         const now: string = `${Math.floor(Date.now() / 1000)}`;
         payload['timestamp'] = now
         // 得到签名
@@ -106,25 +109,28 @@ class Arcadia extends Service {
         };
         // 超时时间
         const timeout: number = 10 * 1000;
-        const res: Arcadia.Response = (await this.ctx.http.axios({
-            url: this.config.api_path,
+        const res: Arcadia.Response = (await axios(this.ctx.config.api_path, {
             method: 'POST',
             headers: headers,
             data: payload,
             timeout: timeout
         })).data
-
-        console.log(res)
-        const Uuid: string = res.data.Uuid
-        if (!Uuid) {
+        if (!res.data.Uuid) {
             return sesssion.text('commands.arca.messages.err') + res.reason
         }
         this.score = res.data.User.Score
-        let msg: Arcadia.Response | boolean = await this.get_tasks(res.data.Uuid)
+        let msg: Arcadia.Response = await this.get_tasks(res.data.Uuid)
         let count: number = 0
-        while (!msg || count < 5) {
+        while (count < 20) {
+            await this.sleep(this.ctx.config.sleepInterval)
             msg = await this.get_tasks(res.data.Uuid)
             count++
+            if(msg.data?.['ImagePath']){
+                break
+            }
+        }
+        if(!msg.data?.['ImagePath']){
+            return "限流了,请稍后发送 arca.show "+res.data.Uuid+"查看任务"
         }
         return this.getContent(this.output_type, sesssion.userId, [msg.data])
     }
@@ -133,25 +139,18 @@ class Arcadia extends Service {
         // 请求时的时间戳秒数
         const now: string = `${Math.floor(Date.now() / 1000)}`;
         const payload = {
-            apikey: this.config.apikey,
+            apikey: this.ctx.config.apikey,
             uuid: uuid,
             timestamp: now
         }
-        const config = {
+        const res: Arcadia.Response = await (await axios(url, {
             method: 'POST',
-            url: url,
             headers: {
                 sign: this.getSign(payload),
                 "Content-Type": "application/x-www-form-urlencoded"
             },
             data: payload
-        }
-        const res: Arcadia.Response = await (await this.ctx.http.axios(config)).data;
-        const image_path: string = res.data.ImagePath
-        console.log(res)
-        if (!image_path) {
-            return false
-        }
+        })).data;
         return res
     }
     async show_tasks(session: Session, uuid: string) {
@@ -159,22 +158,19 @@ class Arcadia extends Service {
         // 请求时的时间戳秒数
         const now: string = `${Math.floor(Date.now() / 1000)}`;
         const payload = {
-            apikey: this.config.apikey,
+            apikey: this.ctx.config.apikey,
             uuid: uuid,
             timestamp: now
         }
-        const config = {
+        const res: Arcadia.Response = await (await axios(url, {
             method: 'POST',
-            url: url,
             headers: {
                 sign: this.getSign(payload),
                 "Content-Type": "application/x-www-form-urlencoded"
             },
             data: payload
-        }
-        const res: Arcadia.Response = await (await this.ctx.http.axios(config)).data;
+        })).data;
         const image_path: string = res.data.ImagePath
-        console.log(res)
         if (!image_path) {
             return '未画好，请稍后发送 "show <uuid>" 查看'
         }
@@ -289,48 +285,46 @@ class Arcadia extends Service {
 
 
     async get_score(session: Session) {
+        if(this.score){
+            return session.text('commands.arca.messages.total_available', [this.score])
+        }
         const url: string = 'http://api.yjai.art:8080/painting-open-api/site/show_complete_tasks'
         const now: string = `${Math.floor(Date.now() / 1000)}`;
         const payload = {
             page: 1,
             page_size: 10,
-            apikey: this.config.apikey,
+            apikey: this.ctx.config.apikey,
             timestamp: now
         }
-        const config = {
+        const res: Arcadia.Response = await (await axios(url, {
             method: 'POST',
-            url: url,
             headers: {
                 sign: this.getSign(payload),
                 "Content-Type": "application/x-www-form-urlencoded"
             },
             data: payload
-        }
-        const res: Arcadia.Response = await (await this.ctx.http.axios(config)).data
+        })).data
         this.score = res.data.data[res.data.data.length - 1].User.Score
         const score: string = this.score ? String(this.score) : '未知'
         return session.text('commands.arca.messages.total_available', [score])
     }
     async get_complete_tasks(session: Session) {
         const url: string = 'http://api.yjai.art:8080/painting-open-api/site/show_complete_tasks'
-        const now: string = `${Math.floor(Date.now() / 1000)}`;
+        const now = Math.floor(new Date().getTime() / 1000);
         const payload = {
             page: 1,
             page_size: 10,
-            apikey: this.config.apikey,
+            apikey: this.ctx.config.apikey,
             timestamp: now
         }
-        const config = {
+        const res: Arcadia.Response = await (await axios(url, {
             method: 'POST',
-            url: url,
             headers: {
                 sign: this.getSign(payload),
                 "Content-Type": "application/x-www-form-urlencoded"
             },
             data: payload
-        }
-        const res: Arcadia.Response = await (await this.ctx.http.axios(config)).data
-        console.log(res.data)
+        })).data
         this.score = res.data.data[res.data.data.length - 1].User.Score
         const msgs: Arcadia.Data_last[] = []
         for (var i of res.data.data) {
@@ -408,7 +402,7 @@ class Arcadia extends Service {
         }
     }
     getSign(payload: Arcadia.Req) {
-        payload['apisecret'] = this.config.apisecret;
+        payload['apisecret'] = this.ctx.config.apisecret;
         const keys = [];
         Object.keys(payload).forEach((key, _) => keys.push(key));
         keys.sort();
@@ -425,6 +419,10 @@ class Arcadia extends Service {
         const h = crypto.createHash('md5');
         h.update(str);
         return h.digest('hex');
+    }
+
+    sleep(ms: number) {
+        return new Promise(resolve => setTimeout(resolve, ms))
     }
 
 }
@@ -534,7 +532,7 @@ namespace Arcadia {
         usage: number
         cmd: string
         output_type: string
-
+        sleepInterval: number
 
     }
 
@@ -581,7 +579,8 @@ namespace Arcadia {
             Schema.const('default' as string).description('发送图片和关键信息'),
             Schema.const('verbose' as string).description('发送全部信息'),
         ]).description('输出方式。').default('minimal' as string),
-        api_path: Schema.string().description('服务器地址').default('http://api.yjai.art:8080/painting-open-api/site/put_task')
+        api_path: Schema.string().description('服务器地址').default('http://api.yjai.art:8080/painting-open-api/site/put_task'),
+        sleepInterval: Schema.number().description('轮询间隔，单位ms').default(1000),
     })
 
 
