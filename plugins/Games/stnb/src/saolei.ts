@@ -11,8 +11,8 @@ export const Config: Schema<Config> = Schema.object({})
 
 export function apply(ctx: Context) {
     ctx.command('stnb.雷网 <id:number>', '查看雷网帖子', { checkArgCount: true }).action(async ({ }, id) => {
-        const res: Buffer = await ctx.http.get(`http://saolei.wang/BBS/Title.asp?Id=${id}`, { responseType: "arraybuffer" })
-        const buf = iconv.decode(res, 'gb2312');
+        const res: ArrayBuffer = await ctx.http.get(`http://saolei.wang/BBS/Title.asp?Id=${id}`, { responseType: "arraybuffer" })
+        const buf = iconv.decode(Buffer.from(res), 'gb2312');
         const html = buf.toString()
         const doc = new dom().parseFromString(html, 'text/xml');
         const titles = xpath.select("//table/tr/td/span[@class='High']", doc)[0]["childNodes"]["0"].data
@@ -22,8 +22,8 @@ export function apply(ctx: Context) {
         return msg
     })
     ctx.command('stnb.雷网用户 <id:number>', '查看雷网用户',{checkArgCount:true}).action(async({},id)=>{
-        const res: Buffer = await ctx.http.get(`http://saolei.wang/Player/Info.asp?Id=${id}`, { responseType: "arraybuffer" })
-        const buf = iconv.decode(res, 'gb2312');
+        const res: ArrayBuffer = await ctx.http.get(`http://saolei.wang/Player/Info.asp?Id=${id}`, { responseType: "arraybuffer" })
+        const buf = iconv.decode(Buffer.from(res), 'gb2312');
         const html = buf.toString()
         const doc = new dom().parseFromString(html, 'text/xml');
         const pop = xpath.select("/html/body/table/tr/td/table/tr/td/span", doc)
