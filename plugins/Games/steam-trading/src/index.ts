@@ -1,5 +1,4 @@
 import { Context, Schema, Logger, h, Time } from "koishi";
-import { Shooter } from 'puppeteer-core'
 import { PNG } from 'pngjs'
 import { } from 'koishi-plugin-puppeteer'
 import { readFileSync } from "fs";
@@ -116,7 +115,7 @@ export function apply(ctx: Context, config: Config) {
         return '无法打开页面。'
       }
 
-      const shooter: Shooter = page
+      const shooter = page
       if (!shooter) return '找不到满足该选择器的元素。'
       return shooter.screenshot({
         fullPage: true,
