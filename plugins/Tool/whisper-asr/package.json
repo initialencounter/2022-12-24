@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-whisper-asr",
   "description": "[openai whisper-asr](https://github.com/ahmetoner/whisper-asr-webservice) 语音识别服务,支持一百多种语言+翻译，适配wechaty语音消息",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
