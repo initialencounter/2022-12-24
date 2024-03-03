@@ -45,17 +45,17 @@ class GenshinAtlas extends DataService<GenshinAtlas.Data> {
     })
     let keys = ['material', 'specialty', 'up', 'enemy', 'effect', 'card', 'weapon', 'food', 'material for role', 'form', 'artifact'];
     let alias = [
-      this.config.alias.material ?? ['副本'],
-      this.config.alias.specialty ?? ['突破材料', '特殊材料'],
-      this.config.alias.up ?? ['up'],
-      this.config.alias.enemy ?? ['怪', '原魔'],
-      this.config.alias.effect ?? ['效果', 'buff'],
-      this.config.alias.card ?? ['卡片', '七圣召唤'],
-      this.config.alias.weapon ?? ['武器'],
-      this.config.alias.food ?? ['食物', '菜'],
-      this.config.alias["material for role"] ?? ['角色材料'],
-      this.config.alias.form ?? ['遗物表'],
-      this.config.alias.artifact ?? ['圣遗物']
+      this.ctx.config.alias.material ?? ['副本'],
+      this.ctx.config.alias.specialty ?? ['突破材料', '特殊材料'],
+      this.ctx.config.alias.up ?? ['up'],
+      this.ctx.config.alias.enemy ?? ['怪', '原魔'],
+      this.ctx.config.alias.effect ?? ['效果', 'buff'],
+      this.ctx.config.alias.card ?? ['卡片', '七圣召唤'],
+      this.ctx.config.alias.weapon ?? ['武器'],
+      this.ctx.config.alias.food ?? ['食物', '菜'],
+      this.ctx.config.alias["material for role"] ?? ['角色材料'],
+      this.ctx.config.alias.form ?? ['遗物表'],
+      this.ctx.config.alias.artifact ?? ['圣遗物']
     ]
     ctx.middleware((session, next) => {
       const target = this.getTarget(session.content);
@@ -67,9 +67,9 @@ class GenshinAtlas extends DataService<GenshinAtlas.Data> {
             const path = this.path_dict[keys[i]][pathName]
             let img_url: string
             if (config.engine) {
-              img_url = this.config.repo + path
+              img_url = this.ctx.config.repo + path
             } else {
-              img_url = pathToFileURL(resolve(this.config.src_path + path)).href
+              img_url = pathToFileURL(resolve(this.ctx.config.src_path + path)).href
             }
             return h.image(img_url);
           }
@@ -89,8 +89,8 @@ class GenshinAtlas extends DataService<GenshinAtlas.Data> {
     return md
   }
   getTarget(cmd: string): string {
-    if (!(cmd.startsWith(this.config.prefix))) return ""
-    const name = cmd.replace(this.config.prefix, '')
+    if (!(cmd.startsWith(this.ctx.config.prefix))) return ""
+    const name = cmd.replace(this.ctx.config.prefix, '')
     return name ?? ''
   }
   rmSpace(source: string): string {
