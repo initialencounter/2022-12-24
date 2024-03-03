@@ -31,7 +31,7 @@ declare module '@koishijs/plugin-console' {
 class GenshinAtlas extends DataService<GenshinAtlas.Data> {
   path_dict: Dict
   name_list: string[]
-  constructor(ctx: Context, private config: GenshinAtlas.Config) {
+  constructor(ctx: Context, config: GenshinAtlas.Config) {
     super(ctx, 'genshinatlas')
     ctx.using(['console'], (ctx) => {
       ctx.console.addEntry({
@@ -80,7 +80,7 @@ class GenshinAtlas extends DataService<GenshinAtlas.Data> {
   }
   async updatePath(session: Session) {
     const res = await this.ctx.http.get('https://ghproxy.com/https://raw.githubusercontent.com/Nwflower/genshin-atlas/master/path.json', { responseType: 'arraybuffer' })
-    writeFileSync(resolve(__dirname, 'path.json'), res)
+    writeFileSync(resolve(__dirname, 'path.json'), Buffer.from(res))
     return session.text('commands.update.messages.success')
   }
 
