@@ -9,16 +9,16 @@ type CallbackFunction = (error: Error | null, result: Buffer | null) => void;
 
 class PaddleSpeechAsr extends Sst {
   lang: string
-  constructor(ctx: Context, private config: PaddleSpeechAsr.Config) {
+  constructor(ctx: Context) {
     super(ctx)
-    this.lang = config.lang
+    this.lang = this.ctx.config.lang
     ctx.i18n.define('zh', require('./locales/zh'));
-    if (config.auto_rcg) {
+    if (ctx.config.auto_rcg) {
       ctx.middleware(async (session, next) => {
-        if (session.elements[0].type == "audio" && this.config.auto_rcg) {
-          if (this.config.waiting) {
+        if (session.elements[0].type == "audio" && this.ctx.config.auto_rcg) {
+          if (this.ctx.config.waiting) {
             const msgid = (await session.bot.sendMessage(session.channelId, h('quote', { id: session.messageId }) + session.text('commands.asr.messages.thinking'), session.guildId))[0]
-            if (this.config.recall) {
+            if (this.ctx.config.recall) {
               await this.recall(session, msgid)
             }
           }
@@ -31,7 +31,7 @@ class PaddleSpeechAsr extends Sst {
       })
     }
     ctx.command('asr [url]', '语音连接转文字')
-      .option('lang', '-l <lang:text>', { fallback: config.lang })
+      .option('lang', '-l <lang:text>', { fallback: ctx.config.lang })
       .action(async ({ session, options }, url) => {
         this.lang = options.lang
         url = url ? url : 'https://paddlespeech.bj.bcebos.com/PaddleAudio/zh.wav'
@@ -92,11 +92,10 @@ class PaddleSpeechAsr extends Sst {
       lang: this.lang,
       punc: false
     }
-    const res: PaddleSpeechAsr.Result = (await this.ctx.http.axios({
-      url: trimSlash(this.config.endpoint + '/paddlespeech/asr'),
-      method: 'POST',
-      data: requset,
-    })).data
+    const res: PaddleSpeechAsr.Result = await this.ctx.http.post(
+      trimSlash(this.ctx.config.endpoint + '/paddlespeech/asr'),
+      requset
+    )
     return res?.result?.transcription
   }
   async convertBase64AMRtoWAV(bufferData: Buffer, callback: CallbackFunction) {
@@ -113,18 +112,16 @@ class PaddleSpeechAsr extends Sst {
     ;
   }
   private async get_file(url: string): Promise<ArrayBuffer> {
-    const response = await this.ctx.http.axios({
-      url,
-      method: 'GET',
+    const response = await this.ctx.http.get(url,{
       responseType: "arraybuffer",
     });
-    return response.data;
+    return response;
   }
   async recall(session: Session, messageId: string) {
     new Promise(resolve => setTimeout(() => {
       session.bot.deleteMessage(session.channelId, messageId)
     }
-      , this.config.recall_time));
+      , this.ctx.config.recall_time));
   }
 }
 namespace PaddleSpeechAsr {

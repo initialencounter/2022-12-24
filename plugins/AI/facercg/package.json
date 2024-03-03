@@ -44,6 +44,7 @@
     "koishi": "^4.17.1"
   },
   "devDependencies": {
+    "@koishijs/plugin-console": "^5.28.0",
     "@koishijs/plugin-notifier": "^1.2.0"
   }
 }

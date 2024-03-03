@@ -48,11 +48,6 @@ class BaiduTts extends Vits {
     const payload = {
       method: 'POST',
       url: 'https://tsn.baidu.com/text2audio',
-      responseType: 'arraybuffer' as const,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': '*/*'
-      },
       data: {
         tex: encodeURIComponent(input),
         tok: String(this.access_token),
@@ -64,8 +59,14 @@ class BaiduTts extends Vits {
       }
     }
     try {
-      const response = (await this.ctx.http.axios(payload)) // JSON.parse(JSON.stringify(payload)) (x
-      return h.audio(response.data, 'audio/wav')
+      const response = await this.ctx.http.post(payload.url, payload.data, {
+        responseType: 'arraybuffer' as const,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': '*/*'
+        },
+      }) // JSON.parse(JSON.stringify(payload)) (x
+      return h.audio(response, 'audio/wav')
     } catch (e) {
       logger.info(String(e))
       return h(String(e))
@@ -81,12 +82,11 @@ class BaiduTts extends Vits {
   private async getAccessToken() {
 
     let options = {
-      'method': 'POST',
       'url': 'https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=' + this.AK + '&client_secret=' + this.SK,
     }
     try {
-      const res = await this.ctx.http.axios(options)
-      return res.data.access_token
+      const res = await this.ctx.http.post(options.url)
+      return res.access_token
     } catch (e) {
       logger.error(e)
       return ''
