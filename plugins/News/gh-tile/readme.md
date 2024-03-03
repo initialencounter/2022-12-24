@@ -10,6 +10,8 @@
 - 可以在插件的模块目录下将 0.jpg 更换为你喜欢的图片
 
 ## 更新日志
+    - v2.4.2
+        fix: send image failed
     - v2.4.1
         fix: <!DOCTYPE "... is not valid JSON
     - v2.3.3 

@@ -1,7 +1,7 @@
 import { Context, Schema, Session, h, Logger } from 'koishi'
 import { } from 'koishi-plugin-cron';
 import { mainUsage } from './config'
-import { pathToFileURL } from 'node:url'
+import { readFileSync } from "fs"
 import { resolve } from "path";
 import { getTileNums, getContributions, getDate, getYesterdayDate } from "./utils"
 export const name = 'gh-tile'
@@ -285,14 +285,14 @@ export async function alertCallbackFunctionasync(ctx: Context) {
     // 排序
     rank.sort((a, b) => b.tile - a.tile)
     const bot = ctx.bots[`${platform}:${selfId}`]
-    const img_url = pathToFileURL(resolve(__dirname, "0.jpg")).href
+    const imgdata = readFileSync(resolve(__dirname, "0.jpg"))
     if (rank[0]?.username) {
       bot?.sendMessage(channelId, `${rank[0]?.username} 是今天的瓷砖王，居然贴了 ${rank[0]?.tile} 块瓷砖!`, guildId)
     }
     // 读取提醒语
     const alertText = ctx.i18n.get('commands.tile.messages.tile-alert')['zh'] ?? '快起来贴瓷砖！'
     if (atList) {
-      bot?.sendMessage(channelId, h.image(img_url) + "" + atList + alertText, guildId)
+      bot?.sendMessage(channelId, h.image(imgdata, 'image/jpg') + "" + atList + alertText, guildId)
     }
   }
 }
