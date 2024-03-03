@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-specialtile",
   "description": "口球大礼包",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [

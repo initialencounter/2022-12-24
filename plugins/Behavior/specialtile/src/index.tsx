@@ -1,5 +1,4 @@
 import { Context, Logger, Schema, Session, Dict } from 'koishi'
-
 import fs from "fs"
 export const name = 'specialtitle'
 export const logger = new Logger(name)
@@ -129,19 +128,20 @@ class Special {
       fields.add('authority')
       fields.add('id')
     })
-    ctx.command('设置管理 [nickname:string]', '通过userId设置管理员', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
+    let ctx2 = ctx.platform("onebot")
+    ctx2.command('设置管理 [nickname:string]', '通过userId设置管理员', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
       session.bot.internal?.setGroupAdmin(session.guildId, args[0], true)
       return "嗯！已经设置了"
     })
-    ctx.command('取消管理 [nickname:string]', '通过userId取消管理员', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
+    ctx2.command('取消管理 [nickname:string]', '通过userId取消管理员', { checkArgCount: true, authority: 5 }).action(async ({ session }, ...args) => {
       session.bot.internal?.setGroupAdmin(session.guildId, args[0], false)
       return "嗯！已经取消了"
     })
-    ctx.command('修改昵称 [uid:string] [nickname:string]', '修改群友昵称', { checkArgCount: true, authority: 1 }).action(async ({ session }, ...args) => {
+    ctx2.command('修改昵称 [uid:string] [nickname:string]', '修改群友昵称', { checkArgCount: true, authority: 1 }).action(async ({ session }, ...args) => {
       session.bot.internal?.setGroupCard(session.guildId, args[0], args[1])
       return "嗯！已经修改了"
     })
-    ctx.command('修改头衔 [uid:string] [nickname:string]', '修改群友头衔', { checkArgCount: true, authority: 1 }).action(async ({ session }, ...args) => {
+    ctx2.command('修改头衔 [uid:string] [nickname:string]', '修改群友头衔', { checkArgCount: true, authority: 1 }).action(async ({ session }, ...args) => {
       session.bot.internal?.setGroupSpecialTitle(session.guildId, args[0], args[1])
       return "嗯！已经修改了"
     })
