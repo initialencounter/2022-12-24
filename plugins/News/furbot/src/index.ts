@@ -2,6 +2,8 @@ import { BlobOptions } from 'buffer';
 import { readFileSync } from 'fs';
 import { Context, Schema, Logger, Session, Dict, Next, h } from 'koishi'
 import { resolve } from 'path';
+import axios from "axios";
+
 export const name = 'furbot'
 const logger = new Logger(name)
 const BASE_URL = 'https://cloud.foxtail.cn/api';
@@ -326,11 +328,11 @@ class FurBot {
     // 开始请求
     try {
       response = await this.makePostRequest(`${BASE_URL}/account/login`, headers, data);
-
+      session.send(response.data?.msg??'')
       // 获取令牌
       const token = await this.makeGetRequest_cookie(`${BASE_URL}/account/tkapply`, response.headers['set-cookie'])
+      session.send(token.data?.msg??'')
       if (token.token) {
-
         // 查询数据库是否存在账户
         const account: FurBot.Account = (await this.ctx.database.get('furry_account', { uid: [session.userId] }))[0];
         // 更新数据库
@@ -356,14 +358,14 @@ class FurBot {
     return account
   }
   async makeGetRequest_buffer(url: string) {
-    return (await this.ctx.http.axios({
+    return (await axios({
       method: 'get',
       url,
       responseType: 'arraybuffer'
     }));
   }
   async makeGetRequest_form(url: string) {
-    return (await this.ctx.http.axios({
+    return (await axios({
       method: 'get',
       url,
       headers: {
@@ -372,7 +374,7 @@ class FurBot {
     })).data;
   }
   async makeGetRequest_cookie(url: string, cookie: string[]) {
-    return (await this.ctx.http.axios({
+    return (await axios({
       method: 'get',
       url,
       headers: {
@@ -383,7 +385,7 @@ class FurBot {
   }
 
   async makePostRequest(url: string, headers: any, data: any) {
-    return (await this.ctx.http.axios({
+    return (await axios({
       method: 'post',
       url,
       headers,
