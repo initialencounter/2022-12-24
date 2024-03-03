@@ -1,6 +1,7 @@
 import { Context, Schema, Session, segment, Dict, Logger, h, trimSlash, arrayBufferToBase64 } from 'koishi'
 import { } from 'koishi-plugin-davinci-003'
 import { } from 'koishi-plugin-puppeteer'
+import axios from 'axios'
 export const using = ['dvc', 'puppeteer']
 export const name = 'sd-taylor'
 
@@ -132,13 +133,13 @@ class Taylor {
         const model: string = await this.switch_model_menu(session)
         session.send(session.text('commands.tl.messages.switching', [model]))
         if (model) {
-          await this.ctx.http.axios(config.api_path + '/sdapi/v1/options', {
+          await axios(config.api_path + '/sdapi/v1/options', {
             method: 'POST',
             data: {
               sd_model_checkpoint: model
             }
           })
-          const model_now = (await this.ctx.http.axios(trimSlash(this.config.api_path) + '/sdapi/v1/options')).data
+          const model_now = (await axios(trimSlash(this.config.api_path) + '/sdapi/v1/options')).data
           return session.text('commands.tl.messages.switch-success', [model_now.sd_model_checkpoint])
         } else {
           return this.info
@@ -250,7 +251,7 @@ class Taylor {
   async switch_model_menu(session: Session): Promise<string> {
     const type_arr: string[] = []
     let type_str: string = '\n请输入编号:\n'
-    const model_now = (await this.ctx.http.axios(trimSlash(this.config.api_path) + '/sdapi/v1/options', {})).data.sd_model_checkpoint
+    const model_now = (await axios(trimSlash(this.config.api_path) + '/sdapi/v1/options', {})).data.sd_model_checkpoint
     const res = await this.ctx.http.get(trimSlash(this.config.api_path) + '/sdapi/v1/sd-models')
     res.forEach((i, id) => {
       type_str += String(id + 1) + ' ' + i.model_name + '\n'
