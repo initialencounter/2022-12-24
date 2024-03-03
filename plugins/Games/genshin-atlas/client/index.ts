@@ -1,5 +1,6 @@
 import { defineExtension } from '@koishijs/client'
 import Page from './page.vue'
+import 'uno.css'
 
 // 将 koishi-plugin-client 改为你的插件全称
 import { } from 'koishi-plugin-genshin-atlas'

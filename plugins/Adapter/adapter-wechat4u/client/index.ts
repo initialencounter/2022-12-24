@@ -1,5 +1,6 @@
 import { defineExtension } from '@koishijs/client'
 import Page from './page.vue'
+import 'uno.css'
 
 import { } from '../lib/adapter'
 
