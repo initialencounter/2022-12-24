@@ -85,24 +85,18 @@ class WhisperAsr extends Sst {
     return 'Not a audio'
   }
   private async get_file(url: string): Promise<ArrayBuffer> {
-    const response = await this.ctx.http.axios({
-      url,
-      method: 'GET',
+    const response = await this.ctx.http.get(url,{
       responseType: "arraybuffer",
     });
-    return response.data;
+    return response;
   }
   private async create_task(base64: string): Promise<string> {
     try {
-      const res = await this.ctx.http.axios({
-        method: 'post',
-        url: `${this.endpoint}/asr`,
-        data: {
+      const res = await this.ctx.http.post(`${this.endpoint}/asr`,{
           method: this.method,
           audio: base64,
           task: this.task,
           language: this.language
-        }
       })
       return res.data
     } catch (e) {
