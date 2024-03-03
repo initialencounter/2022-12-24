@@ -8,18 +8,18 @@ class PaddleSpeechTts extends Vits {
     temp_msg: string
     speaker: number
     max_length: number
-    constructor(ctx: Context, private config: PaddleSpeechTts.Config) {
+    constructor(ctx: Context) {
         super(ctx)
-        this.max_length = this.config.max_length
+        this.max_length = this.ctx.config.max_length
         ctx.i18n.define('zh', require('./locales/zh'));
         ctx.command('say [input:text]', '百度智能云语音合成')
-            .option('speaker', '-s <speaker:number>', { fallback: config.speaker_id })
+            .option('speaker', '-s <speaker:number>', { fallback: this.ctx.config.speaker_id })
             .action(async ({ session, options }, input) => {
                 input = input?input:'您好，欢迎使用百度飞桨语音合成服务。'
                 this.speaker = options.speaker
-                if (this.config.waiting) {
+                if (this.ctx.config.waiting) {
                     const msgid = (await session.bot.sendMessage(session.channelId, h('quote', { id: session.messageId }) + session.text('commands.asr.messages.thinking'), session.guildId))[0]
-                    if (this.config.recall) {
+                    if (this.ctx.config.recall) {
                         await this.recall(session, msgid)
                     }
                 }
@@ -44,18 +44,18 @@ class PaddleSpeechTts extends Vits {
         const body: PaddleSpeechTts.Request = {
             text: input,
             spk_id: this.speaker,
-            speed: this.config.speed,
+            speed: this.ctx.config.speed,
             volume: 1,
             simple_rate: 8000,
             save_path: '/root/test.wav'
         }
         const payload = {
             method: 'POST',
-            url: trimSlash(this.config.endpoint + '/paddlespeech/tts'),
+            url: trimSlash(this.ctx.config.endpoint + '/paddlespeech/tts'),
             data: body
         }
         try {
-            const response: PaddleSpeechTts.Result = (await this.ctx.http.axios(payload)).data
+            const response: PaddleSpeechTts.Result = (await this.ctx.http.post(payload.url,payload.data))
             return h.audio(base64ToArrayBuffer(response.result.audio) as ArrayBuffer, 'audio/wav')
         } catch (e) {
             logger.info(String(e))
@@ -67,7 +67,7 @@ class PaddleSpeechTts extends Vits {
         new Promise(resolve => setTimeout(() => {
             session.bot.deleteMessage(session.channelId, messageId)
         }
-            , this.config.recall_time));
+            , this.ctx.config.recall_time));
     }
 
 

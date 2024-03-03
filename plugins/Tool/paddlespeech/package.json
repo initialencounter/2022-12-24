@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-paddlespeech",
   "description": "百度飞桨语音服务,需要ffmpeg环境",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
