@@ -15,13 +15,13 @@ class BaiduSst extends Sst {
     this.SK = config.SK_W
     this.if_whisper_gettoken = true
     // 获取access token
-    ctx.on('ready',async()=>{
+    ctx.on('ready', async () => {
       this.access_token = await this.getAccessToken()
-      if(this.access_token==''){
+      if (this.access_token == '') {
         this.if_whisper_gettoken = false
       }
     })
-    
+
     ctx.i18n.define('zh', require('./locales/zh'));
     if (config.auto_rcg) {
       ctx.middleware(async (session, next) => {
@@ -37,7 +37,7 @@ class BaiduSst extends Sst {
 
   }
   async audio2text(session: Session): Promise<string> {
-    if(!this.if_whisper_gettoken){
+    if (!this.if_whisper_gettoken) {
       return 'AK 或 SK配置失败'
     }
     if (session.elements[0].type == "audio") {
@@ -49,73 +49,79 @@ class BaiduSst extends Sst {
     return 'Not a audio'
   }
   private async get_res(taskid: string): Promise<string> {
-    const params = {
-      'method': 'POST',
-      'url': 'https://aip.baidubce.com/rpc/2.0/aasr/v1/query?access_token=' + this.access_token,
-      'headers': {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
+    let res = await this.ctx.http.post(
+      'https://aip.baidubce.com/rpc/2.0/aasr/v1/query?access_token=' + this.access_token,
+      {
+        "task_ids": [
+          taskid
+        ]
       },
-      data: {
-              "task_ids": [
-                      taskid
-              ]
-      }
-
-  };
-    let res = await this.ctx.http.axios(params)
-    while (res.data.tasks_info[0].task_status == 'Running') {
+      {
+        'headers': {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+      },
+    )
+    while (res.tasks_info[0].task_status == 'Running') {
       await this.sleep(618)
-      res = await this.ctx.http.axios(params)
+      res = await this.ctx.http.post(
+        'https://aip.baidubce.com/rpc/2.0/aasr/v1/query?access_token=' + this.access_token,
+        {
+          "task_ids": [
+            taskid
+          ]
+        },
+        {
+          'headers': {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+        },
+      )
     }
-    const text_segmet: string[] = (res.data.tasks_info[0].task_result.result)?(res.data.tasks_info[0].task_result.result):[]
+    const text_segmet: string[] = (res.tasks_info[0].task_result.result) ? (res.tasks_info[0].task_result.result) : []
     let text: string = ''
-    for(var i of text_segmet){
-      text+=i
+    for (var i of text_segmet) {
+      text += i
     }
     return text
 
   }
-  private sleep(ms:number) {
-    return new Promise(resolve=>setTimeout(resolve, ms))
+  private sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms))
   }
   private async create_task(url: string): Promise<string> {
-    const params = {
-      'method': 'POST',
-      'url': 'https://aip.baidubce.com/rpc/2.0/aasr/v1/create?access_token=' + this.access_token,
-      'headers': {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      "data": {
+    const res = await this.ctx.http.post(
+      'https://aip.baidubce.com/rpc/2.0/aasr/v1/create?access_token=' + this.access_token,
+      {
         "speech_url": url,
         "format": "amr",
         "pid": 80001,
         "rate": 16000
+      },
+      {
+        'headers': {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
       }
-
-    };
-    const res = await this.ctx.http.axios(params)
-    return res.data.task_id
+    )
+    return res.task_id
   }
   /**
  * 使用 AK，SK 生成鉴权签名（Access Token）
  * @return string 鉴权签名信息（Access Token）
  */
   private async getAccessToken() {
-
-    let options = {
-      'method': 'POST',
-      'url': 'https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=' + this.AK + '&client_secret=' + this.SK,
-    }
-    try{
-      const res = await this.ctx.http.axios(options)
-    return res.data.access_token
-    }catch(e){
+    try {
+      const res = await this.ctx.http.post('https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=' + this.AK + '&client_secret=' + this.SK)
+      return res.access_token
+    } catch (e) {
       logger.error(e)
       return ''
     }
-    
+
   }
 
 
