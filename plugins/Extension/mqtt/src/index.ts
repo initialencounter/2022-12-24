@@ -15,7 +15,7 @@ class Mqtt extends Service {
   topic: string
   client: Client
   temp_msg: string
-  constructor(ctx: Context, private config: Mqtt.Config) {
+  constructor(ctx: Context, config: Mqtt.Config) {
     super(ctx, 'mqtt', true)
     this.msgs = []
     this.status = false
