@@ -39,6 +39,6 @@
     "description": "[stabe_diffusion](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/API)绘图插件,支持controlnet,lora,AI-Tag增强"
   },
   "peerDependencies": {
-    "koishi": "^4.17.1"
+    "koishi": "^4.17.2"
   }
 }

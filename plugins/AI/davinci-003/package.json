@@ -34,7 +34,7 @@
   ],
   "peerDependencies": {
     "@koishijs/plugin-console": "^5.28.0",
-    "koishi": "^4.17.1"
+    "koishi": "^4.17.2"
   },
   "koishi": {
     "description": "AI 聊天",

@@ -32,7 +32,7 @@
     "endgame"
   ],
   "peerDependencies": {
-    "koishi": "^4.17.1"
+    "koishi": "^4.17.2"
   },
   "koishi": {
     "description": {

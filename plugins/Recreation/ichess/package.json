@@ -29,7 +29,7 @@
     "chess"
   ],
   "peerDependencies": {
-    "koishi": "^4.17.1",
+    "koishi": "^4.17.2",
     "koishi-plugin-puppeteer": "^3.8.2"
   },
   "dependencies": {
