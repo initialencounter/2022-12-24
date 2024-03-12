@@ -154,6 +154,7 @@ const category_map = {
     image: '图片服务',
     console: '控制台',
     gametool: '游戏辅助',
+    life: "生活指南",
     meme: '趣味交互',
     media: '资讯服务',
     other: "其他",
