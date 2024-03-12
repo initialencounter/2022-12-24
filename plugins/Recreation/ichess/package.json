@@ -20,7 +20,7 @@
   "bugs": {
     "url": "https://github.com/initialencounter/mykoishi/issues"
   },
-  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Recreation/ichess#readme.md",
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/neat/plugins/Recreation/ichess#readme.md",
   "license": "AGPL-3.0",
   "keywords": [
     "chatbot",

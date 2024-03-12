@@ -15,7 +15,7 @@
   "bugs": {
     "url": "https://github.com/initialencounter/mykoishi/issues"
   },
-  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Tool/jimp#readme",
+  "homepage": "https://github.com/initialencounter/mykoishi/blob/neat/plugins/Extension/jimp#readme",
   "license": "MIT",
   "scripts": {
     "test": "node -r esbuild-register jimp/test/base.spec.ts"

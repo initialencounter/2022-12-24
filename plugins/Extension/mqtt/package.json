@@ -21,7 +21,7 @@
   "bugs": {
     "url": "https://github.com/initialencounter/mykoishi/issues"
   },
-  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/Extension/mqtt#readme",
+  "homepage": "https://github.com/initialencounter/mykoishi/blob/neat/plugins/Extension/mqtt#readme",
   "keywords": [
     "chatbot",
     "koishi",
