@@ -26,7 +26,7 @@
   "bugs": {
     "url": "https://github.com/initialencounter/mykoishi/issues"
   },
-  "homepage": "https://github.com/initialencounter/mykoishi/tree/master/Plugins/News/help-pro#readme",
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/neat/plugins/Manager/help-pro#readme",
   "peerDependencies": {
     "koishi": "^4.17.1"
   },
