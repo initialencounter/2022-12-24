@@ -273,11 +273,10 @@ export function apply(ctx: Context, config: Config) {
 
       const command = await inferCommand(target, session)
       if (!command) return
-      const permissions = [`command.${command.name}`]
-      if (!await ctx.permissions.test(permissions, session as any)) {
+      if (!await ctx.permissions.test(`command:${command.name}`, session)) {
         return session.text('internal.low-authority')
       }
-      return showHelp(ctx, command, session, options)
+      return showHelp(ctx,command, session, options)
     })
 
   if (config.shortcut !== false) cmd.shortcut('help', { i18n: true, fuzzy: true })
