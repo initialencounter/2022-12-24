@@ -2,6 +2,7 @@ import { readFileSync } from 'fs'
 import { Argv, Command, Computed, Context, FieldCollector, h, Schema, Session, Dict } from 'koishi'
 import { resolve } from 'path'
 import { render_list, render_categroy } from './render_canvas'
+import { render_list2, render_categroy2 } from './render_pptr'
 import { calculateHash } from './utils'
 
 type DailyField = typeof dailyFields[number]
@@ -102,10 +103,12 @@ export interface Config {
   color?: string
   background?: string
   maxRenderPeerPage?: number
+  canvas?: boolean
 }
 
 export const Config: Schema<Config> = Schema.intersect([
   Schema.object({
+    canvas: Schema.boolean().default(false).description("使用 canvas 渲染，会提升渲染速度，但图片样式会发生改变"),
     shortcut: Schema.boolean().default(false).description('是否启用快捷调用。').hidden(true),
     options: Schema.boolean().default(false).description('是否为每个指令添加 `-h, --help` 选项。').hidden(true),
     output: Schema.union([
@@ -141,7 +144,7 @@ export const pluginCategory = {}
 export const categorys = ['']
 export const name = 'help-pro'
 export const inject = {
-  optional: ['canvas']
+  optional: ['canvas', 'puppeteer']
 }
 export const usage = `${readFileSync(resolve(__dirname, '../readme.md')).toString('utf-8')}`
 
@@ -159,7 +162,7 @@ export function apply(ctx: Context, config: Config) {
     }
   })
   function enableHelp(command: Command) {
-    command[Context.current] = ctx
+    command[Context.trace] = ctx
     command.option('help', '-h', {
       hidden: true,
       // @ts-ignore
@@ -276,7 +279,7 @@ export function apply(ctx: Context, config: Config) {
       if (!await ctx.permissions.test(`command:${command.name}`, session)) {
         return session.text('internal.low-authority')
       }
-      return showHelp(ctx,command, session, options)
+      return showHelp(ctx, command, session, options)
     })
 
   if (config.shortcut !== false) cmd.shortcut('help', { i18n: true, fuzzy: true })
@@ -531,12 +534,12 @@ async function renderList(ctx: Context, cmds: Command[], session: Session<'autho
   imgCache.image1 = []
   if (sortedCmds.length > step) {
     for (var i = 0; i < sortedCmds.length; i += step) {
-      const a = await render_list(ctx, sortedCmds.slice(i, i + step), color)
+      const a = ctx.config.canvas ? await render_list(ctx, sortedCmds.slice(i, i + step), color):await render_list2(ctx, sortedCmds.slice(i, i + step), color)
       imgCache.image1.push(a)
       session.send(a)
     }
   } else {
-    const a = await render_list(ctx, sortedCmds, color)
+    const a = ctx.config.canvas ? await render_list(ctx, sortedCmds, color): await render_list2(ctx, sortedCmds, color)
     imgCache.image1.push(a)
     return a
   }
@@ -559,7 +562,7 @@ async function renderCategroy(ctx: Context, cmds: Command[], session: Session<'a
   if (hash2 == imgCache.image2_hash) {
     return imgCache.image2
   }
-  const a = await render_categroy(ctx, color, cmdGrid)
+  const a = ctx.config.canvas ? await render_categroy(ctx, color, cmdGrid) : await render_categroy2(ctx, color, cmdGrid)
   imgCache.image2_hash = hash2
   imgCache.image2 = a
   return a

@@ -12,4 +12,11 @@
 - [x] 指令分类
 - [x] 指令排序
 
-### canvas 建议使用 canvas 插件的，不然会很慢
+### canvas 服务必须由 canvas 插件提供
+
+### 加载本地图片示例
+
+file:///+文件路径
+
+注意将路径中的 `\` 替换为 `/`
+file:///C:/Users/29115/dev/boilerplate/data/test.png
