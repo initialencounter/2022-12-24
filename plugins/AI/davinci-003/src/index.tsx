@@ -416,13 +416,13 @@ class DVc extends Dvc {
     // 昵称触发
     if (this.ctx.config.nickwake) {
       for (var i of this.sessions_cmd) {
-        if (session.content.indexOf(i) > -1) {
+        if (session.content.startsWith(i)) {
           this.sessions[session.userId] = this.personality[i]
           return await this.sli(session, session.content, {})
         }
       }
     }
-    // 随机 触发
+    // 随机触发
     if (this.ctx.config.randnum == 0) return next()
     const randnum: number = Math.random()
     if (randnum < this.ctx.config.randnum) return await this.dvc(session, session.content)
