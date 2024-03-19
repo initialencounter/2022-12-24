@@ -58,7 +58,7 @@ export async function switch_menu(session: Session, type_arr: string[], name: st
    * @param name 
    * @returns 
    */
-export async function switch_menu_grid(session: Session, type_arr: string[], name: string): Promise<string> {
+export async function switch_menu_grid(session: Session, type_arr: string[], name: string): Promise<string[]> {
     let type_str: string = '\n' + name + '\n\n'
     let count = 0
     function getActualLength(str) {
@@ -103,10 +103,17 @@ export async function switch_menu_grid(session: Session, type_arr: string[], nam
             nickname: 'AI',
         }, type_str))
     await session.send(result)
-    const input = await session.prompt()
-    if (!input || Number.isNaN(+input)) return ''
-    const index: number = parseInt(input) - 1
-    if ((index < 0) || (index > type_arr.length - 1)) return ''
-    return type_arr[index]
+    let input:string = await session.prompt()
+    input = input.trim()
+    let res = []
+    for(var i of input.split(" ")){
+        if (!i || Number.isNaN(+i)){
+            continue
+        }
+        const index: number = parseInt(i) - 1
+        if ((index < 0) || (index > type_arr.length - 1)) continue
+        res.push(type_arr[index])
+    }
+    return res
 }
 

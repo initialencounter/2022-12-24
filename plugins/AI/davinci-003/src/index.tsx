@@ -9,7 +9,6 @@ import { } from '@koishijs/plugin-console'
 import { resolve } from 'path';
 import { recall, switch_menu, switch_menu_grid } from './utils'
 import { Dvc } from './type'
-import test from 'node:test';
 const name = 'davinci-003';
 const logger = new Logger(name);
 
@@ -236,10 +235,14 @@ class DVc extends Dvc {
     ctx.command('dvc.cat', '显示一个对话')
       .alias('dvc.会话人格')
       .option('all', '-a --all 显示所有字数')
+      .option('personality', '-p <personality:string> 指定人格昵称')
       .option('id', '-i <id:number> 指定会话ID，默认为0')
       .action(async ({ session, options }) => {
         if (this.block(session as Session)) {
           return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
+        }
+        if(options?.personality){
+          return JSON.stringify(this.personality[options?.personality??"预设人格"])
         }
         const sid = options.id ?? 0
         let text = (this.sessions[session.userId]?.[sid] ?? this.session_config[0]).content
@@ -661,7 +664,7 @@ class DVc extends Dvc {
     }
     // 参数合法
     if (nick_name && nick_names.indexOf(nick_name) > -1) {
-      return this.personality_rm(session, nick_name)
+      return this.personality_rm(session, [nick_name])
     }
     const input = await switch_menu_grid(session, nick_names, '人格')
     if (!input) {
@@ -677,10 +680,12 @@ class DVc extends Dvc {
    * @returns 字符串
    */
 
-  personality_rm(session: Session, nick_name: string): string {
-    const index: number = this.sessions_cmd.indexOf(nick_name)
-    this.sessions_cmd.splice(index, 1)
-    delete this.personality[nick_name]
+  personality_rm(session: Session, nick_name: string[]): string {
+    for (var nick_name_0 of nick_name) {
+      const index: number = this.sessions_cmd.indexOf(nick_name_0)
+      this.sessions_cmd.splice(index, 1)
+      delete this.personality[nick_name_0]
+    }
     this.sessions[session.userId] = [{ "role": "system", "content": "你是我的全能AI助理" }]
     fs.writeFileSync('./personality.json', JSON.stringify(this.personality, null, 2))
     return '人格删除成功'
@@ -878,7 +883,7 @@ class DVc extends Dvc {
     if (!input) {
       return session.text('commands.dvc.messages.menu-err')
     }
-    return this.set_personality(session, input)
+    return this.set_personality(session, input[0])
   }
 
   /**
