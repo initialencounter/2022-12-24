@@ -582,6 +582,7 @@ class DVc extends Dvc {
         return res
       }
       try_times++
+      await this.ctx.sleep(500)
     }
   }
 
