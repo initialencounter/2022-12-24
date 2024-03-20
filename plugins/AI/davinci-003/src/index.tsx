@@ -1,4 +1,4 @@
-import { Context, Logger, segment, Element, Session, Service, Dict, h, Next, Fragment, Schema, trimSlash } from 'koishi';
+import { Context, Logger, segment, Element, Session, Dict, h, Next, Fragment, trimSlash } from 'koishi';
 import fs, { readFileSync } from 'fs';
 import { } from 'koishi-plugin-rate-limit';
 import { } from 'koishi-plugin-puppeteer';
@@ -39,10 +39,10 @@ class DVc extends Dvc {
 
     ctx.on('ready', () => {
       if ((!ctx.puppeteer) && config.output == 'image') {
-        logger.warn('未启用puppter,将无法发送图片');
+        logger.warn('未启用puppter，将无法发送图片消息');
       }
       if ((!ctx.vits) && config.output == "voice") {
-        logger.warn('未启用puppter,将无法输出语音');
+        logger.warn('未启用vits，将无法输出语音');
       }
     })
     ctx.inject(['console'], (ctx) => {
@@ -423,7 +423,7 @@ class DVc extends Dvc {
     if (randnum < this.ctx.config.randnum) return await this.dvc(session, session.content)
     return next()
   }
-  async chat_with_gpt4(session: Session, message: Dvc.Msg[]): Promise<string> {
+  async chat_with_gpt4(_session: Session, message: Dvc.Msg[]): Promise<string> {
     try {
       const response = await this.ctx.http.post(
         trimSlash(`${this.ctx.config.proxy_reverse4}/v1/chat/completions`),
@@ -450,7 +450,7 @@ class DVc extends Dvc {
    */
 
 
-  async chat_with_gpt(session: Session, message: Dvc.Msg[]): Promise<string> {
+  async chat_with_gpt(_session: Session, message: Dvc.Msg[]): Promise<string> {
     try {
       const response = await this.ctx.http.post(
         trimSlash(`${this.ctx.config.proxy_reverse ? this.ctx.config.proxy_reverse : "https://api.openai.com"}/v1/chat/completions`),
@@ -519,7 +519,7 @@ class DVc extends Dvc {
    */
 
   async chat(msg: string, sessionid: string, session: Session): Promise<string | segment> {
-    logger.info((session.author?.nickname || session.username) + ':' + msg)
+    logger.info((session.author?.nick || session.username) + ':' + msg)
     if (this.ctx.config.single_session) {
       sessionid = '3118087750'
     }
@@ -571,7 +571,7 @@ class DVc extends Dvc {
       try_times++
       await this.ctx.sleep(500)
     }
-    return `${this.key_number}报错`
+    return `请求错误，请查看日志`
   }
 
 
