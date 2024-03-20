@@ -482,7 +482,7 @@ class DVc extends Dvc {
   key_number_pp() {
     this.key_number++
     // 数组越界
-    if (this.key_number === (this.ctx.config.key.length - 1)) {
+    if (this.key_number === this.ctx.config.key.length) {
       this.key_number = 0
     }
   }
