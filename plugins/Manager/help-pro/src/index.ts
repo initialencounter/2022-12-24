@@ -162,7 +162,7 @@ export function apply(ctx: Context, config: Config) {
     }
   })
   function enableHelp(command: Command) {
-    command[Context.trace] = ctx
+    command[Context.origin] = ctx
     command.option('help', '-h', {
       hidden: true,
       // @ts-ignore
