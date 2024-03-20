@@ -583,7 +583,7 @@ class DVc extends Dvc {
   async try_control(cb: ChatCallback, session: Session, session_of_id: Dvc.Msg[]) {
     let try_times = 0;
     while (try_times < this.ctx.config.maxRetryTimes) {
-      const res = await cb(session, session_of_id)
+      const res = await cb.bind(this)(session, session_of_id)
       if (res !== '') {
         return res
       }
