@@ -60,6 +60,10 @@ QQ群：399899914
 
 
 # 更新日志
+- v6.4.4
+    - 修复[逆天bug](https://github.com/initialencounter/mykoishi/issues/41)无限循环
+    - 修复 key 数组越界
+    - 移除删除key
 - v6.4.3
     - 修复昵称唤醒异常
     - 新增批量删除人格

@@ -11,7 +11,7 @@ import { recall, switch_menu, switch_menu_grid } from './utils'
 import { Dvc } from './type'
 const name = 'davinci-003';
 const logger = new Logger(name);
-
+type ChatCallback = (session: Session, session_of_id: Dvc.Msg[]) => Promise<string>;
 declare module '@koishijs/plugin-console' {
   interface Events {
     'davinci-003/getproxy'(): string
@@ -241,8 +241,8 @@ class DVc extends Dvc {
         if (this.block(session as Session)) {
           return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
         }
-        if(options?.personality){
-          return JSON.stringify(this.personality[options?.personality??"预设人格"])
+        if (options?.personality) {
+          return JSON.stringify(this.personality[options?.personality ?? "预设人格"])
         }
         const sid = options.id ?? 0
         let text = (this.sessions[session.userId]?.[sid] ?? this.session_config[0]).content
@@ -279,7 +279,7 @@ class DVc extends Dvc {
    * @returns 翻译后的内容
    */
   async translate(session: Session, lang: string, prompt: string): Promise<string> {
-    return this.chat_with_gpt(session as Session, [{ role: 'system', content: '你是一个翻译引擎，请将文本翻译为' + lang + '，只需要翻译不需要解释。' }, { role: 'user', content: `请帮我我将如下文字翻译成${lang},“${prompt}”` }])
+    return this.try_control(this.chat_with_gpt,session as Session, [{ role: 'system', content: '你是一个翻译引擎，请将文本翻译为' + lang + '，只需要翻译不需要解释。' }, { role: 'user', content: `请帮我我将如下文字翻译成${lang},“${prompt}”` }])
   }
 
   /**
@@ -320,13 +320,7 @@ class DVc extends Dvc {
       return result
     }
     catch (e) {
-      this.key_number++
-      if (this.key_number < this.ctx.config?.key?.length) {
-        logger.info(`key${this.key_number - 1} 报错：${String(e)}`)
-        return await this.paint(session, prompt, n, size)
-      } else {
-        return session.text('commands.dvc.messages.err', [`key${this.key_number - 1} 报错：${String(e)}`])
-      }
+      return session.text('commands.dvc.messages.err', [`key${this.key_number + 1} 报错：${String(e)}`])
     }
 
   }
@@ -375,11 +369,11 @@ class DVc extends Dvc {
       prompt = await this.ctx.censor.transform(prompt, session)
     }
     if (this.type == 'gpt3.5-unit') {
-      const text: string = await this.chat_with_gpt(session, [{ 'role': 'user', 'content': prompt }])
+      const text: string = await this.try_control(this.chat_with_gpt,session, [{ 'role': 'user', 'content': prompt }])
       const resp = [{ "role": "user", "content": prompt }, { "role": "assistant", "content": text }]
       return await this.getContent(session.userId, resp, session.messageId)
     } else if (this.type == 'gpt4-unit') {
-      return await this.chat_with_gpt4(session, [{ 'role': 'user', 'content': prompt }])
+      return await this.try_control(this.chat_with_gpt4,session, [{ 'role': 'user', 'content': prompt }])
     } else {
       return await this.chat(prompt, session.userId, session)
     }
@@ -444,14 +438,11 @@ class DVc extends Dvc {
           Authorization: `Bearer ${this.key[this.key_number]}`
         },
       })
-      this.retry[this.key[this.key_number]] = 0
       return response.choices[0].message.content
     }
     catch (e) {
-      if (!(await this.switch_key(e))) {
-        return ''
-      }
-      return await this.chat_with_gpt4(session, message)
+      this.switch_key(e)
+      return ''
     }
   }
   /**
@@ -479,64 +470,46 @@ class DVc extends Dvc {
           'Content-Type': 'application/json'
         }
       })
-      this.retry[this.key[this.key_number]] = 0
       return response.choices[0].message.content
     }
     catch (e) {
-      if (!(await this.switch_key(e))) {
-        return ''
-      }
-      return await this.chat_with_gpt(session, message)
+      this.switch_key(e)
+      return ''
     }
   }
-
   /**
-   * 先查询余额 ,如果余额为 0，则从内存中删除 key, 如果还有余额，则暂时切换余额
+   * 切换下一个 key
+   */
+  key_number_pp() {
+    this.key_number++
+    // 数组越界
+    if (this.key_number === (this.key.length - 1)) {
+      this.key_number = 0
+    }
+  }
+  /**
+   * 先查询余额 ,如果余额为 0，切换key
    * @param session 会话
    * @param e Error
    */
 
   async switch_key(e: Error) {
+    // 查询余额
+    const credit = await this.get_credit()
+    logger.info(`key${this.key_number + 1}. ${this.key[this.key_number]} 报错，余额${credit}：${String(e)}`)
+    // 余额为 0 ,切换 key
+    if (credit === 0) {
+      this.key_number_pp()
+    }
     // 记录重试次数
     if (this.retry[this.key[this.key_number]]) {
       this.retry[this.key[this.key_number]] = this.retry[this.key[this.key_number]] + 1
-      // 如果重试次数超出最大，删除key
+      // 如果重试次数超出最大，切换 key
       if (this.retry[this.key[this.key_number]] > this.maxRetryTimes) {
-        this.key.splice(this.key_number, 1)
-        return false
+        this.key_number_pp()
       }
     } else {
       this.retry[this.key[this.key_number]] = 1
-    }
-    // 查询余额
-    const credit = await this.get_credit()
-    logger.info(`key${this.key_number - 1}. ${this.key[this.key_number]} 报错，余额${credit}：${String(e)}`)
-    // 余额为 0 ,删除key
-    if (credit === 0) {
-      this.key.splice(this.key_number, 1)
-    } else {
-      // 切换 key
-      this.key_number++
-      // 如果 key 的下标超出边界
-      if (this.key_number > (this?.key?.length - 1)) {
-        this.retry = {}
-        this.key_number = 0
-        return true
-      }
-    }
-    // 如果读取不到key，重置key
-    if (this.key[this.key_number] == undefined) {
-      this.resetKey()
-      logger.error("未配置key或所有key都已失效")
-      return false
-    }
-
-    // 如果 key 缓存池为空, 重置key
-    if (this.key.length == 0) {
-      this.resetKey()
-      return false
-    } else {
-      return true
     }
   }
   async resetKey() {
@@ -580,9 +553,9 @@ class DVc extends Dvc {
     // 与ChatGPT交互获得对话内容
     let message: string
     if (this.type == 'gpt4') {
-      message = await this.chat_with_gpt4(session, session_of_id)
+      message = await this.try_control(this.chat_with_gpt4,session, session_of_id)
     } else {
-      message = await this.chat_with_gpt(session, session_of_id)
+      message = await this.try_control(this.chat_with_gpt,session, session_of_id)
     }
     // 记录上下文
     session_of_id.push({ "role": "assistant", "content": message });
@@ -598,6 +571,24 @@ class DVc extends Dvc {
     logger.info(message)
     return await this.getContent(sessionid, session_of_id, session.messageId)
 
+  }
+
+  /**
+   * 
+   * @param cb chat 回调函数 chat_with_gpt | chat_with_gpt4
+   * @param session 会话
+   * @param session_of_id 会话 ID
+   * @returns 
+   */
+  async try_control(cb: ChatCallback, session: Session, session_of_id: Dvc.Msg[]) {
+    let try_times = 0;
+    while (try_times < this.ctx.config.maxRetryTimes) {
+      const res = await cb(session, session_of_id)
+      if (res !== '') {
+        return res
+      }
+      try_times++
+    }
   }
 
 
