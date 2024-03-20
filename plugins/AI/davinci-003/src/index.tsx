@@ -385,7 +385,7 @@ class DVc extends Dvc {
 
   async middleware1(session: Session, next: Next): Promise<string | string[] | segment | void | Fragment> {
     // 语音触发
-    if (session.elements[0].type == "audio" && this.ctx.sst) {
+    if (session.elements[0]?.type == "audio" && this.ctx.sst) {
       const text: string = await this.ctx.sst.audio2text(session)
       if (!text) {
         return session.text('commands.dvc.messages.louder')
@@ -401,7 +401,7 @@ class DVc extends Dvc {
       return this.sli(session, session.content, {})
     }
     // 艾特触发
-    if (session.elements[0].type == "at" && session.elements[0].attrs.id === session.bot.selfId && this.ctx.config.if_at) {
+    if (session.elements[0]?.type == "at" && session.elements[0].attrs.id === session.bot.selfId && this.ctx.config.if_at) {
       let msg: string = ''
       for (let i of session.elements.slice(1,)) {
         if (i.type === 'text') {
