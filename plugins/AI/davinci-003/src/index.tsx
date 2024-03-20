@@ -34,7 +34,6 @@ class DVc extends Dvc {
     this.type = config.type
     this.key_number = 0
     this.sessions = {};
-    this.retry = {}
     this.maxRetryTimes = config.maxRetryTimes
     ctx.i18n.define('zh', require('./locales/zh'));
 
@@ -278,7 +277,7 @@ class DVc extends Dvc {
    * @returns 翻译后的内容
    */
   async translate(session: Session, lang: string, prompt: string): Promise<string> {
-    return this.try_control(this.chat_with_gpt,session as Session, [{ role: 'system', content: '你是一个翻译引擎，请将文本翻译为' + lang + '，只需要翻译不需要解释。' }, { role: 'user', content: `请帮我我将如下文字翻译成${lang},“${prompt}”` }])
+    return this.try_control(this.chat_with_gpt, session as Session, [{ role: 'system', content: '你是一个翻译引擎，请将文本翻译为' + lang + '，只需要翻译不需要解释。' }, { role: 'user', content: `请帮我我将如下文字翻译成${lang},“${prompt}”` }])
   }
 
   /**
@@ -368,11 +367,11 @@ class DVc extends Dvc {
       prompt = await this.ctx.censor.transform(prompt, session)
     }
     if (this.type == 'gpt3.5-unit') {
-      const text: string = await this.try_control(this.chat_with_gpt,session, [{ 'role': 'user', 'content': prompt }])
+      const text: string = await this.try_control(this.chat_with_gpt, session, [{ 'role': 'user', 'content': prompt }])
       const resp = [{ "role": "user", "content": prompt }, { "role": "assistant", "content": text }]
       return await this.getContent(session.userId, resp, session.messageId)
     } else if (this.type == 'gpt4-unit') {
-      return await this.try_control(this.chat_with_gpt4,session, [{ 'role': 'user', 'content': prompt }])
+      return await this.try_control(this.chat_with_gpt4, session, [{ 'role': 'user', 'content': prompt }])
     } else {
       return await this.chat(prompt, session.userId, session)
     }
@@ -497,19 +496,7 @@ class DVc extends Dvc {
     const credit = await this.get_credit()
     logger.info(`key${this.key_number + 1}. ${this.ctx.config.key[this.key_number]} 报错，余额${credit}：${String(e)}`)
     // 余额为 0 ,切换 key
-    if (credit === 0) {
-      this.key_number_pp()
-    }
-    // 记录重试次数
-    if (this.retry[this.ctx.config.key[this.key_number]]) {
-      this.retry[this.ctx.config.key[this.key_number]] = this.retry[this.ctx.config.key[this.key_number]] + 1
-      // 如果重试次数超出最大，切换 key
-      if (this.retry[this.ctx.config.key[this.key_number]] > this.maxRetryTimes) {
-        this.key_number_pp()
-      }
-    } else {
-      this.retry[this.ctx.config.key[this.key_number]] = 1
-    }
+    this.key_number_pp()
   }
   /**
    * 
@@ -547,9 +534,9 @@ class DVc extends Dvc {
     // 与ChatGPT交互获得对话内容
     let message: string
     if (this.type == 'gpt4') {
-      message = await this.try_control(this.chat_with_gpt4,session, session_of_id)
+      message = await this.try_control(this.chat_with_gpt4, session, session_of_id)
     } else {
-      message = await this.try_control(this.chat_with_gpt,session, session_of_id)
+      message = await this.try_control(this.chat_with_gpt, session, session_of_id)
     }
     // 记录上下文
     session_of_id.push({ "role": "assistant", "content": message });
@@ -584,6 +571,7 @@ class DVc extends Dvc {
       try_times++
       await this.ctx.sleep(500)
     }
+    return `${this.key_number}报错`
   }
 
 
