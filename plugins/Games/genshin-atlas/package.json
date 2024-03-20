@@ -33,7 +33,7 @@
   },
   "homepage": "https://github.com/initialencounter/mykoishi/blob/neat/plugins/Games/genshin-atlas#readme",
   "peerDependencies": {
-    "@koishijs/plugin-console": "^5.28.0",
+    "@koishijs/plugin-console": "^5.28.1",
     "koishi": "^4.17.2"
   },
   "koishi": {
@@ -43,6 +43,6 @@
     }
   },
   "devDependencies": {
-    "@koishijs/client": "^5.28.0"
+    "@koishijs/client": "^5.28.1"
   }
 }
