@@ -333,9 +333,6 @@ class DVc extends Dvc {
     if (!prompt && !session.quote?.content) {
       return session.text('commands.dvc.messages.no-prompt')
     }
-    if (prompt !== session.quote?.content && session.quote?.content) {
-      prompt += "\n" + session.quote?.content
-    }
     this.output_type = options.output ? options.output : this.output_type
 
     if (prompt.length > this.ctx.config.max_tokens) {
