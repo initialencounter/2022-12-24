@@ -86,21 +86,21 @@ class DVc extends Dvc {
     ctx.command('dvc <text:text>', { authority: config.authority, })
       .option('output', '-o <output:string>')
       .alias(...config.alias)
-      .action(async ({ session, options }, prompt) => {
+      .action(async ({ session, options }, ...prompt) => {
         if (this.block(session as Session)) {
           return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
         }
-        return this.sli(session as Session, prompt, options)
+        return this.sli(session as Session, prompt.join(" "), options)
       })
 
     //统计次数的工具人
     ctx.command('dvc.count <prompt:text>', '统计次数的工具人', {
       maxUsage: config.usage,
       usageName: 'ai'
-    }).action(({ session }, prompt) => {
+    }).action(({ session }, ...prompt) => {
       if (this.block(session as Session)) {
         return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
-      } return this.dvc(session as Session, prompt)
+      } return this.dvc(session as Session, prompt.join(" "))
     })
 
     //清空所有会话及人格
