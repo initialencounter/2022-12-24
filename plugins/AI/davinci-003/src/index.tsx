@@ -86,13 +86,11 @@ class DVc extends Dvc {
     ctx.command('dvc <text:text>', { authority: config.authority, })
       .option('output', '-o <output:string>')
       .alias(...config.alias)
-      .action(async ({ session, options }) => {
+      .action(async ({ session, options }, prompt) => {
         if (this.block(session as Session)) {
           return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
         }
-        if (session.content.indexOf(' ') == -1) {
-          return session.text('commands.dvc.messages.no-prompt')
-        } return this.sli(session as Session, session.content.slice(session.content.indexOf(' '), session.content.length), options)
+        return this.sli(session as Session, prompt, options)
       })
 
     //统计次数的工具人
@@ -332,10 +330,14 @@ class DVc extends Dvc {
    * @returns 
    */
   async sli(session: Session, prompt: string, options: Dict): Promise<string | segment | void> {
-    this.output_type = options.output ? options.output : this.output_type
-    if (!prompt) {
+    if (!prompt && !session.quote?.content) {
       return session.text('commands.dvc.messages.no-prompt')
     }
+    if (prompt !== session.quote?.content && session.quote?.content) {
+      prompt += "\n" + session.quote?.content
+    }
+    this.output_type = options.output ? options.output : this.output_type
+
     if (prompt.length > this.ctx.config.max_tokens) {
       return session.text('commands.dvc.messages.toolong')
     }
@@ -402,10 +404,13 @@ class DVc extends Dvc {
       return this.sli(session, session.content, {})
     }
     // 艾特触发
-    if (session.parsed.appel && this.ctx.config.if_at) {
-      let msg: string = String(session.content)
-      msg = msg.replace(`<at id="${session.bot.selfId}"/> `, '')
-      msg = msg.replace(`<at id="${session.bot.selfId}"/> `, '')
+    if (session.elements[0].type == "at" && session.elements[0].attrs.id === session.bot.selfId && this.ctx.config.if_at) {
+      let msg: string = ''
+      for (let i of session.elements.slice(1,)) {
+        if (i.type === 'text') {
+          msg += i?.attrs?.content
+        }
+      }
       return this.sli(session, msg, {})
     }
     // 昵称触发
