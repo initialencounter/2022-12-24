@@ -33,7 +33,6 @@ class DVc extends Dvc {
     this.output_type = config.output
     this.type = config.type
     this.key_number = 0
-    this.key = [].concat(config.key)
     this.sessions = {};
     this.retry = {}
     this.maxRetryTimes = config.maxRetryTimes
@@ -262,9 +261,9 @@ class DVc extends Dvc {
     })
     ctx.console.addListener('davinci-003/getcredit', async (key?: string) => {
       if (!key) {
-        key = this.key[this.key_number]
+        key = this.ctx.config.key[this.key_number]
       }
-      return await this.get_credit2(key ?? this.key[this.key_number])
+      return await this.get_credit2(key ?? this.ctx.config.key[this.key_number])
     })
     ctx.console.addListener('davinci-003/getusage', () => {
       return localUsage
@@ -302,7 +301,7 @@ class DVc extends Dvc {
         }, {
         timeout: 0,
         headers: {
-          Authorization: `Bearer ${this.key[this.key_number]}`,
+          Authorization: `Bearer ${this.ctx.config.key[this.key_number]}`,
           'Content-Type': 'application/json',
         },
       })
@@ -435,7 +434,7 @@ class DVc extends Dvc {
         }, {
         timeout: 0,
         headers: {
-          Authorization: `Bearer ${this.key[this.key_number]}`
+          Authorization: `Bearer ${this.ctx.config.key[this.key_number]}`
         },
       })
       return response.choices[0].message.content
@@ -466,7 +465,7 @@ class DVc extends Dvc {
         }, {
         timeout: 0,
         headers: {
-          Authorization: `Bearer ${this.key[this.key_number]}`,
+          Authorization: `Bearer ${this.ctx.config.key[this.key_number]}`,
           'Content-Type': 'application/json'
         }
       })
@@ -483,7 +482,7 @@ class DVc extends Dvc {
   key_number_pp() {
     this.key_number++
     // 数组越界
-    if (this.key_number === (this.key.length - 1)) {
+    if (this.key_number === (this.ctx.config.key.length - 1)) {
       this.key_number = 0
     }
   }
@@ -496,26 +495,21 @@ class DVc extends Dvc {
   async switch_key(e: Error) {
     // 查询余额
     const credit = await this.get_credit()
-    logger.info(`key${this.key_number + 1}. ${this.key[this.key_number]} 报错，余额${credit}：${String(e)}`)
+    logger.info(`key${this.key_number + 1}. ${this.ctx.config.key[this.key_number]} 报错，余额${credit}：${String(e)}`)
     // 余额为 0 ,切换 key
     if (credit === 0) {
       this.key_number_pp()
     }
     // 记录重试次数
-    if (this.retry[this.key[this.key_number]]) {
-      this.retry[this.key[this.key_number]] = this.retry[this.key[this.key_number]] + 1
+    if (this.retry[this.ctx.config.key[this.key_number]]) {
+      this.retry[this.ctx.config.key[this.key_number]] = this.retry[this.ctx.config.key[this.key_number]] + 1
       // 如果重试次数超出最大，切换 key
-      if (this.retry[this.key[this.key_number]] > this.maxRetryTimes) {
+      if (this.retry[this.ctx.config.key[this.key_number]] > this.maxRetryTimes) {
         this.key_number_pp()
       }
     } else {
-      this.retry[this.key[this.key_number]] = 1
+      this.retry[this.ctx.config.key[this.key_number]] = 1
     }
-  }
-  async resetKey() {
-    this.retry = {}
-    this.key_number = 0
-    this.key = this.ctx.config.key
   }
   /**
    * 
@@ -714,13 +708,13 @@ class DVc extends Dvc {
 
   async get_credit(): Promise<number> {
     if ((this.ctx.config.type.startsWith('gpt4') ? this.ctx.config.proxy_reverse4 : this.ctx.config.proxy_reverse).indexOf('anywhere') > -1) {
-      return this.get_credit_peiqi(this.key[this.key_number])
+      return this.get_credit_peiqi(this.ctx.config.key[this.key_number])
     }
     try {
       const url: string = trimSlash(`${this.ctx.config.proxy_reverse ? this.ctx.config.proxy_reverse : "https://api.openai.com"}/v1/dashboard/billing/subscription`)
       const res = await this.ctx.http.get(url, {
         headers: {
-          "Authorization": "Bearer " + this.key[this.key_number]
+          "Authorization": "Bearer " + this.ctx.config.key[this.key_number]
         },
         timeout: 600000
       })
@@ -947,7 +941,6 @@ class DVc extends Dvc {
    */
 
   clear(session: Session): string {
-    this.resetKey()
     this.sessions = {}
     return session.text('commands.dvc.messages.clean')
   }

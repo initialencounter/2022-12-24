@@ -13,7 +13,6 @@ export class Dvc extends Service {
     type: string
     l6k: boolean;
     key_number: number;
-    key: string[];
     retry: Dict;
     maxRetryTimes: number;
     constructor(ctx: Context, config: Dvc.Config) {
