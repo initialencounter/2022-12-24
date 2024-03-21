@@ -4,7 +4,6 @@ import Jm from '@initencounter/jimp';
 import { resolve } from 'path';
 import { readFileSync } from 'fs';
 export const name = 'jimp'
-export const usage = readFileSync(resolve(__dirname, '../readme.md'))
 class Jimp extends Jm {
   constructor(ctx: Context) {
     super(ctx)
@@ -230,6 +229,7 @@ class Jimp extends Jm {
   colorDiff(rgba1: RGB, rgba2: RGB): number{return Jimpp.colorDiff(rgba1,rgba2)}
 }
 namespace Jimp {
+  export const usage = readFileSync(resolve(__dirname, '../readme.md')).toString('utf-8')
   export interface Config { }
   export const Config: Schema<Config> = Schema.object({})
 }
