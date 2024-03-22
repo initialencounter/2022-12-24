@@ -1,0 +1,5 @@
+commands:
+  say:
+    description: fish-speech TTS API
+    messages:
+      waiting: 等待中...
