@@ -1,10 +1,10 @@
 import { Quester } from "koishi"
-import FishSpeech from ".";
+import FishSpeech, { logger } from ".";
 import { InvokeRequest, LoadModelRequest, getModelsResponse } from "./type";
 
-export async function putModel(http: Quester, config: FishSpeech.Config): Promise<boolean> {
+export async function putModel(http: Quester, config: FishSpeech.Config, name: string = "default"): Promise<boolean> {
     const data: LoadModelRequest = {
-        device: "cuda",
+        device: config.device,
         llama: {
             config_name: "text2semantic_finetune",
             checkpoint_path: config.llama_path,
@@ -17,19 +17,21 @@ export async function putModel(http: Quester, config: FishSpeech.Config): Promis
             checkpoint_path: config.vqgan_path
         }
     };
-    return await http.put('http://127.0.0.1:7860/v1/models/default', data, {
+    return await http.put(`${config.endpoint}/v1/models/${name}`, data, {
         headers: {
             'accept': 'application/json',
             'Content-Type': 'application/json'
         }
     }).then(response => {
+        logger.success(response)
         return true
     }).catch(error => {
+        logger.info(error)
         return false
     });
 }
 
-export async function invoke(http: Quester, text: string, endpoint: string, speaker_id: string = null, name: string = "default") {
+export async function invoke(http: Quester, text: string, endpoint: string, speaker: string, name: string = "default") {
     const data: InvokeRequest = {
         "text": text,
         "prompt_text": null,
@@ -42,7 +44,7 @@ export async function invoke(http: Quester, text: string, endpoint: string, spea
         "order": "zh,jp,en",
         "use_g2p": true,
         "seed": null,
-        "speaker": speaker_id,
+        "speaker": speaker,
     }
     const res = await http.post(
         `${endpoint}/v1/models/${name}/invoke`,
@@ -59,5 +61,10 @@ export async function getModels(http: Quester, endpoint: string): Promise<getMod
 }
 
 export async function deleteModels(http: Quester, endpoint: string, name: string = "default") {
-    const res = await http.delete(`${endpoint}/v1/models/${name}`)
+    let url = `${endpoint}/v1/models/${name}`
+    let models = await http.get(`${endpoint}/v1/models`)
+    if (models?.models?.length === 0) {
+        return
+    }
+    await http.delete(url)
 }
