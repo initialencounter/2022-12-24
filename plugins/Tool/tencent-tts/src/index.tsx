@@ -1,6 +1,5 @@
 import { Context, Schema, h, Session, Logger} from 'koishi'
 import Vits from '@initencounter/vits'
-import { slice } from 'lodash';
 const tencentcloud = require("tencentcloud-sdk-nodejs-tts");
 const AsrClient = tencentcloud.tts.v20190823.Client;
 
