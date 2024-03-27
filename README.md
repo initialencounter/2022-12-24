@@ -29,7 +29,7 @@
 | 管理工具 | [☕闹钟](./plugins/Manager/clock/readme.md)[☕进阶指令帮助](./plugins/Manager/help-pro/readme.md) |
 | 行为预设 | [☕群主插件](./plugins/Behavior/specialtile/readme.md) |
 | 资讯服务 | [☕兽云祭](./plugins/News/furbot/readme.md)[☕瓷砖提醒](./plugins/News/gh-tile/readme.md) |
-| 实用工具 | [☕飞桨语音](./plugins/Tool/paddlespeech/readme.md)[☕OpenAI语音](./plugins/Tool/whisper-asr/readme.md)[☕百度TTS](./plugins/Tool/baidu-tts/readme.md)[☕百度STT](./plugins/Tool/baidu-sst/readme.md)[☕腾讯TTS](./plugins/Tool/tencent-tts/readme.md)[☕腾讯STT](./plugins/Tool/tc-sst/readme.md)[☕vits服务](./plugins/Tool/vits/readme.md)[☕sst服务](./plugins/Tool/sst/readme.md) |
+| 实用工具 | [☕fish-speech](./plugins/Tool/fish-speech/readme.md)[☕飞桨语音](./plugins/Tool/paddlespeech/readme.md)[☕OpenAI语音](./plugins/Tool/whisper-asr/readme.md)[☕百度TTS](./plugins/Tool/baidu-tts/readme.md)[☕百度STT](./plugins/Tool/baidu-sst/readme.md)[☕腾讯TTS](./plugins/Tool/tencent-tts/readme.md)[☕腾讯STT](./plugins/Tool/tc-sst/readme.md)[☕vits服务](./plugins/Tool/vits/readme.md)[☕sst服务](./plugins/Tool/sst/readme.md) |
 | 娱乐玩法 | [☕数字华容道](./plugins/Recreation/puzzle/readme.md)[☕魔方](./plugins/Recreation/cube/readme.md)[☕对对联](./plugins/Recreation/couplet/readme.md)[☕扫雷残局](./plugins/Recreation/minesweeper-ending/readme.md)[☕国际象棋](./plugins/Recreation/ichess/readme.md) ||
 | 游戏辅助 | [☕斯坦牛逼](./plugins/Games/stnb/readme.md)[☕Steam 挂刀](./plugins/Games/steam-trading/readme.md)[☕原神图鉴](./plugins/Games/genshin-atlas/readme.md) |
 
