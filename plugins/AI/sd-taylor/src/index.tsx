@@ -1,13 +1,10 @@
-import { Context, Schema, Session, segment, Dict, Logger, h, trimSlash, arrayBufferToBase64 } from 'koishi'
+import { Context, Schema, Session, segment, Dict, Logger, h, trimSlash, arrayBufferToBase64, Element } from 'koishi'
 import { } from 'koishi-plugin-davinci-003'
 import { } from 'koishi-plugin-puppeteer'
 import axios from 'axios'
 export const using = ['dvc', 'puppeteer']
 export const name = 'sd-taylor'
 
-const headers: object = {
-  "headers": { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64); AppleWebKit/537.36 (KHTML, like Gecko); Chrome/54.0.2840.99 Safari/537.36" }
-}
 const logger = new Logger(name)
 
 class Taylor {
@@ -150,7 +147,7 @@ class Taylor {
       .action(async ({ session }) => {
         session.send(session.text('commands.tl.messages.loraing'))
         if (this.config.lora_output && ctx.puppeteer) {
-          return await this.send_as_html(session)
+          return await this.ctx.puppeteer.render(String(await this.send_as_html(session)))
         }
         return await this.send_as_figure(session)
       })
@@ -174,14 +171,14 @@ class Taylor {
       this.lora[name] = trimSlash(this.config.api_path) + '/file=' + urls[jd].slice(9,)
     })
   }
-  async send_as_html(session: Session): Promise<segment[]> {
+  async send_as_html(session: Session) {
     const lora_arr = Object.entries(this.lora)
     let images_arr = []
     let count = 0
     for (var i of lora_arr) {
       count++
       if ((count+1) % 6 == 0) {
-        session.send(this.lora_html(images_arr))
+        session.send(await this.ctx.puppeteer.render(String(this.lora_html(images_arr))))
         images_arr = []
       }
       const name = `${count}.${i[0]}`
@@ -194,7 +191,7 @@ class Taylor {
     return this.lora_html(images_arr)
 
   }
-  lora_html(images_arr: segment[]) {
+  lora_html(images_arr) {
     return <html>
       <head>
         <title>当前存在Lora:</title>
@@ -216,7 +213,7 @@ class Taylor {
       </head>
       <body>
         <p>create by koishi-plugin-sd-taylor@1.2.7</p>
-        <div class="image-container" id="image-container">{images_arr}</div>
+        <div className="image-container" id="image-container">{images_arr}</div>
       </body>
     </html>;
   }
@@ -344,7 +341,9 @@ class Taylor {
     const api: string = `${trimSlash(this.config.api_path)}${path}`
     logger.info((session.author?.nickname || session.username) + ' : ' + payload.prompt)
     try {
-      const resp = await this.ctx.http.post(api, payload, headers)
+      const resp = await this.ctx.http.post(api, payload, {
+        timeout: 0
+      })
       const res_img: string = "data:image/png;base64," + (resp.output ? resp.output[0] : resp.images[0])
       const parms: Taylor.Parameters = resp['parameters']
       this.task--
@@ -371,7 +370,9 @@ class Taylor {
     // 设置payload
     payload["init_images"] = ["data:image/png;base64," + base64]
     try {
-      const resp = await this.ctx.http.post(api, payload, headers)
+      const resp = await this.ctx.http.post(api, payload,  {
+        timeout: 0
+      })
       const res_img: string = "data:image/png;base64," + (resp.output ? resp.output[0] : resp.images[0])
       const parms: Taylor.Parameters = resp['parameters']
       this.task--
@@ -474,7 +475,7 @@ class Taylor {
     return result
   }
   async img2base64(ctx: Context, img_url: string) {
-    const buffer = await ctx.http.get(img_url, { responseType: 'arraybuffer', headers })
+    const buffer = await ctx.http.get(img_url, { responseType: 'arraybuffer', timeout: 0 })
     const base64 = Buffer.from(buffer).toString('base64')
     return base64
   }
