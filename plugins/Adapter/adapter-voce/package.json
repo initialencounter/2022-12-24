@@ -1,0 +1,37 @@
+{
+  "name": "koishi-plugin-adapter-voce",
+  "description": "[VoceChat](https://github.com/Privoce/vocechat-server-rust) 适配器",
+  "version": "0.0.1",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/neat/plugins/Adapter/adapter-voce#readme",
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "vocechat"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.17.2"
+  },
+  "koishi": {
+    "service": {
+      "required": [
+        "http",
+        "server"
+      ]
+    }
+  }
+}
