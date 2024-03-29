@@ -6,7 +6,16 @@ const logger = new Logger("gh-tile")
 export async function getTileNums(ctx: Context, username: string, date: string, cookie: string, forwardServer: string) {
   let html: string
   try {
-    html = await ctx.http.get(`${trimSlash(forwardServer)}/${username}&cookie=${cookie}`,{responseType:"text"})
+    html = await ctx.http.post(trimSlash(forwardServer), {
+      payload: {
+        url: `https://github.com/${username}?action=show&controller=profiles&tab=contributions&user_id=${username}`,
+        method: "GET",
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Cookie': cookie
+        }
+      }
+    }, { responseType: "text" })
   } catch (e) {
     logger.error(e)
     return false
