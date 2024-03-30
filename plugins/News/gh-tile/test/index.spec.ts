@@ -3,6 +3,7 @@ import mock from '@koishijs/plugin-mock'
 import * as tile from 'koishi-plugin-gh-tile'
 import memory from '@koishijs/plugin-database-memory'
 import * as inspect from '@koishijs/plugin-inspect'
+import { before } from 'node:test'
 
 const app = new Context()
 app.plugin(mock)
