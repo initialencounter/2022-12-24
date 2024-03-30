@@ -43,15 +43,15 @@ export default class VoceAdapter<C extends Context> extends Adapter<C, VoceBot<C
 export class Internal {
     constructor(private http: Quester) { }
     async sendGroupMsg(gid: number | string, content: string): Promise<number> {
-        return await this.http.post(`/send_to_group/${gid}`, content)
+        return await this.http.post(`/api/bot/send_to_group/${gid}`, content)
     }
     async sendPrivateMsg(uid: number | string, content: string): Promise<number> {
-        return await this.http.post(`/send_to_user/${uid}`, content)
+        return await this.http.post(`/api/bot/send_to_user/${uid}`, content)
     }
     async sendMessage(channelId: string, content: string): Promise<number> {
-        let path = '/send_to_group'
+        let path = '/api/bot/send_to_group'
         if (channelId.startsWith('private:')) {
-            path = '/send_to_user'
+            path = '/api/bot/send_to_user'
             channelId = channelId.replace('private:', '')
         }
         return await this.http.post(`${path}/${channelId}`, content)

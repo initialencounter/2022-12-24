@@ -36,7 +36,7 @@ namespace VoceBot {
   }
 
   export const Config: Schema<Config> = Schema.object({
-    endpoint: Schema.string().default('http://localhost:3000/api/bot').description("Voce 服务器地址"),
+    endpoint: Schema.string().default('http://localhost:3000').description("Voce 服务器地址"),
     path: Schema.string().default('/vocechat/webhook').description("webhook 路径"),
     apikey: Schema.string().role('secret👀👀').required().description("机器人的 apikey"),
     selfId: Schema.string().description(`随便填🤗🤗`).required(),
