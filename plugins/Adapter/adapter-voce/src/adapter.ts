@@ -56,4 +56,9 @@ export class Internal {
         }
         return await this.http.post(`${path}/${channelId}`, content)
     }
+    async getResource(file_path: string): Promise<ArrayBuffer> {
+        return await this.http.get(`/api/resource/file?file_path=${file_path}&thumbnail=false&download=false`, {
+            responseType: "arraybuffer"
+        })
+    }
 }

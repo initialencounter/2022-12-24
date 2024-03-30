@@ -24,6 +24,11 @@ class VoceBot<C extends Context> extends Bot<C> {
     })
     this.internal = new Internal(this.http)
     ctx.plugin(VoceAdapter, this)
+    // ctx.middleware((session,next)=>{
+    //   console.log(session.content)
+    //   console.log(session.event.message.elements)
+    //   return next()
+    // })
   }
 }
 namespace VoceBot {
