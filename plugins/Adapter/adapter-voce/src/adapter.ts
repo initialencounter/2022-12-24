@@ -1,4 +1,4 @@
-import { Adapter, Context, Quester } from 'koishi'
+import { Adapter, Context, Quester, Universal } from 'koishi'
 import VoceBot from './bot'
 import { } from '@koishijs/plugin-server'
 import { createSession } from './utils'
@@ -51,6 +51,14 @@ export default class VoceAdapter<C extends Context> extends Adapter<C, VoceBot<C
                 this.bot.logger.warn('更新令牌失败!')
             }
         }, 300000)
+
+        // 获取头像
+        const user: Universal.User = {
+            id: this.bot.selfId,
+            name: this.bot.selfId,
+            avatar: this.bot.adminInternal.getUserAvatar(this.bot.config.botUid)
+        }
+        this.bot.user = user
 
         // webhook
         this.ctx.server.post(this.bot.config.path, async (ctx) => {
@@ -113,9 +121,16 @@ export class AdminInternal {
         let res = await this.http.get(`/api/admin/user/bot-api-key/${uid}`)
         return res[0].key
     }
+
+    /**
+     * 获取用户头像URL
+     */
+    getUserAvatar(uid: number): string {
+        return `${this.http.config.baseURL}/api/resource/avatar?uid=${uid}`
+    }
 }
 export class Internal {
-    constructor(public http: Quester) {}
+    constructor(public http: Quester) { }
 
     /**
      * 发送群消息
