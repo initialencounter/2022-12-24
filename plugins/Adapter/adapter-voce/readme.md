@@ -16,4 +16,4 @@ VoceChat 适配器
     - chore: change default endpoint
     - chore: drop config bot x-api-kry
 - v0.0.1
-    端上来了
+    - 端上来了
