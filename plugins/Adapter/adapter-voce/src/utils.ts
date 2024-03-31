@@ -1,13 +1,32 @@
-import { Context, Universal, Element, h } from "koishi"
+import { Context, Universal, Element, h, Quester } from "koishi"
 import VoceBot from "./bot"
-import { Detail, WebHookResponse } from "./type"
+import { Detail, MediaBuffer, WebHookResponse } from "./type"
+import path from "path";
+import FileType from 'file-type'
+import db from './mine-standard';
+import { readFileSync } from "fs";
+
+export const mime2ext = (mime: string): string => {
+
+    mime = mime.trim().toLowerCase()
+
+    if (!db.hasOwnProperty(mime)) return ''
+
+    return db[mime][0]
+
+}
 
 const yellow = "\x1b[33m";
 const reset = "\x1b[0m";
 const green = "\x1b[32m"
 
+/**
+ * 创建 session
+ * @param bot 
+ * @param body 
+ * @returns 
+ */
 export async function createSession(bot: VoceBot<Context>, body: WebHookResponse) {
-    console.log('bofy', body)
     const session = bot.session()
     session.type = 'message'
     session.event.message = await adaptMessage(bot, body)
@@ -49,6 +68,14 @@ async function adaptMessage(bot: VoceBot<Context>, body: WebHookResponse): Promi
         createdAt: body.created_at,
     }
 }
+
+/**
+ * 将 VoceChat 发来的文件转为 element
+ * @param bot 
+ * @param mimeType 
+ * @param content 
+ * @returns 
+ */
 async function fileToElement(bot: VoceBot<Context>, mimeType: string, content: string): Promise<Element> {
     const resource = await bot.internal.getResource(content);
     const buffer = Buffer.from(resource);
@@ -134,6 +161,13 @@ async function fileToElement(bot: VoceBot<Context>, mimeType: string, content: s
     }
 }
 
+/**
+ * ref. https://code.mycard.moe/3rdeye/koishi-plugin-adapter-wechaty
+ * 将消息转为 Element[]
+ * @param bot 
+ * @param detail 
+ * @returns 
+ */
 async function messageToElement(bot: VoceBot<Context>, detail: Detail) {
     const messageType = detail.content_type
     const elements: Element[] = []
@@ -154,4 +188,87 @@ async function messageToElement(bot: VoceBot<Context>, detail: Detail) {
             return
     }
     return elements
+}
+
+/**
+ * 根据 src 获取文件名称
+ * @param url 
+ * @returns 
+ */
+export async function autoFilename(url: string) {
+    if (url.startsWith('file://')) {
+        return path.basename(url.slice(7))
+    }
+    if (url.startsWith('base64://')) {
+        const buf = Buffer.from(url.slice(9), 'base64')
+        const type = await FileType.fromBuffer(buf)
+
+        return `file.${type.ext}`
+    }
+    if (url.startsWith('data:')) {
+        const [, mime, base64] = url.match(/^data:([^;]+);base64,(.+)$/)
+        const ext = mime2ext(mime)
+        if (ext) {
+            return `file.${ext}`
+        }
+        const buf = Buffer.from(base64, 'base64')
+        const type = await FileType.fromBuffer(buf)
+        return `file.${type?.ext || 'bin'}`
+    }
+    return path.basename(new URL(url).pathname)
+}
+
+/**
+ * 将 element 转为 MediaBuffer
+ * @param http 
+ * @param element 
+ * @returns 
+ */
+export async function element2MediaBuffer(http: Quester, element: Element): Promise<MediaBuffer> {
+    const { attrs } = element
+    const { src, file } = attrs
+    let mediaBuffer: MediaBuffer = {
+        data: null,
+        type: {
+            fileName: null,
+            mime: null
+        }
+    }
+    if (!src) return
+    if (src.startsWith('file://')) {
+        const filePath = src.slice(7)
+        mediaBuffer.data = readFileSync(filePath)
+        const type = await FileType.fromBuffer(mediaBuffer.data)
+        mediaBuffer.type = {
+            fileName: file || path.basename(src.slice(7)),
+            mime: type.mime
+        }
+        return mediaBuffer
+    }
+    if (src.startsWith('base64://')) {
+        mediaBuffer.data = Buffer.from(src.slice(9), 'base64')
+        const type = await FileType.fromBuffer(mediaBuffer.data)
+        mediaBuffer.type = {
+            fileName: file || `file.${type.ext}`,
+            mime: type.mime
+        }
+        return mediaBuffer
+    }
+    if (src.startsWith('data:')) {
+        const [, mime, base64] = src.match(/^data:([^;]+);base64,(.+)$/)
+        const ext = mime2ext(mime) || 'bin'
+        mediaBuffer.data = Buffer.from(base64, 'base64')
+        mediaBuffer.type = {
+            fileName: file || `file.${ext}`,
+            mime: mime
+        }
+        return mediaBuffer
+    }
+    mediaBuffer.data = Buffer.from(await http.get(src, { responseType: 'arraybuffer' }))
+    const type = await FileType.fromBuffer(mediaBuffer.data)
+    mediaBuffer.type = {
+        fileName: file || `file.${type.ext}`,
+        mime: type.mime
+    }
+    return mediaBuffer
 }
