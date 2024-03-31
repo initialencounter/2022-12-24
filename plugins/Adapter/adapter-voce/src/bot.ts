@@ -1,10 +1,10 @@
-import { Bot, Context, Logger, Quester, Schema } from 'koishi'
+import { Bot, Context, Logger, Quester, Schema, h } from 'koishi'
 import VoceAdapter, { AdminInternal, Internal } from './adapter'
 import { VoceMessenger } from './message'
 import { resolve } from 'path'
 import { readFileSync } from 'fs'
 import { TokenRefeshConfig } from './type'
-
+import TestFn from './test'
 export const name = 'Voce'
 
 
@@ -47,21 +47,13 @@ class VoceBot<C extends Context> extends Bot<C> {
     /**
      * debug
      */
-
-    // ctx.middleware((session,next)=>{
-    //   console.log(session.content)
-    //   console.log(session.event.message.elements)
-    //   return next()
-    // })
-
-    // ctx.command('test').action(async ({ session }) => {
-    //   const res = await session.send('撤回消息')
-    //   await ctx.sleep(500)
-    //   session.bot.deleteMessage(session.channelId, res[0])
-    // })
+    // ctx.plugin(TestFn)
   }
   async deleteMessage(channelId: string, messageId: string): Promise<void> {
-    this.adminInternal.deleteMessage(messageId, this.tokenRefeshConfig)
+    this.adminInternal.deleteMessage(messageId)
+  }
+  async editMessage(channelId: string, messageId: string, content: h.Fragment): Promise<void> {
+    this.adminInternal.editMessage(messageId, content)
   }
 }
 namespace VoceBot {
@@ -81,12 +73,12 @@ namespace VoceBot {
   export const Config: Schema<Config> = Schema.intersect([Schema.object({
     endpoint: Schema.string().default('http://localhost:3000').description("Voce 服务器地址"),
     path: Schema.string().default('/vocechat/webhook').description("webhook 路径, 请填写正确，否则无法接收消息"),
-    selfId: Schema.string().description(`随便填🤗🤗`).required(),
-    botUid: Schema.number().default(2).description("机器人的 UID"),
     loginMethod: Schema.union([
       Schema.const('account').description('账号登录'),
       Schema.const('token').description('令牌登录'),
     ]).default('account'),
+    selfId: Schema.string().description(`随便填🤗🤗`).required(),
+    botUid: Schema.number().default(2).description("机器人的 UID"),
   }),
   Schema.union([
     Schema.object({

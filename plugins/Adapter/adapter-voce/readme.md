@@ -4,7 +4,27 @@
 
 VoceChat 适配器
 
-- 目前仅适配发送 Group 文本消息，欢迎 [PR](https://github.com/initialencounter/mykoishi/pulls) !
+欢迎 [PR](https://github.com/initialencounter/mykoishi/pulls) !
+
+# Feature
+
+## 基础功能
+- [x] 账号登录
+- [x] 令牌登录
+- [x] 更新令牌
+- [x] webhook
+
+## 支持发送的消息类型
+- [x] 文本
+- [x] 图片
+- [x] 视频
+- [x] 文件
+- [x] 语音
+- [x] at
+- [x] 引用回复
+
+
+# 内部 API 参考 [点我！](https://github.com/initialencounter/mykoishi/blob/neat/plugins/Adapter/adapter-voce/src/test.ts)
 
 # 更新日志
 - v1.0.0
@@ -13,6 +33,8 @@ VoceChat 适配器
     - feat: delete message
     - feat: login
     - feat: impl API getUserAvatar 
+    - feat: impl at msg 
+    - feat: impl quote msg 
     - chore: change default endpoint
     - chore: drop config bot x-api-kry
 - v0.0.1

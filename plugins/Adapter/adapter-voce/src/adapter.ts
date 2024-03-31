@@ -1,4 +1,4 @@
-import { Adapter, Context, Quester, Universal } from 'koishi'
+import { Adapter, Context, Quester, Universal, h } from 'koishi'
 import VoceBot from './bot'
 import { } from '@koishijs/plugin-server'
 import { createSession } from './utils'
@@ -77,11 +77,29 @@ export default class VoceAdapter<C extends Context> extends Adapter<C, VoceBot<C
 export class AdminInternal {
     constructor(public http: Quester) { }
 
-    async deleteMessage(messageId: string, tokenRefeshConfig: TokenRefeshConfig) {
-        if (!tokenRefeshConfig) {
-            return
-        }
+    /**
+     * 撤回消息
+     * @param messageId 
+     */
+    async deleteMessage(messageId: string) {
         await this.http.delete(`/api/message/${messageId}`)
+    }
+
+    /**
+     * 编辑消息, 只能编辑管理员的消息，没什么用~
+     */
+    async editMessage(messageId: string, content: h.Fragment) {
+        let contentType: string = 'text/plain'
+        switch (typeof content) {
+            case 'string':
+                contentType = 'text/plain'
+                break
+        }
+        await this.http.put(`/api/message/${messageId}/edit`, content, {
+            headers: {
+                "Content-Type": contentType
+            }
+        })
     }
 
     /**
@@ -175,10 +193,8 @@ export class Internal {
             path = '/api/bot/send_to_user'
             channelId = channelId.replace('private:', '')
         }
-        let http = new Quester()
-        let res = await http.post(`http://127.0.0.1:3000${path}/${channelId}`, content, {
+        let res = await this.http.post(`${path}/${channelId}`, content, {
             headers: {
-                'X-API-Key': this.http.config.headers["x-api-key"],
                 "Content-Type": contentType
             }
         })
@@ -226,6 +242,15 @@ export class Internal {
         form.append('chunk_is_last', 'true');
         let res: UploadResponse = (await this.http.post('/api/bot/file/upload', form))
         return res
+    }
+
+    async sendReplyMessage(messageId: string, content: string | MediaPath, contentType: string): Promise<string[]>{
+        let res = await this.http.post(`/api/bot/reply/${messageId}`, content, {
+            headers: {
+                "Content-Type": contentType
+            }
+        })
+        return [String(res)]
     }
 
 }

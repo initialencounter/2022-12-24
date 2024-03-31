@@ -4,8 +4,12 @@ import { element2MediaBuffer } from './utils'
 import { UploadResponse } from './type'
 
 export class VoceMessenger<C extends Context = Context> extends Messenger<C, VoceBot<C>> {
-    buffer: ''
-
+    buffer: string = ''
+    reply: string
+    async sendReplyMessage(element: Element, messageId: string) {
+        const res = await this.bot.internal.sendReplyMessage(messageId, this.buffer, 'text/plain')
+        this.addResult(res[0])
+    }
     async sendMedia(element: Element) {
         let media = await element2MediaBuffer(this.bot.http, element)
         let file_id = await this.bot.internal.filePrepare(media.type.fileName, media.type.mime)
@@ -23,15 +27,28 @@ export class VoceMessenger<C extends Context = Context> extends Messenger<C, Voc
     }
     async flush(): Promise<void> {
         if (!this.buffer) return
-        const res = await this.bot.internal.sendMessage(this.channelId, this.buffer, 'text/plain')
+        let res: string[]
+        if (!this.reply) {
+            res = await this.bot.internal.sendMessage(this.channelId, this.buffer, 'text/plain')
+        } else {
+            res = await this.bot.internal.sendReplyMessage(this.channelId, this.buffer, 'text/plain')
+            this.reply = ''
+        }
         this.addResult(res[0])
         this.buffer = ''
     }
     async visit(element: Element): Promise<void> {
         const { type, attrs, children } = element
         switch (type) {
+            case 'quote':
+                await this.flush()
+                this.reply = attrs.id
+                break
+            case 'at':
+                this.buffer = this.buffer + `@${attrs.id} `
+                break
             case 'text':
-                this.buffer = attrs.content
+                this.buffer = this.buffer + attrs.content
                 break
             case 'img':
             case 'video':
