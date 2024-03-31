@@ -13,7 +13,7 @@ export class WechatyMessenger extends Messenger {
     addResult(msg: MessageInterface) {
         if (!msg.id) return
         const session = this.bot.session()
-        this.results.push(session.event.message)
+        this.results.push({id:msg.id})
         session.messageId = msg.id
         session.app.emit(session, 'send', session)
     }
