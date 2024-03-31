@@ -25,6 +25,7 @@ VoceChat 适配器
 
 
 # 内部 API 参考 [点我！](https://github.com/initialencounter/mykoishi/blob/neat/plugins/Adapter/adapter-voce/src/test.ts)
+# [VoceChat 文档](https://doc.voce.chat/zh-cn/)
 
 # 更新日志
 - v1.0.0
