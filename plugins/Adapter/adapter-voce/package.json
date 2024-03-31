@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-adapter-voce",
   "description": "[VoceChat](https://github.com/Privoce/vocechat-server-rust) 适配器",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [

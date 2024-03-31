@@ -7,11 +7,12 @@ VoceChat 适配器
 - 目前仅适配发送 Group 文本消息，欢迎 [PR](https://github.com/initialencounter/mykoishi/pulls) !
 
 # 更新日志
-- v0.0.2
+- v1.0.0
     - feat: receive media
     - feat: send media
     - feat: delete message
     - feat: login
+    - feat: impl API getUserAvatar 
     - chore: change default endpoint
     - chore: drop config bot x-api-kry
 - v0.0.1
