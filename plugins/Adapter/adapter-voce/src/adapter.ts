@@ -8,7 +8,7 @@ export default class VoceAdapter<C extends Context> extends Adapter<C, VoceBot<C
     static inject = ['server']
 
     bot: VoceBot<C>
-    constructor(ctx: C, private config: VoceBot.Config) {
+    constructor(ctx: C) {
         super(ctx)
 
         ctx.on('ready', () => {

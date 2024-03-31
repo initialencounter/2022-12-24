@@ -1,4 +1,4 @@
-import { Context, Element, Messenger, base64ToArrayBuffer, segment } from 'koishi'
+import { Context, Element, Messenger } from 'koishi'
 import VoceBot from './bot'
 import { element2MediaBuffer } from './utils'
 import { UploadResponse } from './type'
