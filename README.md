@@ -24,7 +24,7 @@
 |   分类   | 名称    |
 | :------: | :---- |
 | 人工智能  | [☕ChatGPT](./plugins/AI/davinci-003/readme.md)[☕AI 颜值打分](./plugins/AI/facercg/readme.md)[☕Stable Diffusion](./plugins/AI/sd-taylor/readme.md)[☕意间绘画](./plugins/AI/arcadia/readme.md)[☕知数云](./plugins/AI/arcadia/readme.md) |
-| 适配器 | [☕autoxjs-sender](./plugins/Adapter/autoxjs-sender/readme.md)|
+| 适配器 | [☕autoxjs-sender](./plugins/Adapter/autoxjs-sender/readme.md)[☕adapter-wechat4u](./plugins/Adapter/adapter-wechat4u/readme.md)[☕adapter-voce](./plugins/Adapter/adapter-voce/readme.md)|
 | 拓展功能 | [☕mqtt](./plugins/Extension/mqtt/readme.md) |
 | 管理工具 | [☕闹钟](./plugins/Manager/clock/readme.md)[☕进阶指令帮助](./plugins/Manager/help-pro/readme.md) |
 | 行为预设 | [☕群主插件](./plugins/Behavior/specialtile/readme.md) |
