@@ -21,8 +21,7 @@
     "plugins/Tool/*",
     "plugins/@*/*",
     "external/open-vits",
-    "external/test",
-    "external/adapter-kritor"
+    "external/test"
   ],
   "scripts": {
     "new": "koishi-scripts new",
