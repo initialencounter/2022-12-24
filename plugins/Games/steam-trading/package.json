@@ -38,8 +38,8 @@
     "steam trading"
   ],
   "peerDependencies": {
-    "koishi": "^4.17.2",
-    "koishi-plugin-puppeteer": "^3.8.3"
+    "koishi": "^4.17.4",
+    "koishi-plugin-puppeteer": "^3.8.4"
   },
   "dependencies": {
     "pngjs": "^7.0.0"

@@ -31,11 +31,11 @@
     "service"
   ],
   "peerDependencies": {
-    "koishi": "^4.17.2"
+    "koishi": "^4.17.4"
   },
   "dependencies": {
     "@initencounter/vits": "^0.0.2",
-    "tencentcloud-sdk-nodejs-tts": "^4.0.810"
+    "tencentcloud-sdk-nodejs-tts": "^4.0.828"
   },
   "koishi": {
     "description": "腾讯语音合成服务",
