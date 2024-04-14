@@ -20,7 +20,7 @@ export interface Rule {
 
 export const Config: Schema<Config> = Schema.object({
   corn: Schema.string().default("23-30").description("默认的提醒时间,UTC时间"),
-  forwardServer: Schema.string().default("https://1314084067-1wp448wrzt-gz.scf.tencentcs.com/?method=POST").description("转发服务 SCF"),
+  forwardServer: Schema.string().default("https://1314084067-1k6wykqw4f-gz.scf.tencentcs.com/?method=POST").description("转发服务 SCF"),
   cookie: Schema.string().default("logged_in=yes;tz=Asia%2FShanghai;").description("cookie")
 })
 
