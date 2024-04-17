@@ -1,10 +1,10 @@
+import { readFileSync } from 'fs'
 import { Context, Schema, Session, segment, Dict, Logger, h, trimSlash, arrayBufferToBase64, Element } from 'koishi'
 import { } from 'koishi-plugin-davinci-003'
 import { } from 'koishi-plugin-puppeteer'
-import axios from 'axios'
-export const using = ['dvc', 'puppeteer']
+import { resolve } from 'path'
 export const name = 'sd-taylor'
-
+const VERSION = require('../package.json')['version']
 const logger = new Logger(name)
 
 class Taylor {
@@ -12,6 +12,9 @@ class Taylor {
   output: string
   info: string
   lora: Dict
+  static inject = {
+    optional: ['dvc', 'puppeteer']
+  }
   constructor(private ctx: Context, private config: Taylor.Config) {
     this.lora = {}
     this.task = 0
@@ -24,7 +27,7 @@ class Taylor {
         logger.info('lora读取失败' + e)
       }
     })
-    ctx.i18n.define('zh', require('./locales/zh'));
+    ctx.i18n.define('zh', require('./locales/zh'))
     ctx.command('tl <prompt:text>', 'Stable Diffusion API /txt2img', { authority: config.min_auth })
       .alias('taylor')
       .option('step', '--st <step:number>', { fallback: config.step })
@@ -37,17 +40,17 @@ class Taylor {
       .action(async ({ session, options }, prompt) => {
         if (!prompt) return session.execute('help tl')
         prompt = await this.replace_lora(session, prompt)
-        if (prompt=='false20230516') return this.info
+        if (prompt == 'false20230516') return this.info
         const [width, height] = (options.resolution ? options.resolution : this.config.resolution).split('x').map(x => { return parseInt(x) })
         const payload: Taylor.Payload = {
-          "steps": options.step ? options.step : config.step,
-          "width": width,
-          "height": height,
-          "seed": options.seed ? options.seed : config.seed,
-          "cfg_scale": options.cfg_scale ? options.cfg_scale : config.cfg_scale,
-          "negative_prompt": options.negative_prompt ? options.negative_prompt : config.negative_prompt,
-          "denoising_strength": options.denoising_strength ? options.denoising_strength : config.denoising_strength,
-          "prompt": prompt + ', ' + config.defaut_prompt
+          'steps': options.step,
+          'width': width,
+          'height': height,
+          'seed': options.seed,
+          'cfg_scale': options.cfg_scale,
+          'negative_prompt': options.negative_prompt,
+          'denoising_strength': options.denoising_strength,
+          'prompt': prompt + ', ' + config.defaut_prompt
         }
         if (['minimal', 'default', 'verbose'].includes(options.output)) {
           this.output = options.output ? options.output : this.output
@@ -77,17 +80,17 @@ class Taylor {
       .option('output', '-o <output:string>', { fallback: config.output })
       .action(async ({ session, options }, prompt) => {
         prompt = await this.replace_lora(session, prompt)
-        if (prompt=='false20230516') return this.info
+        if (prompt == 'false20230516') return this.info
         const [width, height] = (options.resolution ? options.resolution : this.config.resolution).split('x').map(x => { return parseInt(x) })
         const payload: Taylor.Payload = {
-          "steps": options.step,
-          "width": width,
-          "height": height,
-          "seed": options.seed,
-          "cfg_scale": options.cfg_scale,
-          "negative_prompt": options.negative_prompt,
-          "denoising_strength": options.denoising_strength,
-          "prompt": prompt + ', ' + config.defaut_prompt
+          'steps': options.step,
+          'width': width,
+          'height': height,
+          'seed': options.seed,
+          'cfg_scale': options.cfg_scale,
+          'negative_prompt': options.negative_prompt,
+          'denoising_strength': options.denoising_strength,
+          'prompt': prompt + ', ' + config.defaut_prompt
         }
         if (['minimal', 'default', 'verbose'].includes(options.output)) {
           this.output = options.output ? options.output : this.output
@@ -108,17 +111,17 @@ class Taylor {
       .option('upscaleFirst', '-f', { fallback: false })
       .action(async ({ session, options }, prompt) => {
         prompt = await this.replace_lora(session, prompt)
-        if (prompt=='false20230516') return this.info
+        if (prompt == 'false20230516') return this.info
         const [width, height] = (options.resolution ? options.resolution : this.config.resolution).split('x').map(x => { return parseInt(x) })
         const payload: Taylor.Payload = {
-          "steps": options.step,
-          "width": width,
-          "height": height,
-          "seed": options.seed,
-          "cfg_scale": options.cfg_scale,
-          "negative_prompt": options.negative_prompt,
-          "denoising_strength": options.denoising_strength,
-          "prompt": prompt + ', ' + config.defaut_prompt
+          'steps': options.step,
+          'width': width,
+          'height': height,
+          'seed': options.seed,
+          'cfg_scale': options.cfg_scale,
+          'negative_prompt': options.negative_prompt,
+          'denoising_strength': options.denoising_strength,
+          'prompt': prompt + ', ' + config.defaut_prompt
         }
         return await this.extras(session, payload, options)
 
@@ -130,13 +133,10 @@ class Taylor {
         const model: string = await this.switch_model_menu(session)
         session.send(session.text('commands.tl.messages.switching', [model]))
         if (model) {
-          await axios(config.api_path + '/sdapi/v1/options', {
-            method: 'POST',
-            data: {
-              sd_model_checkpoint: model
-            }
+          await this.ctx.http.post(config.api_path + '/sdapi/v1/options', {
+            sd_model_checkpoint: model
           })
-          const model_now = (await axios(trimSlash(this.config.api_path) + '/sdapi/v1/options')).data
+          const model_now = (await this.ctx.http.get(trimSlash(this.config.api_path) + '/sdapi/v1/options'))
           return session.text('commands.tl.messages.switch-success', [model_now.sd_model_checkpoint])
         } else {
           return this.info
@@ -153,23 +153,19 @@ class Taylor {
       })
 
   }
-  tsak_manager(session:Session){
-    if(this.task>0){
-      session.send(session.text('commands.tl.messages.pending',[this.task]))
-    }else{
+  tsak_manager(session: Session) {
+    if (this.task > 0) {
+      session.send(session.text('commands.tl.messages.pending', [this.task]))
+    } else {
       session.send(session.text('commands.tl.messages.waiting'))
     }
   }
   async get_lora(): Promise<void> {
-    const config: Dict = (await this.ctx.http.get(trimSlash(this.config.api_path) + '/config', { responseType: 'json' }))
-    const config_string: string = JSON.stringify(config)
-    const reg: RegExp = /filename=[^>]*\/models\/Lora\/[^>]*\.png/g
-    const res_name: RegExp = /\/models\/Lora\/[^.]*.p/g
-    const urls: string[] = config_string.match(reg)
-    urls.forEach((j: string, jd: number) => {
-      const name = decodeURIComponent((j.match(res_name)[0]).slice(13, -2))
-      this.lora[name] = trimSlash(this.config.api_path) + '/file=' + urls[jd].slice(9,)
-    })
+    const loras: Dict[] = await this.ctx.http.get(trimSlash(this.config.api_path) + '/sdapi/v1/loras', { responseType: 'json' })
+    for (let lora of loras) {
+      let path: string[] = resolve(lora['path']).replace(/\\/g, '/').split('/')
+      this.lora[lora['name']] = trimSlash(this.config.api_path) + '/file=models/Lora/' + path[path.length - 1].replace('safetensors', 'png').replace('ckpt', 'png')
+    }
   }
   async send_as_html(session: Session) {
     const lora_arr = Object.entries(this.lora)
@@ -177,7 +173,7 @@ class Taylor {
     let count = 0
     for (var i of lora_arr) {
       count++
-      if ((count+1) % 6 == 0) {
+      if ((count + 1) % 6 == 0) {
         session.send(await this.ctx.puppeteer.render(String(this.lora_html(images_arr))))
         images_arr = []
       }
@@ -212,10 +208,10 @@ class Taylor {
         </style>
       </head>
       <body>
-        <p>create by koishi-plugin-sd-taylor@1.2.7</p>
-        <div className="image-container" id="image-container">{images_arr}</div>
+        <p>create by koishi-plugin-sd-taylor@{VERSION}</p>
+        <div className='image-container' id='image-container'>{images_arr}</div>
       </body>
-    </html>;
+    </html>
   }
   async send_as_figure(session: Session) {
     const lora_arr = Object.entries(this.lora)
@@ -224,17 +220,17 @@ class Taylor {
       userId: session.userId,
       nickname: session.author?.nickname || session.username,
     }
-    result.children.push(segment('message', attrs, 'create by koishi-plugin-sd-taylor@1.2.7\n当前存在lora:'))
+    result.children.push(segment('message', attrs, `create by koishi-plugin-sd-taylor@${VERSION}\n当前存在lora:`))
     let count: number = 0
     for (var i of lora_arr) {
       count++
-      if ((count+1) % 6 == 0) {
+      if ((count + 1) % 6 == 0) {
         session.send(result)
         result = segment('figure')
       }
       const name = `${count}.${i[0]}`
       try {
-        const img_base64 = 'data:image/png;base64,' + arrayBufferToBase64(await this.ctx.http.get(i[1], { responseType: "arraybuffer" }))
+        const img_base64 = 'data:image/png;base64,' + arrayBufferToBase64(await this.ctx.http.get(i[1], { responseType: 'arraybuffer' }))
         result.children.push(segment('message', attrs, name))
         result.children.push(segment.image(img_base64, attrs))
       }
@@ -248,7 +244,7 @@ class Taylor {
   async switch_model_menu(session: Session): Promise<string> {
     const type_arr: string[] = []
     let type_str: string = '\n请输入编号:\n'
-    const model_now = (await axios(trimSlash(this.config.api_path) + '/sdapi/v1/options', {})).data.sd_model_checkpoint
+    const model_now = (await this.ctx.http.get(trimSlash(this.config.api_path) + '/sdapi/v1/options', {})).sd_model_checkpoint
     const res = await this.ctx.http.get(trimSlash(this.config.api_path) + '/sdapi/v1/sd-models')
     res.forEach((i, id) => {
       type_str += String(id + 1) + ' ' + i.model_name + '\n'
@@ -271,7 +267,7 @@ class Taylor {
   async replace_lora(session: Session, s: string): Promise<string> {
     const reg_lora: RegExp = /lora\d{1,2}/g
     const lora_match = s.match(reg_lora)
-    if(lora_match){
+    if (lora_match) {
       for (var i of lora_match) {
         s = s.replace(i, '')
       }
@@ -296,12 +292,12 @@ class Taylor {
       s = s.replace('  ', ' ')
     }
     // lora 检测
-    const reg = /<[^>]*>/g;
-    const matches = s.match(reg);
+    const reg = /<[^>]*>/g
+    const matches = s.match(reg)
     let cleanedMatches: string[] = []
     if (matches) {
-      cleanedMatches = matches.map(match => match.slice(0, match.length));
-      s = s.replace(reg, "");
+      cleanedMatches = matches.map(match => match.slice(0, match.length))
+      s = s.replace(reg, '')
     }
 
     // 翻译
@@ -310,13 +306,13 @@ class Taylor {
     }
     // GPT增强
     if (this.config.gpt_turbo) {
-      s = await this.ctx.dvc.chat_with_gpt(session,[{
+      s = await this.ctx.dvc.chat_with_gpt(session, [{
         role: 'system',
         content: `用尽可能多的英文标签详细的描述一幅画面，
         用碎片化的单词标签而不是句子去描述这幅画，描述词尽量丰富，
         每个单词之间用逗号分隔，例如在描述白发猫娘的时候，
-        你应该用: "white hair"、 "cat girl"、 "cat ears"、 "cute 
-        girl"、 "beautiful"、"lovely"等英文标签词汇。你现在要描述的是:${s}`
+        你应该用: 'white hair'、 'cat girl'、 'cat ears'、 'cute 
+        girl'、 'beautiful'、'lovely'等英文标签词汇。你现在要描述的是:${s}`
       }])
     }
     let lora_text: string = ''
@@ -337,14 +333,14 @@ class Taylor {
   async txt2img(session: Session, payload: Taylor.Payload) {
     this.tsak_manager(session)
     this.task++
-    const path: string = this.config.controlnet ? '/controlnet/txt2img' : '/sdapi/v1/txt2img'
+    const path: string = '/sdapi/v1/txt2img'
     const api: string = `${trimSlash(this.config.api_path)}${path}`
-    logger.info((session.author?.nickname || session.username) + ' : ' + payload.prompt)
+    logger.info((session.author?.nick || session.username) + ' : ' + payload.prompt)
     try {
       const resp = await this.ctx.http.post(api, payload, {
         timeout: 0
       })
-      const res_img: string = "data:image/png;base64," + (resp.output ? resp.output[0] : resp.images[0])
+      const res_img: string = 'data:image/png;base64,' + (resp.output ? resp.output[0] : resp.images[0])
       const parms: Taylor.Parameters = resp['parameters']
       this.task--
       return this.getContent(session, parms, res_img)
@@ -358,22 +354,22 @@ class Taylor {
   async img2img(session: Session, payload: Taylor.Payload) {
     this.tsak_manager(session)
     this.task += 1
-    const path: string = this.config.controlnet ? '/controlnet/img2img' : '/sdapi/v1/img2img'
+    const path: string = '/sdapi/v1/img2img'
     const api: string = `${trimSlash(this.config.api_path)}${path}`
 
-    const image = segment.select(session.content, "image")[0];
+    const image = segment.select(session.content, 'image')[0]
     const img_url: string = image?.attrs?.url
     if (!img_url) return '没有图片喵'
     logger.info((session.author?.nickname || session.username) + ' : ' + payload.prompt)
     logger.info(img_url)
     const base64: string = await this.img2base64(this.ctx, img_url)
     // 设置payload
-    payload["init_images"] = ["data:image/png;base64," + base64]
+    payload['init_images'] = ['data:image/png;base64,' + base64]
     try {
-      const resp = await this.ctx.http.post(api, payload,  {
+      const resp = await this.ctx.http.post(api, payload, {
         timeout: 0
       })
-      const res_img: string = "data:image/png;base64," + (resp.output ? resp.output[0] : resp.images[0])
+      const res_img: string = 'data:image/png;base64,' + (resp.output ? resp.output[0] : resp.images[0])
       const parms: Taylor.Parameters = resp['parameters']
       this.task--
       return this.getContent(session, parms, res_img)
@@ -390,14 +386,14 @@ class Taylor {
     this.task += 1
     await session.send(session.text('commands.tl.messages.interrogate'))
     const path: string = '/sdapi/v1/interrogate'
-    const image = segment.select(session.content, "image")[0];
+    const image = segment.select(session.content, 'image')[0]
     const img_url: string = image?.attrs?.url
     if (!img_url) return '没有图片怎么识图'
-    logger.info((session.author?.nickname || session.username) + ' : ' + 'Interrogate')
+    logger.info((session.author?.nick || session.username) + ' : ' + 'Interrogate')
     logger.info(img_url)
     const base64: string = await this.img2base64(this.ctx, img_url)
     try {
-      const resp: string = (await this.ctx.http.post(`${trimSlash(this.config.api_path)}${path}`, { "image": "data:image/png;base64," + base64 }))
+      const resp: string = (await this.ctx.http.post(`${trimSlash(this.config.api_path)}${path}`, { 'image': 'data:image/png;base64,' + base64 }))
       this.task--
 
       return resp
@@ -412,24 +408,24 @@ class Taylor {
     this.task += 1
     session.send(session.text('commands.tl.messages.waiting'))
     const path: string = '/sdapi/v1/extra-single-image'
-    const image = segment.select(session.content, "image")[0];
+    const image = segment.select(session.content, 'image')[0]
     const img_url: string = image?.attrs?.url
     if (!img_url) return '没有图片怎么超分'
     logger.info((session.author?.nickname || session.username) + ' : ' + 'Extras')
     logger.info(img_url)
     const base64: string = await this.img2base64(this.ctx, img_url)
     const payload_extras = {
-      "image": "data:image/png;base64," + base64,
-      "resize_mode": 1,
-      "show_extras_results": true,
-      "upscaling_resize": 2,
-      "upscaling_resize_w": 1080,
-      "upscaling_resize_h": 780,
-      "upscaling_crop": options.crop,
-      "upscaler_1": options.upscaler,
-      "upscaler_2": options.upscaler2,
-      "extras_upscaler_2_visibility": options.visibility,
-      "upscale_first": options.upscaleFirst,
+      'image': 'data:image/png;base64,' + base64,
+      'resize_mode': 1,
+      'show_extras_results': true,
+      'upscaling_resize': 2,
+      'upscaling_resize_w': 1080,
+      'upscaling_resize_h': 780,
+      'upscaling_crop': options.crop,
+      'upscaler_1': options.upscaler,
+      'upscaler_2': options.upscaler2,
+      'extras_upscaler_2_visibility': options.visibility,
+      'upscale_first': options.upscaleFirst,
 
     }
     try {
@@ -445,7 +441,7 @@ class Taylor {
     }
   }
   isChinese(s: string): boolean {
-    return /[\u4e00-\u9fa5]/.test(s);
+    return /[\u4e00-\u9fa5]/.test(s)
   }
   findInfo(s: string, ss: string): string {
     const id1: number = s.indexOf(ss + ': ')
@@ -481,40 +477,7 @@ class Taylor {
   }
 }
 namespace Taylor {
-  export const usage = `
-## 注意事项
-> 
-[stabe_diffusion](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/API)绘图插件,支持controlnet,lora,AI-Tag增强
-如需使用GPT翻译，请启用davinci-003插件
-对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-sd-taylor 概不负责。<br>
-如果有更多文本内容想要修改，可以在<a style="color:blue" href="/locales">本地化</a>中修改 zh 内容</br>
-## 目录结构
-### 已经做好了的
-- [x] 文字绘图
-- [x] 以图绘图
-- [x] 图片超分辨率
-- [x] 识图
-- [x] 切换模型
-- [x] Lora查看
-- [x] Lora快捷输入
-- [x] Lora预览
-- [x] controlnet
-
-
-### 指令如下：
-| 功能 | 指令 |
-|  ----  | ----  |
-| 文字绘图 | tl 描述 |
-| 以图绘图 | tl.img 原图 描述？ |
-| 超分辨率 | tl.ext 原图 |
-| 识图 | tl.txt 图片 |
-| 切换模型 | tl.switch|
-| 查看Lora | tl.lora |
-
-
-
-问题反馈群:399899914
-`
+  export const usage = readFileSync(resolve(__dirname, "../readme.md")).toString('utf-8')
   export interface Parameters {
     enable_hr?: boolean
     denoising_strength: number
@@ -601,7 +564,6 @@ namespace Taylor {
     output: string
     model: string
     gpt_translate: boolean
-    controlnet: boolean
     latin_only: boolean
     gpt_turbo: boolean
     lora_output: boolean
@@ -609,8 +571,8 @@ namespace Taylor {
   export const Config: Schema<Config> = Schema.object({
     api_path: Schema.string().description('服务器地址').required(),
     lora_weight: Schema.number().description('lora权重,0-2').default(0.6),
-    gpt_translate: Schema.boolean().description('是否启用gpt翻译').default(true),
-    gpt_turbo: Schema.boolean().description('GPT增强').default(true),
+    gpt_translate: Schema.boolean().description('是否启用gpt翻译').default(false),
+    gpt_turbo: Schema.boolean().description('GPT增强').default(false),
     min_auth: Schema.number().description('最低使用权限').default(1),
     step: Schema.number().default(20).description('采样步数0-100'),
     denoising_strength: Schema.number().default(0.5).description('改变强度0-1'),
@@ -626,7 +588,6 @@ namespace Taylor {
       Schema.const('default' as string).description('发送图片和关键信息'),
       Schema.const('verbose' as string).description('发送全部信息'),
     ]).description('输出方式。').default('default'),
-    controlnet: Schema.boolean().description('是否启用controlnet,需要安装controlnet拓展').default(false),
     latin_only: Schema.boolean().description('只接受英文').default(false),
     lora_output: Schema.boolean().description('lora预览图').default(false),
 
