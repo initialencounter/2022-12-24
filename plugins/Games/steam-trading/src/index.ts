@@ -18,7 +18,7 @@ export interface Config {
   buff: boolean
   igxe: boolean
   c5: boolean
-  uupy: boolean
+  uuyp: boolean
   buy: boolean
   safe_buy: boolean
   sell: boolean
@@ -33,7 +33,7 @@ export const Config: Schema<Config> = Schema.object({
   buff: Schema.boolean().default(true).description('buff'),
   igxe: Schema.boolean().default(true).description('igxe'),
   c5: Schema.boolean().default(false).description('c5'),
-  uupy: Schema.boolean().default(false).description('uuyp'),
+  uuyp: Schema.boolean().default(false).description('uuyp'),
   game: Schema.union([
     Schema.const('csgo-dota2' as string).description('全部'),
     Schema.const('dota2' as string).description('仅看dota2'),
@@ -69,11 +69,11 @@ export function apply(ctx: Context, config: Config) {
   const buff: string = config.buff ? 'buff-' : ''
   const igxe: string = config.igxe ? 'igxe-' : ''
   const c5: string = config.c5 ? 'c5-' : ''
-  const uupy: string = config.uupy ? 'uupy-' : ''
+  const uuyp: string = config.uuyp ? 'uuyp-' : ''
   let game = config.game
   let order = config.order
 
-  var platform: string = buff + igxe + c5 + uupy
+  var platform: string = buff + igxe + c5 + uuyp
   if (platform.length < 3) {
     platform = 'buff-'
   }
@@ -144,7 +144,7 @@ export function apply(ctx: Context, config: Config) {
         return '截图失败。'
       }).finally(() => page.close())
     })
-  ctx.command("trad <platform:string>", "['buff', 'igxe', 'c5', 'uupy']")
+  ctx.command("trad <platform:string>", "['buff', 'igxe', 'c5', 'uuyp']")
     .option('game', '-g <game:string>')
     .option('order', '-o <order:string>')
     .action(async ({ session, options }, prompt) => {
