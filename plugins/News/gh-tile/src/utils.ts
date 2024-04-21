@@ -1,21 +1,18 @@
-import { Context, Logger, trimSlash } from "koishi";
+import { Context, Logger } from "koishi";
 import fs from "fs";
 const logger = new Logger("gh-tile")
 
 // 获取今日瓷砖数，
-export async function getTileNums(ctx: Context, username: string, date: string, cookie: string, forwardServer: string) {
+export async function getTileNums(ctx: Context, username: string, date: string, cookie: string) {
   let html: string
   try {
-    html = await ctx.http.post(trimSlash(forwardServer), {
-      payload: {
-        url: `https://github.com/${username}?action=show&controller=profiles&tab=contributions&user_id=${username}`,
-        method: "GET",
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-          'Cookie': cookie
-        }
+    html = await ctx.http.get(`https://github.com/${username}?action=show&controller=profiles&tab=contributions&user_id=${username}`, {
+      responseType: "text",
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Cookie': cookie
       }
-    }, { responseType: "text" })
+    })
   } catch (e) {
     logger.error(e)
     return false

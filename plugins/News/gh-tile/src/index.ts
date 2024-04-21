@@ -20,13 +20,11 @@ export interface Rule {
 
 export const Config: Schema<Config> = Schema.object({
   corn: Schema.string().default("23-30").description("默认的提醒时间,UTC时间"),
-  forwardServer: Schema.string().default("https://1314084067-1k6wykqw4f-gz.scf.tencentcs.com/?method=POST").description("转发服务 SCF"),
   cookie: Schema.string().default("logged_in=yes;tz=Asia%2FShanghai;").description("cookie")
 })
 
 export interface Config {
   corn: string
-  forwardServer: string
   cookie: string
 }
 declare module 'koishi' {
@@ -103,7 +101,7 @@ export function apply(ctx: Context, config: Config) {
       if (token) {
         nums = await getContributions(ctx, token, username, date)
       } else {
-        nums = await getTileNums(ctx, username, date, config.cookie, config.forwardServer)
+        nums = await getTileNums(ctx, username, date, config.cookie)
       }
 
       if (nums === false) {
@@ -269,7 +267,7 @@ export async function alertCallbackFunctionasync(ctx: Context) {
       if (k?.token) {
         nums = await getContributions(ctx, k.token, k.username, date)
       } else {
-        nums = await getTileNums(ctx, k.username, date, ctx.config.cookie, ctx.config.forwardServer)
+        nums = await getTileNums(ctx, k.username, date, ctx.config.cookie)
       }
       // 记录瓷砖
       if (nums as number > 0) {
