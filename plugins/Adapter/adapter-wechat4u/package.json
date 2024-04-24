@@ -29,15 +29,15 @@
     "plugin"
   ],
   "peerDependencies": {
-    "@koishijs/plugin-console": "^5.28.2",
+    "@koishijs/plugin-console": "^5.28.4",
     "koishi": "^4.17.4"
   },
   "dependencies": {
     "raven": "^2.6.4",
-    "type-fest": "^4.15.0",
+    "type-fest": "^4.17.0",
     "wechaty": "^1.20.2"
   },
   "devDependencies": {
-    "@koishijs/client": "^5.28.2"
+    "@koishijs/client": "^5.28.4"
   }
 }

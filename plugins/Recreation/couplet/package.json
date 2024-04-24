@@ -29,6 +29,6 @@
   ],
   "peerDependencies": {
     "koishi": "^4.17.4",
-    "koishi-plugin-rate-limit": "^2.0.3"
+    "koishi-plugin-rate-limit": "^2.0.4"
   }
 }
