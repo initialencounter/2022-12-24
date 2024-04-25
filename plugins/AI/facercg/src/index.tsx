@@ -110,16 +110,17 @@ export async function apply(ctx: Context, config: Config) {
         return `错误信息: ${resp["error_msg"]}`
       }
       const face_arr = resp["result"]["face_list"]
-      const div_items_: Element[] = div_items(face_arr)//框出face
-      const text_msg: Element[] = msg(face_arr)//文字消息
+      const div_items_: string = div_items(face_arr)//框出face
+      const text_msg: string = msg(face_arr)//文字消息
 
       session.send(text_msg)
+      let html = `<html>
+        <img src=${img_url} />
+        ${div_items_}
+      </html>`
       //判断是否启用puppeteer
       if (ctx.puppeteer) {
-        return <html>
-          <img src={img_url} />
-          {div_items_}
-        </html>
+        return ctx.puppeteer.render(html)
       }
       return
     })
