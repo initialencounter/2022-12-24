@@ -30,7 +30,7 @@
   ],
   "peerDependencies": {
     "@koishijs/plugin-console": "^5.28.4",
-    "koishi": "^4.17.4"
+    "koishi": "^4.17.5"
   },
   "dependencies": {
     "raven": "^2.6.4",

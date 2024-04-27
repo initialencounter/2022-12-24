@@ -755,15 +755,15 @@ class DVc extends Dvc {
    * @param resp gpt返回的json
    * @returns 文字，图片或聊天记录
    */
-  async getContent(userId: string, resp: Dvc.Msg[], messageId: string): Promise<string | segment> {
+  async getContent(userId: string, resp: Dvc.Msg[], messageId: string) {
     if (this.output_type == 'voice' && this.ctx.vits) {
       return this.ctx.vits.say({ input: resp[resp.length - 1].content })
     }
     if (this.output_type == "quote") {
-      return h('quote', { id: messageId }) + resp[resp.length - 1].content
+      return h.text(h('quote', { id: messageId }) + (resp[resp.length - 1].content))
     }
     if (this.output_type == 'minimal') {
-      return resp[resp.length - 1].content
+      return h.text(resp[resp.length - 1].content)
 
     } else if (this.output_type == 'figure') {
       const result = segment('figure')
