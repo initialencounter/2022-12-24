@@ -368,7 +368,7 @@ class DVc extends Dvc {
     if (this.type == 'gpt3.5-unit') {
       const text: string = await this.try_control(this.chat_with_gpt, session, [{ 'role': 'user', 'content': prompt }])
       const resp = [{ "role": "user", "content": prompt }, { "role": "assistant", "content": text }]
-      return await this.getContent(session.userId, resp, session.messageId)
+      return await this.getContent(session.userId, resp, session.messageId) as Element
     } else if (this.type == 'gpt4-unit') {
       return await this.try_control(this.chat_with_gpt4, session, [{ 'role': 'user', 'content': prompt }])
     } else {
@@ -552,7 +552,7 @@ class DVc extends Dvc {
     this.sessions[sessionid] = session_of_id
     logger.info("ChatGPT返回内容: ")
     logger.info(message)
-    return await this.getContent(sessionid, session_of_id, session.messageId)
+    return await this.getContent(sessionid, session_of_id, session.messageId) as Element
 
   }
 
@@ -796,21 +796,28 @@ class DVc extends Dvc {
       const elements: Array<Element> = []
       for (var msg of resp) {
         if (msg.role == 'user') {
+          // @ts-ignore
           elements.push(<div style="color:#ff9900;font-size: 25px;background:transparent;width=500px;height:50px,">用户:{msg.content}</div>)
           continue
         }
         if (msg.role == 'assistant') {
+          // @ts-ignore
           elements.push(<div style="color:black;font-size: 25px;background:transparent;width=500px;height:50px,">AI:{msg.content}</div>)
         } else {
+          // @ts-ignore
           elements.push(<div style="color:#723b8d;font-size: 25px;background:transparent;width=400px">人格设定:{msg.content}</div>)
         }
       }
+      // @ts-ignore
       return <html>
         <img style="-webkit-user-select: none; display: block; margin: auto; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); cursor: zoom-in;" src='' width="600" height="1000"></img>
+        {/* @ts-ignore */}
         <div style='position: absolute;top:20px;left:20px;width:600px;'>
+          {/* @ts-ignore */}
           <p style="color:#723b8d">ChatGPT3.5-Turbo</p>
           {elements}
         </div>
+        {/* @ts-ignore */}
         <div style='position: absolute;top:10px;'>create by koishi-plugin-davinci-003@{version}</div>
       </html>
     }
