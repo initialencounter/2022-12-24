@@ -132,7 +132,7 @@ class Mqtt extends Service {
     for (var msg of msgs) {
       for (let { channelId, platform, selfId, guildId } of this.config.rules) {
         if (!selfId) {
-          const channel = await this.ctx.database.getChannel(platform, channelId, ['assignee', 'guildId'])
+          const channel = (await this.ctx.database.getChannel(platform, channelId, ['assignee', 'guildId']))[0]
           if (!channel || !channel.assignee) return
           selfId = channel.assignee
           guildId = channel.guildId
