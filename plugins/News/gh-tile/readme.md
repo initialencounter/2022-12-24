@@ -17,7 +17,7 @@
     - v2.4.2
         fix: send image failed
     - v2.4.1
-        fix: <!DOCTYPE "... is not valid JSON
+        fix: \<!DOCTYPE "... is not valid JSON
     - v2.3.3 
         更换默认的转发服务
         使用 cron 服务
