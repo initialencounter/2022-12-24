@@ -5,7 +5,8 @@
 Sst语音识别服务
 
 ## 实现该服务
-```
+
+```typescript
 imort { Context, Session, h } form 'koishi'
 import Sst from '@initencounter/sst'
 class Xxx extends Sst {
@@ -17,7 +18,8 @@ class Xxx extends Sst {
 ```
 
 ## 调用服务
-```
+
+```typescript
 imort { Context, Session } form 'koishi'
 import { } from '@initencounter/sst'
 ctx.sst.audio2text(session: Session)
