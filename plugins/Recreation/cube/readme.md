@@ -34,7 +34,7 @@
 
 对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-cube 概不负责。
 
-如果有更多文本内容想要修改，可以在<a href="/locales">本地化</a>中修改 zh 内容
+如果有更多文本内容想要修改，可以在[本地化](/locales)中修改 zh 内容
 
 ### 感谢
 ## cube.js参考b站--[神闪避的雪亲王](https://space.bilibili.com/16355723)
