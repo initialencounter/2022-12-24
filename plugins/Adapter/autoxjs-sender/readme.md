@@ -4,7 +4,7 @@
 
 使用 [autoxjs](https://github.com/kkevsekk1/AutoX) 发送消息
 # 使用方法
-![demo](./demo.gif)
+![demo](https://raw.githubusercontent.com/initialencounter/mykoishi/neat/plugins/Adapter/autoxjs-sender/demo.gif)
 
 - 准备一台闲置的， 拥有 root 权限的安卓手机
 - 安装 [autoxjs](https://github.com/kkevsekk1/AutoX)
