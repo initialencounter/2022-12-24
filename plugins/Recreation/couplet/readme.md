@@ -13,4 +13,4 @@ AI 对对联
 
 对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-couplet 概不负责。
 
-如果有更多文本内容想要修改，可以在<a href="/locales">本地化</a>中修改 zh 内容
+如果有更多文本内容想要修改，可以在[本地化](/locales)中修改 zh 内容
