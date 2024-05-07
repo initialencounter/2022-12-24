@@ -22,18 +22,16 @@
 ## 更新日志
 
 ### v1.0.2
->复主题色调，修复数据库写入失败
+复主题色调，修复数据库写入失败
 优化代码结构
 
 
-<!-- CONTACT -->
 ## Contact
 
 QQ群399899914
 
 [bilibili](https://space.bilibili.com/225995995)
 
-<!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
 [扫雷联萌](https://tapsss.com)
