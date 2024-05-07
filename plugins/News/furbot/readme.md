@@ -39,7 +39,7 @@
 
 
 ## 使用说明
-API文档 <a style="color:blue" href="https://console-docs.apipost.cn/preview/6bf01cfebd3e5f96/c4e20a5d1a5db86c?target_id=ba49a931-663a-4341-fc98-37ab95cbc6ee">兽云祭</a><br>
+API文档 [兽云祭](https://console-docs.apipost.cn/preview/6bf01cfebd3e5f96/c4e20a5d1a5db86c?target_id=ba49a931-663a-4341-fc98-37ab95cbc6ee)
 
 命令示例：
 - 账号注册
@@ -49,7 +49,8 @@ API文档 <a style="color:blue" href="https://console-docs.apipost.cn/preview/6b
 
 
 ## 问题反馈
-* QQ群：399899914<br>
+* QQ群：399899914
+
 * 小伙伴如果遇到问题或者有新的想法，欢迎到[这里](https://github.com/initialencounter/mykoishi/issues)反馈哦~
 
 ## 感谢
