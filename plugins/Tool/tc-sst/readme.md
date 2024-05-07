@@ -6,7 +6,7 @@
 
 
 ## 使用说明
-启用前请前往 <a style="color:blue" href="https://console.cloud.tencent.com/cam/capi">腾讯云官网控制台</a> 进行获取密钥
+启用前请前往 [腾讯云官网控制台](https://console.cloud.tencent.com/cam/capi) 进行获取密钥
 只适配了QQ平台,其他平台兼容性未知
 [API](https://console.cloud.tencent.com/cam/capi)
 
