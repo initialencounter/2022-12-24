@@ -5,7 +5,8 @@
 vits 语音合成服务
 
 ## 实现该服务
-```
+
+```typescript
 imort { Context, h } form 'koishi'
 import Vits from '@initencounter/vits'
 class Xxx extends Vits {
@@ -17,7 +18,8 @@ class Xxx extends Vits {
 ```
 
 ## 调用服务
-```
+
+```typescript
 import { } from '@initencounter/vits'
 ctx.vits.say(text)
 ```
