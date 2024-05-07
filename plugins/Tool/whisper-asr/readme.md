@@ -6,9 +6,11 @@
 
 
 ## 使用说明
-自建后端教程<a style="color:blue" href="https://github.com/ahmetoner/whisper-asr-webservice">whisper-asr-webservice</a> 
-如需接入微信，则要使用特定版本的wechaty适配器,并且修改后端源码，将app/webservice.py替换成本项目提供的webservice.py<br>
-插件仓库<a style="color:blue" href="https://github.com/initialencounter/koishi-plugin-whisper-asr">插件仓库</a> 
+自建后端教程[whisper-asr-webservice](https://github.com/ahmetoner/whisper-asr-webservice)
+如需接入微信，则要使用特定版本的wechaty适配器,并且修改后端源码，将app/webservice.py替换成本项目提供的webservice.py
+
+插件仓库[插件仓库](https://github.com/initialencounter/koishi-plugin-whisper-asr)
+
 ## 使用方法
 * 直接发送语音即可转化或翻译为文本
 * asr 要转化/或翻译的语言url
