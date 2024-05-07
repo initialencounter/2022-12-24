@@ -6,7 +6,7 @@
 
 
 ## 使用说明
-启用前请前往 <a style="color:blue" href="https://console.bce.baidu.com/ai/#/ai/speech/app/list">百度云官网控制台</a> 进行获取密钥
+启用前请前往 [百度云官网控制台](https://console.bce.baidu.com/ai/#/ai/speech/app/list) 进行获取密钥
 只适配了QQ平台,其他平台兼容性未知
 
 
