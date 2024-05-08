@@ -203,8 +203,8 @@ function schedule_cron(ctx: Context, config: Config, clock: Clock) {
         continue
       }
       if (!selfId) {
-        const channel = await ctx.database.getChannel(platform, channelId, ['assignee', 'guildId'])
-        if (!channel || !channel.assignee) return
+        const channel = (await ctx.database.getChannel(platform, channelId, ['assignee', 'guildId']))[0]
+        if (!channel) return
         selfId = channel.assignee
         guildId = channel.guildId
       }
