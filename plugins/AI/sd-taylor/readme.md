@@ -1,4 +1,4 @@
-# koishi-plugin-sd-taylor
+# sd-taylor
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-sd-taylor?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-sd-taylor)
 
