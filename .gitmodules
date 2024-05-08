@@ -1,3 +1,0 @@
-[submodule "plugins/Adapter/adapter-kritor"]
-	path = plugins/Adapter/adapter-kritor
-	url = https://github.com/idanran/koishi-plugin-adapter-kritor

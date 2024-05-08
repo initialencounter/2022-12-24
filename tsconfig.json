@@ -44,9 +44,6 @@
             "@initencounter/sst": [
                 "plugins/Tool/sst/src",
             ],
-            "koishi-plugin-open-vits": [
-                "external/open-vits/src"
-            ],
             // If you are developing a scoped plugin,
             // just uncomment the next line and change `@scope`
             // to the scope name (i.e. npm account or organization).
