@@ -1,4 +1,4 @@
-# @initencounter/vits
+# vits抽象
 
 [![npm](https://img.shields.io/npm/v/@initencounter/vits?style=flat-square)](https://www.npmjs.com/package/@initencounter/vits)
 

@@ -1,4 +1,4 @@
-# koishi-plugin-arcadia
+# 意间AI
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-arcadia?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-arcadia)
 

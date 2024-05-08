@@ -1,4 +1,4 @@
-# koishi-plugin-minesweeper-ending
+# 无猜
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-minesweeper-ending?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-minesweeper-ending)
 

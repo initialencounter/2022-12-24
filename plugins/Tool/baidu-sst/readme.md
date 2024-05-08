@@ -1,4 +1,4 @@
-# koishi-plugin-baudu-sst
+# baidu-sst
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-baidu-sst?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-baidu-sst)
 

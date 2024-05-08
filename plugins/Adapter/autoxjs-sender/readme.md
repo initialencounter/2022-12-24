@@ -1,4 +1,4 @@
-# koishi-plugin-autoxjs-sender
+# autoxjs-sender
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-autoxjs-sender?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-autoxjs-sender)
 

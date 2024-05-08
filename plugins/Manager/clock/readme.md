@@ -1,4 +1,4 @@
-# koishi-plugin-clock
+# 闹钟
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-clock?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-clock)
 

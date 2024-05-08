@@ -1,4 +1,4 @@
-# koishi-plugin-mqtt
+# mqtt
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-mqtt?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-mqtt)
 

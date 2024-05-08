@@ -1,4 +1,4 @@
-# koishi-plugin-coin
+# 加密货币
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-coin?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-coin)
 

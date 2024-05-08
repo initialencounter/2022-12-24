@@ -1,4 +1,4 @@
-# koishi-plugin-puzzle
+# 华容
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-puzzle?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-puzzle)
 

@@ -1,4 +1,4 @@
-# koishi-plugin-tencent-tts
+# tencent-tts
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-tencent-tts?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-tencent-tts)
 

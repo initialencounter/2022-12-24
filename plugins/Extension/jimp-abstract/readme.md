@@ -1,4 +1,4 @@
-# @initencounter/jimp
+# jimp抽象
 
 [![npm](https://img.shields.io/npm/v/@initencounter/jimp?style=flat-square)](https://www.npmjs.com/package/@initencounter/jimp)
 

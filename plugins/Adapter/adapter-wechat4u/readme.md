@@ -1,4 +1,4 @@
-# koishi-plugin-adapter-wechat4u
+# adapter-wechat4u
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-adapter-wechat4u?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-adapter-wechat4u)
 

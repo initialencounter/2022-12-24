@@ -1,4 +1,4 @@
-# koishi-plugin-genshin-atlas
+# 原神图鉴
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-genshin-atlas?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-genshin-atlas)
 

@@ -1,4 +1,6 @@
-# [koishi-plugin-adapter-voce](https://github.com/initialencounter/mykoishi/tree/neat/plugins/Adapter/adapter-voce)
+# adapter-voce
+
+[koishi-plugin-adapter-voce](https://github.com/initialencounter/mykoishi/tree/neat/plugins/Adapter/adapter-voce)
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-adapter-voce?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-adapter-voce)
 

@@ -1,4 +1,4 @@
-# koishi-plugin-couplet
+# 对联
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-couplet?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-couplet)
 
