@@ -51,6 +51,7 @@ export class VoceMessenger<C extends Context = Context> extends Messenger<C, Voc
                 this.buffer = this.buffer + attrs.content
                 break
             case 'img':
+            case 'image':
             case 'video':
             case 'audio':
             case 'file':

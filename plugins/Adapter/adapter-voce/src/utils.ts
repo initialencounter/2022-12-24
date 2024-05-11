@@ -226,7 +226,9 @@ export async function autoFilename(url: string) {
  */
 export async function element2MediaBuffer(http: Quester, element: Element): Promise<MediaBuffer> {
     const { attrs } = element
-    const { src, file } = attrs
+    let { src, file, url } = attrs
+    src = src ? src : url
+    console.log(src, "11111111")
     let mediaBuffer: MediaBuffer = {
         data: null,
         type: {
