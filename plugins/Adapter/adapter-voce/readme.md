@@ -30,6 +30,8 @@ VoceChat 适配器
 # [VoceChat 文档](https://doc.voce.chat/zh-cn/)
 
 # 更新日志
+- v1.0.1
+    - fix: send message failed #46
 - v1.0.0
     - feat: receive media
     - feat: send media
