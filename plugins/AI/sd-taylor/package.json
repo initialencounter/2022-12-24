@@ -30,6 +30,6 @@
     "AI"
   ],
   "peerDependencies": {
-    "koishi": "^4.17.5"
+    "koishi": "^4.17.6"
   }
 }

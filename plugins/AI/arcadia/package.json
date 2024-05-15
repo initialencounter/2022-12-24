@@ -31,7 +31,7 @@
     "description": "意间 AI绘画"
   },
   "peerDependencies": {
-    "koishi": "^4.17.5"
+    "koishi": "^4.17.6"
   },
   "dependencies": {
     "axios": "1.6.7"

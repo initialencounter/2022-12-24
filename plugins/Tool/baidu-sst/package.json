@@ -31,7 +31,7 @@
     "sst"
   ],
   "peerDependencies": {
-    "koishi": "^4.17.5"
+    "koishi": "^4.17.6"
   },
   "koishi": {
     "description": "百度sst语音识别服务",
