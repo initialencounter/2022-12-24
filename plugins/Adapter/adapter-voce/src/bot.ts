@@ -19,7 +19,7 @@ class VoceBot<C extends Context> extends Bot<C> {
     super(ctx, config)
     this.logger = new Logger(name)
     this.platform = 'voce'
-    this.selfId = config.selfId
+    this.selfId = String(config.botUid)
 
     /**
      * 拓展 ctx.http
@@ -62,7 +62,6 @@ namespace VoceBot {
     endpoint: string
     path: string
     botUid: number
-    selfId: string
     loginMethod: 'account' | 'token'
     admin_passwd?: string
     admin_email?: string
@@ -77,7 +76,6 @@ namespace VoceBot {
       Schema.const('account').description('账号登录'),
       Schema.const('token').description('令牌登录'),
     ]).default('account'),
-    selfId: Schema.string().description(`随便填🤗🤗`).required(),
     botUid: Schema.number().default(2).description("机器人的 UID"),
   }),
   Schema.union([
