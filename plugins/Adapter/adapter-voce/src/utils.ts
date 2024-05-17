@@ -5,6 +5,7 @@ import path from "path";
 import FileType from 'file-type'
 import db from './mine-standard';
 import { readFileSync } from "fs";
+import { transform } from 'koishi-plugin-markdown'
 
 export const mime2ext = (mime: string): string => {
 
@@ -171,18 +172,23 @@ async function fileToElement(bot: VoceBot<Context>, mimeType: string, content: s
 async function messageToElement(bot: VoceBot<Context>, detail: Detail) {
     const messageType = detail.content_type
     const elements: Element[] = []
+    if(detail.type === 'reply'){
+        elements.push(h.quote(detail.mid))
+    }
     switch (messageType) {
         case 'text/markdown':
-            let md = detail.content
-            elements.push(h.text(md))
+            elements.push(...transform(detail.content))
             break
         case 'text/plain':
-            let text = detail.content
-            elements.push(h.text(text))
+            let text = adaptAt(detail.content)
+            elements.push(...text)
             break
         case 'vocechat/file':
             let elm = await fileToElement(bot, detail?.properties?.content_type, detail.content)
             elements.push(elm)
+            break
+        case 'vocechat/archive':
+            // todo
             break
         default:
             return
@@ -190,6 +196,13 @@ async function messageToElement(bot: VoceBot<Context>, detail: Detail) {
     return elements
 }
 
+function adaptAt(content: string) {
+    let atList = content.match(/(?<=\s@)\d+(?=\s)/g)
+    for (let i of atList ?? []) {
+        content = content.replace(` @${i} `, `<at id="${i}"/>`)
+    }
+    return h.parse(content)
+}
 /**
  * 根据 src 获取文件名称
  * @param url 
@@ -228,7 +241,6 @@ export async function element2MediaBuffer(http: Quester, element: Element): Prom
     const { attrs } = element
     let { src, file, url } = attrs
     src = src ? src : url
-    console.log(src, "11111111")
     let mediaBuffer: MediaBuffer = {
         data: null,
         type: {

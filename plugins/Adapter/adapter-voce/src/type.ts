@@ -18,6 +18,7 @@ export interface Detail {
         name: string;
         size: number;
     };
+    mid?: number
     type: string;
 }
 
