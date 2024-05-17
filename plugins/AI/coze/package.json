@@ -8,6 +8,14 @@
     "lib",
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/mykoishi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/mykoishi/issues"
+  },
+  "homepage": "https://github.com/initialencounter/mykoishi/tree/neat/plugins/AI/coze#readme",
   "license": "MIT",
   "keywords": [
     "chatbot",
