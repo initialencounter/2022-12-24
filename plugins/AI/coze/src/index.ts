@@ -4,6 +4,7 @@ import { ChatHistory, ChatRespose } from './type'
 import { getChatHistory } from './utils'
 import { transform } from 'koishi-plugin-markdown'
 
+export const inject = { required: ['database'] }
 
 export const name = 'coze'
 
