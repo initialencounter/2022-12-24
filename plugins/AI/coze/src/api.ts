@@ -1,24 +1,20 @@
 // curl --location --request POST 'https://api.coze.com/open_api/v2/chat' \
 
-
-
 import { Quester } from "koishi"
 import { ChatHistory, ChatRespose } from "./type";
 
+
 export async function chat(
     http: Quester,
-    history: ChatHistory,
+    chat_history: ChatHistory,
     bot_id: string,
-    userId: string,
+    user: string,
     query: string,
     conversation_id: string = null
 ): Promise<ChatRespose> {
-    return await http.post("/open_api/v2/chat", {
-        conversation_id,
-        bot_id,
-        user: userId,
-        query: query,
-        chat_history: history,
-        stream: false
-    })
+    let data = {
+        bot_id, conversation_id, user, query, chat_history, stream: false
+    }
+    // console.log(data);
+    return await http.post("/open_api/v2/chat", JSON.stringify(data))
 }
