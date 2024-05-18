@@ -1,11 +1,11 @@
 import { Logger } from 'koishi'
 export const name: string = 'puzzle'
 export const logger = new Logger(name)
+
+const drctn_dist = { 'U': [-1, 0], 'D': [1, 0], 'L': [0, -1], 'R': [0, 1] }
+const drctn_list = ['U', 'D', 'L', 'R']
 export class Klotsk {
     cmd_strs: string;
-    theme: object[]
-    drctn_dist: object
-    drctn_list: string[]
     mode: number
     klotsk: number[][]
     num: number
@@ -14,9 +14,6 @@ export class Klotsk {
     end_time: number
     constructor(mode: number) {
         this.cmd_strs = ''
-        this.theme = []
-        this.drctn_dist = { 'U': [-1, 0], 'D': [1, 0], 'L': [0, -1], 'R': [0, 1] }
-        this.drctn_list = ['U', 'D', 'L', 'R']
         this.mode = mode
         this.klotsk = []
         this.num = 1
@@ -60,7 +57,7 @@ export class Klotsk {
         else if (c == this.mode - 1 && derect == 'R') {
             return ''
         }
-        const [rr, cc] = this.drctn_dist[derect]
+        const [rr, cc] = drctn_dist[derect]
 
         const num1: number = this.klotsk[rr + r][cc + c]
         this.klotsk[r][c] = num1
@@ -94,7 +91,7 @@ export class Klotsk {
     shfl() {
         for (let i = 0; i < 1000; i++) {     // 打乱puzzle
             const rd: string = (Math.random() * 3).toFixed(0)
-            this.move(this.drctn_list[rd])
+            this.move(drctn_list[rd])
         }
     }
 
