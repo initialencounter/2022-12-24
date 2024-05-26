@@ -17,7 +17,11 @@ export class VoceMessenger<C extends Context = Context> extends Messenger<C, Voc
         const res = await this.bot.internal.sendMessage(this.channelId, { path: uploadRes.path }, 'vocechat/file')
         this.addResult(res[0])
     }
-
+    async sendArchive(){
+        let archiveId = await this.bot.adminInternal.makeArchive([])
+        const res = await this.bot.internal.sendMessage(this.channelId, archiveId, 'vocechat/archive')
+        this.addResult(res[0])
+    }
     addResult(msgId: string) {
         if (!msgId) return
         const session = this.bot.session()
@@ -49,6 +53,9 @@ export class VoceMessenger<C extends Context = Context> extends Messenger<C, Voc
                 break
             case 'text':
                 this.buffer = this.buffer + attrs.content
+                break
+            case 'figure':
+                await this.sendArchive()
                 break
             case 'img':
             case 'image':

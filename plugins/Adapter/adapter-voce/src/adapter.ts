@@ -146,6 +146,15 @@ export class AdminInternal {
     getUserAvatar(uid: number): string {
         return `${this.http.config.baseURL}/api/resource/avatar?uid=${uid}`
     }
+
+    /**
+     * 合并消息
+     * @param mid_list 
+     * @returns 
+     */
+    async makeArchive(mid_list: number[]): Promise<string> {
+        return await this.http.post('/api/resource/archive', { mid_list })
+    }
 }
 export class Internal {
     constructor(public http: Quester) { }
@@ -244,7 +253,7 @@ export class Internal {
         return res
     }
 
-    async sendReplyMessage(messageId: string, content: string | MediaPath, contentType: string): Promise<string[]>{
+    async sendReplyMessage(messageId: string, content: string | MediaPath, contentType: string): Promise<string[]> {
         let res = await this.http.post(`/api/bot/reply/${messageId}`, content, {
             headers: {
                 "Content-Type": contentType
