@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-minesweeper-ending",
-  "description": "扫雷残局，无猜，高性能原生图像处理",
-  "version": "1.6.1",
+  "description": "扫雷残局，无猜",
+  "version": "1.7.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -36,8 +36,8 @@
   },
   "koishi": {
     "description": {
-      "en": "Minesweeper, no guesswork, high-performance native image processing",
-      "zh": "扫雷残局，无猜，高性能原生图像处理"
+      "en": "Minesweeper, no guesswork",
+      "zh": "扫雷残局，无猜"
     },
     "service": {
       "required": [

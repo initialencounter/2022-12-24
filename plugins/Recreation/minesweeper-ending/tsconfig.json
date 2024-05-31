@@ -12,8 +12,12 @@
     "moduleResolution": "node",
     "jsx": "react-jsx",
     "jsxImportSource": "@satorijs/element",
+    "types": [
+      "node",
+      "yml-register/types"
+    ]
   },
   "include": [
-    "src",
-  ],
+    "src"
+  ]
 }
