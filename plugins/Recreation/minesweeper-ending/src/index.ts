@@ -125,7 +125,7 @@ class EndingGame {
         const nowStamp = Date.now()
         let m = new Minefield(this.config.widthC, this.config.heightC, this.config.minesC)
         m = makePool(m)
-        session.send("<p>"+h.at(session.userId) + `✨\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}</p>` + h.image(await renderX(m, ctx), "image/png"))
+        session.send("<p>" + h.at(session.userId) + `✨\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}</p>` + h.image(await renderX(m, ctx), "image/png"))
         const cell = await session.prompt(86400000)
         if (!cell) {
           return "挑战失败"
@@ -142,7 +142,7 @@ class EndingGame {
         m["goingOn"] = true
         while (m["goingOn"] == true) {
           m = makePool(m)
-          session.send("<p>"+h.at(session.userId) + `✨\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}</p>` + h.image(await renderX(m, ctx), "image/png"))
+          session.send("<p>" + h.at(session.userId) + `✨\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}</p>` + h.image(await renderX(m, ctx), "image/png"))
           var input = await session.prompt(86400000)
           if (!input) {
             return h.at(session.userId) + "输入超时, 挑战失败"
@@ -214,7 +214,7 @@ class EndingGame {
         if (options.force) {
           logger.info("强制重开")
         } else if (m?.isGoingOn()) {
-          session.send("<p>"+h.at(session.userId) + `✨\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}</p>` + h.image(await renderX(m, ctx), "image/png"))
+          session.send("<p>" + h.at(session.userId) + `✨\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}</p>` + h.image(await renderX(m, ctx), "image/png"))
           return "已存在残局"
         }
         const info: GameInfo = {
@@ -307,7 +307,7 @@ class EndingGame {
       }
       // 更新 雷 和 空
       m = makePool(m)
-      await session.send("<p>"+h.at(session.userId) + `✨\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}</p>` + h.image(await renderX(m, ctx), "image/png"))
+      await session.send("<p>" + h.at(session.userId) + `✨\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}</p>` + h.image(await renderX(m, ctx), "image/png"))
       // 猜错了
       if (wrong.length > 0) {
         await this.ban(session.userId)
@@ -391,7 +391,7 @@ class EndingGame {
 
       // 更新 雷 和 空
       m = makePool(m)
-      await session.send("<p>"+h.at(session.userId) + `✨\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}</p>` + h.image(await renderX(m, ctx), "image/png"))
+      await session.send("<p>" + h.at(session.userId) + `✨\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}</p>` + h.image(await renderX(m, ctx), "image/png"))
 
       // 猜错了
       if (wrong.length > 0) {
@@ -577,7 +577,7 @@ ${rankInfo.map((player, index) => ` ${String(index + 1).padStart(2, ' ')}   ${pl
     for (var i of m["keyPool"]) {
       m.openCell(i)
     }
-    return "<p>"+h.at(session.userId) + `✨\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}</p>` + h.image(await renderX(m, ctx), "image/png")
+    return "<p>" + h.at(session.userId) + `✨\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}</p>` + h.image(await renderX(m, ctx), "image/png")
   }
 
 
@@ -732,7 +732,7 @@ ${rankInfo.map((player, index) => ` ${String(index + 1).padStart(2, ' ')}   ${pl
   async renew(session: Session, x: number = this.config.width, y: number = this.config.height, z: number = this.config.mines, ctx: Context) {
     let m: Minefield = this.initialize(x, y, z)
     this.minefieldDict[session.channelId] = m
-    return "<p>"+h.at(session.userId) + `✨\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}</p>` + h.image(await renderX(m, ctx), "image/png")
+    return "<p>" + h.at(session.userId) + `✨\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}</p>` + h.image(await renderX(m, ctx), "image/png")
   }
 
 
