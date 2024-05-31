@@ -61,7 +61,7 @@ export async function renderX(m: Minefield, ctx: Context) {
     let y: number = m.height
     const bigImage = ctx.jimp.newJimp(x * 94, y * 94)
     for (var i = 0; i < m.cells; i++) {
-        let [px, py] = [(i % x) * 94, Math.floor(i / y) * 94]
+        let [px, py] = [(i % x) * 94, Math.floor(i / x) * 94]
         const ii = m[String(i)]
         if (ii["isOpen"]) {
             bigImage.blit(imgArr[`type${ii["mines"]}`], px, py)
