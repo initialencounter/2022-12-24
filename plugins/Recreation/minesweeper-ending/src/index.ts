@@ -231,9 +231,6 @@ class EndingGame {
         let y: number
         let z: number
         if (args[0] && args[1]) {
-          if (args[0] * args[1] > 99) {
-            return "图太大了, 格子数应当小于100"
-          }
           if (args[0] * args[1] < 9) {
             return "图太小了, bv数应当大于9"
           }
@@ -287,8 +284,9 @@ class EndingGame {
         return "不存在残局"
       }
       const tmp = []
-      for (let i = 0; i < inputString.length; i += 2) {
-        let pair = inputString.slice(i, i + 2);
+      let step = m.cells < 99 ? 2 : (m.cells < 999 ? 3 : 4)
+      for (let i = 0; i < inputString.length; i += step) {
+        let pair = inputString.slice(i, i + step);
         if (pair.startsWith("0")) {
           pair = this.remove0(pair)
         }
@@ -368,8 +366,9 @@ class EndingGame {
         return "不存在残局"
       }
       const tmp = []
-      for (let i = 0; i < inputString.length; i += 2) {
-        let pair = inputString.slice(i, i + 2);
+      let step = m.cells < 99 ? 2 : (m.cells < 999 ? 3 : 4)
+      for (let i = 0; i < inputString.length; i += step) {
+        let pair = inputString.slice(i, i + step);
         if (pair.startsWith("0")) {
           pair = this.remove0(pair)
         }
