@@ -58,6 +58,8 @@
     "yml-register": "^1.2.5"
   },
   "dependencies": {
+    "@koishijs/core": "^4.17.6",
+    "@koishijs/loader": "^4.5.6",
     "@koishijs/plugin-actions": "^0.0.2",
     "@koishijs/plugin-adapter-discord": "^4.5.0",
     "@koishijs/plugin-adapter-kook": "^4.6.0",
@@ -74,6 +76,7 @@
     "@koishijs/plugin-database-sqlite": "^4.3.0",
     "@koishijs/plugin-explorer": "^1.5.1",
     "@koishijs/plugin-help": "^2.4.3",
+    "@koishijs/plugin-http": "^0.4.2",
     "@koishijs/plugin-insight": "^3.5.1",
     "@koishijs/plugin-inspect": "^1.1.5",
     "@koishijs/plugin-locales": "^2.5.3",
