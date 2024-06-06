@@ -23,7 +23,7 @@
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.17.6"
+    "koishi": "^4.17.8"
   },
   "dependencies": {
     "koishi-plugin-markdown": "^1.1.1"

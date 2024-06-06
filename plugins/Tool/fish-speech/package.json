@@ -28,7 +28,7 @@
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.17.6"
+    "koishi": "^4.17.8"
   },
   "dependencies": {
     "@initencounter/vits": "^0.0.2"
