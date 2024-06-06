@@ -2,8 +2,8 @@
 // AGPL-3.0 license
 
 import { segment, Universal, Element, Awaitable } from 'koishi'
-import type { ContactInterface } from 'wechaty/src/user-modules/contact'
-import type { RoomInterface } from 'wechaty/src/user-modules/room'
+import type { ContactInterface } from 'wechaty/impls'
+import type { RoomInterface } from 'wechaty/impls'
 import { MessageInterface } from 'wechaty/impls'
 import WechatyBot from './index'
 import FileType from 'file-type'
