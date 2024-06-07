@@ -63,4 +63,4 @@ function getAllReadmeFiles(gitDir, ignores) {
     traverseDirectory(gitDir);
 }
 
-getAllReadmeFiles('../mykoishi/plugins', []);
+getAllReadmeFiles('./external', []);
