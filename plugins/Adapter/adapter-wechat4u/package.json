@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "raven": "^2.6.4",
-    "type-fest": "^4.19.0",
+    "type-fest": "^4.20.0",
     "wechaty": "^1.20.2"
   },
   "devDependencies": {
