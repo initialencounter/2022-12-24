@@ -30,6 +30,9 @@
   "peerDependencies": {
     "koishi": "^4.17.8"
   },
+  "dependencies": {
+    "ws": "^8.17.0"
+  },
   "koishi": {
     "description": "使用 [autoxjs](https://github.com/kkevsekk1/AutoX) 发送消息，风控的解决方法"
   }

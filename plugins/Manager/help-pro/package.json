@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@koishijs/canvas": "^0.2.0",
+    "@satorijs/element": "^3.1.7",
     "pngjs": "^7.0.0"
   },
   "koishi": {

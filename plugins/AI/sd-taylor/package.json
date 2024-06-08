@@ -29,6 +29,9 @@
     "stabe diffusion",
     "AI"
   ],
+  "dependencies": {
+    "@satorijs/element": "^1.7.2"
+  },
   "peerDependencies": {
     "koishi": "^4.17.8"
   }

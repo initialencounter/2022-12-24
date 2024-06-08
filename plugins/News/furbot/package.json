@@ -35,6 +35,9 @@
   "peerDependencies": {
     "koishi": "^4.17.8"
   },
+  "dependencies": {
+    "axios": "^1.7.2"
+  },
   "koishi": {
     "description": "[兽云祭](http://m.zh.furrywiki.cn)API,毛毛机器人"
   }

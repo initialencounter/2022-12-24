@@ -33,6 +33,9 @@
   "peerDependencies": {
     "koishi": "^4.17.8"
   },
+  "dependencies": {
+    "@initencounter/sst": "^0.0.1"
+  },
   "koishi": {
     "description": "百度sst语音识别服务",
     "service": {

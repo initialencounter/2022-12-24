@@ -30,6 +30,9 @@
   "peerDependencies": {
     "koishi": "^4.17.8"
   },
+  "dependencies": {
+    "@satorijs/element": "^3.1.7"
+  },
   "koishi": {
     "service": {
       "required": [
