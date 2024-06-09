@@ -35,7 +35,7 @@
     }
   },
   "dependencies": {
-    "file-type": "^19.0.0",
+    "file-type": "16.5.4",
     "koishi-plugin-markdown": "^1.1.1"
   }
 }
