@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "file-box": "^1.4.15",
-    "file-type": "^19.0.0",
+    "file-type": "16.5.4",
     "raven": "^2.6.4",
     "type-fest": "^4.20.0",
     "wechaty": "^1.20.2"
