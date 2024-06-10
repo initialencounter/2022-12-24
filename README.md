@@ -1,25 +1,4 @@
-<div align="center">
-  <a href="https://github.com/initialencounter/mykoishi">
-    <a href="https://koishi.chat/" target="_blank">
-    <img  width="100rem" src="https://koishi.chat/logo.png">
-    <h2><div style="font-size: 8rem"><strong>。</strong></div></h2>
-  </a>
-  </a>
-  <br>
-<img alt="GitHub forks" src="https://img.shields.io/github/forks/initialencounter/mykoishi?style=social">
-<img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/initialencounter/mykoishi?style=social">
-<a href="https://wakatime.com/badge/user/1fad1c74-8ddd-4cac-bfa5-df629d13f085/project/2e8687b6-2874-4e88-8337-20eed806f673"><img src="https://wakatime.com/badge/user/1fad1c74-8ddd-4cac-bfa5-df629d13f085/project/2e8687b6-2874-4e88-8337-20eed806f673.svg" alt="wakatime"></a>
-<a href="https://github.com/initialencounter/mykoishi/blob/master/LICENSE"><img src="https://img.shields.io/github/license/initialencounter/mykoishi" alt="License"></a>
-<img src="https://img.shields.io/badge/NodeJs-20.8.0-blue" alt="Node Version"></a>
-  <p align="center">
-    <a href="https://github.com/initialencounter/mykoishi"><strong>Explore the docs »</strong></a>
-     ·
-    <a href="https://github.com/initialencounter/mykoishi"><strong>View Demo</strong></a>
-    ·
-    <a href="https://github.com/initialencounter/mykoishi/issues"><strong>Report Bug</strong></a>
-    ·
-    <a href="https://github.com/initialencounter/mykoishi/issues"><strong>Request Feature</strong></a>
-  </p>
+![mykoishi](https://socialify.git.ci/initialencounter/mykoishi/image?font=Jost&forks=1&issues=1&language=1&name=1&owner=1&pattern=Brick%20Wall&pulls=1&stargazers=1&theme=Dark)
 
 |   分类   | 名称    |
 | :------: | :---- |
