@@ -157,6 +157,9 @@ abstract class Jimp extends Service {
    * @param path 路径
    */
   abstract read(path: string, cb?: (err, img: Jm) => void): Promise<Jm>
+  abstract read(data: Buffer, cb?: (err, img: Jm) => void): Promise<Jm>
+  abstract read(image: Jimp, cb?: (err, img: Jm) => void): Promise<Jm>
+  abstract read(width: number, height: number, background?: number, cb?: (err, img: Jm) => void): Promise<Jm>
   /**
    * 加载字体
    * @param file 字体路径
