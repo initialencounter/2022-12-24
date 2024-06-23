@@ -64,26 +64,59 @@ class Jimp extends Jm {
     this.RESIZE_HERMITE = Jimpp.RESIZE_HERMITE
     this.RESIZE_BEZIER = Jimpp.RESIZE_BEZIER
     // 中文字体
-    this.PingFang_24_BLACK = resolve(__dirname,'PingFang_24_BLACK_CHINESE3500/PingFang_24_BLACK.fnt')
+    this.PingFang_24_BLACK = resolve(__dirname, 'PingFang_24_BLACK_CHINESE3500/PingFang_24_BLACK.fnt')
   }
   /**
    * 实例化 Jimp
    * @param args 
    * @returns Jimp
    */
-  newJimp(...args: any[]): Jimpp{
+  newJimp(...args: any[]): Jimpp {
     return new Jimpp(...args)
   }
   /**
    * 读取图片
    * @param path 路径
    */
-  async read(path: string, cb?: (err, img: Jimpp) => void): Promise<Jimpp> {
-    if (cb) {
-      await Jimpp.read(path, cb)
+  read(path: string, cb?: (err: Error | null, img?: Jimpp) => void): Promise<Jimpp>;
+  read(data: Buffer, cb?: (err: Error | null, img?: Jimpp) => void): Promise<Jimpp>;
+  read(image: Jimp, cb?: (err: Error | null, img?: Jimpp) => void): Promise<Jimpp>;
+  read(width: number, height: number, background: number, cb?: (err: Error | null, img?: Jimpp) => void): Promise<Jimpp>
+  async read(...args: any[]): Promise<Jimpp> {
+    if (typeof args[0] === 'string') {
+      const path = args[0];
+      const cb = args[1];
+      if (cb) {
+        return await Jimpp.read(path, cb)
+      }
+      return await Jimpp.read(path)
+    } else if (Buffer.isBuffer(args[0])) {
+      const data = args[0];
+      const cb = args[1];
+      if (cb) {
+        return await Jimpp.read(data, cb)
+      }
+      return await Jimpp.read(data)
+    } else if (args[0] instanceof Jimpp) {
+      const image = args[0];
+      const cb = args[1];
+      if (cb) {
+        return await Jimpp.read(image, cb)
+      }
+      return await Jimpp.read(image)
+    } else {
+      const width = args[0];
+      const height = args[1];
+      const background = args[2];
+      const cb = args[3];
+      if (cb) {
+        return await Jimpp.read(width, height, background, cb)
+      }
+      return await Jimpp.read(width, height, background)
     }
-    return await Jimpp.read(path)
   }
+
+
   /**
    * 调整图片大小
    * @param Jimpp 
@@ -166,33 +199,33 @@ class Jimp extends Jm {
    * @param maxWidth 宽带
    * @returns 
    */
-  measureTextHeight(font: Font, text: any, maxWidth: number): number {return Jimpp.measureTextHeight(font, text, maxWidth)}
+  measureTextHeight(font: Font, text: any, maxWidth: number): number { return Jimpp.measureTextHeight(font, text, maxWidth) }
   /**
    * 
    * @param font 字体
    * @param text 文本
    * @returns 
    */
-  measureText(font: Font, text: any): number {return Jimpp.measureText(font, text)}
+  measureText(font: Font, text: any): number { return Jimpp.measureText(font, text) }
   /**
    * 
    * @param n 
    * @returns 
    */
-  limit255(n: number): number {return Jimpp.limit255(n)}
+  limit255(n: number): number { return Jimpp.limit255(n) }
   /**
    * 
    * @param i 要转为RGBA的数字
    * @returns 
    */
-  intToRGBA(i: number): RGBA {return Jimpp.intToRGBA(i)}
+  intToRGBA(i: number): RGBA { return Jimpp.intToRGBA(i) }
   /**
    * 
    * @param img1 图片1
    * @param img2 
    * @returns 
    */
-  distance(img1: Jimpp, img2: Jimpp): number {return Jimpp.distance(img1, img2)}
+  distance(img1: Jimpp, img2: Jimpp): number { return Jimpp.distance(img1, img2) }
   /**
    * 
    * @param img1 图片1
@@ -212,21 +245,21 @@ class Jimp extends Jm {
    * @param path 路径
    * @returns 
    */
-  create(path: string): Promise<Jimpp>{return Jimpp.create(path)}
+  create(path: string): Promise<Jimpp> { return Jimpp.create(path) }
   /**
    * 
    * @param hash1 
    * @param hash2 
    * @returns 
    */
-  compareHashes(hash1: string, hash2: string): number{return Jimpp.compareHashes(hash1,hash2)}
+  compareHashes(hash1: string, hash2: string): number { return Jimpp.compareHashes(hash1, hash2) }
   /**
    * 
    * @param rgba1 
    * @param rgba2 
    * @returns 
    */
-  colorDiff(rgba1: RGB, rgba2: RGB): number{return Jimpp.colorDiff(rgba1,rgba2)}
+  colorDiff(rgba1: RGB, rgba2: RGB): number { return Jimpp.colorDiff(rgba1, rgba2) }
 }
 namespace Jimp {
   export const usage = readFileSync(resolve(__dirname, '../readme.md')).toString('utf-8')
