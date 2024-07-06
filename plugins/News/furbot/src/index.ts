@@ -139,13 +139,13 @@ class FurBot {
    */
   async middleware(session: Session, next: Next) {
     const { message_box } = this;
-    if (!session.parsed.appel) {
+    if (!session.stripped.appel) {
       return next()
     }
     if (!session.quote) {
       return next()
     }
-    if (session.parsed.appel && Object.keys(message_box).includes(session.quote.messageId)) {
+    if (session.stripped.appel && Object.keys(message_box).includes(session.quote.messageId)) {
       const content = session.content;
 
       const actions = [

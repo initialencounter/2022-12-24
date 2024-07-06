@@ -401,7 +401,7 @@ class DVc extends Dvc {
       return this.sli(session, session.content, {})
     }
     // 艾特触发
-    if (session.elements[0]?.type == "at" && session.elements[0].attrs.id === session.bot.selfId && this.ctx.config.if_at) {
+    if (session.stripped.appel && this.ctx.config.if_at) {
       let msg: string = ''
       for (let i of session.elements.slice(1,)) {
         if (i.type === 'text') {

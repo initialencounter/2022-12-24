@@ -56,7 +56,7 @@ export function apply(ctx: Context, config: Config) {
 
     ctx.middleware((session, next) => {
         // 艾特触发
-        if (session.elements[0]?.type == "at" && session.elements[0].attrs.id === session.bot.selfId) {
+        if (session.stripped.appel) {
             let msg: string = ''
             for (let i of session.elements.slice(1,)) {
                 if (i.type === 'text') {
