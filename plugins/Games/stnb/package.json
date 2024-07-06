@@ -28,7 +28,7 @@
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.17.8"
+    "koishi": "^4.17.9"
   },
   "dependencies": {
     "iconv-lite": "^0.6.3",

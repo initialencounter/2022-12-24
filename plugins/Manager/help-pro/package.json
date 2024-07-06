@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/initialencounter/mykoishi/tree/neat/plugins/Manager/help-pro#readme",
   "peerDependencies": {
-    "koishi": "^4.17.8"
+    "koishi": "^4.17.9"
   },
   "dependencies": {
     "@koishijs/canvas": "^0.2.0",
