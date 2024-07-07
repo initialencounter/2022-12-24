@@ -10,7 +10,7 @@ export async function render_list(
   let page = await ctx1.puppeteer.page()
   let jsonComands = JSON.stringify(commands)
   await page.setViewport({ width: 1920 * 2, height: 1080 * 2 })
-  await page.goto(resolve(ctx1.root.baseDir, 'data/help-pro/static/index.html'))
+  await page.goto('file:///'+resolve(ctx1.root.baseDir, 'data/help-pro/static/index.html'))
   await page.evaluate(`setElement(${jsonComands})`)
   let element = await page.$('#page')
   return h.image(await element.screenshot({encoding: 'binary',}), 'image/png')
