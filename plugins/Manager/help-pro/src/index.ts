@@ -265,7 +265,7 @@ export function apply(ctx: Context, config: Config) {
           return await renderCategroy(ctx, commands, session, config.color)
         }
         if (config.output == 'image2') {
-          return await renderList(ctx, commands, session, config.color, config.maxRenderPeerPage)
+          return await renderList(ctx, commands, session, config.color)
         }
         return output.filter(Boolean).join('\n')
       }
@@ -511,13 +511,11 @@ function getPluginCategory(scopeName: string) {
  * 渲染help
  * @returns 
  */
-async function renderList(ctx: Context, cmds: Command[], session: Session<'authority'>, color: string, PulginsPeerPage: number = 30) {
+async function renderList(ctx: Context, cmds: Command[], session: Session<'authority'>, color: string) {
   const cmdArray = formatCommandsArray(session, cmds, {})
   const cmdStats = await getCommandsStats(ctx)
   const sortedCmds = sortCommands(cmdArray, cmdStats)
-  const step = PulginsPeerPage
-
-  const obj = { ...sortedCmds, ...ctx.config, color, step }
+  const obj = { ...sortedCmds, ...ctx.config, color}
   const hash1 = calculateHash(obj)
   if (hash1 == imgCache.image1_hash) {
     for (var img of imgCache.image1) {
@@ -525,22 +523,10 @@ async function renderList(ctx: Context, cmds: Command[], session: Session<'autho
     }
     return
   }
-  // 分页发送
+  const a = await render_list(ctx, sortedCmds, color)
   imgCache.image1_hash = hash1
-  imgCache.image1 = []
-  if (sortedCmds.length > step) {
-    for (var i = 0; i < sortedCmds.length; i += step) {
-      const a = await render_list(ctx, sortedCmds.slice(i, i + step), color)
-      imgCache.image1.push(a)
-      session.send(a)
-    }
-  } else {
-    const a = await render_list(ctx, sortedCmds, color)
-    imgCache.image1.push(a)
-    return a
-  }
-
-
+  imgCache.image1 = a
+  return a
 }
 /**
  * 渲染带分类图片
