@@ -34,14 +34,11 @@
     "koishi": "^4.17.9"
   },
   "dependencies": {
-    "@koishijs/canvas": "^0.2.0",
-    "@satorijs/element": "^3.1.7",
-    "pngjs": "^7.0.0"
+    "@satorijs/element": "^3.1.7"
   },
   "koishi": {
     "service": {
       "optional": [
-        "canvas",
         "puppeteer"
       ]
     }
