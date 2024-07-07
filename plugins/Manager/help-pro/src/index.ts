@@ -100,7 +100,6 @@ export interface Config {
   options?: boolean
   output?: string
   color?: string
-  background?: string
   maxRenderPeerPage?: number
 }
 
@@ -110,11 +109,9 @@ export const Config: Schema<Config> = Schema.intersect([
     options: Schema.boolean().default(false).description('是否为每个指令添加 `-h, --help` 选项。').hidden(true),
     output: Schema.union([
       Schema.const('text').description('纯文本'),
-      Schema.const('image1').description('带插件分类'),
       Schema.const('image2').description('按调用频率排序'),
     ]).description("输出方式").default('image2'),
     color: Schema.string().role('color').default('rgba(62, 192, 149, 255)').description("主题色"),
-    background: Schema.string().role('link').default('https://gitee.com/initencunter/mykoishi/raw/master/Plugins/Manager/help-pro/1.png').description('背景图片')
   }),
   Schema.union([
     Schema.object({
@@ -262,7 +259,8 @@ export function apply(ctx: Context, config: Config) {
         const commands = $._commandList.filter(cmd => cmd.parent === null)
         const output = formatCommands(ctx, '.global-prolog', session, commands, options)
         if (config.output == 'image1') {
-          return await renderCategroy(ctx, commands, session, config.color)
+          // return await renderCategroy(ctx, commands, session, config.color)
+          return await renderList(ctx, commands, session, config.color)
         }
         if (config.output == 'image2') {
           return await renderList(ctx, commands, session, config.color)
@@ -518,9 +516,7 @@ async function renderList(ctx: Context, cmds: Command[], session: Session<'autho
   const obj = { ...sortedCmds, ...ctx.config, color}
   const hash1 = calculateHash(obj)
   if (hash1 == imgCache.image1_hash) {
-    for (var img of imgCache.image1) {
-      session.send(img)
-    }
+    session.send(imgCache.image1)
     return
   }
   const a = await render_list(ctx, sortedCmds, color)

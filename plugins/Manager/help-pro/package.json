@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-help-pro",
   "description": "进阶指令帮助",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
