@@ -1,70 +1,19 @@
-import type { } from '@koishijs/canvas'
-import { Context, Element } from 'koishi'
+import type { } from 'koishi-plugin-puppeteer'
+import { Context, Element, h } from 'koishi'
 import { PluginGrid } from '.'
-export async function render_list2(
+import { resolve } from 'path'
+export async function render_list(
     ctx1: Context,
     commands: (string | number)[][],
     theme: string
 ): Promise<Element> {
-  let y = 100
-  const items = []
-  const step = Math.floor(255/commands.length)
-  let bgc = theme
-  let [red,green,blue] = parseColor(theme)
-  let [ro, go] = [true, true]
-  for (let i = 0; i < commands.length; i++) {
-    if (red > 0 && ro) {
-      red += step
-      if (red > 255) {
-        red = 255
-        ro = false
-      }
-    } else if (go) {
-      green += step
-      if (green > 255) {
-        green = 255
-        go = false
-      }
-    } else {
-      blue += step
-      if (blue > 255) {
-        blue = 255
-        if(!ro){
-          ro = true
-        }
-        if (!ro && !go) {
-          red = parseInt(bgc.slice(1, 3), 16);
-          green = parseInt(bgc.slice(3, 5), 16);
-          blue = parseInt(bgc.slice(5, 7), 16);
-        }
-      }
-    }
-
-    const text_color = calculateColorBrightness(red, green, blue) < 126 ? "#FFFFFF" : "#000000"
-    const tmp = []
-    const item_style0 = `width:${400}px;height:${80}px;border-radius: 1rem 1rem 1rem 1rem`
-    const item_style1 = `width:${150}px;height:${60}px;background: rgba(${red}, ${green}, ${blue}, 255);border-radius: 1rem 1rem 1rem 1rem;position: relative;left:20px;font-weight: 1000;top:70px;padding:5px;opacity:0.6`
-    const item_style2 = `width:${300}px;height:${60}px;border-radius: 1rem 1rem 1rem 1rem;position: relative;left:200px;padding:5px;opacity:0.6`
-    const text_style = `text-align: center;font: small-caps bold 30px/1 sans-serif;position: relative;top:10px;color:${text_color}`
-    const text_style2 = `text-align: center;font-size: 30px;position: relative;top:10px;color:${text_color}`
-
-    tmp.push(<div style={item_style1}><div style={text_style}>{commands[i][0]}</div></div>)
-    tmp.push(<div style={item_style2}><div style={text_style2}>{commands?.[i][1] == '' ? 'n/a' : commands[i]?.[1]}</div></div>)
-    items.push(<div style={item_style0}>{tmp}</div>)
-    y += 45
-  }
-  const bg_style = `width: ${500}px;height: ${120}px;display:grid;grid-template-columns: 550px 550px;border-radius: 1rem 1rem 1rem 1rem;padding:5px`
-  const bg = <div style={bg_style}>{items}</div>
-  const title_style = `width:${200}px;height:${40}px;text-align: center;font: small-caps bold 40px/1 sans-serif;border-radius: 1rem 1rem 1rem 1rem;align-self: center;padding:15px;position: relative;left:20px;top:40px;opacity:0.6`
-  const title = <div style={title_style}>指令列表</div>
-
-  const html_style = `width:${1100}px;height:${y}px;background:${theme};align-items: center;background-image:url(${ctx1.config.background});background-size: cover;background-repeat: no-repeat;`
-  return <html>
-    <div style={html_style}>
-      <div>{title}</div>
-      {bg}
-    </div>
-  </html>
+  let page = await ctx1.puppeteer.page()
+  let jsonComands = JSON.stringify(commands)
+  await page.setViewport({ width: 1920 * 2, height: 1080 * 2 })
+  await page.goto(resolve(ctx1.root.baseDir, 'data/help-pro/static/index.html'))
+  await page.evaluate(`setElement(${jsonComands})`)
+  let element = await page.$('#page')
+  return h.image(await element.screenshot({encoding: 'binary',}), 'image/png')
 }
 function parseColor(color: string) {
   color = color.slice(5, -1)
@@ -81,7 +30,7 @@ async function getRandomColor(theme_color: number[]) {
   return color;
 }
 
-export async function render_categroy2(
+export async function render_categroy(
     ctx1: Context, theme: string, pluginGrid: PluginGrid
 ): Promise<Element> {
   const theme_color = parseColor(theme)

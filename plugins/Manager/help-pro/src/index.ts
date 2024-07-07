@@ -1,8 +1,7 @@
-import { readFileSync } from 'fs'
+import { cpSync, existsSync, mkdirSync, readFileSync } from 'fs'
 import { Argv, Command, Computed, Context, FieldCollector, h, Schema, Session, Dict } from 'koishi'
 import { resolve } from 'path'
-import { render_list, render_categroy } from './render_canvas'
-import { render_list2, render_categroy2 } from './render_pptr'
+import { render_list, render_categroy } from './render_pptr'
 import { calculateHash } from './utils'
 
 type DailyField = typeof dailyFields[number]
@@ -103,19 +102,17 @@ export interface Config {
   color?: string
   background?: string
   maxRenderPeerPage?: number
-  canvas?: boolean
 }
 
 export const Config: Schema<Config> = Schema.intersect([
   Schema.object({
-    canvas: Schema.boolean().default(false).description("使用 canvas 渲染，会提升渲染速度，但图片样式会发生改变"),
     shortcut: Schema.boolean().default(false).description('是否启用快捷调用。').hidden(true),
     options: Schema.boolean().default(false).description('是否为每个指令添加 `-h, --help` 选项。').hidden(true),
     output: Schema.union([
       Schema.const('text').description('纯文本'),
       Schema.const('image1').description('带插件分类'),
       Schema.const('image2').description('按调用频率排序'),
-    ]).description("输出方式").default('image1'),
+    ]).description("输出方式").default('image2'),
     color: Schema.string().role('color').default('rgba(62, 192, 149, 255)').description("主题色"),
     background: Schema.string().role('link').default('https://gitee.com/initencunter/mykoishi/raw/master/Plugins/Manager/help-pro/1.png').description('背景图片')
   }),
@@ -144,7 +141,7 @@ export const pluginCategory = {}
 export const categorys = ['']
 export const name = 'help-pro'
 export const inject = {
-  optional: ['canvas', 'puppeteer']
+  optional: ['puppeteer', 'database']
 }
 export const usage = `${readFileSync(resolve(__dirname, '../readme.md')).toString('utf-8')}`
 
@@ -156,6 +153,12 @@ export function apply(ctx: Context, config: Config) {
   }, { primary: 'time' })
 
   ctx.on('ready', async () => {
+    if (!existsSync(resolve(ctx.root.baseDir, 'data/help-pro/static'))) {
+      mkdirSync(resolve(ctx.root.baseDir, 'data/help-pro/static'), { recursive: true })
+    }
+    if (!existsSync(resolve(ctx.root.baseDir, 'data/help-pro/static/index.html'))) {
+      cpSync(resolve(__dirname, '../lib/static'), resolve(ctx.root.baseDir, 'data/help-pro/static'), { recursive: true, force: true})
+    }
     const packages: Package[] = (await ctx.http.get('https://registry.koishi.chat/index.json'))['objects']
     for (var i of packages) {
       pluginCategory[i.package.name] = i.category
@@ -258,17 +261,10 @@ export function apply(ctx: Context, config: Config) {
       if (!target) {
         const commands = $._commandList.filter(cmd => cmd.parent === null)
         const output = formatCommands(ctx, '.global-prolog', session, commands, options)
-        if (ctx.canvas && options.output) {
-          if (options?.output === 'image1') {
-            return await renderCategroy(ctx, commands, session, config.color)
-          } else if (options?.output === 'image2') {
-            return await renderList(ctx, commands, session, config.color, config.maxRenderPeerPage)
-          }
-        }
-        if (ctx.canvas && config.output == 'image1') {
+        if (config.output == 'image1') {
           return await renderCategroy(ctx, commands, session, config.color)
         }
-        if (ctx.canvas && (config.output == 'image2')) {
+        if (config.output == 'image2') {
           return await renderList(ctx, commands, session, config.color, config.maxRenderPeerPage)
         }
         return output.filter(Boolean).join('\n')
@@ -534,12 +530,12 @@ async function renderList(ctx: Context, cmds: Command[], session: Session<'autho
   imgCache.image1 = []
   if (sortedCmds.length > step) {
     for (var i = 0; i < sortedCmds.length; i += step) {
-      const a = ctx.config.canvas ? await render_list(ctx, sortedCmds.slice(i, i + step), color):await render_list2(ctx, sortedCmds.slice(i, i + step), color)
+      const a = await render_list(ctx, sortedCmds.slice(i, i + step), color)
       imgCache.image1.push(a)
       session.send(a)
     }
   } else {
-    const a = ctx.config.canvas ? await render_list(ctx, sortedCmds, color): await render_list2(ctx, sortedCmds, color)
+    const a = await render_list(ctx, sortedCmds, color)
     imgCache.image1.push(a)
     return a
   }
@@ -562,7 +558,7 @@ async function renderCategroy(ctx: Context, cmds: Command[], session: Session<'a
   if (hash2 == imgCache.image2_hash) {
     return imgCache.image2
   }
-  const a = ctx.config.canvas ? await render_categroy(ctx, color, cmdGrid) : await render_categroy2(ctx, color, cmdGrid)
+  const a = await render_categroy(ctx, color, cmdGrid)
   imgCache.image2_hash = hash2
   imgCache.image2 = a
   return a
