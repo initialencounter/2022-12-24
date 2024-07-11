@@ -16,9 +16,11 @@ adapter-wechat4u
 - 机器人显示成功登录，但无法收发消息，解决方法：重启插件重新登录
 - 日志输出太多垃圾信息：解决方法：降低日志输出等级
 - 新账号无法登录，解决方法：绑定银行卡
+- 日志出现报错 `AssertionError [ERR_ASSERTION]: 1102 == 0`，解决方法：删除`data/wechat4u`的配置文件
 
 # 更新日志
-
+- v0.0.7
+    - proposal: 修改 wechat4u-adapter 中 anchor 元素的处理 #53
 - v0.0.6
     - 修复：element image->img; url->src 导致的无法发送图片
 - v0.0.5

@@ -95,7 +95,7 @@ export class WechatyMessenger extends Messenger {
                 break
             case 'a':
                 await this.render(children)
-                if (attrs.href) this.text(` (${attrs.href}) `)
+                if (attrs.href) this.text(`（${attrs.href}）`)
                 break
             case 'at':
                 if (attrs.id) {
