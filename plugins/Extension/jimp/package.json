@@ -26,10 +26,10 @@
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.17.9"
+    "koishi": "^4.17.10"
   },
   "dependencies": {
-    "@initencounter/jimp": "^0.0.5",
+    "@initencounter/jimp": "workspace:^",
     "jimp": "^0.22.12"
   },
   "koishi": {

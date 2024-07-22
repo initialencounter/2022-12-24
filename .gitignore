@@ -30,5 +30,5 @@ package-lock.json
 *.log
 
 personality.json
-wxid_sjk1hj9a.memory-card.json
+wxid*
 /.yarn/install-state.gz

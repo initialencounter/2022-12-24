@@ -39,7 +39,7 @@
     "@satorijs/element": "^3.1.7"
   },
   "peerDependencies": {
-    "koishi": "^4.17.9",
+    "koishi": "^4.17.10",
     "koishi-plugin-puppeteer": "^3.8.4"
   }
 }
