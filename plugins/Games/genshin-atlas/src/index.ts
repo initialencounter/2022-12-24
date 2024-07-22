@@ -33,7 +33,7 @@ class GenshinAtlas extends DataService<GenshinAtlas.Data> {
   name_list: string[]
   constructor(ctx: Context, config: GenshinAtlas.Config) {
     super(ctx, 'genshinatlas')
-    ctx.using(['console'], (ctx) => {
+    ctx.inject(['console'], (ctx) => {
       ctx.console.addEntry({
         dev: resolve(__dirname, '../client/index.ts'),
         prod: resolve(__dirname, '../dist'),
@@ -79,8 +79,9 @@ class GenshinAtlas extends DataService<GenshinAtlas.Data> {
     ctx.command('ys.atlas', '更新原神图鉴索引').alias('更新原神图鉴索引').action(({ session }) => this.updatePath(session))
   }
   async updatePath(session: Session) {
-    const res = await this.ctx.http.get('https://ghproxy.com/https://raw.githubusercontent.com/Nwflower/genshin-atlas/master/path.json', { responseType: 'arraybuffer' })
-    writeFileSync(resolve(__dirname, 'path.json'), Buffer.from(res))
+    const res = await axios.get('https://gitee.com/IKUN-HUANG/genshin-atlas/raw/master/path.json', { responseType: 'arraybuffer' })
+    writeFileSync(resolve(__dirname, 'path.json'), Buffer.from(res.data))
+    this.path_dict = JSON.parse(Buffer.from(res.data).toString())
     return session.text('commands.update.messages.success')
   }
 
