@@ -77,6 +77,19 @@ class GenshinAtlas extends DataService<GenshinAtlas.Data> {
       }
     })
     ctx.command('ys.atlas', '更新原神图鉴索引').alias('更新原神图鉴索引').action(({ session }) => this.updatePath(session))
+    ctx.command('ys.food', '随机原神食物').alias('今天吃什么').action(({ session }) => this.randomFood(session))
+  }
+  async randomFood(session: Session) {
+    const food_list = Object.keys(this.path_dict['food'])
+    const food = food_list[Math.floor(Math.random() * food_list.length)]
+    const food_path = this.path_dict['food'][food]
+    let img_url: string
+    if (this.ctx.config.engine) {
+      img_url = this.ctx.config.repo + food_path
+    } else {
+      img_url = pathToFileURL(resolve(this.ctx.config.src_path + food_path)).href
+    }
+    return h.image(img_url);
   }
   async updatePath(session: Session) {
     const res = await axios.get('https://gitee.com/IKUN-HUANG/genshin-atlas/raw/master/path.json', { responseType: 'arraybuffer' })
