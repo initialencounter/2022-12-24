@@ -430,7 +430,7 @@ namespace Arcadia {
     export const usage = `
 ##注意事项 
 > 使用前请前往 <a style = "color:blue" href ="http://open.yjai.art/openai-painting"> yjart </a> 中获取apikey及apisecret<br>
-对于部署者行为及所产生的任何纠纷， Koishi 及 <a style="color:blue" href="https:/ / github.com / initialencounter / mykoishi ">koishi-plugin-${name}</a>概不负责。<br>
+对于部署者行为及所产生的任何纠纷， Koishi 及 <a style="color:blue" href="https:/ / github.com / initialencounter / 2022-12-24 ">koishi-plugin-${name}</a>概不负责。<br>
 如果有更多文本内容想要修改，可以在<a style="color: blue " href=" / locales ">本地化</a>中修改 zh 内容</br>
 发送arca.style,即可切换风格
 `

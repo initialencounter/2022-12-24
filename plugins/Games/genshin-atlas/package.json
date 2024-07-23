@@ -26,12 +26,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/initialencounter/mykoishi.git"
+    "url": "git+https://github.com/initialencounter/2022-12-24.git"
   },
   "bugs": {
-    "url": "https://github.com/initialencounter/mykoishi"
+    "url": "https://github.com/initialencounter/2022-12-24"
   },
-  "homepage": "https://github.com/initialencounter/mykoishi/blob/neat/plugins/Games/genshin-atlas#readme",
+  "homepage": "https://github.com/initialencounter/2022-12-24/blob/neat/plugins/Games/genshin-atlas#readme",
   "peerDependencies": {
     "@koishijs/plugin-console": "^5.29.3",
     "koishi": "^4.17.10"

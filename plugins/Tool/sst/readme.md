@@ -28,6 +28,6 @@ ctx.sst.audio2text(session: Session)
 ## 示例插件
 | NPM | REPO |
 | --- | --- |
-| [Baidu-SST](https://www.npmjs.com/package/koishi-plugin-baidu-sst) | [百度智能云语音识别](https://github.com/initialencounter/mykoishi/tree/master/baidu-sst) |
-| [TC-SST](https://www.npmjs.com/package/koishi-plugin-tc-sst) | [腾讯云语音识别](https://github.com/initialencounter/mykoishi/tree/master/tc-sst) |
-| [Whisper-ASR](https://www.npmjs.com/package/koishi-plugin-whisper-asr) | [OpenAI语音识别](https://github.com/initialencounter/mykoishi/tree/master/whisper-asr) |
+| [Baidu-SST](https://www.npmjs.com/package/koishi-plugin-baidu-sst) | [百度智能云语音识别](https://github.com/initialencounter/2022-12-24/tree/master/baidu-sst) |
+| [TC-SST](https://www.npmjs.com/package/koishi-plugin-tc-sst) | [腾讯云语音识别](https://github.com/initialencounter/2022-12-24/tree/master/tc-sst) |
+| [Whisper-ASR](https://www.npmjs.com/package/koishi-plugin-whisper-asr) | [OpenAI语音识别](https://github.com/initialencounter/2022-12-24/tree/master/whisper-asr) |

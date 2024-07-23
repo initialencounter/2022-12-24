@@ -30,5 +30,5 @@ session.send(h.image(img1_buffer, 'image/png'))
 
 ## 使用了此服务的插件:
 
-- [koishi-plugin-minesweeper-ending](https://github.com/initialencounter/mykoishi/tree/master/Plugins/Recreation/minesweeper-ending#readme)
-- [koishi-plugin-puzzle](https://github.com/initialencounter/mykoishi/tree/master/Plugins/Recreation/puzzle#readme.md)
+- [koishi-plugin-minesweeper-ending](https://github.com/initialencounter/2022-12-24/tree/master/Plugins/Recreation/minesweeper-ending#readme)
+- [koishi-plugin-puzzle](https://github.com/initialencounter/2022-12-24/tree/master/Plugins/Recreation/puzzle#readme.md)

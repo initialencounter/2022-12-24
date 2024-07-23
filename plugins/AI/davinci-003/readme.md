@@ -54,7 +54,7 @@
 
 QQ群：399899914
 
-小伙伴如果遇到问题或者有新的想法，欢迎到[这里](https://github.com/initialencounter/mykoishi/issues)反馈哦~
+小伙伴如果遇到问题或者有新的想法，欢迎到[这里](https://github.com/initialencounter/2022-12-24/issues)反馈哦~
 
 
 
@@ -69,7 +69,7 @@ QQ群：399899914
     - 修复上下文丢失
     - 修复修复 key 数组越界
 - v6.4.4
-    - 修复[逆天bug](https://github.com/initialencounter/mykoishi/issues/41)无限循环
+    - 修复[逆天bug](https://github.com/initialencounter/2022-12-24/issues/41)无限循环
     - 修复 key 数组越界
     - 移除删除key
 - v6.4.3

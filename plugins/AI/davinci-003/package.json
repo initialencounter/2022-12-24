@@ -17,12 +17,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/initialencounter/mykoishi.git"
+    "url": "git+https://github.com/initialencounter/2022-12-24.git"
   },
   "bugs": {
-    "url": "https://github.com/initialencounter/mykoishi/issues"
+    "url": "https://github.com/initialencounter/2022-12-24/issues"
   },
-  "homepage": "https://github.com/initialencounter/mykoishi/tree/neat/plugins/AI/davinci-003#readme",
+  "homepage": "https://github.com/initialencounter/2022-12-24/tree/neat/plugins/AI/davinci-003#readme",
   "keywords": [
     "chatbot",
     "koishi",

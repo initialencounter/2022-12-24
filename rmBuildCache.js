@@ -43,4 +43,4 @@ function getAllReadmeFiles(gitDir, ignores) {
     traverseDirectory(gitDir);
 }
 
-getAllReadmeFiles('../mykoishi/plugins', ["../mykoishi/plugins/Adapter/adapter-kritor"]);
+getAllReadmeFiles('../2022-12-24/plugins', ["../2022-12-24/plugins/Adapter/adapter-kritor"]);

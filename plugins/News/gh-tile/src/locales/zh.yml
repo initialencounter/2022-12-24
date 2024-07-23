@@ -5,7 +5,7 @@ commands:
       <>
         <message forward>
           <message id=1> 查看群友的github瓷砖, 设置瓷砖提醒</a> </message>
-          <message id=2>项目地址https://github.com/initialencounter/mykoishi/blob/master/gh-tile#readme.md </message>
+          <message id=2>项目地址https://github.com/initialencounter/2022-12-24/blob/master/gh-tile#readme.md </message>
           <message id=3>对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-gh-tile 概不负责</message>
           <message id=4>指令如下：</message>
           <message id=5>1.[绑定github] 请发送 "tile"</message>

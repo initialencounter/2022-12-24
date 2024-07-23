@@ -23,4 +23,4 @@ Easy-to-use Speech Toolkit including Self-Supervised Learning model, SOTA/Stream
 ## 问题反馈
 * QQ群：399899914
 
-* 小伙伴如果遇到问题或者有新的想法，欢迎到[这里](https://github.com/initialencounter/mykoishi/issues)反馈哦~
+* 小伙伴如果遇到问题或者有新的想法，欢迎到[这里](https://github.com/initialencounter/2022-12-24/issues)反馈哦~

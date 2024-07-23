@@ -1,4 +1,4 @@
-![mykoishi](https://socialify.git.ci/initialencounter/mykoishi/image?font=Jost&forks=1&issues=1&language=1&name=1&owner=1&pattern=Brick%20Wall&pulls=1&stargazers=1&theme=Dark)
+![2022-12-24](https://socialify.git.ci/initialencounter/2022-12-24/image?font=Jost&forks=1&issues=1&language=1&name=1&owner=1&pattern=Brick%20Wall&pulls=1&stargazers=1&theme=Dark)
 
 |   分类   | 名称    |
 | :------: | :---- |
@@ -19,33 +19,33 @@
 - 克隆本仓库到你的工作区
 
 ```shell
-yarn clone initialencounter/mykoishi
+yarn clone initialencounter/2022-12-24
 ```
 
 - 修改根工作区的 tsconfig.json
 ```json
 "koishi-plugin-*": [
-  "external/mykoishi/plugins/Adapter/*/src",
-  "external/mykoishi/plugins/AI/*/src",
-  "external/mykoishi/plugins/Behavior/*/src",
-  "external/mykoishi/plugins/Console/*/src",
-  "external/mykoishi/plugins/Extension/*/src",
-  "external/mykoishi/plugins/Games/*/src",
-  "external/mykoishi/plugins/Manager/*/src",
-  "external/mykoishi/plugins/News/*/src",
-  "external/mykoishi/plugins/Recreation/*/src",
-  "external/mykoishi/plugins/Tool/*/src"
+  "external/2022-12-24/plugins/Adapter/*/src",
+  "external/2022-12-24/plugins/AI/*/src",
+  "external/2022-12-24/plugins/Behavior/*/src",
+  "external/2022-12-24/plugins/Console/*/src",
+  "external/2022-12-24/plugins/Extension/*/src",
+  "external/2022-12-24/plugins/Games/*/src",
+  "external/2022-12-24/plugins/Manager/*/src",
+  "external/2022-12-24/plugins/News/*/src",
+  "external/2022-12-24/plugins/Recreation/*/src",
+  "external/2022-12-24/plugins/Tool/*/src"
 ],
 "@initencounter/koishi-plugin-jimp": [
-  "external/mykoishi/plugins/Extension/jimp/src",
+  "external/2022-12-24/plugins/Extension/jimp/src",
 ],
 "@initencounter/jimp": [
-  "external/mykoishi/plugins/Extension/jimp-abstract/src",
+  "external/2022-12-24/plugins/Extension/jimp-abstract/src",
 ],
 "@initencounter/vits": [
-  "external/mykoishi/plugins/Tool/vits/src",
+  "external/2022-12-24/plugins/Tool/vits/src",
 ],
 "@initencounter/sst": [
-  "external/mykoishi/plugins/Tool/sst/src",
+  "external/2022-12-24/plugins/Tool/sst/src",
 ],
 ```

@@ -27,6 +27,6 @@ ctx.vits.say(text)
 ## 示例插件
 | NPM | REPO |
 | --- | --- |
-| [Baidu-TTS](https://www.npmjs.com/package/koishi-plugin-baidu-tts) | [百度智能云语音合成](https://github.com/initialencounter/mykoishi/tree/master/baidu-tts) |
-| [Tencent-TTS](https://www.npmjs.com/package/koishi-plugin-tencent-tts) | [腾讯云语音合成](https://github.com/initialencounter/mykoishi/tree/master/tencent-tts) |
-| [Open-Vits](https://www.npmjs.com/package/koishi-plugin-open-vits) | [Vits语音合成](https://github.com/initialencounter/mykoishi/tree/master/open-vits) |
+| [Baidu-TTS](https://www.npmjs.com/package/koishi-plugin-baidu-tts) | [百度智能云语音合成](https://github.com/initialencounter/2022-12-24/tree/master/baidu-tts) |
+| [Tencent-TTS](https://www.npmjs.com/package/koishi-plugin-tencent-tts) | [腾讯云语音合成](https://github.com/initialencounter/2022-12-24/tree/master/tencent-tts) |
+| [Open-Vits](https://www.npmjs.com/package/koishi-plugin-open-vits) | [Vits语音合成](https://github.com/initialencounter/2022-12-24/tree/master/open-vits) |

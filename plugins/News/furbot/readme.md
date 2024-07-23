@@ -51,7 +51,7 @@ API文档 [兽云祭](https://console-docs.apipost.cn/preview/6bf01cfebd3e5f96/c
 ## 问题反馈
 * QQ群：399899914
 
-* 小伙伴如果遇到问题或者有新的想法，欢迎到[这里](https://github.com/initialencounter/mykoishi/issues)反馈哦~
+* 小伙伴如果遇到问题或者有新的想法，欢迎到[这里](https://github.com/initialencounter/2022-12-24/issues)反馈哦~
 
 ## 感谢
 
@@ -60,7 +60,7 @@ API文档 [兽云祭](https://console-docs.apipost.cn/preview/6bf01cfebd3e5f96/c
 
 ### 支持
 
-如果你支持本项目，可以给个[star](https://github.com/initialencounter/mykoishi)，你的支持不会获得额外内容，但会提高本项目的更新积极性
+如果你支持本项目，可以给个[star](https://github.com/initialencounter/2022-12-24)，你的支持不会获得额外内容，但会提高本项目的更新积极性
 
 本机器人目前仅供学习交流使用。
 

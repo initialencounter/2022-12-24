@@ -59,7 +59,7 @@ export default class TestFn {
         ctx.command('test6').action(async ({ session }) => {
             // 测试 markdown
             await session.bot.internal.sendMessage('1', `# 这是一个 Markwon
-  - [aaaaaaaaa](https://github.com/initialencounter/mykoishi)
+  - [aaaaaaaaa](https://github.com/initialencounter/2022-12-24)
   - bbbbbbb
   - cccc`, 'text/markdown')
         })

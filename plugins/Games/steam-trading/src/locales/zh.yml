@@ -5,7 +5,7 @@ commands:
       <>
         <message forward>
           <message id=1>对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-steam-trading 概不负责</message>
-          <message id=2>项目地址https://github.com/initialencounter/mykoishi/blob/main/steam-trading#readme.md </message>
+          <message id=2>项目地址https://github.com/initialencounter/2022-12-24/blob/main/steam-trading#readme.md </message>
           <message id=2>指令如下：</message>
           <message id=3>1.[挂刀行情] 请发送 trad buff ['buff', 'igxe', 'c5', 'uupy']</message>
           <message id=4>2.[行情分析] 请发送 trad.行情分析</message>

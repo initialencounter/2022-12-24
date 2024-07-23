@@ -15,12 +15,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/initialencounter/mykoishi.git"
+    "url": "git+https://github.com/initialencounter/2022-12-24.git"
   },
   "bugs": {
-    "url": "https://github.com/initialencounter/mykoishi/issues"
+    "url": "https://github.com/initialencounter/2022-12-24/issues"
   },
-  "homepage": "https://github.com/initialencounter/mykoishi/tree/neat/plugins/Recreation/cube#readme.md",
+  "homepage": "https://github.com/initialencounter/2022-12-24/tree/neat/plugins/Recreation/cube#readme.md",
   "license": "AGPL-3.0",
   "keywords": [
     "chatbot",

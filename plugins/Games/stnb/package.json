@@ -16,12 +16,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/initialencounter/mykoishi.git"
+    "url": "git+https://github.com/initialencounter/2022-12-24.git"
   },
   "bugs": {
-    "url": "https://github.com/initialencounter/mykoishi/issues"
+    "url": "https://github.com/initialencounter/2022-12-24/issues"
   },
-  "homepage": "https://github.com/initialencounter/mykoishi/blob/neat/plugins/Games/stnb#readme.md",
+  "homepage": "https://github.com/initialencounter/2022-12-24/blob/neat/plugins/Games/stnb#readme.md",
   "keywords": [
     "chatbot",
     "koishi",

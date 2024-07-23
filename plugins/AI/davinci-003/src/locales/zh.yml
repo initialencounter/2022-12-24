@@ -4,7 +4,7 @@ commands:
     usage: |-
       <>
         <message forward>
-          <message id=1>项目地址https://github.com/initialencounter/mykoishi/blob/main/davinci-003#readme.md </message>
+          <message id=1>项目地址https://github.com/initialencounter/2022-12-24/blob/main/davinci-003#readme.md </message>
           <message id=2>对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-davinci-003 概不负责</message>
           <message id=3>指令如下：</message>
           <message id=4>1.[重置会话] 请发送 "dvc.重置会话"</message>

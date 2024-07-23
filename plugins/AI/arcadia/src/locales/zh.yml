@@ -14,7 +14,7 @@ commands:
       <>
         <message forward>
           <message id=1> 使用前请前往 http://open.yjai.art/openai-painting 中获取apikey及apisecret</message>
-          <message id=2> 项目地址https://github.com/initialencounter/mykoishi/blob/main/arcadia#readme.md </message>
+          <message id=2> 项目地址https://github.com/initialencounter/2022-12-24/blob/main/arcadia#readme.md </message>
           <message id=3>对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-arcadia 概不负责</message>
           <message id=4>指令如下：</message>
           <message id=5>1.[画画] 请发送 "yjai 描述词"</message>

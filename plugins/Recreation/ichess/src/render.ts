@@ -205,7 +205,7 @@ function drawHTML(chessboard: {
             ${innerHTMLChess}
         </div>
         <div class="avatar" style="position: absolute; right: 20%; top: 20%">
-            <img src="D:\\dev\\mykoishi\\plugins\\News\\gh-tile\\src\\0.jpg">
+            <img src="D:\\dev\\2022-12-24\\plugins\\News\\gh-tile\\src\\0.jpg">
         </div>
     </body>
     
