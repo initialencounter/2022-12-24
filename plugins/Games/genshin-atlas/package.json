@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-genshin-atlas",
   "description": "基于[Nwflower](https://gitee.com/Nwflower/genshin-atlas)仓库的轻量《原神》图鉴引擎",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [

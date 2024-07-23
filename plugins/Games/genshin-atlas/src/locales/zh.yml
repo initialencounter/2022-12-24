@@ -3,3 +3,4 @@ commands:
     description: 更新图鉴索引
     messages:
       success: 更新图鉴索引成功
+      noPrompt: 未指定图鉴名称

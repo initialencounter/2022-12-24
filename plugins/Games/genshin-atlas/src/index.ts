@@ -44,41 +44,42 @@ class GenshinAtlas extends DataService<GenshinAtlas.Data> {
       this.path_dict = require(resolve(__dirname, 'path.json'))
     })
     let keys = ['material', 'specialty', 'up', 'enemy', 'effect', 'card', 'weapon', 'food', 'material for role', 'form', 'artifact'];
-    let alias = [
+    let alias: string[][] = [
       this.ctx.config.alias.material ?? ['副本'],
-      this.ctx.config.alias.specialty ?? ['突破材料', '特殊材料'],
+      this.ctx.config.alias.specialty ?? ['突破材料'],
       this.ctx.config.alias.up ?? ['up'],
-      this.ctx.config.alias.enemy ?? ['怪', '原魔'],
-      this.ctx.config.alias.effect ?? ['效果', 'buff'],
-      this.ctx.config.alias.card ?? ['卡片', '七圣召唤'],
+      this.ctx.config.alias.enemy ?? ['怪'],
+      this.ctx.config.alias.effect ?? ['效果'],
+      this.ctx.config.alias.card ?? ['卡片'],
       this.ctx.config.alias.weapon ?? ['武器'],
-      this.ctx.config.alias.food ?? ['食物', '菜'],
+      this.ctx.config.alias.food ?? ['食物'],
       this.ctx.config.alias["material for role"] ?? ['角色材料'],
       this.ctx.config.alias.form ?? ['遗物表'],
       this.ctx.config.alias.artifact ?? ['圣遗物']
     ]
-    ctx.middleware((session, next) => {
-      const target = this.getTarget(session.content);
-      if (target == '') return next();
-      for (let i = 0; i < keys.length; i++) {
-        for (let j = 0; j < alias[i].length; j++) {
-          if (target.startsWith(alias[i][j])) {
-            const pathName = this.rmSpace(target.replace(alias[i][j], ''))
-            const path = this.path_dict[keys[i]][pathName]
-            let img_url: string
-            if (config.engine) {
-              img_url = this.ctx.config.repo + path
-            } else {
-              img_url = pathToFileURL(resolve(this.ctx.config.src_path + path)).href
-            }
-            return h.image(img_url);
-          }
-        }
-      }
-    })
+    for (let i = 0; i < keys.length; i++) {
+      ctx.command(this.ctx.config.prefix + alias[i][0], `原神${alias[i][0]}图鉴`).action(({ session }, ...prompt) => {
+        return this.handleAtlas(session, keys[i], prompt[0], this.ctx.config.engine)
+      })
+    }
     ctx.command('ys.atlas', '更新原神图鉴索引').alias('更新原神图鉴索引').action(({ session }) => this.updatePath(session))
     ctx.command('ys.food', '随机原神食物').alias('今天吃什么').action(({ session }) => this.randomFood(session))
   }
+
+  async handleAtlas(session: Session, key: string, name: string, engine: boolean) {
+    if (!name) return session.text('commands.update.messages.noPrompt')
+    console.log(name,key)
+    const pathName = this.rmSpace(name)
+    const path = this.path_dict[key][pathName]
+    let img_url: string
+    if (engine) {
+      img_url = this.ctx.config.repo + path
+    } else {
+      img_url = pathToFileURL(resolve(this.ctx.config.src_path + path)).href
+    }
+    return h.image(img_url);
+  }
+
   async randomFood(session: Session) {
     const food_list = Object.keys(this.path_dict['food'])
     const food = food_list[Math.floor(Math.random() * food_list.length)]
@@ -142,13 +143,13 @@ namespace GenshinAtlas {
   }
   export const Alias = Schema.object({
     material: Schema.array(String).default(['副本']).description('副本'),
-    specialty: Schema.array(String).default(['突破材料', '特殊材料']).description('突破材料'),
+    specialty: Schema.array(String).default(['突破材料']).description('突破材料'),
     up: Schema.array(String).default(['up']).description('up'),
-    enemy: Schema.array(String).default(['怪', '原魔']).description('原魔'),
-    effect: Schema.array(String).default(['效果', 'buff']).description('buff'),
-    card: Schema.array(String).default(['卡片', '七圣召唤']).description('卡片'),
+    enemy: Schema.array(String).default(['怪']).description('原魔'),
+    effect: Schema.array(String).default(['效果']).description('buff'),
+    card: Schema.array(String).default(['卡片']).description('卡片'),
     weapon: Schema.array(String).default(['武器']).description('武器'),
-    food: Schema.array(String).default(['食物', '菜']).description('食物'),
+    food: Schema.array(String).default(['食物']).description('食物'),
     'material for role': Schema.array(String).default(['角色材料']).description("角色材料"),
     form: Schema.array(String).default(['遗物表']).description("遗物表"),
     artifact: Schema.array(String).default(['圣遗物']).description("圣遗物"),
