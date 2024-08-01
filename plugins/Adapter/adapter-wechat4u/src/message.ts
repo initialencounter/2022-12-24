@@ -13,7 +13,7 @@ export class WechatyMessenger extends Messenger {
     addResult(msg: MessageInterface) {
         if (!msg.id) return
         const session = this.bot.session()
-        this.results.push({id:msg.id})
+        this.results.push({ id: msg.id })
         session.messageId = msg.id
         session.app.emit(session, 'send', session)
     }
@@ -24,8 +24,6 @@ export class WechatyMessenger extends Messenger {
 
     async post(content: Sayable) {
         try {
-            // It might make the representation slightly more readable if using @xxx's functionality, but it has no actual mention functionality
-            content = await this.mentionReplace(content)
             if (!this.isGuild()) {
                 const contact: Contact = await this.bot.internal.Contact.find({
                     id: this.channelId.slice(8),
@@ -50,18 +48,17 @@ export class WechatyMessenger extends Messenger {
         }
     }
 
-    async mentionReplace(content: Sayable) {
-        let result = content;
-        if (typeof result === 'string' && result.indexOf('@@') != -1) {
-            let userIds;
-            while (userIds = /(?<=@@)\w{64}/g.exec(result)) {
+    async mentionReplace(content: string) {
+        if (content.indexOf('@@') != -1) {
+            let userIds: RegExpExecArray;
+            while (userIds = /(?<=@@)\w{64}/g.exec(content)) {
                 const contact = await this.bot.internal.Contact.find({
                     id: '@' + userIds[0],
                 })
-                result = result.replace(`@@${userIds[0]}`, `@${contact.name()}`)
+                content = content.replace(`@@${userIds[0]}`, `@${contact.name()}`)
             }
         }
-        return result
+        return content
     }
 
     async flush() {
@@ -102,7 +99,7 @@ export class WechatyMessenger extends Messenger {
         const { type, attrs, children } = element
         switch (type) {
             case 'text':
-                this.text(attrs.content)
+                this.text(await this.mentionReplace(attrs.content))
                 break
             case 'p':
                 await this.render(children)
