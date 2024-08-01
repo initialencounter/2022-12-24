@@ -24,6 +24,8 @@ export class WechatyMessenger extends Messenger {
 
     async post(content: Sayable) {
         try {
+            // It might make the representation slightly more readable if using @xxx's functionality, but it has no actual mention functionality
+            content = await this.mentionReplace(content)
             if (!this.isGuild()) {
                 const contact: Contact = await this.bot.internal.Contact.find({
                     id: this.channelId.slice(8),
@@ -48,6 +50,19 @@ export class WechatyMessenger extends Messenger {
         }
     }
 
+    async mentionReplace(content: Sayable) {
+        let result = content;
+        if (typeof result === 'string' && result.indexOf('@@') != -1) {
+            let userIds;
+            while (userIds = /(?<=@@)\w{64}/g.exec(result)) {
+                const contact = await this.bot.internal.Contact.find({
+                    id: '@' + userIds[0],
+                })
+                result = result.replace(`@@${userIds[0]}`, `@${contact.name()}`)
+            }
+        }
+        return result
+    }
 
     async flush() {
         if (!this.buffer) return
