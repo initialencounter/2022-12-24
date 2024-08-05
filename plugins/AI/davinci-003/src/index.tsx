@@ -39,7 +39,7 @@ class DVc extends Dvc {
 
     ctx.on('ready', () => {
       if ((!ctx.puppeteer) && config.output == 'image') {
-        logger.warn('未启用puppter，将无法发送图片消息');
+        logger.warn('未启用pptr，将无法发送图片消息');
       }
       if ((!ctx.vits) && config.output == "voice") {
         logger.warn('未启用vits，将无法输出语音');
@@ -157,7 +157,7 @@ class DVc extends Dvc {
     }).alias('dvc.人格切换', '切换人格').action(async ({ session }, prompt) => {
       if (this.block(session as Session)) {
         return h('quote', { id: session.messageId }, session.text('commands.dvc.messages.block'))
-      } return this.switch_peresonality(session as Session, prompt)
+      } return this.switch_personality(session as Session, prompt)
     })
 
     //切换引擎
@@ -269,7 +269,7 @@ class DVc extends Dvc {
 
 
   /**
-   * 
+   *
    * @param lang 目标语言
    * @param prompt 要翻译的内容
    * @returns 翻译后的内容
@@ -279,7 +279,7 @@ class DVc extends Dvc {
   }
 
   /**
-   * 
+   *
    * @param session 会话
    * @param prompt 描述词
    * @param n 生成数量
@@ -323,11 +323,11 @@ class DVc extends Dvc {
 
 
   /**
-   * 
+   *
    * @param session 会话
    * @param prompt 会话内容
    * @param options 选项
-   * @returns 
+   * @returns
    */
   async sli(session: Session, prompt: string, options: Dict): Promise<string | segment | void> {
     if (!prompt && !session.quote?.content) {
@@ -336,10 +336,10 @@ class DVc extends Dvc {
     this.output_type = options.output ? options.output : this.output_type
 
     if (prompt.length > this.ctx.config.max_tokens) {
-      return session.text('commands.dvc.messages.toolong')
+      return session.text('commands.dvc.messages.tooLong')
     }
     const session_id_string: string = session.userId
-    if (this.ctx.config.superusr.indexOf(session_id_string) == -1) {
+    if (this.ctx.config.superuser.indexOf(session_id_string) == -1) {
       await session.execute(`dvc.count ${prompt}`)
     } else {
       return this.dvc(session, prompt)
@@ -347,7 +347,7 @@ class DVc extends Dvc {
   }
 
   /**
-   * 
+   *
    * @param session 会话
    * @param prompt 会话内容
    * @returns Promise<string | Element>
@@ -356,9 +356,9 @@ class DVc extends Dvc {
 
   async dvc(session: Session, prompt: string): Promise<string | Element | void> {
     if (this.ctx.config.waiting) {
-      const msgid = (await session.bot.sendMessage(session.channelId, h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.thinking'), session.guildId))[0]
+      const msgId = (await session.bot.sendMessage(session.channelId, h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.thinking'), session.guildId))[0]
       if (this.ctx.config.recall && (!this.ctx.config.recall_all)) {
-        await recall(session, msgid, this.ctx.config.recall_time)
+        await recall(session, msgId, this.ctx.config.recall_time)
       }
     }
     // 文本审核
@@ -377,7 +377,7 @@ class DVc extends Dvc {
   }
 
   /**
-   * 
+   *
    * @param session 当前会话
    * @param next 通过函数
    * @returns 消息
@@ -446,7 +446,7 @@ class DVc extends Dvc {
     }
   }
   /**
-   * 
+   *
    * @param message 发送给chatgpt的json列表
    * @returns 将返回文字处理成json
    */
@@ -501,7 +501,7 @@ class DVc extends Dvc {
     this.key_number_pp()
   }
   /**
-   * 
+   *
    * @param sessionid QQ号
    * @returns 对应QQ的会话
    */
@@ -514,7 +514,7 @@ class DVc extends Dvc {
   }
 
   /**
-   * 
+   *
    * @param msg prompt消息
    * @param sessionid QQ号
    * @returns json消息
@@ -557,11 +557,11 @@ class DVc extends Dvc {
   }
 
   /**
-   * 
+   *
    * @param cb chat 回调函数 chat_with_gpt | chat_with_gpt4
    * @param session 会话
    * @param session_of_id 会话 ID
-   * @returns 
+   * @returns
    */
   async try_control(cb: ChatCallback, session: Session, session_of_id: Dvc.Msg[]) {
     let try_times = 0;
@@ -617,8 +617,8 @@ class DVc extends Dvc {
 
   /**
    * 是否被屏蔽
-   * @param session 
-   * @returns 
+   * @param session
+   * @returns
    */
 
   block(session: Session) {
@@ -629,9 +629,9 @@ class DVc extends Dvc {
 
   /**
    * 删除人格逻辑
-   * @param session 
-   * @param nick_name 
-   * @returns 
+   * @param session
+   * @param nick_name
+   * @returns
    */
   async rm_personality(session: Session, nick_name?: string) {
     const nick_names: string[] = Object.keys(this.personality)
@@ -668,7 +668,7 @@ class DVc extends Dvc {
   }
 
   /**
-   * 
+   *
    * @param session 会话
    * @param type 输出类型,字符串
    * @returns Promise<string>
@@ -692,9 +692,9 @@ class DVc extends Dvc {
 
 
   /**
-   * 
+   *
    * @param session 当前会话
-   * @returns apikey剩余额度
+   * @returns apiKey剩余额度
    */
 
   async get_credit(): Promise<number> {
@@ -750,7 +750,7 @@ class DVc extends Dvc {
     }
   }
   /**
-   * 
+   *
    * @param userId 用户QQ号
    * @param resp gpt返回的json
    * @returns 文字，图片或聊天记录
@@ -779,7 +779,7 @@ class DVc extends Dvc {
         if (msg.role == 'assistant') {
           result.children.push(
             segment('message', {
-              userId: this.ctx.config.selfid,
+              userId: this.ctx.config.selfId,
               nickname: msg.role,
             }, msg.content))
         } else {
@@ -817,13 +817,13 @@ class DVc extends Dvc {
   }
 
   /**
-   * 
+   *
    * @param session 会话
    * @returns 切换后的引擎
    */
 
   /**
-   * 
+   *
    * @param session 会话
    * @returns 切换后的引擎
    */
@@ -843,13 +843,13 @@ class DVc extends Dvc {
   }
 
   /**
-   * 
+   *
    * @param session 会话
    * @param prompt 人格昵称
    * @returns 人格切换状态
    */
 
-  async switch_peresonality(session: Session, prompt: string): Promise<string> {
+  async switch_personality(session: Session, prompt: string): Promise<string> {
     const nick_names: string[] = Object.keys(this.personality)
     // 参数合法
     if (prompt && nick_names.indexOf(prompt) > -1) {
@@ -865,12 +865,12 @@ class DVc extends Dvc {
   /**
    * 重置个人会话，保留人格
    * @param session 会话
-   * @returns 
+   * @returns
    */
 
   reset(session: Session): string {
-    let seession_json: Dvc.Msg[] = this.get_chat_session(session.userId)
-    this.sessions[session.userId] = [{ "role": "system", "content": seession_json[0].content }]
+    let session_json: Dvc.Msg[] = this.get_chat_session(session.userId)
+    this.sessions[session.userId] = [{ "role": "system", "content": session_json[0].content }]
     return '重置成功'
   }
 
@@ -911,7 +911,7 @@ class DVc extends Dvc {
    * 设置人格
    * @param session 会话
    * @param nick_name 人格昵称
-   * @param descirption 对话
+   * @param description 对话
    * @returns 字符
    */
 
@@ -926,7 +926,7 @@ class DVc extends Dvc {
 
 
   /**
-   * 
+   *
    * @param session 当前会话
    * @returns 返回清空的消息
    */

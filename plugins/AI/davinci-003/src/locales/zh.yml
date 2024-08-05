@@ -21,7 +21,7 @@ commands:
       thinking: 思考中……
       err: 寄！{0}
       total_available: 滴！当前账户的余额为${0}。
-      toolong: 滋滋..猪脑过载。
+      tooLong: 滋滋..猪脑过载。
       switch: 当前存在{0}{1}请输入编号。
       switch-output: 当前存在模式{0}请输入编号。
       switch-err: 不存在人格可切换。
@@ -56,4 +56,3 @@ commands:
     description: GPT生成图片
   dvc.翻译:
     description: AI翻译
-    
