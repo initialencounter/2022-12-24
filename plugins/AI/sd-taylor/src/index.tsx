@@ -303,6 +303,7 @@ class Taylor {
     // 翻译
     if (this.isChinese(s) && this.config.gpt_translate) {
       s = await this.ctx.dvc.translate(session, '英语', s)
+      session.send("翻译后提示词：" + s)
     }
     // GPT增强
     if (this.config.gpt_turbo) {
@@ -314,6 +315,9 @@ class Taylor {
         你应该用: 'white hair'、 'cat girl'、 'cat ears'、 'cute
         girl'、 'beautiful'、'lovely'等英文标签词汇。你现在要描述的是:${s}`
       }])
+      session.send("增强后的提示词：" + s)
+    }else{
+      session.send("提示词：" + s)
     }
     let lora_text: string = ''
     const lora_arr = Object.entries(this.lora)
@@ -457,12 +461,9 @@ class Taylor {
     }
     const attrs: Dict = {
       userId: session.userId,
-      nickname: session.author?.nickname || session.username,
+      nickname: session.author.name || session.username,
     }
-    const parms_default = `描述词: ${parms.prompt}\n去噪强度:${parms.denoising_strength}\n种子:   ${parms.seed}\n描述词服从度:${parms.cfg_scale}\步数:   ${parms.steps}`
     const result = segment('figure')
-    result.children.push(segment('message', attrs, parms_default))
-
     if (this.output === 'verbose') {
       result.children.push(segment('message', attrs, `info = ${JSON.stringify(parms)}`))
     }
