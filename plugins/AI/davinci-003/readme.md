@@ -60,6 +60,17 @@ QQ群：399899914
 
 
 # 更新日志
+- v7.0.0
+    - 删除引擎分类
+    - 删除反代
+    - 删除撤回全部消息
+    - 删除selfID
+    - 优化唯一人格
+    - 优化唯一上下文
+    - 优化屏蔽用户功能
+    - 优化调用频率限制
+    - 优化代码格式
+    - 优化配置信息
 - v6.5.1
     - 修复不能输入空格
 - v6.5.0
@@ -134,13 +145,13 @@ QQ群：399899914
     - 新增共用人设选项
 - v4.0.4
     - 重写sst服务
-    
+
 - v4.0.3
     - 重写vits服务
 
 - v4.0.2
     - 修复400报错
-    
+
 - v4.0.1
     - 语音输入做成服务,启用插件koishi-plugin-tc-sst[![npm](https://img.shields.io/npm/v/koishi-plugin-tc-sst?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-tc-sst)即可实现
 
@@ -265,7 +276,7 @@ QQ群：399899914
     - 优化审核的逻辑，加速审核
 - v1.4.3
     - 修复未填写AK和SK情况下，不合规的bug
-- v1.4.2 
+- v1.4.2
     - 实现了dvc服务，其他插件可以使用以下服务
     - chat_with_gpt: 单次对话
     - get_credit: 查询余额
@@ -281,14 +292,14 @@ QQ群：399899914
         console.log(await ctx.dvc.censor_request('脏话测试'))
     })
     ```
-- v1.4.1 
+- v1.4.1
     - 优化代码结构
     - 新增节俭模式
 
-- v1.4.0 
+- v1.4.0
     - 修复api_key写死的致命错误
 
-- v1.3.9 
+- v1.3.9
     - 后端移植到客户端
     - 无需自建后端了
 
@@ -304,8 +315,3 @@ QQ群：399899914
 
 - v1.2.5
     - 更换davinci-003的流量，可以走koishi代理
-
-
-# 感谢
-
-反代默认使用的是[Yidadaa佬](https://github.com/Yidadaa/ChatGPT-Next-Web)的，感谢！

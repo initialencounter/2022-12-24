@@ -74,7 +74,11 @@ send('davinci-003/getusage').then((res)=>{
 send('davinci-003/getcredit', '').then((res) => {
   if (res === -1) {
     failed.value = 'true'
-    credit_text.value = `查询失败，请检查key是否正确`
+    credit_text.value = `查询失败，请检查 key 是否正确`
+    return
+  }else if(res === -2){
+    failed.value = 'true'
+    credit_text.value = 'oh!!!! 尊贵的官方 API 用户! 请自行前往官网查询'
     return
   } else {
     failed.value = 'false'

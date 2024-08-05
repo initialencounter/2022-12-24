@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-davinci-003",
   "description": "AI 聊天",
-  "version": "6.5.1",
+  "version": "7.0.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "types": "lib/index.d.ts",
@@ -34,7 +34,8 @@
   ],
   "peerDependencies": {
     "@koishijs/plugin-console": "^5.29.3",
-    "koishi": "^4.17.10"
+    "koishi": "^4.17.10",
+    "koishi-plugin-rate-limit": "^2.0.4"
   },
   "koishi": {
     "description": "AI 聊天",

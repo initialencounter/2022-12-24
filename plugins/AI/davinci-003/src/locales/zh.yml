@@ -34,6 +34,7 @@ commands:
       switch-success: 切换{0}成功:{1}
       block: 您已被block
       louder: 听不清
+      usage-exhausted: 调用次数已达上限。
   dvc.count:
     description: 减少dvc的使用次数
   dvc.clear:
