@@ -22,9 +22,9 @@ class Taylor {
     ctx.on('ready', async () => {
       try {
         await this.get_lora()
-        logger.info('lora读取成功！')
+        logger.info('lora 读取成功！')
       } catch (e) {
-        logger.info('lora读取失败' + e)
+        logger.info('lora 读取失败' + e)
       }
     })
     ctx.i18n.define('zh', require('./locales/zh'))
@@ -50,7 +50,7 @@ class Taylor {
           'cfg_scale': options.cfg_scale,
           'negative_prompt': options.negative_prompt,
           'denoising_strength': options.denoising_strength,
-          'prompt': prompt + ', ' + config.defaut_prompt
+          'prompt': prompt + ', ' + config.default_prompt
         }
         if (['minimal', 'default', 'verbose'].includes(options.output)) {
           this.output = options.output ? options.output : this.output
@@ -90,7 +90,7 @@ class Taylor {
           'cfg_scale': options.cfg_scale,
           'negative_prompt': options.negative_prompt,
           'denoising_strength': options.denoising_strength,
-          'prompt': prompt + ', ' + config.defaut_prompt
+          'prompt': prompt + ', ' + config.default_prompt
         }
         if (['minimal', 'default', 'verbose'].includes(options.output)) {
           this.output = options.output ? options.output : this.output
@@ -121,7 +121,7 @@ class Taylor {
           'cfg_scale': options.cfg_scale,
           'negative_prompt': options.negative_prompt,
           'denoising_strength': options.denoising_strength,
-          'prompt': prompt + ', ' + config.defaut_prompt
+          'prompt': prompt + ', ' + config.default_prompt
         }
         return await this.extras(session, payload, options)
 
@@ -153,7 +153,7 @@ class Taylor {
       })
 
   }
-  tsak_manager(session: Session) {
+  task_manager(session: Session) {
     if (this.task > 0) {
       session.send(session.text('commands.tl.messages.pending', [this.task]))
     } else {
@@ -311,7 +311,7 @@ class Taylor {
         content: `用尽可能多的英文标签详细的描述一幅画面，
         用碎片化的单词标签而不是句子去描述这幅画，描述词尽量丰富，
         每个单词之间用逗号分隔，例如在描述白发猫娘的时候，
-        你应该用: 'white hair'、 'cat girl'、 'cat ears'、 'cute 
+        你应该用: 'white hair'、 'cat girl'、 'cat ears'、 'cute
         girl'、 'beautiful'、'lovely'等英文标签词汇。你现在要描述的是:${s}`
       }])
     }
@@ -331,7 +331,7 @@ class Taylor {
     return cleanedMatches.join(' ') + s + lora_text
   }
   async txt2img(session: Session, payload: Taylor.Payload) {
-    this.tsak_manager(session)
+    this.task_manager(session)
     this.task++
     const path: string = '/sdapi/v1/txt2img'
     const api: string = `${trimSlash(this.config.api_path)}${path}`
@@ -352,7 +352,7 @@ class Taylor {
     }
   }
   async img2img(session: Session, payload: Taylor.Payload) {
-    this.tsak_manager(session)
+    this.task_manager(session)
     this.task += 1
     const path: string = '/sdapi/v1/img2img'
     const api: string = `${trimSlash(this.config.api_path)}${path}`
@@ -382,7 +382,7 @@ class Taylor {
   }
 
   async interrogate(session: Session) {
-    this.tsak_manager(session)
+    this.task_manager(session)
     this.task += 1
     await session.send(session.text('commands.tl.messages.interrogate'))
     const path: string = '/sdapi/v1/interrogate'
@@ -558,7 +558,7 @@ namespace Taylor {
     seed: number
     maxConcurrency: number
     negative_prompt: string
-    defaut_prompt: string
+    default_prompt: string
     resolution: string
     cfg_scale: number
     output: string
@@ -578,8 +578,8 @@ namespace Taylor {
     denoising_strength: Schema.number().default(0.5).description('改变强度0-1'),
     seed: Schema.number().default(-1).description('种子'),
     maxConcurrency: Schema.number().default(3).description('最大排队数'),
-    negative_prompt: Schema.string().description('反向提示词').default('nsfw, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry'),
-    defaut_prompt: Schema.string().default('masterpiece, best quality').description('默认提示词'),
+    negative_prompt: Schema.string().description('反向提示词').default('nsfw, lowers, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry'),
+    default_prompt: Schema.string().default('masterpiece, best quality').description('默认提示词'),
     resolution: Schema.string().default('720x512').description('默认比例'),
     cfg_scale: Schema.number().default(15).description('相关性0-20'),
     model: Schema.string().default('clip').description('识图的模型'),
