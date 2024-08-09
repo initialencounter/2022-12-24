@@ -4,12 +4,12 @@
 
 百度云语音识别
 
-
 ## 使用说明
-启用前请前往 [百度云官网控制台](https://console.bce.baidu.com/ai/#/ai/speech/app/list) 进行获取密钥
-只适配了QQ平台,其他平台兼容性未知
 
+启用前请前往 [百度云官网控制台](https://console.bce.baidu.com/ai/#/ai/speech/app/list) 进行获取密钥
+只适配了 QQ 平台,其他平台兼容性未知
 
 # 更新日志
+
 - v0.0.2
-    - 重写sst服务
+  - 重写 sst 服务

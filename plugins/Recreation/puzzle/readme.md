@@ -8,27 +8,24 @@
 
 ## 指令
 
-
-|描述|示例|
-|----|----|
-|开始puzzle|pz 4|
-|加入puzzle|pz.join|
-|退出puzzle|pz.quit|
-|自定应puzzle|pz.def + puzzle导出数据|
-|puzzle排行榜|pz.rank|
-
-
+| 描述          | 示例                     |
+| ------------- | ------------------------ |
+| 开始 puzzle   | pz 4                     |
+| 加入 puzzle   | pz.join                  |
+| 退出 puzzle   | pz.quit                  |
+| 自定应 puzzle | pz.def + puzzle 导出数据 |
+| puzzle 排行榜 | pz.rank                  |
 
 ## 更新日志
 
 ### v1.0.2
+
 复主题色调，修复数据库写入失败
 优化代码结构
 
-
 ## Contact
 
-QQ群399899914
+QQ 群 399899914
 
 [bilibili](https://space.bilibili.com/225995995)
 

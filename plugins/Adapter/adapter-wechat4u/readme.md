@@ -7,7 +7,7 @@ adapter-wechat4u
 ## Feature
 
 - 发送语音消息
-- 手动实现唯一频道Id, 唯一用户Id
+- 手动实现唯一频道 Id, 唯一用户 Id
 
 ## 注意事项
 
@@ -19,14 +19,15 @@ adapter-wechat4u
 - 日志出现报错 `AssertionError [ERR_ASSERTION]: 1102 == 0`，解决方法：删除`data/wechat4u`的配置文件
 
 # 更新日志
+
 - v0.0.7
-    - proposal: 修改 wechat4u-adapter 中 anchor 元素的处理 #53
+  - proposal: 修改 wechat4u-adapter 中 anchor 元素的处理 #53
 - v0.0.6
-    - 修复：element image->img; url->src 导致的无法发送图片
+  - 修复：element image->img; url->src 导致的无法发送图片
 - v0.0.5
-    - 新增：登录成功自动隐藏二维码
-    - 新增：日志输出等级
-    - 修复：登录信息丢失
-    - 修复：获取不到用户名
+  - 新增：登录成功自动隐藏二维码
+  - 新增：日志输出等级
+  - 修复：登录信息丢失
+  - 修复：获取不到用户名
 - v0.0.3
-    - 支持保存登录信息
+  - 支持保存登录信息

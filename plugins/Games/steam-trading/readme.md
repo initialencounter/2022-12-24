@@ -2,10 +2,10 @@
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-steam-trading?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-steam-trading)
 
-steam挂刀行情,实际上是一个网页截图插件
-
+steam 挂刀行情,实际上是一个网页截图插件
 
 ## 注意事项
+
 数据来源 [iflow.work](http://www.iflow.work)
 
 本插件仅供学习参考，请勿用于商业行为
@@ -23,19 +23,18 @@ steam挂刀行情,实际上是一个网页截图插件
 # 更新日志
 
 - v1.3.0
-    - 删除文字版输出
-    - 将 puppeteer 改为必须依赖
+  - 删除文字版输出
+  - 将 puppeteer 改为必须依赖
 - v1.2.6
-    - 缩减体积
+  - 缩减体积
 - v1.2.5
-    - 将sharp更换为pngjs
+  - 将 sharp 更换为 pngjs
 - v1.2.3
-    - 修复了一些小瑕疵
+  - 修复了一些小瑕疵
 - v1.2.2
-    - 增加平台局内参数
-    - 增加行情分析
-    - 弃用cheerio
-
+  - 增加平台局内参数
+  - 增加行情分析
+  - 弃用 cheerio
 
 # 感谢
 

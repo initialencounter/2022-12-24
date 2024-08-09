@@ -3,6 +3,7 @@
 [![npm](https://img.shields.io/npm/v/koishi-plugin-coin?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-coin)
 
 加密货币信息获取
+
 ## usage
 
 ```koishi

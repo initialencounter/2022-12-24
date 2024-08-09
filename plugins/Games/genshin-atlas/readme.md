@@ -11,18 +11,20 @@
 对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-genshin-atlas 概不负责。
 
 - 武器图鉴
-    - #武器 松籁响起之时
+  - #武器 松籁响起之时
 - 角色材料
-    - #角色材料 芙宁娜
+  - #角色材料 芙宁娜
 - 更新图鉴
-    - ys.atlas
+  - ys.atlas
 - 随机食物
-    - 今天吃什么
+  - 今天吃什么
 
 ## 问题反馈
-* QQ群：399899914
 
-* 小伙伴如果遇到问题或者有新的想法，欢迎到[这里](https://github.com/initialencounter/koishi-plugin-genshin-atlas/issues)反馈哦~
+- QQ 群：399899914
+
+- 小伙伴如果遇到问题或者有新的想法，欢迎到[这里](https://github.com/initialencounter/koishi-plugin-genshin-atlas/issues)反馈哦~
 
 ## 感谢
+
 - 图鉴作者[Nwflower](https://gitee.com/Nwflower/genshin-atlas)

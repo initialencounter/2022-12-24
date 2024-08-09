@@ -10,6 +10,7 @@
 - 可以在插件的模块目录下将 0.jpg 更换为你喜欢的图片
 
 ## 更新日志
+
     - v2.4.4
         chore: use SCF
     - v2.4.3
@@ -18,7 +19,7 @@
         fix: send image failed
     - v2.4.1
         fix: \<!DOCTYPE "... is not valid JSON
-    - v2.3.3 
+    - v2.3.3
         更换默认的转发服务
         使用 cron 服务
     - v2.3.2 修复时区原因导致无法获取瓷砖
