@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-puzzle",
   "description": "数字华容道, 使用 Jimp 渲染",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -15,12 +15,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/initialencounter/2022-12-24.git"
+    "url": "git+https://github.com/initialencounter/puzzle.git"
   },
   "bugs": {
-    "url": "https://github.com/initialencounter/2022-12-24/issues"
+    "url": "https://github.com/initialencounter/puzzle/issues"
   },
-  "homepage": "https://github.com/initialencounter/2022-12-24/tree/neat/plugins/Recreation/puzzle#readme.md",
+  "homepage": "https://github.com/initialencounter/puzzle",
   "license": "MIT",
   "keywords": [
     "chatbot",
@@ -38,7 +38,8 @@
     }
   },
   "dependencies": {
-    "@initencounter/jimp": "^0.0.4"
+    "@initencounter/jimp": "^0.0.4",
+    "@initencounter/puzzle": "^0.2.0"
   },
   "peerDependencies": {
     "koishi": "^4.17.10"

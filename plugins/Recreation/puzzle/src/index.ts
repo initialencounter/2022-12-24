@@ -1,8 +1,8 @@
 import { Context, Dict, Schema, Session, Logger, h } from 'koishi'
-import { Klotsk } from './puzzle'
 import { setTheme, renderX } from './renderJimp'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
+import { PuzzleCore as Klotsk} from '@initencounter/puzzle'
 
 export const name: string = 'puzzle'
 export const logger = new Logger(name)
@@ -22,7 +22,9 @@ class Pz {
     required: ['jimp', "database"],
   };
   options: Dict
-  globalTasks: Dict
+  globalTasks: {
+    [key: string]: Klotsk
+  }
   game_data: number[][]
   wait: number
   players: string[]
@@ -102,7 +104,7 @@ class Pz {
           }
         }
         this.players.push(session.userId)
-        return await this.puzzle(session, '', mode)
+        return await this.puzzle(session, '', Number(mode))
       })
     ctx.command('pz.def <prompt:text>', '自定义puzzle')       //自定义画puzzle
       .option('size', '-s <size:number>', { fallback: config.size })
@@ -164,15 +166,14 @@ class Pz {
         op_str += i
       }
     })
-    this.game_data = [].concat(ktk.klotsk)
-
-    if (ktk.move_sqnc(op_str)) {
-      await this.add_score(session, ktk.mode)
+    if (ktk.moveSequence(op_str)) {
+      await this.add_score(session, ktk.getMode())
       game_info = session.text('commands.pz.messages.done', [h.at(session.userId), ktk.duration()])
       this.done = true
     } else {
-      game_info = session.text('commands.pz.messages.info', [op_str, ktk.duration()])
+      game_info = session.text('commands.pz.messages.info', [ktk.getCmdsStr(), ktk.duration()])
     }
+    this.game_data = [].concat(ktk.getPuzzle())
     return game_info
   }
   async draw_img(data: number[][] = this.game_data) {
