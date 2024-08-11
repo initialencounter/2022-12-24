@@ -13,12 +13,11 @@
 ## 描述
 
 三阶魔方
-[nonebot-plugin-cube](https://github.com/initialencounter/nonebot-plugin-cube)重写版
 
 ## 使用方法
 
 - 操作魔法
-  - cb +【f,b,u,d,l,r】不区分大小写，在字母前加入【非方向字符】代表顺时针旋转
+  - cb + ['F', 'f', 'B', 'b', 'L', 'l', 'R', 'r', 'U', 'u', 'D', 'd'] 大写代表顺时针旋转，小写代表逆时针旋转
 - 新建魔法
   - cb
 - 自定义魔法
@@ -38,7 +37,3 @@
 对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-cube 概不负责。
 
 如果有更多文本内容想要修改，可以在[本地化](/locales)中修改 zh 内容
-
-### 感谢
-
-## cube.js 参考 b 站--[神闪避的雪亲王](https://space.bilibili.com/16355723)

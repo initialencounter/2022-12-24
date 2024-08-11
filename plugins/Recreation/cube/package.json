@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-cube",
-  "description": "三阶魔方",
-  "version": "2.0.2",
+  "description": "魔方",
+  "version": "3.0.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -15,12 +15,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/initialencounter/2022-12-24.git"
+    "url": "git+https://github.com/initialencounter/cube.git"
   },
   "bugs": {
-    "url": "https://github.com/initialencounter/2022-12-24/issues"
+    "url": "https://github.com/initialencounter/cube/issues"
   },
-  "homepage": "https://github.com/initialencounter/2022-12-24/tree/neat/plugins/Recreation/cube#readme.md",
+  "homepage": "https://github.com/initialencounter/cube",
   "license": "AGPL-3.0",
   "keywords": [
     "chatbot",
@@ -36,6 +36,7 @@
     }
   },
   "dependencies": {
+    "@initencounter/cube": "0.2.0",
     "@satorijs/element": "^3.1.7"
   },
   "peerDependencies": {
