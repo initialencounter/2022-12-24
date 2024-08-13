@@ -28,13 +28,6 @@
     "plugin",
     "cube"
   ],
-  "koishi": {
-    "service": {
-      "required": [
-        "puppeteer"
-      ]
-    }
-  },
   "dependencies": {
     "@initencounter/cube": "0.2.1",
     "@satorijs/element": "^3.1.7"

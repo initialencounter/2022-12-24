@@ -1,6 +1,5 @@
 import { Context, Schema, Logger, Session, h, Element } from 'koishi'
 
-import { } from 'koishi-plugin-puppeteer'
 import { CubeCore as Cube } from '@initencounter/cube'
 import { resolve } from 'path'
 import { readFileSync } from 'fs'
@@ -45,7 +44,7 @@ export function quickSort(arr: CubeScore[]) {
 }
 class CubeActivity {
   static inject = {
-    required: ["puppeteer", "database"],
+    required: ["database"],
   }
   cube_dict: {
     [key: string]: Cube
