@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-cube",
   "description": "魔方",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -36,7 +36,7 @@
     }
   },
   "dependencies": {
-    "@initencounter/cube": "0.2.0",
+    "@initencounter/cube": "0.2.1",
     "@satorijs/element": "^3.1.7"
   },
   "peerDependencies": {
