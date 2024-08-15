@@ -154,8 +154,7 @@ class CubeActivity {
     const cube_key: string[] = Object.keys(this.cube_dict)
     if (!cube_key.includes(gid)) {
       const cube: CubeCore = new Cube()
-      const process: string[] = []
-      // cube.scramble(1000)
+      cube.scramble(1000)
       this.cube_dict[gid] = cube
       let base64: string = cube.getSvgBase64Png()
       return h.image(base64)
@@ -190,7 +189,6 @@ namespace CubeActivity {
     mark_str: string
     key: number
   }
-  const cube_dict: any = {}
   export const Config: Schema<Config> = Schema.object({
     mark_str: Schema.string().default('”').description('反向拧的标记字符'),
     key: Schema.number().description('走后门的钥匙')
