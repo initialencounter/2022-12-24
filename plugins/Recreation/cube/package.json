@@ -29,11 +29,10 @@
     "cube"
   ],
   "dependencies": {
-    "@initencounter/cube": "0.2.1",
+    "@initencounter/cube": "0.2.2",
     "@satorijs/element": "^3.1.7"
   },
   "peerDependencies": {
-    "koishi": "^4.17.10",
-    "koishi-plugin-puppeteer": "^3.8.4"
+    "koishi": "^4.17.10"
   }
 }

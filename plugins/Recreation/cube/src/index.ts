@@ -1,20 +1,11 @@
 import { Context, Schema, Logger, Session, h, Element } from 'koishi'
-
 import { CubeCore as Cube } from '@initencounter/cube'
+import type { CubeCore } from '@initencounter/cube'
 import { resolve } from 'path'
 import { readFileSync } from 'fs'
-import test from 'node:test'
 export const name: string = 'cube'
 export const logger = new Logger(name)
 
-const color = {
-  1: 'red', 2: 'red', 3: 'red', 4: 'red', 5: 'red', 6: 'red', 7: 'red', 8: 'red', 9: 'red',
-  10: 'blue', 11: 'blue', 12: 'blue', 13: 'blue', 14: 'blue', 15: 'blue', 16: 'blue', 17: 'blue', 18: 'blue',
-  19: 'yellow', 20: 'yellow', 21: 'yellow', 22: 'yellow', 23: 'yellow', 24: 'yellow', 25: 'yellow', 26: 'yellow', 27: 'yellow',
-  28: 'orange', 29: 'orange', 30: 'orange', 31: 'orange', 32: 'orange', 33: 'orange', 34: 'orange', 35: 'orange', 36: 'orange',
-  37: 'green', 38: 'green', 39: 'green', 40: 'green', 41: 'green', 42: 'green', 43: 'green', 44: 'green', 45: 'green',
-  46: 'white', 47: 'white', 48: 'white', 49: 'white', 50: 'white', 51: 'white', 52: 'white', 53: 'white', 54: 'white'
-}
 
 declare module 'koishi' {
   interface Tables {
@@ -47,7 +38,7 @@ class CubeActivity {
     required: ["database"],
   }
   cube_dict: {
-    [key: string]: Cube
+    [key: string]: CubeCore
   }
   operation: string
   key_fix: number
@@ -107,7 +98,7 @@ class CubeActivity {
         return '取消'
       }
     }
-    const cube: Cube = new Cube()
+    const cube: CubeCore = new Cube()
     if (prompt) {
       cube.rotate(prompt)
     }
@@ -125,7 +116,7 @@ class CubeActivity {
     if (this.operation.length < 1) {
       return '暂无操作'
     }
-    const cube = this.cube_dict[gid]
+    const cube: CubeCore = this.cube_dict[gid]
     cube.rotate(this.operation)
     let text: string = '已撤销操作：' + this.operation
     session.send(text)
@@ -135,7 +126,7 @@ class CubeActivity {
   }
   do_reverse(text: string): string {
     let res = ''
-    for (let i = test.length - 1; i >= 0; i--) {
+    for (let i = text.length - 1; i >= 0; i--) {
       res += text[i]
     }
     return res
@@ -162,14 +153,14 @@ class CubeActivity {
     const gid: string = session.channelId
     const cube_key: string[] = Object.keys(this.cube_dict)
     if (!cube_key.includes(gid)) {
-      const cube: Cube = new Cube()
+      const cube: CubeCore = new Cube()
       const process: string[] = []
       // cube.scramble(1000)
       this.cube_dict[gid] = cube
       let base64: string = cube.getSvgBase64Png()
       return h.image(base64)
     }
-    const cube = this.cube_dict[gid]
+    const cube: CubeCore = this.cube_dict[gid]
     let text: string = prompt
     if (prompt) {
       cube.rotate(prompt)
