@@ -4,7 +4,8 @@ import { join } from 'path';
 import { extract } from 'tar'
 import get from 'get-registry'
 import axios from 'axios'
-import { getNativeBinding } from './utils.js'
+import pkg from './utils.js';
+const { getNativeBinding } = pkg;
 
 const version = '0.2.2'
 const { platform, arch } = process

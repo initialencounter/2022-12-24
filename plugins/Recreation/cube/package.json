@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-cube",
   "description": "魔方",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -34,6 +34,7 @@
     "cube"
   ],
   "dependencies": {
+    "env-paths": "^3.0.0",
     "axios": "^1.7.4",
     "get-registry": "^1.1.0",
     "path": "^0.12.7",

@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+const readFileSync = require('fs').readFileSync
 
 function isMusl() {
   try {
@@ -9,7 +9,7 @@ function isMusl() {
   }
 }
 
-export function getNativeBinding(platform, arch) {
+function getNativeBinding(platform, arch) {
   switch (platform) {
     case 'android':
       switch (arch) {
@@ -58,3 +58,5 @@ export function getNativeBinding(platform, arch) {
       throw new Error(`Unsupported OS: ${platform}, architecture: ${arch}`)
   }
 }
+
+module.exports = { getNativeBinding }
