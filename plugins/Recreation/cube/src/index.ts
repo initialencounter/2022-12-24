@@ -40,7 +40,6 @@ class CubeActivity {
   cube_dict: {
     [key: string]: CubeCore
   }
-  operation: string
   key_fix: number
   constructor(private ctx: Context, private config: CubeActivity.Config) {
     this.key_fix = config.key ? config.key : Math.random() * 9999
@@ -66,8 +65,8 @@ class CubeActivity {
     ctx.command('cube.rank', '魔方排行榜').alias('cb.rank')
       .action(async () => this.get_rank())
 
-    ctx.command('cube[1]', '撤回魔方操作').alias('cb.back')
-      .action(async ({ session }) => this.back(session))
+    ctx.command('cube.undo', '撤回魔方操作').alias('cb.undo')
+      .action(async ({ session }) => this.undo(session))
 
     ctx.command('cube.def', '自定义魔方').alias('cb.def')
       .action(async ({ session }, prompt) => this.def(session, prompt))
@@ -107,18 +106,19 @@ class CubeActivity {
     return h.image(base64)
 
   }
-  async back(session: Session) {
+  async undo(session: Session) {
     const gid: string = session.channelId
     const cube_key: string[] = Object.keys(this.cube_dict)
     if (!cube_key.includes(gid)) {
       return '不存在cube'
     }
-    if (this.operation.length < 1) {
+    const cube: CubeCore = this.cube_dict[gid]
+    let last_op: string = cube.getLastStep()
+    if (last_op == "") {
       return '暂无操作'
     }
-    const cube: CubeCore = this.cube_dict[gid]
-    cube.rotate(this.operation)
-    let text: string = '已撤销操作：' + this.operation
+    cube.rotate(this.do_reverse(last_op))
+    let text: string = '已撤销操作：' + last_op
     session.send(text)
     let base64: string = cube.getSvgBase64Png()
     return h.image(base64)
@@ -127,7 +127,13 @@ class CubeActivity {
   do_reverse(text: string): string {
     let res = ''
     for (let i = text.length - 1; i >= 0; i--) {
-      res += text[i]
+      let char = text[i]
+      if (char === char.toUpperCase()) {
+        char = char.toLowerCase();
+      } else {
+        char = char.toUpperCase();
+      }
+      res += char
     }
     return res
   }
@@ -149,7 +155,6 @@ class CubeActivity {
   }
 
   async main_proc(session: Session, prompt: string) {
-    this.operation = prompt
     const gid: string = session.channelId
     const cube_key: string[] = Object.keys(this.cube_dict)
     if (!cube_key.includes(gid)) {
