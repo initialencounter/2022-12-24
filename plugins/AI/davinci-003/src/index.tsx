@@ -584,7 +584,7 @@ class DVc extends Dvc {
     if (this.output_type == 'voice' && this.ctx.vits)
       return this.ctx.vits.say({ input: resp[resp.length - 1].content })
     if (this.output_type == 'quote')
-      return h.text(h('quote', { id: messageId }) + (resp[resp.length - 1].content))
+      return h('quote', { id: messageId }) + (resp[resp.length - 1].content)
     if (this.output_type == 'minimal') {
       return h.text(resp[resp.length - 1].content)
     } else if (this.output_type == 'figure') {
