@@ -1,11 +1,13 @@
 {
   "name": "koishi-plugin-cube",
   "description": "魔方",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
     "lib",
+    "install.mjs",
+    "utils.js",
     "dist"
   ],
   "author": {
@@ -29,10 +31,15 @@
     "cube"
   ],
   "dependencies": {
-    "@initencounter/cube": "0.2.2",
-    "@satorijs/element": "^3.1.7"
+    "axios": "^1.7.4",
+    "get-registry": "^1.1.0",
+    "path": "^0.12.7",
+    "tar": "^7.4.3"
   },
   "peerDependencies": {
     "koishi": "^4.17.10"
+  },
+  "devDependencies": {
+    "@types/tar": "^6.1.13"
   }
 }

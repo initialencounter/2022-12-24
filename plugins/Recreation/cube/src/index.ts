@@ -1,6 +1,5 @@
 import { Context, Schema, Logger, Session, h, Element } from 'koishi'
-import { CubeCore as Cube } from '@initencounter/cube'
-import type { CubeCore } from '@initencounter/cube'
+import { CubeCore, Cube } from './cube'
 import { resolve } from 'path'
 import { readFileSync } from 'fs'
 export const name: string = 'cube'
@@ -97,6 +96,7 @@ class CubeActivity {
         return '取消'
       }
     }
+    // @ts-ignore
     const cube: CubeCore = new Cube()
     if (prompt) {
       cube.rotate(prompt)
@@ -158,6 +158,7 @@ class CubeActivity {
     const gid: string = session.channelId
     const cube_key: string[] = Object.keys(this.cube_dict)
     if (!cube_key.includes(gid)) {
+      // @ts-ignore
       const cube: CubeCore = new Cube()
       cube.scramble(1000)
       this.cube_dict[gid] = cube
