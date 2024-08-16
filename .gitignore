@@ -32,3 +32,5 @@ package-lock.json
 personality.json
 wxid*
 /.yarn/install-state.gz
+*.node
+test*

@@ -31,7 +31,7 @@
     "sst"
   ],
   "peerDependencies": {
-    "koishi": "^4.17.10"
+    "koishi": "^4.17.12"
   },
   "dependencies": {
     "@initencounter/sst": "^0.0.1"

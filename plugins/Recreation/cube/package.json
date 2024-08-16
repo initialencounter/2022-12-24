@@ -34,14 +34,14 @@
     "cube"
   ],
   "dependencies": {
-    "env-paths": "^3.0.0",
     "axios": "^1.7.4",
+    "env-paths": "^3.0.0",
     "get-registry": "^1.1.0",
     "path": "^0.12.7",
     "tar": "^7.4.3"
   },
   "peerDependencies": {
-    "koishi": "^4.17.10"
+    "koishi": "^4.17.12"
   },
   "devDependencies": {
     "@types/tar": "^6.1.13"

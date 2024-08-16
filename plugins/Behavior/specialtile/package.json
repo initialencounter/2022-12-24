@@ -31,6 +31,6 @@
     "@satorijs/element": "^3.1.7"
   },
   "peerDependencies": {
-    "koishi": "^4.17.10"
+    "koishi": "^4.17.12"
   }
 }
