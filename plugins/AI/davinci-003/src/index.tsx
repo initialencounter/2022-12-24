@@ -11,12 +11,11 @@ import { recall, switch_menu, switch_menu_grid } from './utils'
 import { Dvc } from './type'
 const name = 'davinci-003'
 const logger = new Logger(name)
-type ChatCallback = (session: Session, session_of_id: Dvc.Msg[]) => Promise<string>
+type ChatCallback = (session_of_id: Dvc.Msg[]) => Promise<string>
 declare module '@koishijs/plugin-console' {
   interface Events {
-    'davinci-003/getproxy'(): string
-    'davinci-003/getcredit'(key: string): Promise<number>
     'davinci-003/getusage'(): string
+    'davinci-003/chatTest'(text:string): Promise<string>
   }
 }
 
@@ -57,11 +56,6 @@ class DVc extends Dvc {
     }
     this.session_config = Object.values(this.personality)[0]
     this.sessions_cmd = Object.keys(this.personality)
-    ctx.command('dvc.credit', '查询余额').action(async ({ session }) => {
-      session.send(h('quote', { id: session.messageId }) + session.text('commands.dvc.messages.get'))
-      const credit = await this.get_credit()
-      return session.text('commands.dvc.messages.total_available', [credit])
-    })
 
 
     //at和私信触发对话的实现方法
@@ -140,7 +134,7 @@ class DVc extends Dvc {
     ctx.command('dvc.翻译 <prompt:text>', 'AI翻译', { usageName: 'dvc' })
       .option('lang', '-l <lang:t=string>', { fallback: config.lang })
       .action(async ({ session, options }, prompt) => {
-        return await this.translate(session, options.lang, prompt)
+        return await this.translate(options.lang, prompt)
       })
     ctx.command('dvc.update', '一键加载 400 条极品预设', { authority: 4 })
       .alias('dvc.更新预设')
@@ -179,15 +173,29 @@ class DVc extends Dvc {
         if (!options.all && text.length > 200) text = text.slice(0, 200) + '...'
         return text
       })
+    ctx.console.addListener('davinci-003/chatTest', async (text:string) => {
+      const date = new Date().toLocaleString()
+      let status = {date}
+      logger.info('user:' + text)
+      let sessionid = 'e2b5e6a3b58f06b914e5ede4d5737afb93afd0cc03f25d66e778bb733e589228'
+      // 获得对话session
+      let session_of_id = this.get_chat_session(sessionid)
+      // 设置本次对话内容
+      session_of_id.push({ 'role': 'user', 'content': `\n${text}，现在时间是：${JSON.stringify(status)}` })
+      // 与ChatGPT交互获得对话内容
+      let message: string = await this.try_control(this.chat_with_gpt, session_of_id)
 
-    ctx.console.addListener('davinci-003/getproxy', () => {
-      return config.baseURL ?? 'https://api.openai.com'
-    })
-    ctx.console.addListener('davinci-003/getcredit', async (key?: string) => {
-      if (!key) {
-        key = this.pluginConfig.key[this.key_number]
+      // 记录上下文
+      session_of_id.push({ 'role': 'assistant', 'content': message })
+      while (JSON.stringify(session_of_id).length > 10000) {
+        session_of_id.splice(1, 1)
+        if (session_of_id.length <= 1) break
       }
-      return await this.get_credit()
+
+      this.sessions[sessionid] = session_of_id
+      logger.info('ChatGPT返回内容: ')
+      logger.info(message)
+      return message
     })
     ctx.console.addListener('davinci-003/getusage', () => {
       return localUsage
@@ -201,8 +209,8 @@ class DVc extends Dvc {
    * @param prompt 要翻译的内容
    * @returns 翻译后的内容
    */
-  async translate(session: Session, lang: string, prompt: string): Promise<string> {
-    return this.try_control(this.chat_with_gpt, session,
+  async translate(lang: string, prompt: string): Promise<string> {
+    return this.try_control(this.chat_with_gpt,
       [{ role: 'system', content: '你是一个翻译引擎，请将文本翻译为' + lang + '，只需要翻译不需要解释。' },
       { role: 'user', content: `请帮我我将如下文字翻译成${lang},“${prompt}”` }])
   }
@@ -279,7 +287,7 @@ class DVc extends Dvc {
     if (this.ctx.censor) prompt = await this.ctx.censor.transform(prompt, session)
     // 启用/关闭上下文
     if (!this.pluginConfig.enableContext) {
-      const text: string = await this.chat_with_gpt(session, [{ 'role': 'user', 'content': prompt }])
+      const text: string = await this.chat_with_gpt([{ 'role': 'user', 'content': prompt }])
       const resp = [{ 'role': 'user', 'content': prompt }, { 'role': 'assistant', 'content': text }]
       return await this.getContent(session.userId, resp, session.messageId, session.bot.selfId)
     } else {
@@ -335,7 +343,7 @@ class DVc extends Dvc {
    */
 
 
-  async chat_with_gpt(_session: Session, message: Dvc.Msg[]): Promise<string> {
+  async chat_with_gpt(message: Dvc.Msg[]): Promise<string> {
     let url = trimSlash(`${this.pluginConfig.baseURL ?? 'https://api.openai.com'}/v1/chat/completions`)
     const payload = {
       model: this.pluginConfig.appointModel,
@@ -377,10 +385,7 @@ class DVc extends Dvc {
 
   async switch_key(e: Error) {
     // 查询余额
-    let creditText = ''
-    if (this.pluginConfig.baseURL.indexOf('https://api.openai.com') === -1)
-      creditText = '余额：' + await this.get_credit_unofficial(this.pluginConfig.key[this.key_number])
-    logger.info(`key${this.key_number + 1}. ${this.pluginConfig.key[this.key_number]} 报错，${creditText}：${String(e)}`)
+    logger.info(`key${this.key_number + 1}. ${this.pluginConfig.key[this.key_number]} 报错：${String(e)}`)
     // 余额为 0 ,切换 key
     this.key_number_pp()
   }
@@ -412,7 +417,7 @@ class DVc extends Dvc {
     // 设置本次对话内容
     session_of_id.push({ 'role': 'user', 'content': msg })
     // 与ChatGPT交互获得对话内容
-    let message: string = await this.try_control(this.chat_with_gpt, session, session_of_id)
+    let message: string = await this.try_control(this.chat_with_gpt, session_of_id)
 
     // 记录上下文
     session_of_id.push({ 'role': 'assistant', 'content': message })
@@ -435,10 +440,10 @@ class DVc extends Dvc {
    * @param session_of_id 会话 ID
    * @returns
    */
-  async try_control(cb: ChatCallback, session: Session, session_of_id: Dvc.Msg[]) {
+  async try_control(cb: ChatCallback, session_of_id: Dvc.Msg[]) {
     let try_times = 0
     while (try_times < this.pluginConfig.maxRetryTimes) {
-      const res = await cb.bind(this)(session, session_of_id)
+      const res = await cb.bind(this)(session_of_id)
       if (res !== '') return res
       try_times++
       await this.ctx.sleep(500)
@@ -549,31 +554,6 @@ class DVc extends Dvc {
   }
 
 
-  /**
-   *
-   * @param session 当前会话
-   * @returns apiKey剩余额度
-   */
-
-  async get_credit(): Promise<number> {
-    let key = this.pluginConfig.key[this.key_number]
-    if (this.pluginConfig.baseURL.indexOf('https://api.openai.com') > -1)
-      return -2
-    return this.get_credit_unofficial(key)
-
-  }
-  async get_credit_unofficial(key: string): Promise<number> {
-    try {
-      const url = `${this.pluginConfig.baseURL}/v1/query/balance`
-      const res = await this.ctx.http.post(url, {}, {
-        headers: { 'Authorization': key, 'Content-Type': 'application/json' }
-      })
-      const credit = res['balanceTotal'] - res['balanceUsed']
-      return credit
-    } catch (e) {
-      return -1
-    }
-  }
   /**
    *
    * @param userId 用户QQ号

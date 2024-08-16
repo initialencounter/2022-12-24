@@ -53,7 +53,6 @@ export namespace Dvc {
       authority: number
       superuser: string[]
       usage?: number
-      minInterval?: number
 
       alias: string[]
       resolution?: string
@@ -93,16 +92,15 @@ export namespace Dvc {
         authority: Schema.number().role('slider').min(0).max(5).step(1).description('允许使用的最低权限').default(1),
         superuser: Schema.array(String).default(['3118087750']).description('可以无限调用的用户'),
         usage: Schema.number().description('每人每日可用次数').default(100),
-        minInterval: Schema.number().default(5000).description('连续调用的最小间隔,单位毫秒。'),
 
-        alias: Schema.array(String).default(['ai', 'alowel']).description('触发命令;别名'),
+        alias: Schema.array(String).default(['ai']).description('指令别名'),
         resolution: Schema.string().default('1024x1024').description('生成图像的默认比例'),
         output: Schema.union([
           Schema.const('minimal').description('只发送文字消息'),
           Schema.const('quote').description('引用消息'),
           Schema.const('figure').description('以聊天记录形式发送'),
           Schema.const('image').description('将对话转成图片'),
-          Schema.const('voice').description('发送语音,需要安装ffmpeg')
+          Schema.const('voice').description('发送语音')
         ]).description('输出方式。').default('minimal'),
 
         private: Schema.boolean().default(true).description('开启后私聊AI可触发对话, 不需要使用指令'),
