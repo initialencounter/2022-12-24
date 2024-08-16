@@ -21,7 +21,8 @@
     "plugins/Tool/*",
     "plugins/@*/*",
     "external/open-vits",
-    "external/test"
+    "external/test",
+    "external/resvg"
   ],
   "scripts": {
     "new": "koishi-scripts new",
@@ -38,6 +39,7 @@
     "build:help": "powershell Remove-item ./plugins/Manager/help-pro/lib -Recurse -Force && powershell Copy-Item -Path ./plugins/Manager/help-pro/src/static -Destination ./plugins/Manager/help-pro/lib/static -Recurse -Force && yarn build help-pro",
     "test:gh-tile": "mocha --exit -r esbuild-register -r yml-register Plugins/News/gh-tile/test/index.spec.ts",
     "test:gh-tile:cron": "node -r esbuild-register Plugins/News/gh-tile/test/cron.spec.ts",
+    "test:resvg": "node -r esbuild-register external/resvg/test/base.spec.ts",
     "test:jimp": "node -r esbuild-register Plugins/Tool/jimp/test/base.spec.ts"
   },
   "devDependencies": {
