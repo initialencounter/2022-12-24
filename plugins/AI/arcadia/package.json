@@ -34,6 +34,6 @@
     "koishi": "^4.17.12"
   },
   "dependencies": {
-    "axios": "1.6.7"
+    "axios": "^1.7.4"
   }
 }
