@@ -36,7 +36,7 @@
     "file-box": "^1.5.5",
     "file-type": "16.5.4",
     "raven": "^2.6.4",
-    "type-fest": "^4.24.0",
+    "type-fest": "^4.25.0",
     "wechaty": "^1.20.2"
   },
   "devDependencies": {

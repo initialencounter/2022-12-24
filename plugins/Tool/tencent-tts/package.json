@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@initencounter/vits": "^0.0.2",
-    "tencentcloud-sdk-nodejs-tts": "^4.0.913"
+    "tencentcloud-sdk-nodejs-tts": "^4.0.923"
   },
   "koishi": {
     "description": "腾讯语音合成服务",

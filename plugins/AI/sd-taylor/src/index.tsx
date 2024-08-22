@@ -302,12 +302,12 @@ class Taylor {
 
     // 翻译
     if (this.isChinese(s) && this.config.gpt_translate) {
-      s = await this.ctx.dvc.translate(session, '英语', s)
+      s = await this.ctx.dvc.translate('英语', s)
       session.send("翻译后提示词：" + s)
     }
     // GPT增强
     if (this.config.gpt_turbo) {
-      s = await this.ctx.dvc.chat_with_gpt(session, [{
+      s = await this.ctx.dvc.chat_with_gpt([{
         role: 'system',
         content: `用尽可能多的英文标签详细的描述一幅画面，
         用碎片化的单词标签而不是句子去描述这幅画，描述词尽量丰富，
