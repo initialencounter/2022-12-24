@@ -22,6 +22,8 @@
     "plugins/@*/*",
     "external/open-vits",
     "external/test",
+    "external/transformers/transformers",
+    "external/transformers/anti-nsfw",
     "external/resvg"
   ],
   "scripts": {
@@ -40,6 +42,7 @@
     "test:gh-tile": "mocha --exit -r esbuild-register -r yml-register Plugins/News/gh-tile/test/index.spec.ts",
     "test:gh-tile:cron": "node -r esbuild-register Plugins/News/gh-tile/test/cron.spec.ts",
     "test:resvg": "node -r esbuild-register external/resvg/test/base.spec.ts",
+    "test:transformers": "node -r esbuild-register external/transformers/test/base.spec.ts",
     "test:jimp": "node -r esbuild-register Plugins/Tool/jimp/test/base.spec.ts"
   },
   "devDependencies": {

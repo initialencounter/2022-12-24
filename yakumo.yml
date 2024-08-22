@@ -22,3 +22,5 @@
   name: yakumo/upgrade
 - id: 11z5iu
   name: yakumo/run
+- id: psr56o
+  name: yakumo/prepare
