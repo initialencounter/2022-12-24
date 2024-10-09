@@ -24,7 +24,7 @@
     "vocechat"
   ],
   "peerDependencies": {
-    "koishi": "^4.17.12"
+    "koishi": "^4.18.0"
   },
   "koishi": {
     "service": {
