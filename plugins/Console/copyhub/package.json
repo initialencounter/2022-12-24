@@ -1,0 +1,37 @@
+{
+  "name": "koishi-plugin-copyhub",
+  "description": "text/file transfer station",
+  "version": "0.0.1",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "AGPL-3.0",
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/2022-12-24.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/2022-12-24/issues"
+  },
+  "homepage": "https://github.com/initialencounter/2022-12-24/tree/neat/plugins/Console/copyhub#readme",
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin"
+  ],
+  "devDependencies": {
+    "@koishijs/client": "^5.29.4"
+  },
+  "peerDependencies": {
+    "@koishijs/plugin-console": "^5.29.4",
+    "koishi": "^4.18.0"
+  }
+}
