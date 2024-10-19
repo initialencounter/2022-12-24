@@ -1,6 +1,8 @@
 import { Context, Schema, Logger, Session } from 'koishi'
 import Sst from '@initencounter/sst'
 import { } from 'koishi-plugin-adapter-onebot'
+import { spawn } from 'child_process'
+import { } from 'koishi-plugin-ffmpeg'
 import * as tencentcloud from "tencentcloud-sdk-nodejs-asr";
 const AsrClient = tencentcloud.asr.v20190614.Client;
 
@@ -8,6 +10,9 @@ export const name = 'tc-sst'
 export const logger = new Logger(name)
 
 class TcSst extends Sst {
+  static inject = {
+    optional: ['ffmpeg']
+  }
   client: any
   pluginConfig: TcSst.Config
   constructor(ctx: Context, config: TcSst.Config) {
@@ -47,18 +52,23 @@ class TcSst extends Sst {
       if (record.reason) {
         return record.reason
       }
-      const text: string = await this.callAsrAPI(record)
-      return text
+      const duration = await this.callFFmpeg(this.ctx, record.base64)
+      if (duration < 60) {
+        return await this.callSentenceRecognition(record)
+      }
+      const taskId: string = await this.create_task(record)
+      return await this.get_res(taskId)
     }
     return 'Not a audio'
   }
 
-  private async callAsrAPI(record: TcSst.RecordResult): Promise<string> {
+  private async callSentenceRecognition(record: TcSst.RecordResult): Promise<string> {
     const params = {
       EngSerViceType: this.pluginConfig.EngSerViceType,
       SourceType: 1,
       VoiceFormat: record.format,
-      Data: record.base64
+      Data: record.base64,
+      ConvertNumMode: 1,
     };
     const res: TcSst.ASRResponse = await this.client.SentenceRecognition(params)
     return res.Result
@@ -72,6 +82,65 @@ class TcSst extends Sst {
       return { base64: file.base64, format: 'wav' }
     }
     return { reason: '暂未支持该平台，请拷打开发者' }
+  }
+  private async callFFmpeg(ctx: Context, base64: string): Promise<number> {
+    const executable = ctx?.ffmpeg?.executable ?? "ffmpeg"
+    const child = spawn(executable, ["-i", '-','-f', 'null', '-'], { stdio: ['pipe'] });
+    child.stdin.write(Buffer.from(base64, 'base64'));
+    child.stdin.end();
+    return new Promise<number>((resolve, reject) => {
+      let buffer = ""
+      child.stderr.on('data', data => buffer += data.toString())
+      child.stdout.on('close', () => {
+        const timeMatch = buffer.match(/time=(\d{2}):(\d{2}):(\d{2})\.(\d{2})/)
+        if (timeMatch) {
+          const hours = parseInt(timeMatch[1], 10);
+          const minutes = parseInt(timeMatch[2], 10);
+          const seconds = parseInt(timeMatch[3], 10);
+          const milliseconds = parseInt(timeMatch[4], 10) * 10;
+
+          // 转换成秒
+          const durationInSeconds = hours * 3600 + minutes * 60 + seconds + milliseconds / 1000;
+          resolve(durationInSeconds);
+        }
+        resolve(0)
+      })
+      child.stdout.on('error', reject)
+    })
+  }
+  private sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+  }
+  private async create_task(record: TcSst.RecordResult): Promise<string> {
+    const params = {
+      EngineModelType: this.pluginConfig.EngSerViceType,
+      ChannelNum: 1,
+      ResTextFormat: 0,
+      SourceType: 1,
+      Data: record.base64,
+      ConvertNumMode: 1,
+    };
+    const res = (await this.client.CreateRecTask(params)).Data.TaskId
+    return res
+  }
+  private async get_res(taskId: string): Promise<string> {
+    const params = {
+      "TaskId": taskId
+    };
+    let res: TcSst.Task_result = await this.client.DescribeTaskStatus(params)
+    while (res.Data.StatusStr == 'waiting' || res.Data.StatusStr == 'doing') {
+      await this.sleep(618)
+      res = await this.client.DescribeTaskStatus(params)
+    }
+    const segment_text: string[] = (res.Data.Result + '\n').split('\n')
+    let text: string = ''
+    for (var i of segment_text) {
+      const id: number = i.indexOf(' ')
+      if (id > -1) {
+        text += i.slice(id, i.length)
+      }
+    }
+    return text
   }
 }
 namespace TcSst {
@@ -102,6 +171,24 @@ namespace TcSst {
     reason?: string
     base64?: string
     format?: string
+    AudioDuration?: number
+  }
+
+  export interface Result {
+    input: Session
+    output?: string
+  }
+  export interface Task_result {
+    RequestId: string
+    Data: {
+      TaskId: number
+      Status: number
+      StatusStr: string
+      AudioDuration: number
+      Result: string
+      ResultDetail: null,
+      ErrorMsg: string
+    }
   }
 
   export interface ASRResponse {
