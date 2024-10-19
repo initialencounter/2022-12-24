@@ -39,7 +39,6 @@
   },
   "koishi": {
     "description": "AI 聊天",
-    "browser": true,
     "service": {
       "optional": [
         "puppeteer",

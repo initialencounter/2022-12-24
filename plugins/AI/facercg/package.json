@@ -29,7 +29,6 @@
     "Face-recognition"
   ],
   "koishi": {
-    "browser": true,
     "service": {
       "required": [
         "http"

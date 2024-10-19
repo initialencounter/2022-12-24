@@ -24,7 +24,6 @@
   "homepage": "https://github.com/initialencounter/2022-12-24/blob/neat/plugins/Games/steam-trading#readme.md",
   "koishi": {
     "description": "[steam挂刀行情]",
-    "browser": true,
     "service": {
       "required": [
         "puppeteer"
