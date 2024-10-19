@@ -29,11 +29,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile
       - name: Build
         run: |
-          npm run build sst
-          npm run build tc-sst
+          yarn build sst
+          yarn build tc-sst
       - name: Publish
         run: |
           npm config set provenance true
