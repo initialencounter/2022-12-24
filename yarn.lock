@@ -2739,7 +2739,7 @@ __metadata:
     "@koishijs/plugin-status": "npm:^7.4.10"
     "@koishijs/scripts": "npm:^4.6.0"
     "@satorijs/element": "npm:^3.1.7"
-    "@types/node": "npm:^20.16.11"
+    "@types/node": "npm:^20.16.13"
     "@types/react": "npm:^18.3.11"
     cross-env: "npm:^7.0.3"
     esbuild: "npm:^0.18.20"
@@ -2767,7 +2767,7 @@ __metadata:
     koishi-plugin-theme-vanilla: "npm:^1.0.6"
     koishi-plugin-toutai: "npm:1.1.9"
     tsx: "npm:^4.19.1"
-    typescript: "npm:^5.7.0-dev.20241009"
+    typescript: "npm:^5.7.0-dev.20241019"
     yakumo: "npm:^1.0.0-beta.18"
     yakumo-esbuild: "npm:^1.0.0-beta.7"
     yakumo-esbuild-yaml: "npm:^1.0.0-alpha.0"
@@ -3957,12 +3957,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^20.16.11":
-  version: 20.16.11
-  resolution: "@types/node@npm:20.16.11"
+"@types/node@npm:^20.16.13":
+  version: 20.16.13
+  resolution: "@types/node@npm:20.16.13"
   dependencies:
     undici-types: "npm:~6.19.2"
-  checksum: 10c0/bba43f447c3c80548513954dae174e18132e9149d572c09df4a282772960d33e229d05680fb5364997c03489c22fe377d1dbcd018a3d4ff1cfbcfcdaa594a9c3
+  checksum: 10c0/7f4fd7176db0802c62e11ebbf7a66d0248e2dc8ec9153d9fc8bcb164d9aed581d91c407046c823c522e60d0babfdc24a1618dba7f2c6920ef1a24e1d416c9550
   languageName: node
   linkType: hard
 
@@ -13615,13 +13615,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^5.7.0-dev.20241009":
-  version: 5.7.0-dev.20241009
-  resolution: "typescript@npm:5.7.0-dev.20241009"
+"typescript@npm:^5.7.0-dev.20241019":
+  version: 5.7.0-dev.20241019
+  resolution: "typescript@npm:5.7.0-dev.20241019"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10c0/3c829e40f24a8fdae737d87f4e80332176377e343ca48b542d4abd29350f3c355f28d8f80a5e50d20812d70523973247c1e102c5464573117fce8c89b00428fe
+  checksum: 10c0/ed73347201277a67172714cd550a613f293fd0b66e8f4f6cda8edadc576b9910819999368dbaa8b29d306931260d993d6bec7edac77872b32afc50de8c519f21
   languageName: node
   linkType: hard
 
@@ -13635,13 +13635,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A^5.7.0-dev.20241009#optional!builtin<compat/typescript>":
-  version: 5.7.0-dev.20241009
-  resolution: "typescript@patch:typescript@npm%3A5.7.0-dev.20241009#optional!builtin<compat/typescript>::version=5.7.0-dev.20241009&hash=74658d"
+"typescript@patch:typescript@npm%3A^5.7.0-dev.20241019#optional!builtin<compat/typescript>":
+  version: 5.7.0-dev.20241019
+  resolution: "typescript@patch:typescript@npm%3A5.7.0-dev.20241019#optional!builtin<compat/typescript>::version=5.7.0-dev.20241019&hash=74658d"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10c0/631502521543643fb1714e63bd1213bc6f007305bd290534b77f124eb2fe192a141beb7b8e68baeb41eac227c32c22d79949fdfed6decfb5f9621748328145bf
+  checksum: 10c0/55f37e815fbc0118c59d76616ed2f0a062098382faffdcc8dc654f41d4416774935a4d197cb5aab0aa353c749ad3ce15beb92cd1919cf0b0517da56aff689286
   languageName: node
   linkType: hard
 
