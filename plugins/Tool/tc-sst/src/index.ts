@@ -1,4 +1,4 @@
-import { Context, Schema, Logger, Session } from 'koishi'
+import { Context, Schema, Logger, Session, Element } from 'koishi'
 import Sst from '@initencounter/sst'
 import { } from 'koishi-plugin-adapter-onebot'
 import { spawn } from 'child_process'
@@ -35,31 +35,34 @@ class TcSst extends Sst {
     ctx.i18n.define('zh', require('./locales/zh'));
     if (!config.auto_rcg) return
     ctx.middleware(async (session, next) => {
-      if (session.elements[0].type == "audio") {
-        let text: string = await this.audio2text(session)
-        if (text == '') {
-          text = session.text('sst.messages.louder')
-        }
-        return text
+      let text: string = await this.audio2text(session)
+      if (text === '') {
+        text = session.text('sst.messages.louder')
       }
-      return next()
+      return text
     })
   }
   async audio2text(session: Session): Promise<string> {
-    if (session.elements[0].type == "audio") {
-      console.log(session.elements[0])
-      const record = await this.getRecordBase64(session)
-      if (record.reason) {
-        return record.reason
+    let audioElementIndex = null
+    for (let i = 0; i < session.elements.length; i++) {
+      if (session.elements[i].type === "audio" || session.elements[i].type === "record") {
+        audioElementIndex = i
+        i = session.elements.length
       }
-      const duration = await this.callFFmpeg(this.ctx, record.base64)
-      if (duration < 60) {
-        return await this.callSentenceRecognition(record)
-      }
-      const taskId: string = await this.create_task(record)
-      return await this.get_res(taskId)
     }
-    return 'Not a audio'
+    if (audioElementIndex === null) {
+      return 'e04659269e105f3984e7a09ae6e0fa98da8aec5a'
+    }
+    const record = await this.getRecordBase64(session, session.elements[audioElementIndex])
+    if (record.reason) {
+      return record.reason
+    }
+    const duration = await this.callFFmpeg(this.ctx, record.base64)
+    if (duration < 60) {
+      return await this.callSentenceRecognition(record)
+    }
+    const taskId: string = await this.create_task(record)
+    return await this.get_res(taskId)
   }
 
   private async callSentenceRecognition(record: TcSst.RecordResult): Promise<string> {
@@ -73,19 +76,32 @@ class TcSst extends Sst {
     const res: TcSst.ASRResponse = await this.client.SentenceRecognition(params)
     return res.Result
   }
-  private async getRecordBase64(session: Session): Promise<TcSst.RecordResult> {
-    if (session.platform == 'onebot') {
-      const file = await session.onebot.getRecord(session.elements[0].attrs.file, 'wav') as TcSst.RecordOneBot
-      if (!file.base64) {
-        return { reason: 'onebot 平台未开启 enableLocalFile2Url' }
-      }
-      return { base64: file.base64, format: 'wav' }
+  private async getRecordBase64(session: Session, audioElement: Element): Promise<TcSst.RecordResult> {
+    switch (session.platform) {
+      case 'onebot':
+        const file = await session.onebot.getRecord(audioElement.attrs.file, 'wav') as TcSst.RecordOneBot
+        if (!file.base64) {
+          return { reason: 'onebot 平台未开启 enableLocalFile2Url' }
+        }
+        return { base64: file.base64, format: 'wav' }
+      case 'telegram':
+        if (!audioElement.attrs.src) {
+          return { reason: 'telegram 平台获取base64失败' }
+        }
+        return { base64: audioElement.attrs.src.split(',')[1], format: 'ogg-opus' }
+      case 'discord':
+        if (!audioElement.attrs.src) {
+          return { reason: 'discord 平台获取语音url失败' }
+        }
+        const base64 = Buffer.from(await this.ctx.http.get(audioElement.attrs.src)).toString('base64')
+        return { base64: base64, format: 'ogg-opus' }
+      default:
+        return { reason: '暂未支持该平台，请拷打开发者' }
     }
-    return { reason: '暂未支持该平台，请拷打开发者' }
   }
   private async callFFmpeg(ctx: Context, base64: string): Promise<number> {
     const executable = ctx?.ffmpeg?.executable ?? "ffmpeg"
-    const child = spawn(executable, ["-i", '-','-f', 'null', '-'], { stdio: ['pipe'] });
+    const child = spawn(executable, ["-i", '-', '-f', 'null', '-'], { stdio: ['pipe'] });
     child.stdin.write(Buffer.from(base64, 'base64'));
     child.stdin.end();
     return new Promise<number>((resolve, reject) => {
