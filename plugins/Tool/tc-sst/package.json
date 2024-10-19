@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-tc-sst",
   "description": "语音识别服务",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
