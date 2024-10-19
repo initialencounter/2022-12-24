@@ -19,8 +19,17 @@ jobs:
           node-version: 20
         env:
           DISABLE_V8_COMPILE_CACHE: 1
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.yarn/cache
+            node_modules
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
       - name: Install dependencies
-        run: npm install
+        run: yarn install
       - name: Build
         run: |
           npm run build sst
