@@ -25,7 +25,6 @@ tsconfig.tsbuildinfo
 *.db
 koishi.yml
 *.lock
-package-lock.json
 *.bak
 *.log
 

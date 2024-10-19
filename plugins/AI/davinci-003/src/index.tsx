@@ -304,7 +304,8 @@ class DVc extends Dvc {
 
   async middleware(session: Session, next: Next): Promise<string | string[] | segment | void | Fragment> {
     // 语音触发
-    if (session.elements[0]?.type == 'audio' && this.ctx.sst) {
+    // @ts-ignore
+    if (session.elements.filter(i => i.type === 'audio' || i.type === 'record').length > 0 && this.pluginConfig.whisper && this.ctx.sst) {
       const text: string = await this.ctx.sst.audio2text(session)
       if (!text) return session.text('commands.dvc.messages.louder')
       return this.dvc(session, text)
@@ -563,11 +564,9 @@ class DVc extends Dvc {
   async getContent(userId: string, resp: Dvc.Msg[], messageId: string, botId: string): Promise<string | segment> {
     if (this.output_type == 'voice' && this.ctx.vits)
       return this.ctx.vits.say({ input: resp[resp.length - 1].content })
-    if (this.output_type == 'quote')
+    else if (this.output_type == 'quote')
       return h('quote', { id: messageId }) + (resp[resp.length - 1].content)
-    if (this.output_type == 'minimal') {
-      return h.text(resp[resp.length - 1].content)
-    } else if (this.output_type == 'figure') {
+    else if (this.output_type == 'figure') {
       const result = segment('figure')
       for (var msg of resp) {
         if (msg.role == 'user') {
@@ -594,7 +593,7 @@ class DVc extends Dvc {
       }
       return result
     }
-    else {
+    else if (this.output_type == 'image') {
       const elements: Array<string> = []
       for (var msg of resp) {
         if (msg.role == 'user') {
@@ -615,6 +614,9 @@ class DVc extends Dvc {
         <div style='position: absolute;top:10px;'>create by koishi-plugin-davinci-003@${version}</div>
       </html>`
       return this.ctx.puppeteer.render(html)
+    }
+    else {
+      return h.text(resp[resp.length - 1].content)
     }
   }
 
