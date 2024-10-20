@@ -34,7 +34,7 @@ jobs:
         run: |
           yarn build sst
           yarn build vits
-          yarn build tc-sst
+          yarn build davinci-003
       - name: Publish
         run: |
           npm config set provenance true
