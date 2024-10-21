@@ -20,7 +20,7 @@ class TencentTts extends Vits {
     this.recall_time = config.recall_time
     this.max_length = config.max_length
     this.PrimaryLanguage = 1
-    if (this.speaker == (1050 || 1051)) {
+    if (this.speaker == 1050 || this.speaker == 1051) {
       this.PrimaryLanguage = 2
     }
     const clientConfig = {

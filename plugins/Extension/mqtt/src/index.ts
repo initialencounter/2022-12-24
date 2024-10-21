@@ -80,7 +80,7 @@ class Mqtt extends Service {
       if (session.subtype === 'private' && this.config.if_private) {
         return this.publish(session, String(session.content), { topic: config.publish_topic })
       }
-      if (session.parsed.appel && this.config.if_at) {
+      if (session.stripped.appel && this.config.if_at) {
         let msg: string = String(session.content)
         msg= msg.replace(`<at id="${session.bot.selfId}"/> `, '')
         msg= msg.replace(`<at id="${session.bot.selfId}"/> `, '')
