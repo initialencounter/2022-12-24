@@ -35,7 +35,7 @@ async function main() {
     for (var type of imageTypes) {
         imgArr[type] = await ctx.jimp.read(resolve(themePath, `${type}.png`))
     }
-    if ("white") {
+    if (config.colorForSerialNum === "white") {
         FONT = await ctx.jimp.loadFont(ctx.jimp.FONT_SANS_32_WHITE)
     } else {
         FONT = await ctx.jimp.loadFont(ctx.jimp.FONT_SANS_32_BLACK)
