@@ -27,27 +27,7 @@ export async function setTheme(ctx: Context, config: MineConfig) {
         FONT = await ctx.jimp.loadFont(ctx.jimp.FONT_SANS_32_BLACK)
     }
 }
-async function main() {
-    const ctx = new Context()
-    ctx.plugin(Jimp)
-    const themePath = resolve(__dirname, "theme/", "wom")
-    const imageTypes = ['closed', 'flag', 'type0', 'type1', 'type2', 'type3', 'type4', 'type5', 'type6', 'type7', 'type8'];
-    for (var type of imageTypes) {
-        imgArr[type] = await ctx.jimp.read(resolve(themePath, `${type}.png`))
-    }
-    if (config.colorForSerialNum === "white") {
-        FONT = await ctx.jimp.loadFont(ctx.jimp.FONT_SANS_32_WHITE)
-    } else {
-        FONT = await ctx.jimp.loadFont(ctx.jimp.FONT_SANS_32_BLACK)
-    }
-    const m = new Minefield(9, 9, 20)
-    m.openCell("6")
-    // console.time("mytime")
-    const img = await renderX(m, ctx)
-    // console.timeEnd("mytime")
-    fs.writeFileSync('test.png', Buffer.from(img))
-}
-// main()
+
 
 
 
