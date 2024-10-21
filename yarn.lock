@@ -9423,7 +9423,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"koishi-plugin-davinci-003@workspace:plugins/AI/davinci-003":
+"koishi-plugin-davinci-003@npm:^7.0.4, koishi-plugin-davinci-003@workspace:plugins/AI/davinci-003":
   version: 0.0.0-use.local
   resolution: "koishi-plugin-davinci-003@workspace:plugins/AI/davinci-003"
   dependencies:
@@ -9668,6 +9668,8 @@ __metadata:
   resolution: "koishi-plugin-sd-taylor@workspace:plugins/AI/sd-taylor"
   dependencies:
     "@satorijs/element": "npm:^3.1.7"
+    koishi-plugin-davinci-003: "npm:^7.0.4"
+    koishi-plugin-puppeteer: "npm:^3.9.0"
   peerDependencies:
     koishi: ^4.18.0
   languageName: unknown
