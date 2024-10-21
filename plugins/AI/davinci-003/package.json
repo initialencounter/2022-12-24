@@ -54,12 +54,10 @@
       ]
     }
   },
-  "dependencies": {
+  "devDependencies": {
     "@initencounter/sst": "^0.0.1",
     "@initencounter/vits": "^0.0.3",
-    "@koishijs/censor": "^1.1.0"
-  },
-  "devDependencies": {
+    "@koishijs/censor": "^1.1.0",
     "@koishijs/client": "^5.29.4"
   }
 }
