@@ -32,7 +32,7 @@ jobs:
         run: yarn install --frozen-lockfile
       - name: Build
         run: |
-          yarn build sd-taylor
+          yarn build
       - name: Publish
         run: |
           npm config set provenance true
