@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs'
 import { Context, Schema, Session, segment, Dict, Logger, h, trimSlash, arrayBufferToBase64 } from 'koishi'
-import { } from 'koishi-plugin-davinci-003'
+import { } from '../../davinci-003'
 import { } from 'koishi-plugin-puppeteer'
 import { resolve } from 'path'
 export const name = 'sd-taylor'
