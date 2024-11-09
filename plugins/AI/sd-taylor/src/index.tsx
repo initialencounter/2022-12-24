@@ -1,197 +1,294 @@
-import { readFileSync } from 'fs'
-import { Context, Schema, Session, segment, Dict, Logger, h, trimSlash, arrayBufferToBase64 } from 'koishi'
-import { } from 'koishi-plugin-davinci-003'
-import { } from 'koishi-plugin-puppeteer'
-import { resolve } from 'path'
-export const name = 'sd-taylor'
-const VERSION = require('../package.json')['version']
-const logger = new Logger(name)
+import { readFileSync } from "fs";
+import {
+  Context,
+  Schema,
+  Session,
+  segment,
+  Dict,
+  Logger,
+  h,
+  trimSlash,
+  arrayBufferToBase64,
+} from "koishi";
+import {} from "koishi-plugin-davinci-003";
+import {} from "koishi-plugin-puppeteer";
+import { resolve } from "path";
+export const name = "sd-taylor";
+const VERSION = require("../package.json")["version"];
+const logger = new Logger(name);
 
 class Taylor {
-  task: number
-  output: string
-  info: string
-  lora: Dict
+  task: number;
+  output: string;
+  info: string;
+  lora: Dict;
   static inject = {
-    optional: ['dvc', 'puppeteer']
-  }
+    optional: ["dvc", "puppeteer"],
+  };
   constructor(private ctx: Context, private config: Taylor.Config) {
-    this.lora = {}
-    this.task = 0
-    this.output = config.output
-    ctx.on('ready', async () => {
+    this.lora = {};
+    this.task = 0;
+    this.output = config.output;
+    ctx.on("ready", async () => {
       try {
-        await this.get_lora()
-        logger.info('lora 读取成功！')
+        await this.get_lora();
+        logger.info("lora 读取成功！");
       } catch (e) {
-        logger.info('lora 读取失败' + e)
+        logger.info("lora 读取失败" + e);
       }
-    })
-    ctx.i18n.define('zh', require('./locales/zh'))
-    ctx.command('tl <prompt:text>', 'Stable Diffusion API /txt2img', { authority: config.min_auth })
-      .alias('taylor')
-      .option('step', '--st <step:number>', { fallback: config.step })
-      .option('denoising_strength', '-d <denoising_strength:number>', { fallback: config.denoising_strength })
-      .option('seed', '--sd <seed:number>', { fallback: config.seed })
-      .option('negative_prompt', '-n <negative_prompt:string>', { fallback: config.negative_prompt })
-      .option('resolution', '-r <resolution:string>', { fallback: config.resolution })
-      .option('cfg_scale', '-c <cfg_scale:number>', { fallback: config.cfg_scale })
-      .option('output', '-o <output:string>', { fallback: config.output })
-      .action(async ({ session, options }, prompt) => {
-        if (!prompt) return session.execute('help tl')
-        prompt = await this.replace_lora(session, prompt)
-        if (prompt == 'false20230516') return this.info
-        const [width, height] = (options.resolution ? options.resolution : this.config.resolution).split('x').map(x => { return parseInt(x) })
-        const payload: Taylor.Payload = {
-          'steps': options.step,
-          'width': width,
-          'height': height,
-          'seed': options.seed,
-          'cfg_scale': options.cfg_scale,
-          'negative_prompt': options.negative_prompt,
-          'denoising_strength': options.denoising_strength,
-          'prompt': prompt + ', ' + config.default_prompt
-        }
-        if (['minimal', 'default', 'verbose'].includes(options.output)) {
-          this.output = options.output ? options.output : this.output
-        }
-        return await this.txt2img(session, payload)
+    });
+    ctx.i18n.define("zh", require("./locales/zh"));
+    ctx
+      .command("tl <prompt:text>", "Stable Diffusion API /txt2img", {
+        authority: config.min_auth,
       })
+      .alias("taylor")
+      .option("step", "--st <step:number>", { fallback: config.step })
+      .option("denoising_strength", "-d <denoising_strength:number>", {
+        fallback: config.denoising_strength,
+      })
+      .option("seed", "--sd <seed:number>", { fallback: config.seed })
+      .option("negative_prompt", "-n <negative_prompt:string>", {
+        fallback: config.negative_prompt,
+      })
+      .option("resolution", "-r <resolution:string>", {
+        fallback: config.resolution,
+      })
+      .option("cfg_scale", "-c <cfg_scale:number>", {
+        fallback: config.cfg_scale,
+      })
+      .option("output", "-o <output:string>", { fallback: config.output })
+      .action(async ({ session, options }, prompt) => {
+        if (!prompt) return session.execute("help tl");
+        prompt = await this.replace_lora(session, prompt);
+        if (prompt == "false20230516") return this.info;
+        const [width, height] = (
+          options.resolution ? options.resolution : this.config.resolution
+        )
+          .split("x")
+          .map((x) => {
+            return parseInt(x);
+          });
+        const payload: Taylor.Payload = {
+          steps: options.step,
+          width: width,
+          height: height,
+          seed: options.seed,
+          cfg_scale: options.cfg_scale,
+          negative_prompt: options.negative_prompt,
+          denoising_strength: options.denoising_strength,
+          prompt: prompt + ", " + config.default_prompt,
+        };
+        if (["minimal", "default", "verbose"].includes(options.output)) {
+          this.output = options.output ? options.output : this.output;
+        }
+        return await this.txt2img(session, payload);
+      });
 
-    ctx.command('tl.txt', 'sd识图', { authority: config.min_auth })
-      .option('model', '-m <model:string>', { fallback: config.model })
-      .option('output', '-o <output:string>', { type: ['minimal', 'default', 'verbose'], fallback: config.output })
+    ctx
+      .command("tl.txt", "sd识图", { authority: config.min_auth })
+      .option("model", "-m <model:string>", { fallback: config.model })
+      .option("output", "-o <output:string>", {
+        type: ["minimal", "default", "verbose"],
+        fallback: config.output,
+      })
       .action(async ({ session, options }) => {
-        this.output = options.output
-        return h('quote', { id: session.messageId }) + await this.interrogate(session)
+        this.output = options.output;
+        return (
+          h("quote", { id: session.messageId }) +
+          (await this.interrogate(session))
+        );
+      });
+    ctx
+      .command("tl.img <prompt:text>", "以图绘图", {
+        authority: config.min_auth,
       })
-    ctx.command('tl.img <prompt:text>', '以图绘图', { authority: config.min_auth })
-      .option('step', '--st <step:number>', { fallback: config.step })
-      .option('denoising_strength', '-d <denoising_strength:number>', { fallback: config.denoising_strength })
-      .option('seed', '--sd <seed:number>', { fallback: config.seed })
-      .option('negative_prompt', '-n <negative_prompt:string>', { fallback: config.negative_prompt })
-      .option('resolution', '-r <resolution:string>', { fallback: config.resolution })
-      .option('cfg_scale', '-c <cfg_scale:number>', { fallback: config.cfg_scale })
-      .option('crop', '-C, --no-crop', { value: false, fallback: true })
-      .option('upscaler', '-1 <upscaler>', { fallback: 'None' })
-      .option('upscaler2', '-2 <upscaler2>', { fallback: 'None' })
-      .option('visibility', '-v <visibility:number>', { fallback: 1 })
-      .option('upscaleFirst', '-f', { fallback: false })
-      .option('output', '-o <output:string>', { fallback: config.output })
+      .option("step", "--st <step:number>", { fallback: config.step })
+      .option("denoising_strength", "-d <denoising_strength:number>", {
+        fallback: config.denoising_strength,
+      })
+      .option("seed", "--sd <seed:number>", { fallback: config.seed })
+      .option("negative_prompt", "-n <negative_prompt:string>", {
+        fallback: config.negative_prompt,
+      })
+      .option("resolution", "-r <resolution:string>", {
+        fallback: config.resolution,
+      })
+      .option("cfg_scale", "-c <cfg_scale:number>", {
+        fallback: config.cfg_scale,
+      })
+      .option("crop", "-C, --no-crop", { value: false, fallback: true })
+      .option("upscaler", "-1 <upscaler>", { fallback: "None" })
+      .option("upscaler2", "-2 <upscaler2>", { fallback: "None" })
+      .option("visibility", "-v <visibility:number>", { fallback: 1 })
+      .option("upscaleFirst", "-f", { fallback: false })
+      .option("output", "-o <output:string>", { fallback: config.output })
       .action(async ({ session, options }, prompt) => {
-        prompt = await this.replace_lora(session, prompt)
-        if (prompt == 'false20230516') return this.info
-        const [width, height] = (options.resolution ? options.resolution : this.config.resolution).split('x').map(x => { return parseInt(x) })
+        prompt = await this.replace_lora(session, prompt);
+        if (prompt == "false20230516") return this.info;
+        const [width, height] = (
+          options.resolution ? options.resolution : this.config.resolution
+        )
+          .split("x")
+          .map((x) => {
+            return parseInt(x);
+          });
         const payload: Taylor.Payload = {
-          'steps': options.step,
-          'width': width,
-          'height': height,
-          'seed': options.seed,
-          'cfg_scale': options.cfg_scale,
-          'negative_prompt': options.negative_prompt,
-          'denoising_strength': options.denoising_strength,
-          'prompt': prompt + ', ' + config.default_prompt
+          steps: options.step,
+          width: width,
+          height: height,
+          seed: options.seed,
+          cfg_scale: options.cfg_scale,
+          negative_prompt: options.negative_prompt,
+          denoising_strength: options.denoising_strength,
+          prompt: prompt + ", " + config.default_prompt,
+        };
+        if (["minimal", "default", "verbose"].includes(options.output)) {
+          this.output = options.output ? options.output : this.output;
         }
-        if (['minimal', 'default', 'verbose'].includes(options.output)) {
-          this.output = options.output ? options.output : this.output
-        }
-        return await this.img2img(session, payload)
+        return await this.img2img(session, payload);
+      });
+    ctx
+      .command("tl.ext <prompt:text>", "图片超分辨率", {
+        authority: config.min_auth,
       })
-    ctx.command('tl.ext <prompt:text>', '图片超分辨率', { authority: config.min_auth })
-      .option('step', '--st <step:number>', { fallback: config.step })
-      .option('denoising_strength', '-d <denoising_strength:number>', { fallback: config.denoising_strength })
-      .option('seed', '--sd <seed:number>', { fallback: config.seed })
-      .option('negative_prompt', '-n <negative_prompt:string>', { fallback: config.negative_prompt })
-      .option('resolution', '-r <resolution:string>', { fallback: config.resolution })
-      .option('cfg_scale', '-c <cfg_scale:number>', { fallback: config.cfg_scale })
-      .option('crop', '-C, --no-crop', { value: false, fallback: true })
-      .option('upscaler', '-1 <upscaler>', { fallback: 'None' })
-      .option('upscaler2', '-2 <upscaler2>', { fallback: 'None' })
-      .option('visibility', '-v <visibility:number>', { fallback: 1 })
-      .option('upscaleFirst', '-f', { fallback: false })
+      .option("step", "--st <step:number>", { fallback: config.step })
+      .option("denoising_strength", "-d <denoising_strength:number>", {
+        fallback: config.denoising_strength,
+      })
+      .option("seed", "--sd <seed:number>", { fallback: config.seed })
+      .option("negative_prompt", "-n <negative_prompt:string>", {
+        fallback: config.negative_prompt,
+      })
+      .option("resolution", "-r <resolution:string>", {
+        fallback: config.resolution,
+      })
+      .option("cfg_scale", "-c <cfg_scale:number>", {
+        fallback: config.cfg_scale,
+      })
+      .option("crop", "-C, --no-crop", { value: false, fallback: true })
+      .option("upscaler", "-1 <upscaler>", { fallback: "None" })
+      .option("upscaler2", "-2 <upscaler2>", { fallback: "None" })
+      .option("visibility", "-v <visibility:number>", { fallback: 1 })
+      .option("upscaleFirst", "-f", { fallback: false })
       .action(async ({ session, options }, prompt) => {
-        prompt = await this.replace_lora(session, prompt)
-        if (prompt == 'false20230516') return this.info
-        const [width, height] = (options.resolution ? options.resolution : this.config.resolution).split('x').map(x => { return parseInt(x) })
+        prompt = await this.replace_lora(session, prompt);
+        if (prompt == "false20230516") return this.info;
+        const [width, height] = (
+          options.resolution ? options.resolution : this.config.resolution
+        )
+          .split("x")
+          .map((x) => {
+            return parseInt(x);
+          });
         const payload: Taylor.Payload = {
-          'steps': options.step,
-          'width': width,
-          'height': height,
-          'seed': options.seed,
-          'cfg_scale': options.cfg_scale,
-          'negative_prompt': options.negative_prompt,
-          'denoising_strength': options.denoising_strength,
-          'prompt': prompt + ', ' + config.default_prompt
-        }
-        return await this.extras(session, payload, options)
-
-      })
+          steps: options.step,
+          width: width,
+          height: height,
+          seed: options.seed,
+          cfg_scale: options.cfg_scale,
+          negative_prompt: options.negative_prompt,
+          denoising_strength: options.denoising_strength,
+          prompt: prompt + ", " + config.default_prompt,
+        };
+        return await this.extras(session, payload, options);
+      });
     // 抄袭自https://github.com/MirrorCY/sd-switch
-    ctx.command('tl.switch', '切换模型，抄袭自MirrorCY/sd-switch')
-      .alias('切换模型')
+    ctx
+      .command("tl.switch", "切换模型，抄袭自MirrorCY/sd-switch")
+      .alias("切换模型")
       .action(async ({ session }) => {
-        const model: string = await this.switch_model_menu(session)
-        session.send(session.text('commands.tl.messages.switching', [model]))
+        const model: string = await this.switch_model_menu(session);
+        session.send(session.text("commands.tl.messages.switching", [model]));
         if (model) {
-          await this.ctx.http.post(config.api_path + '/sdapi/v1/options', {
-            sd_model_checkpoint: model
-          })
-          const model_now = (await this.ctx.http.get(trimSlash(this.config.api_path) + '/sdapi/v1/options'))
-          return session.text('commands.tl.messages.switch-success', [model_now.sd_model_checkpoint])
+          await this.ctx.http.post(config.api_path + "/sdapi/v1/options", {
+            sd_model_checkpoint: model,
+          });
+          const model_now = await this.ctx.http.get(
+            trimSlash(this.config.api_path) + "/sdapi/v1/options"
+          );
+          return session.text("commands.tl.messages.switch-success", [
+            model_now.sd_model_checkpoint,
+          ]);
         } else {
-          return this.info
+          return this.info;
         }
-
-      })
-    ctx.command('tl.lora', '查看Lora').alias('lora')
+      });
+    ctx
+      .command("tl.lora", "查看Lora")
+      .alias("lora")
       .action(async ({ session }) => {
-        session.send(session.text('commands.tl.messages.loraing'))
+        session.send(session.text("commands.tl.messages.loraing"));
         if (this.config.lora_output && ctx.puppeteer) {
-          return await this.ctx.puppeteer.render(String(await this.send_as_html(session)))
+          return await this.ctx.puppeteer.render(
+            String(await this.send_as_html(session))
+          );
         }
-        return await this.send_as_figure(session)
-      })
-
+        return await this.send_as_figure(session);
+      });
   }
   task_manager(session: Session) {
     if (this.task > 0) {
-      session.send(session.text('commands.tl.messages.pending', [this.task]))
+      session.send(session.text("commands.tl.messages.pending", [this.task]));
     } else {
-      session.send(session.text('commands.tl.messages.waiting'))
+      session.send(session.text("commands.tl.messages.waiting"));
     }
   }
   async get_lora(): Promise<void> {
-    const loras: Dict[] = await this.ctx.http.get(trimSlash(this.config.api_path) + '/sdapi/v1/loras', { responseType: 'json' })
+    const loras: Dict[] = await this.ctx.http.get(
+      trimSlash(this.config.api_path) + "/sdapi/v1/loras",
+      { responseType: "json" }
+    );
     for (let lora of loras) {
-      let path: string[] = resolve(lora['path']).replace(/\\/g, '/').split('/')
-      this.lora[lora['name']] = trimSlash(this.config.api_path) + '/file=models/Lora/' + path[path.length - 1].replace('safetensors', 'png').replace('ckpt', 'png')
+      let path: string[] = resolve(lora["path"]).replace(/\\/g, "/").split("/");
+      this.lora[lora["name"]] =
+        trimSlash(this.config.api_path) +
+        "/file=models/Lora/" +
+        path[path.length - 1]
+          .replace("safetensors", "png")
+          .replace("ckpt", "png");
     }
   }
   async send_as_html(session: Session) {
-    const lora_arr = Object.entries(this.lora)
-    let images_arr = []
-    let count = 0
+    const lora_arr = Object.entries(this.lora);
+    let images_arr = [];
+    let count = 0;
     for (var i of lora_arr) {
-      count++
+      count++;
       if ((count + 1) % 6 == 0) {
-        session.send(await this.ctx.puppeteer.render(String(this.lora_html(images_arr))))
-        images_arr = []
+        session.send(
+          await this.ctx.puppeteer.render(String(this.lora_html(images_arr)))
+        );
+        images_arr = [];
       }
-      const name = `${count}.${i[0]}`
-      if (i[1] == '') {
-        images_arr.push(<div><p>图片获取失败</p><p>{name}</p><br></br></div>)
+      const name = `${count}.${i[0]}`;
+      if (i[1] == "") {
+        images_arr.push(
+          <div>
+            <p>图片获取失败</p>
+            <p>{name}</p>
+            <br></br>
+          </div>
+        );
       } else {
-        images_arr.push(<div><img src={i[1]}></img><p>{name}</p><br></br></div>)
+        images_arr.push(
+          <div>
+            <img src={i[1]}></img>
+            <p>{name}</p>
+            <br></br>
+          </div>
+        );
       }
     }
-    return this.lora_html(images_arr)
-
+    return this.lora_html(images_arr);
   }
   lora_html(images_arr) {
-    return <html>
-      <head>
-        <title>当前存在Lora:</title>
-        <style>{`
+    return (
+      <html>
+        <head>
+          <title>当前存在Lora:</title>
+          <style>
+            {`
           p {
             font-size: 20px;
           }
@@ -205,401 +302,453 @@ class Taylor {
               height: 200px;
               margin: 10px;
           }`}
-        </style>
-      </head>
-      <body>
-        <p>create by koishi-plugin-sd-taylor@{VERSION}</p>
-        <div className='image-container' id='image-container'>{images_arr}</div>
-      </body>
-    </html>
+          </style>
+        </head>
+        <body>
+          <p>create by koishi-plugin-sd-taylor@{VERSION}</p>
+          <div className="image-container" id="image-container">
+            {images_arr}
+          </div>
+        </body>
+      </html>
+    );
   }
   async send_as_figure(session: Session) {
-    const lora_arr = Object.entries(this.lora)
-    let result = segment('figure')
+    const lora_arr = Object.entries(this.lora);
+    let result = segment("figure");
     const attrs: Dict = {
       userId: session.userId,
       nickname: session.author?.nickname || session.username,
-    }
-    result.children.push(segment('message', attrs, `create by koishi-plugin-sd-taylor@${VERSION}\n当前存在lora:`))
-    let count: number = 0
+    };
+    result.children.push(
+      segment(
+        "message",
+        attrs,
+        `create by koishi-plugin-sd-taylor@${VERSION}\n当前存在lora:`
+      )
+    );
+    let count: number = 0;
     for (var i of lora_arr) {
-      count++
+      count++;
       if ((count + 1) % 6 == 0) {
-        session.send(result)
-        result = segment('figure')
+        session.send(result);
+        result = segment("figure");
       }
-      const name = `${count}.${i[0]}`
+      const name = `${count}.${i[0]}`;
       try {
-        const img_base64 = 'data:image/png;base64,' + arrayBufferToBase64(await this.ctx.http.get(i[1], { responseType: 'arraybuffer' }))
-        result.children.push(segment('message', attrs, name))
-        result.children.push(segment.image(img_base64, attrs))
-      }
-      catch (e) {
-        result.children.push(segment('message', attrs, name))
+        const img_base64 =
+          "data:image/png;base64," +
+          arrayBufferToBase64(
+            await this.ctx.http.get(i[1], { responseType: "arraybuffer" })
+          );
+        result.children.push(segment("message", attrs, name));
+        result.children.push(segment.image(img_base64, attrs));
+      } catch (e) {
+        result.children.push(segment("message", attrs, name));
       }
     }
-    return result
+    return result;
   }
 
   async switch_model_menu(session: Session): Promise<string> {
-    const type_arr: string[] = []
-    let type_str: string = '\n请输入编号:\n'
-    const model_now = (await this.ctx.http.get(trimSlash(this.config.api_path) + '/sdapi/v1/options', {})).sd_model_checkpoint
-    const res = await this.ctx.http.get(trimSlash(this.config.api_path) + '/sdapi/v1/sd-models')
+    const type_arr: string[] = [];
+    let type_str: string = "\n请输入编号:\n";
+    const model_now = (
+      await this.ctx.http.get(
+        trimSlash(this.config.api_path) + "/sdapi/v1/options",
+        {}
+      )
+    ).sd_model_checkpoint;
+    const res = await this.ctx.http.get(
+      trimSlash(this.config.api_path) + "/sdapi/v1/sd-models"
+    );
     res.forEach((i, id) => {
-      type_str += String(id + 1) + ' ' + i.model_name + '\n'
-      type_arr.push(i.title)
-    })
+      type_str += String(id + 1) + " " + i.model_name + "\n";
+      type_arr.push(i.title);
+    });
 
-    session.send(h('quote', { id: session.messageId }) + session.text('commands.tl.messages.switch-output', [model_now]) + type_str)
-    const input = await session.prompt()
+    session.send(
+      h("quote", { id: session.messageId }) +
+        session.text("commands.tl.messages.switch-output", [model_now]) +
+        type_str
+    );
+    const input = await session.prompt();
     if (!input || Number.isNaN(+input)) {
-      this.info = session.text('commands.tl.messages.menu-err')
-      return ''
+      this.info = session.text("commands.tl.messages.menu-err");
+      return "";
     }
-    const index: number = parseInt(input) - 1
+    const index: number = parseInt(input) - 1;
     if (0 > index && index > type_arr.length - 1) {
-      this.info = session.text('commands.tl.messages.menu-err')
-      return ''
+      this.info = session.text("commands.tl.messages.menu-err");
+      return "";
     }
-    return type_arr[index]
+    return type_arr[index];
   }
   async replace_lora(session: Session, s: string): Promise<string> {
-    const reg_lora: RegExp = /lora\d{1,2}/g
-    const lora_match = s.match(reg_lora)
+    const reg_lora: RegExp = /lora\d{1,2}/g;
+    const lora_match = s.match(reg_lora);
     if (lora_match) {
       for (var i of lora_match) {
-        s = s.replace(i, '')
+        s = s.replace(i, "");
       }
     }
-    while (s.indexOf('：') > -1) {
-      s = s.replace('：', ':')
+    while (s.indexOf("：") > -1) {
+      s = s.replace("：", ":");
     }
-    if ((!this.ctx.dvc && this.config.gpt_translate) || (!this.ctx.dvc && this.config.gpt_turbo)) {
-      this.info = session.text('commands.tl.messages.no-dvc')
-      return 'false20230516'
+    if (
+      (!this.ctx.dvc && this.config.gpt_translate) ||
+      (!this.ctx.dvc && this.config.gpt_turbo)
+    ) {
+      this.info = session.text("commands.tl.messages.no-dvc");
+      return "false20230516";
     }
-    while (s.indexOf('&lt;') > -1) {
-      s = s.replace('&lt;', '<')
+    while (s.indexOf("&lt;") > -1) {
+      s = s.replace("&lt;", "<");
     }
-    while (s.indexOf('&gt;') > -1) {
-      s = s.replace('&gt;', '>')
+    while (s.indexOf("&gt;") > -1) {
+      s = s.replace("&gt;", ">");
     }
-    while (s.indexOf('，') > -1) {
-      s = s.replace('，', ',')
+    while (s.indexOf("，") > -1) {
+      s = s.replace("，", ",");
     }
-    while (s.indexOf('  ') > -1) {
-      s = s.replace('  ', ' ')
+    while (s.indexOf("  ") > -1) {
+      s = s.replace("  ", " ");
     }
     // lora 检测
-    const reg = /<[^>]*>/g
-    const matches = s.match(reg)
-    let cleanedMatches: string[] = []
+    const reg = /<[^>]*>/g;
+    const matches = s.match(reg);
+    let cleanedMatches: string[] = [];
     if (matches) {
-      cleanedMatches = matches.map(match => match.slice(0, match.length))
-      s = s.replace(reg, '')
+      cleanedMatches = matches.map((match) => match.slice(0, match.length));
+      s = s.replace(reg, "");
     }
 
     // 翻译
     if (this.isChinese(s) && this.config.gpt_translate) {
-      s = await this.ctx.dvc.translate('英语', s)
-      session.send("翻译后提示词：" + s)
+      s = await this.ctx.dvc.translate("英语", s);
+      session.send("翻译后提示词：" + s);
     }
     // GPT增强
     if (this.config.gpt_turbo) {
-      s = await this.ctx.dvc.chat_with_gpt([{
-        role: 'system',
-        content: `用尽可能多的英文标签详细的描述一幅画面，
+      s = await this.ctx.dvc.chat_with_gpt([
+        {
+          role: "system",
+          content: `用尽可能多的英文标签详细的描述一幅画面，
         用碎片化的单词标签而不是句子去描述这幅画，描述词尽量丰富，
         每个单词之间用逗号分隔，例如在描述白发猫娘的时候，
         你应该用: 'white hair'、 'cat girl'、 'cat ears'、 'cute
-        girl'、 'beautiful'、'lovely'等英文标签词汇。你现在要描述的是:${s}`
-      }])
-      session.send("增强后的提示词：" + s)
-    }else{
-      session.send("提示词：" + s)
+        girl'、 'beautiful'、'lovely'等英文标签词汇。你现在要描述的是:${s}`,
+        },
+      ]);
+      session.send("增强后的提示词：" + s);
+    } else {
+      session.send("提示词：" + s);
     }
-    let lora_text: string = ''
-    const lora_arr = Object.entries(this.lora)
-    const lora_nums = lora_arr.length
-    const lora_weight: number = this.config.lora_weight
+    let lora_text: string = "";
+    const lora_arr = Object.entries(this.lora);
+    const lora_nums = lora_arr.length;
+    const lora_weight: number = this.config.lora_weight;
     if (lora_match) {
       for (var j of lora_match) {
-        const lora_index = Number(j.replace('lora', ''))
+        const lora_index = Number(j.replace("lora", ""));
         if (lora_index < lora_nums) {
-          lora_text += `, <lora:${lora_arr[lora_index - 1][0]}:${lora_weight}>`
+          lora_text += `, <lora:${lora_arr[lora_index - 1][0]}:${lora_weight}>`;
         }
       }
     }
 
-    return cleanedMatches.join(' ') + s + lora_text
+    return cleanedMatches.join(" ") + s + lora_text;
   }
   async txt2img(session: Session, payload: Taylor.Payload) {
     try {
-      this.task_manager(session)
-      this.task++
-      const path: string = '/sdapi/v1/txt2img'
-      const api: string = `${trimSlash(this.config.api_path)}${path}`
-      logger.info((session.author?.nick || session.username) + ' : ' + payload.prompt)
+      this.task_manager(session);
+      this.task++;
+      const path: string = "/sdapi/v1/txt2img";
+      const api: string = `${trimSlash(this.config.api_path)}${path}`;
+      logger.info(
+        (session.author?.nick || session.username) + " : " + payload.prompt
+      );
       const resp = await this.ctx.http.post(api, payload, {
-        timeout: 0
-      })
-      const res_img: string = 'data:image/png;base64,' + (resp.output ? resp.output[0] : resp.images[0])
-      const parms: Taylor.Parameters = resp['parameters']
-      this.task--
-      return this.getContent(session, parms, res_img)
-    }
-    catch (err) {
-      this.task--
-      logger.warn(err)
-      return "文生图失败"
+        timeout: 0,
+      });
+      const res_img: string =
+        "data:image/png;base64," +
+        (resp.output ? resp.output[0] : resp.images[0]);
+      const parms: Taylor.Parameters = resp["parameters"];
+      this.task--;
+      return this.getContent(session, parms, res_img);
+    } catch (err) {
+      this.task--;
+      logger.warn(err);
+      return "文生图失败";
     }
   }
   async img2img(session: Session, payload: Taylor.Payload) {
     try {
-      this.task_manager(session)
-      this.task += 1
-      const path: string = '/sdapi/v1/img2img'
-      const api: string = `${trimSlash(this.config.api_path)}${path}`
-      let img_url = this.extractImageUrlFromSession(session)
-      if (!img_url) return '没有图片喵'
-      logger.info((session.author?.nickname || session.username) + ' : ' + payload.prompt)
-      logger.info(img_url)
-      const base64: string = await this.img2base64(this.ctx, img_url)
+      this.task_manager(session);
+      this.task += 1;
+      const path: string = "/sdapi/v1/img2img";
+      const api: string = `${trimSlash(this.config.api_path)}${path}`;
+      let img_url = this.extractImageUrlFromSession(session);
+      if (!img_url) return "没有图片喵";
+      logger.info(
+        (session.author?.nickname || session.username) + " : " + payload.prompt
+      );
+      logger.info(img_url);
+      const base64: string = await this.img2base64(this.ctx, img_url);
       // 设置payload
-      payload['init_images'] = ['data:image/png;base64,' + base64]
+      payload["init_images"] = ["data:image/png;base64," + base64];
       const resp = await this.ctx.http.post(api, payload, {
-        timeout: 0
-      })
-      const res_img: string = 'data:image/png;base64,' + (resp.output ? resp.output[0] : resp.images[0])
-      const parms: Taylor.Parameters = resp['parameters']
-      this.task--
-      return this.getContent(session, parms, res_img)
-    }
-    catch (err) {
-      this.task--
-      logger.warn(err)
-      return "图生图失败"
+        timeout: 0,
+      });
+      const res_img: string =
+        "data:image/png;base64," +
+        (resp.output ? resp.output[0] : resp.images[0]);
+      const parms: Taylor.Parameters = resp["parameters"];
+      this.task--;
+      return this.getContent(session, parms, res_img);
+    } catch (err) {
+      this.task--;
+      logger.warn(err);
+      return "图生图失败";
     }
   }
 
   async interrogate(session: Session) {
     try {
-      this.task_manager(session)
-      this.task += 1
-      await session.send(session.text('commands.tl.messages.interrogate'))
-      const path: string = '/sdapi/v1/interrogate'
-      let img_url = this.extractImageUrlFromSession(session)
-      if (!img_url) return '没有图片怎么识图'
-      logger.info((session.author?.nick || session.username) + ' : ' + 'Interrogate')
-      logger.info(img_url)
-      const base64: string = await this.img2base64(this.ctx, img_url)
-      const resp: string = (await this.ctx.http.post(`${trimSlash(this.config.api_path)}${path}`, { 'image': 'data:image/png;base64,' + base64 }))
-      this.task--
-      return resp["caption"]
-    }
-    catch (err) {
-      this.task--
-      logger.warn(err)
-      return "识图失败"
+      this.task_manager(session);
+      this.task += 1;
+      await session.send(session.text("commands.tl.messages.interrogate"));
+      const path: string = "/sdapi/v1/interrogate";
+      let img_url = this.extractImageUrlFromSession(session);
+      if (!img_url) return "没有图片怎么识图";
+      logger.info(
+        (session.author?.nick || session.username) + " : " + "Interrogate"
+      );
+      logger.info(img_url);
+      const base64: string = await this.img2base64(this.ctx, img_url);
+      const resp: string = await this.ctx.http.post(
+        `${trimSlash(this.config.api_path)}${path}`,
+        { image: "data:image/png;base64," + base64 }
+      );
+      this.task--;
+      return resp["caption"];
+    } catch (err) {
+      this.task--;
+      logger.warn(err);
+      return "识图失败";
     }
   }
   async extras(session: Session, payload: Taylor.Payload, options: any) {
-    this.task += 1
+    this.task += 1;
     try {
-      session.send(session.text('commands.tl.messages.waiting'))
-      const path: string = '/sdapi/v1/extra-single-image'
-      let img_url = this.extractImageUrlFromSession(session)
-      if (!img_url) return '没有图片怎么超分'
-      logger.info((session.author?.nickname || session.username) + ' : ' + 'Extras')
-      logger.info(img_url)
-      const base64: string = await this.img2base64(this.ctx, img_url)
+      session.send(session.text("commands.tl.messages.waiting"));
+      const path: string = "/sdapi/v1/extra-single-image";
+      let img_url = this.extractImageUrlFromSession(session);
+      if (!img_url) return "没有图片怎么超分";
+      logger.info(
+        (session.author?.nickname || session.username) + " : " + "Extras"
+      );
+      logger.info(img_url);
+      const base64: string = await this.img2base64(this.ctx, img_url);
       const payload_extras = {
-        'image': 'data:image/png;base64,' + base64,
-        'resize_mode': 1,
-        'show_extras_results': true,
-        'upscaling_resize': 2,
-        'upscaling_resize_w': 1080,
-        'upscaling_resize_h': 780,
-        'upscaling_crop': options.crop,
-        'upscaler_1': options.upscaler,
-        'upscaler_2': options.upscaler2,
-        'extras_upscaler_2_visibility': options.visibility,
-        'upscale_first': options.upscaleFirst,
-
-      }
-      const resp = await this.ctx.http.post(`${trimSlash(this.config.api_path)}${path}`, payload_extras)
-      const res_img = 'data:image/png;base64,' + resp.image
-      this.task--
-      return segment.image(res_img)
-    }
-    catch (err) {
-      logger.warn(err)
-      this.task--
-      return "超分失败"
+        image: "data:image/png;base64," + base64,
+        resize_mode: 1,
+        show_extras_results: true,
+        upscaling_resize: 2,
+        upscaling_resize_w: 1080,
+        upscaling_resize_h: 780,
+        upscaling_crop: options.crop,
+        upscaler_1: options.upscaler,
+        upscaler_2: options.upscaler2,
+        extras_upscaler_2_visibility: options.visibility,
+        upscale_first: options.upscaleFirst,
+      };
+      const resp = await this.ctx.http.post(
+        `${trimSlash(this.config.api_path)}${path}`,
+        payload_extras
+      );
+      const res_img = "data:image/png;base64," + resp.image;
+      this.task--;
+      return segment.image(res_img);
+    } catch (err) {
+      logger.warn(err);
+      this.task--;
+      return "超分失败";
     }
   }
   isChinese(s: string): boolean {
-    return /[\u4e00-\u9fa5]/.test(s)
+    return /[\u4e00-\u9fa5]/.test(s);
   }
   findInfo(s: string, ss: string): string {
-    const id1: number = s.indexOf(ss + ': ')
-    const sss: string = s.slice(id1, -1)
-    const id3: number = sss.indexOf(',')
-    const id2: number = sss.indexOf(' ')
-    const res: string = sss.slice(id2 + 1, id3)
-    return res
+    const id1: number = s.indexOf(ss + ": ");
+    const sss: string = s.slice(id1, -1);
+    const id3: number = sss.indexOf(",");
+    const id2: number = sss.indexOf(" ");
+    const res: string = sss.slice(id2 + 1, id3);
+    return res;
   }
   getContent(session: Session, parms: Taylor.Parameters, image?: string) {
-    if (this.output === 'minimal' && image) {
-      return segment.image(image)
+    if (this.output === "minimal" && image) {
+      return segment.image(image);
     }
     const attrs: Dict = {
       userId: session.userId,
       nickname: session.author.name || session.username,
+    };
+    const result = segment("figure");
+    if (this.output === "verbose") {
+      result.children.push(
+        segment("message", attrs, `info = ${JSON.stringify(parms)}`)
+      );
     }
-    const result = segment('figure')
-    if (this.output === 'verbose') {
-      result.children.push(segment('message', attrs, `info = ${JSON.stringify(parms)}`))
-    }
-    result.children.push(segment.image(image, attrs))
+    result.children.push(segment.image(image, attrs));
 
-    return result
+    return result;
   }
   async img2base64(ctx: Context, img_url: string) {
-    const buffer = await ctx.http.get(img_url, { responseType: 'arraybuffer', timeout: 0 })
-    const base64 = Buffer.from(buffer).toString('base64')
-    return base64
+    const buffer = await ctx.http.get(img_url, {
+      responseType: "arraybuffer",
+      timeout: 0,
+    });
+    const base64 = Buffer.from(buffer).toString("base64");
+    return base64;
   }
   extractImageUrlFromSession(session: Session): string {
-    let img_url = ''
-    for(let i = 0; i< session.elements.length; i++){
-      if (session.elements[i].type === 'img'){
-        img_url = session.elements[i].attrs.src
-        break
+    let img_url = "";
+    for (let i = 0; i < session.elements.length; i++) {
+      if (session.elements[i].type === "img") {
+        img_url = session.elements[i].attrs.src;
+        break;
       }
     }
-    return img_url
+    return img_url;
   }
 }
 namespace Taylor {
-  export const usage = readFileSync(resolve(__dirname, "../readme.md")).toString('utf-8')
+  export const usage = readFileSync(
+    resolve(__dirname, "../readme.md")
+  ).toString("utf-8");
   export interface Parameters {
-    enable_hr?: boolean
-    denoising_strength: number
-    firstphase_width?: number
-    firstphase_height?: number
-    hr_scale?: number
-    hr_upscaler?: any
-    hr_second_pass_steps?: number
-    hr_resize_x?: number
-    hr_resize_y?: number
-    prompt: string
-    styles: any
-    seed: number
-    subseed: number
-    subseed_strength: number
-    seed_resize_from_h: number
-    seed_resize_from_w: number
-    sampler_name: any
-    batch_size: number
-    n_iter: number
-    steps: number
-    cfg_scale: number
-    width: number
-    height: number
-    restore_faces: boolean
-    tiling: boolean
-    do_not_save_samples: boolean
-    do_not_save_grid: false,
-    negative_prompt: string
-    eta: any
-    s_churn: number
-    s_tmax: any
-    s_tmin: number
-    s_noise: number
-    override_settings: any
-    override_settings_restore_afterwards: true,
-    script_args: any[]
-    sampler_index: string
-    script_name: any
-    send_images: boolean
-    save_images: boolean
-    alwayson_scripts: any
+    enable_hr?: boolean;
+    denoising_strength: number;
+    firstphase_width?: number;
+    firstphase_height?: number;
+    hr_scale?: number;
+    hr_upscaler?: any;
+    hr_second_pass_steps?: number;
+    hr_resize_x?: number;
+    hr_resize_y?: number;
+    prompt: string;
+    styles: any;
+    seed: number;
+    subseed: number;
+    subseed_strength: number;
+    seed_resize_from_h: number;
+    seed_resize_from_w: number;
+    sampler_name: any;
+    batch_size: number;
+    n_iter: number;
+    steps: number;
+    cfg_scale: number;
+    width: number;
+    height: number;
+    restore_faces: boolean;
+    tiling: boolean;
+    do_not_save_samples: boolean;
+    do_not_save_grid: false;
+    negative_prompt: string;
+    eta: any;
+    s_churn: number;
+    s_tmax: any;
+    s_tmin: number;
+    s_noise: number;
+    override_settings: any;
+    override_settings_restore_afterwards: true;
+    script_args: any[];
+    sampler_index: string;
+    script_name: any;
+    send_images: boolean;
+    save_images: boolean;
+    alwayson_scripts: any;
     //img2img
-    init_images?: any
-    resize_mode?: number
-    image_cfg_scale?: any
-    mask?: any
-    mask_blur?: number
-    inpainting_fill?: number
-    inpaint_full_res?: true,
-    inpaint_full_res_padding?: number
-    inpainting_mask_invert?: number
-    initial_noise_multiplier?: any
-    include_init_images?: false,
+    init_images?: any;
+    resize_mode?: number;
+    image_cfg_scale?: any;
+    mask?: any;
+    mask_blur?: number;
+    inpainting_fill?: number;
+    inpaint_full_res?: true;
+    inpaint_full_res_padding?: number;
+    inpainting_mask_invert?: number;
+    initial_noise_multiplier?: any;
+    include_init_images?: false;
 
     //
-
-
   }
   export interface Payload {
-    steps?: number
-    width?: number
-    height?: number
-    seed?: number
-    cfg_scale?: number
-    negative_prompt?: string
-    denoising_strength?: number
-    prompt: string
-    upscaling_crop?: boolean
-
+    steps?: number;
+    width?: number;
+    height?: number;
+    seed?: number;
+    cfg_scale?: number;
+    negative_prompt?: string;
+    denoising_strength?: number;
+    prompt: string;
+    upscaling_crop?: boolean;
   }
   export interface Config {
-    api_path: string
-    lora_weight: number
-    min_auth: number
-    step: number
-    denoising_strength: number
-    seed: number
-    maxConcurrency: number
-    negative_prompt: string
-    default_prompt: string
-    resolution: string
-    cfg_scale: number
-    output: string
-    model: string
-    gpt_translate: boolean
-    latin_only: boolean
-    gpt_turbo: boolean
-    lora_output: boolean
+    api_path: string;
+    lora_weight: number;
+    min_auth: number;
+    step: number;
+    denoising_strength: number;
+    seed: number;
+    maxConcurrency: number;
+    negative_prompt: string;
+    default_prompt: string;
+    resolution: string;
+    cfg_scale: number;
+    output: string;
+    model: string;
+    gpt_translate: boolean;
+    latin_only: boolean;
+    gpt_turbo: boolean;
+    lora_output: boolean;
   }
   export const Config: Schema<Config> = Schema.object({
-    api_path: Schema.string().description('服务器地址').required(),
-    lora_weight: Schema.number().description('lora权重,0-2').default(0.6),
-    gpt_translate: Schema.boolean().description('是否启用gpt翻译').default(false),
-    gpt_turbo: Schema.boolean().description('GPT增强').default(false),
-    min_auth: Schema.number().description('最低使用权限').default(1),
-    step: Schema.number().default(20).description('采样步数0-100'),
-    denoising_strength: Schema.number().default(0.5).description('改变强度0-1'),
-    seed: Schema.number().default(-1).description('种子'),
-    maxConcurrency: Schema.number().default(3).description('最大排队数'),
-    negative_prompt: Schema.string().description('反向提示词').default('nsfw, lowers, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry'),
-    default_prompt: Schema.string().default('masterpiece, best quality').description('默认提示词'),
-    resolution: Schema.string().default('720x512').description('默认比例'),
-    cfg_scale: Schema.number().default(15).description('相关性0-20'),
-    model: Schema.string().default('clip').description('识图的模型'),
+    api_path: Schema.string().description("服务器地址").required(),
+    lora_weight: Schema.number().description("lora权重,0-2").default(0.6),
+    gpt_translate: Schema.boolean()
+      .description("是否启用gpt翻译")
+      .default(false),
+    gpt_turbo: Schema.boolean().description("GPT增强").default(false),
+    min_auth: Schema.number().description("最低使用权限").default(1),
+    step: Schema.number().default(20).description("采样步数0-100"),
+    denoising_strength: Schema.number().default(0.5).description("改变强度0-1"),
+    seed: Schema.number().default(-1).description("种子"),
+    maxConcurrency: Schema.number().default(3).description("最大排队数"),
+    negative_prompt: Schema.string()
+      .description("反向提示词")
+      .default(
+        "nsfw, lowers, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry"
+      ),
+    default_prompt: Schema.string()
+      .default("masterpiece, best quality")
+      .description("默认提示词"),
+    resolution: Schema.string().default("720x512").description("默认比例"),
+    cfg_scale: Schema.number().default(15).description("相关性0-20"),
+    model: Schema.string().default("clip").description("识图的模型"),
     output: Schema.union([
-      Schema.const('minimal' as string).description('只发送图片'),
-      Schema.const('default' as string).description('发送图片和关键信息'),
-      Schema.const('verbose' as string).description('发送全部信息'),
-    ]).description('输出方式。').default('default'),
-    latin_only: Schema.boolean().description('只接受英文').default(false),
-    lora_output: Schema.boolean().description('lora预览图').default(false),
-
-  })
-
+      Schema.const("minimal" as string).description("只发送图片"),
+      Schema.const("default" as string).description("发送图片和关键信息"),
+      Schema.const("verbose" as string).description("发送全部信息"),
+    ])
+      .description("输出方式。")
+      .default("default"),
+    latin_only: Schema.boolean().description("只接受英文").default(false),
+    lora_output: Schema.boolean().description("lora预览图").default(false),
+  });
 }
 
-
-export default Taylor
+export default Taylor;
