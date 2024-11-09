@@ -335,12 +335,12 @@ class Taylor {
     return cleanedMatches.join(' ') + s + lora_text
   }
   async txt2img(session: Session, payload: Taylor.Payload) {
-    this.task_manager(session)
-    this.task++
-    const path: string = '/sdapi/v1/txt2img'
-    const api: string = `${trimSlash(this.config.api_path)}${path}`
-    logger.info((session.author?.nick || session.username) + ' : ' + payload.prompt)
     try {
+      this.task_manager(session)
+      this.task++
+      const path: string = '/sdapi/v1/txt2img'
+      const api: string = `${trimSlash(this.config.api_path)}${path}`
+      logger.info((session.author?.nick || session.username) + ' : ' + payload.prompt)
       const resp = await this.ctx.http.post(api, payload, {
         timeout: 0
       })
@@ -352,24 +352,22 @@ class Taylor {
     catch (err) {
       this.task--
       logger.warn(err)
-      return String(err)
+      return "文生图失败"
     }
   }
   async img2img(session: Session, payload: Taylor.Payload) {
-    this.task_manager(session)
-    this.task += 1
-    const path: string = '/sdapi/v1/img2img'
-    const api: string = `${trimSlash(this.config.api_path)}${path}`
-
-    const image = segment.select(session.content, 'image')[0]
-    const img_url: string = image?.attrs?.url
-    if (!img_url) return '没有图片喵'
-    logger.info((session.author?.nickname || session.username) + ' : ' + payload.prompt)
-    logger.info(img_url)
-    const base64: string = await this.img2base64(this.ctx, img_url)
-    // 设置payload
-    payload['init_images'] = ['data:image/png;base64,' + base64]
     try {
+      this.task_manager(session)
+      this.task += 1
+      const path: string = '/sdapi/v1/img2img'
+      const api: string = `${trimSlash(this.config.api_path)}${path}`
+      let img_url = this.extractImageUrlFromSession(session)
+      if (!img_url) return '没有图片喵'
+      logger.info((session.author?.nickname || session.username) + ' : ' + payload.prompt)
+      logger.info(img_url)
+      const base64: string = await this.img2base64(this.ctx, img_url)
+      // 设置payload
+      payload['init_images'] = ['data:image/png;base64,' + base64]
       const resp = await this.ctx.http.post(api, payload, {
         timeout: 0
       })
@@ -381,58 +379,55 @@ class Taylor {
     catch (err) {
       this.task--
       logger.warn(err)
-      return String(err)
+      return "图生图失败"
     }
   }
 
   async interrogate(session: Session) {
-    this.task_manager(session)
-    this.task += 1
-    await session.send(session.text('commands.tl.messages.interrogate'))
-    const path: string = '/sdapi/v1/interrogate'
-    const image = segment.select(session.content, 'image')[0]
-    const img_url: string = image?.attrs?.url
-    if (!img_url) return '没有图片怎么识图'
-    logger.info((session.author?.nick || session.username) + ' : ' + 'Interrogate')
-    logger.info(img_url)
-    const base64: string = await this.img2base64(this.ctx, img_url)
     try {
+      this.task_manager(session)
+      this.task += 1
+      await session.send(session.text('commands.tl.messages.interrogate'))
+      const path: string = '/sdapi/v1/interrogate'
+      let img_url = this.extractImageUrlFromSession(session)
+      if (!img_url) return '没有图片怎么识图'
+      logger.info((session.author?.nick || session.username) + ' : ' + 'Interrogate')
+      logger.info(img_url)
+      const base64: string = await this.img2base64(this.ctx, img_url)
       const resp: string = (await this.ctx.http.post(`${trimSlash(this.config.api_path)}${path}`, { 'image': 'data:image/png;base64,' + base64 }))
       this.task--
-
-      return resp
+      return resp["caption"]
     }
     catch (err) {
       this.task--
       logger.warn(err)
-      return String(err)
+      return "识图失败"
     }
   }
   async extras(session: Session, payload: Taylor.Payload, options: any) {
     this.task += 1
-    session.send(session.text('commands.tl.messages.waiting'))
-    const path: string = '/sdapi/v1/extra-single-image'
-    const image = segment.select(session.content, 'image')[0]
-    const img_url: string = image?.attrs?.url
-    if (!img_url) return '没有图片怎么超分'
-    logger.info((session.author?.nickname || session.username) + ' : ' + 'Extras')
-    logger.info(img_url)
-    const base64: string = await this.img2base64(this.ctx, img_url)
-    const payload_extras = {
-      'image': 'data:image/png;base64,' + base64,
-      'resize_mode': 1,
-      'show_extras_results': true,
-      'upscaling_resize': 2,
-      'upscaling_resize_w': 1080,
-      'upscaling_resize_h': 780,
-      'upscaling_crop': options.crop,
-      'upscaler_1': options.upscaler,
-      'upscaler_2': options.upscaler2,
-      'extras_upscaler_2_visibility': options.visibility,
-      'upscale_first': options.upscaleFirst,
-
-    }
     try {
+      session.send(session.text('commands.tl.messages.waiting'))
+      const path: string = '/sdapi/v1/extra-single-image'
+      let img_url = this.extractImageUrlFromSession(session)
+      if (!img_url) return '没有图片怎么超分'
+      logger.info((session.author?.nickname || session.username) + ' : ' + 'Extras')
+      logger.info(img_url)
+      const base64: string = await this.img2base64(this.ctx, img_url)
+      const payload_extras = {
+        'image': 'data:image/png;base64,' + base64,
+        'resize_mode': 1,
+        'show_extras_results': true,
+        'upscaling_resize': 2,
+        'upscaling_resize_w': 1080,
+        'upscaling_resize_h': 780,
+        'upscaling_crop': options.crop,
+        'upscaler_1': options.upscaler,
+        'upscaler_2': options.upscaler2,
+        'extras_upscaler_2_visibility': options.visibility,
+        'upscale_first': options.upscaleFirst,
+
+      }
       const resp = await this.ctx.http.post(`${trimSlash(this.config.api_path)}${path}`, payload_extras)
       const res_img = 'data:image/png;base64,' + resp.image
       this.task--
@@ -441,7 +436,7 @@ class Taylor {
     catch (err) {
       logger.warn(err)
       this.task--
-      return String(err)
+      return "超分失败"
     }
   }
   isChinese(s: string): boolean {
@@ -475,6 +470,16 @@ class Taylor {
     const buffer = await ctx.http.get(img_url, { responseType: 'arraybuffer', timeout: 0 })
     const base64 = Buffer.from(buffer).toString('base64')
     return base64
+  }
+  extractImageUrlFromSession(session: Session): string {
+    let img_url = ''
+    for(let i = 0; i< session.elements.length; i++){
+      if (session.elements[i].type === 'img'){
+        img_url = session.elements[i].attrs.src
+        break
+      }
+    }
+    return img_url
   }
 }
 namespace Taylor {
