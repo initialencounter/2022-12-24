@@ -622,6 +622,14 @@ class Taylor {
         break;
       }
     }
+    if (session.quote){
+      for (let i = 0; i < session.quote.elements.length; i++) {
+        if (session.quote.elements[i].type === "img") {
+          img_url = session.quote.elements[i].attrs.src;
+          break;
+        }
+      }
+    }
     return img_url;
   }
 }
