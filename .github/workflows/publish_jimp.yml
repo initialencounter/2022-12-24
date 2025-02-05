@@ -32,6 +32,7 @@ jobs:
         run: yarn install --frozen-lockfile
       - name: Build
         run: |
+          yarn build jimp-abstract
           yarn build jimp
       - name: Publish
         run: |
