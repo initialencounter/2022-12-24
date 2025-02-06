@@ -347,6 +347,7 @@ class DVc extends Dvc {
   async chat_with_gpt(message: Dvc.Msg[]): Promise<string> {
     let url = trimSlash(`${this.pluginConfig.baseURL ?? 'https://api.openai.com'}/v1/chat/completions`)
     const payload = {
+      stream: false,
       model: this.pluginConfig.appointModel,
       temperature: this.pluginConfig.temperature,
       top_p: 1,
