@@ -32,6 +32,8 @@ jobs:
         run: yarn install --frozen-lockfile
       - name: Build
         run: |
+          yarn build sst
+          yarn build vits
           yarn build davinci-003
       - name: Publish
         run: |
