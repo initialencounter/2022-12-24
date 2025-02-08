@@ -380,32 +380,32 @@ class DVc extends Dvc {
   }
 
   async readableStreamDecoder(data: ReadableStream): Promise<string>{
-    const decoder = new TextDecoder();
-    let sees = '',contents = ''
-    await data.pipeTo(new WritableStream({
-      write(chunk) {
-        const newString = decoder.decode(chunk, { stream: true }).trim()
-        if (newString.startsWith('data:')) {
-          try{
-            for(let see of sees.split('\n')){
-              let jsonStr = see.slice(5).trim()
-              if (!jsonStr) continue
-              const json = JSON.parse(jsonStr)
-              const content = json?.choices?.[0]?.delta?.content
-              if(content) contents += content
-            }
-            sees = newString
-          }catch(e){
-            sees += newString
+    const reader = data.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let sees = '', contents = ''
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+      const newString = decoder.decode(value, { stream: true });
+      if (newString.startsWith('data:')) {
+        try{
+          for(let see of sees.split('\n')){
+            let jsonStr = see.slice(5).trim()
+            if (!jsonStr) continue
+            const json = JSON.parse(jsonStr)
+            const content = json?.choices?.[0]?.delta?.content
+            if(content) contents += content
           }
-        }else{
+          sees = newString
+        }catch(e){
           sees += newString
         }
-      },
-      close() {
-        decoder.decode()
+      }else{
+        sees += newString
       }
-    }))
+    }
     return contents
   }
   /**
