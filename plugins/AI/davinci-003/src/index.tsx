@@ -1,4 +1,4 @@
-import { Context, Logger, segment, Element, Session, Dict, h, Next, Fragment, trimSlash, User } from 'koishi'
+import { Context, Logger, segment, Element, Session, Dict, h, Next, Fragment, trimSlash, User, HTTP } from 'koishi'
 import fs, { readFileSync } from 'fs'
 import { getUsage } from 'koishi-plugin-rate-limit'
 import { } from 'koishi-plugin-puppeteer'
@@ -183,7 +183,7 @@ class DVc extends Dvc {
       // 设置本次对话内容
       session_of_id.push({ 'role': 'user', 'content': `\n${text}，现在时间是：${JSON.stringify(status)}` })
       // 与ChatGPT交互获得对话内容
-      let message: string = await this.try_control(this.chat_with_gpt, session_of_id)
+      let message: string = await this.try_control(session_of_id)
 
       // 记录上下文
       session_of_id.push({ 'role': 'assistant', 'content': message })
@@ -193,7 +193,7 @@ class DVc extends Dvc {
       }
 
       this.sessions[sessionid] = session_of_id
-      logger.info('ChatGPT返回内容: ')
+      logger.info(`${this.pluginConfig.appointModel}返回内容: `)
       logger.info(message)
       return message
     })
@@ -210,8 +210,7 @@ class DVc extends Dvc {
    * @returns 翻译后的内容
    */
   async translate(lang: string, prompt: string): Promise<string> {
-    return this.try_control(this.chat_with_gpt,
-      [{ role: 'system', content: '你是一个翻译引擎，请将文本翻译为' + lang + '，只需要翻译不需要解释。' },
+    return this.try_control([{ role: 'system', content: '你是一个翻译引擎，请将文本翻译为' + lang + '，只需要翻译不需要解释。' },
       { role: 'user', content: `请帮我我将如下文字翻译成${lang},“${prompt}”` }])
   }
 
@@ -347,7 +346,7 @@ class DVc extends Dvc {
   async chat_with_gpt(message: Dvc.Msg[]): Promise<string> {
     let url = trimSlash(`${this.pluginConfig.baseURL ?? 'https://api.openai.com'}/v1/chat/completions`)
     const payload = {
-      stream: false,
+      stream: true,
       model: this.pluginConfig.appointModel,
       temperature: this.pluginConfig.temperature,
       top_p: 1,
@@ -355,21 +354,59 @@ class DVc extends Dvc {
       presence_penalty: 0,
       messages: message
     }
-    const config = {
+    const config: HTTP.RequestConfig = {
       timeout: 0,
+      responseType: 'stream',
+      keepAlive: true,
       headers: {
         Authorization: `Bearer ${this.pluginConfig.key[this.key_number]}`,
+        'Accept': 'application/json',
         'Content-Type': 'application/json'
-      }
+      },
+      data: payload
     }
+    let data: ReadableStream
     try {
-      const response = await this.ctx.http.post(url, payload, config)
-      return response.choices[0].message.content
-    }
-    catch (e) {
+      data = (await this.ctx.http<ReadableStream>('POST', url, config)).data
+      return await this.readableStreamDecoder(data)
+    }catch(e){
+      if (String(e).includes('Bad Request')) {
+        console.dir(config.data.messages)
+        return 'Bad Request，请清空会话'
+      }
       this.switch_key(e)
       return ''
     }
+  }
+
+  async readableStreamDecoder(data: ReadableStream): Promise<string>{
+    const decoder = new TextDecoder();
+    let sees = '',contents = ''
+    await data.pipeTo(new WritableStream({
+      write(chunk) {
+        const newString = decoder.decode(chunk, { stream: true }).trim()
+        if (newString.startsWith('data:')) {
+          try{
+            for(let see of sees.split('\n')){
+              let jsonStr = see.slice(5).trim()
+              if (!jsonStr) continue
+              const json = JSON.parse(jsonStr)
+              const content = json?.choices?.[0]?.delta?.content
+              if(content) contents += content
+            }
+            sees = newString
+          }catch(e){
+            sees += newString
+          }
+        }else{
+          sees += newString
+        }
+      },
+      close() {
+        decoder.decode()
+      }
+    }))
+    return contents
   }
   /**
    * 切换下一个 key
@@ -411,18 +448,32 @@ class DVc extends Dvc {
    */
 
   async chat(msg: string, sessionid: string, session: Session): Promise<string | segment> {
-    logger.info((session.author?.nick || session.username) + ':' + msg)
+    let name = session.author?.nick || session.username
+    logger.info(name + ': ' + msg)
     if (this.pluginConfig.onlyOneContext)
       sessionid = 'e2b5e6a3b58f06b914e5ede4d5737afb93afd0cc03f25d66e778bb733e589228'
     // 获得对话session
     let session_of_id = this.get_chat_session(sessionid)
+    let message: string
     // 设置本次对话内容
-    session_of_id.push({ 'role': 'user', 'content': msg })
-    // 与ChatGPT交互获得对话内容
-    let message: string = await this.try_control(this.chat_with_gpt, session_of_id)
+    //
+    if (session_of_id[session_of_id.length - 1].role === 'user' && this.pluginConfig?.baseURL.includes('api.deepseek.com')) {
+      message = 'deepseek 不支持重复的 user, 请等待上一次对话结束'
+    }else{
+      let rawMsg = { 'role': 'user', 'content': msg }
+      if (this.pluginConfig?.baseURL.includes('api.deepseek.com')){
+        rawMsg['name'] = name
+      }
+      session_of_id.push(rawMsg)
+      // 与ChatGPT交互获得对话内容
+      message = await this.try_control(session_of_id)
+    }
 
     // 记录上下文
-    session_of_id.push({ 'role': 'assistant', 'content': message })
+    if (session_of_id[session_of_id.length - 1].role !== 'assistant' || !this.pluginConfig?.baseURL.includes('api.deepseek.com')){
+      session_of_id.push({ 'role': 'assistant', 'content': message })
+    }
+
     while (JSON.stringify(session_of_id).length > 10000) {
       session_of_id.splice(1, 1)
       if (session_of_id.length <= 1) break
@@ -442,10 +493,10 @@ class DVc extends Dvc {
    * @param session_of_id 会话 ID
    * @returns
    */
-  async try_control(cb: ChatCallback, session_of_id: Dvc.Msg[]) {
+  async try_control(session_of_id: Dvc.Msg[]) {
     let try_times = 0
     while (try_times < this.pluginConfig.maxRetryTimes) {
-      const res = await cb.bind(this)(session_of_id)
+      const res = await this.chat_with_gpt(session_of_id)
       if (res !== '') return res
       try_times++
       await this.ctx.sleep(500)
