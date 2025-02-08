@@ -1,10 +1,12 @@
 # davinci-003
 
-使用前在[beta.openai.com](https://beta.openai.com/account/api-keys) 中获取 api-key
+使用前请先获取 api-key
 
-或者前往[chatgptanywhere.com](https://peiqishop.me)中获取 api-key
-
-如果 api-key 来源是 chatanywhere.com ,需将反代地址修改为 https://api.chatanywhere.com.cn
+| 平台          |        开发平台                                             | 请求地址                         |
+| ------------ | ----------------------------------------------------------- | --------------------------------|
+| openai       | [openai 开放平台](https://beta.openai.com/account/api-keys)  | https://api.openai.com          |
+| chatanywhere | [chatanywhere 商店](https://api.chatanywhere.tech/#/shop)    | https://api.chatanywhere.com.cn |
+| deepseek     | [deepseek 开放平台](https://platform.deepseek.com/api_keys)  | https://api.deepseek.com        |
 
 对于部署者行为及所产生的任何纠纷， Koishi 及 koishi-plugin-davinci-003 概不负责。
 
@@ -16,17 +18,14 @@
 
 | 功能                    | 指令         |
 | ----------------------- | ------------ |
+| 开启对话                | dvc 或直接@机器人 |
 | 重置会话                | dvc.重置会话 |
 | 添加人格                | dvc.添加人格 |
 | 清空所有回话            | dvc.clear    |
 | 切换人格                | dvc.切换人格 |
-| 查询余额                | dvc.credit   |
 | 切换输出模式            | dvc.output   |
 | 更新人格(需要 4 级权限) | dvc.update   |
 | 显示一个对话            | dvc.cat      |
-
-- dvc \<prompt\>
-  - -o 输出方式
 
 ## 设置多个 key 的方法
 
@@ -44,7 +43,7 @@
 
 ## 添加人格的方法
 
-- 使用 [`explorer`](https://koishi.chat/zh-CN/plugins/console/explorer.html) 插件直接编辑, [_点我_](../files/personality.json) 跳转到编译页面
+- 使用 [`explorer`](https://koishi.chat/zh-CN/plugins/console/explorer.html) 插件直接编辑， [_点我_](../files/personality.json) 跳转到编译页面
   - 编辑后记得保存哟
 - 在聊天中发送“dvc.添加人格”可以添加并自动保存人格
 - [添加人格教程](https://forum.koishi.xyz/t/topic/2349/4)
@@ -58,6 +57,9 @@ QQ 群：399899914
 小伙伴如果遇到问题或者有新的想法，欢迎到[这里](https://github.com/initialencounter/2022-12-24/issues)反馈哦~
 
 # 更新日志
+- v7.0.6
+  - 适配 deepseek-reasoner
+  - 使用流式请求
 - v7.0.3
   - 修复 discord 中 asr 无法触发聊天
   - 修复未开启 vits 服务时，默认输出为图片
@@ -109,7 +111,7 @@ QQ 群：399899914
 - v6.3.2
   修复 chatgptanywhere 查询余额 bug
 - v6.3.1
-  修复组件注入的 bug, 修复 css
+  修复组件注入的 bug， 修复 css
 - v6.3.0
   新增控制台查询余额，修复 16k
 - v6.2.0
@@ -119,7 +121,7 @@ QQ 群：399899914
 - v6.1.0
   - 新增最大重试次数，当 key 报错重试时，会记录每个 key 的重试次数，当重试次数大于最大重试次数时，会停止，并从内存中删除 key
 - v6.0.1
-  - 更改 key 的切换逻辑，报错后先查询余额 ,如果余额为 0，则从内存中删除 key, 如果还有余额，则暂时切换余额
+  - 更改 key 的切换逻辑，报错后先查询余额 ，如果余额为 0，则从内存中删除 key， 如果还有余额，则暂时切换余额
 - v6.0.0
   - 自动更换报错的 key
 - v5.1.4-beta
@@ -163,7 +165,7 @@ QQ 群：399899914
 
 - v4.0.1
 
-  - 语音输入做成服务,启用插件 koishi-plugin-tc-sst[![npm](https://img.shields.io/npm/v/koishi-plugin-tc-sst?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-tc-sst)即可实现
+  - 语音输入做成服务，启用插件 koishi-plugin-tc-sst[![npm](https://img.shields.io/npm/v/koishi-plugin-tc-sst?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-tc-sst)即可实现
 
 - v4.0.0
 
@@ -236,7 +238,7 @@ QQ 群：399899914
 
 - v2.0.0
 
-  - 兼容配置文件,修复删除 python 后端导致炸掉 koishi 的 bug
+  - 兼容配置文件，修复删除 python 后端导致炸掉 koishi 的 bug
 
 - v1.6.0
 
@@ -292,7 +294,7 @@ QQ 群：399899914
   - 新增艾特触发，私聊触发
   - 新增模式选择菜单
 - v1.4.5
-  - 新增语音模式,仅支持原神语音（抄袭自 genshin-voice
+  - 新增语音模式，仅支持原神语音（抄袭自 genshin-voice
   - 新增输出模式切换指令
 - v1.4.4
   - 优化审核的逻辑，加速审核
@@ -308,7 +310,7 @@ QQ 群：399899914
   ```
   ```
   ctx.command('call').action(async ({session})=>{
-      const msg:Msg = {role:'user',content:'你好，这是一次测试，你只需回复ok'}
+      const msg:Msg = {role:'user'，content:'你好，这是一次测试，你只需回复ok'}
       console.log(await ctx.dvc.get_credit(session))
       console.log(await ctx.dvc.chat_with_gpt([msg]))
       console.log(await ctx.dvc.censor_request('脏话测试'))

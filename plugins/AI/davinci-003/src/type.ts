@@ -33,10 +33,13 @@ export namespace Dvc {
       presence_penalty: number
     }
     export interface Config {
-      enableContext: boolean
       baseURL: string
-      key: string[]
       appointModel: string
+      selectBaseURL: boolean
+      enableContext: boolean
+      key: string[]
+      selectModel: boolean
+
 
       onlyOnePersonality: boolean
       onlyOneContext: boolean
@@ -66,14 +69,47 @@ export namespace Dvc {
       maxRetryTimes: number
     }
     export const Config: Schema<Config> = Schema.intersect([
+      Schema.union([
+        Schema.object({
+          selectBaseURL: Schema.const(true),
+          baseURL: Schema.union([
+            Schema.const('https://api.openai.com').description('https://api.openai.com'),
+            Schema.const('https://api.deepseek.com').description('https://api.deepseek.com'),
+            Schema.const('https://api.chatanywhere.com.cn').description('https://api.chatanywhere.com.cn'),
+            Schema.transform(String, value => value),
+          ]).default('https://api.openai.com').description('选择平台'),
+        }).description('选择平台'),
+        Schema.object({
+          selectBaseURL: Schema.const(false),
+          baseURL: Schema.string().default('https://api.openai.com').description('自定义平台'),
+        }).description('自定义平台'),
+      ]),
+      Schema.union([
+        Schema.object({
+          selectModel: Schema.const(true),
+          appointModel: Schema.union([
+            Schema.const('gpt-4o').description('gpt-4o'),
+            Schema.const('gpt-4o-mini').description('gpt-4o-mini'),
+            Schema.const('o1').description('o1'),
+            Schema.const('o3-mini').description('o3-mini'),
+            Schema.const('deepseek-chat').description('deepseek-chat'),
+            Schema.const('deepseek-reasoner').description('deepseek-reasoner'),
+            Schema.transform(String, value => value),
+          ]).default('gpt-4o-mini').description('[选择模型](https://openai.com/api/pricing/)'),
+        }).description('选择模型'),
+        Schema.object({
+          selectModel: Schema.const(false),
+          appointModel: Schema.string().default('gpt-4o-mini').description('自定义模型'),
+        }).description('自定义模型'),
+      ]),
       Schema.object({
-        baseURL: Schema.string().default('https://api.openai.com').description('请求地址'),
+        selectBaseURL: Schema.boolean().default(true).description('选择平台'),
+        selectModel: Schema.boolean().default(true).description('选择模型'),
         key: Schema.union([
           Schema.array(String).role('secret'),
           Schema.transform(String, value => [value]),
         ]).default([]).role('secret').description('api_key'),
         enableContext: Schema.boolean().default(true).description('是否启用上下文, 关闭后将减少 token 消耗'),
-        appointModel: Schema.string().default('gpt-4o-mini').description('[模型](https://openai.com/api/pricing/)'),
       }).description('基础设置'),
       Schema.object({
         onlyOnePersonality: Schema.boolean().default(false).description('所有人共用一个人设，开启后将无法切换人格、删除人格、添加人格'),
