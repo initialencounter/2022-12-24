@@ -286,7 +286,7 @@ class DVc extends Dvc {
     if (this.ctx.censor) prompt = await this.ctx.censor.transform(prompt, session)
     // 启用/关闭上下文
     if (!this.pluginConfig.enableContext) {
-      const text: string = await this.chat_with_gpt([{ 'role': 'user', 'content': prompt }])
+      const text: string = await this.chat_with_gpt([{ 'role': 'user', 'content': prompt }], session)
       const resp = [{ 'role': 'user', 'content': prompt }, { 'role': 'assistant', 'content': text }]
       return await this.getContent(session.userId, resp, session.messageId, session.bot.selfId)
     } else {
@@ -343,7 +343,7 @@ class DVc extends Dvc {
    */
 
 
-  async chat_with_gpt(message: Dvc.Msg[]): Promise<string> {
+  async chat_with_gpt(message: Dvc.Msg[], session?: Session): Promise<string> {
     let url = trimSlash(`${this.pluginConfig.baseURL ?? 'https://api.openai.com'}/v1/chat/completions`)
     const payload = {
       stream: true,
@@ -368,7 +368,9 @@ class DVc extends Dvc {
     let data: ReadableStream
     try {
       data = (await this.ctx.http<ReadableStream>('POST', url, config)).data
-      return await this.readableStreamDecoder(data)
+      const { contents, reasoning_content } = await this.readableStreamDecoder(data)
+      if (session && reasoning_content) session.send(reasoning_content)
+      return contents
     }catch(e){
       if (String(e).includes('Bad Request')) {
         console.dir(config.data.messages)
@@ -379,10 +381,13 @@ class DVc extends Dvc {
     }
   }
 
-  async readableStreamDecoder(data: ReadableStream): Promise<string>{
+  async readableStreamDecoder(data: ReadableStream): Promise<{
+    contents: string,
+    reasoning_content: string
+  }>{
     const reader = data.getReader();
     const decoder = new TextDecoder('utf-8');
-    let sees = '', contents = ''
+    let sees = '', contents = '', reasoning_content = ''
     while (true) {
       const { done, value } = await reader.read();
       if (done) {
@@ -396,6 +401,8 @@ class DVc extends Dvc {
             if (!jsonStr) continue
             const json = JSON.parse(jsonStr)
             const content = json?.choices?.[0]?.delta?.content
+            const reasoning = json?.choices?.[0]?.delta?.reasoning_content
+            if (reasoning) reasoning_content += reasoning
             if(content) contents += content
           }
           sees = newString
@@ -406,7 +413,10 @@ class DVc extends Dvc {
         sees += newString
       }
     }
-    return contents
+    return {
+      contents,
+      reasoning_content
+    }
   }
   /**
    * 切换下一个 key
@@ -466,7 +476,7 @@ class DVc extends Dvc {
       }
       session_of_id.push(rawMsg)
       // 与ChatGPT交互获得对话内容
-      message = await this.try_control(session_of_id)
+      message = await this.try_control(session_of_id, session)
     }
 
     // 记录上下文
@@ -493,10 +503,10 @@ class DVc extends Dvc {
    * @param session_of_id 会话 ID
    * @returns
    */
-  async try_control(session_of_id: Dvc.Msg[]) {
+  async try_control(session_of_id: Dvc.Msg[], session?: Session) {
     let try_times = 0
     while (try_times < this.pluginConfig.maxRetryTimes) {
-      const res = await this.chat_with_gpt(session_of_id)
+      const res = await this.chat_with_gpt(session_of_id, session)
       if (res !== '') return res
       try_times++
       await this.ctx.sleep(500)
