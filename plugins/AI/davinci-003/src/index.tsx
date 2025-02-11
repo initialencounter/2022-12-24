@@ -493,8 +493,9 @@ class DVc extends Dvc {
       let { contents, reasoning_content } = await this.readableStreamDecoder(
         data
       );
-      if (!this.pluginConfig.enableReasoningContent) reasoning_content = "";
-      return `<think>${reasoning_content.trim()}</think>\n${contents.trim()}`;
+      reasoning_content = `<think>\n${reasoning_content.trim()}\n</think>\n\n`;
+      if (!this.pluginConfig.enableReasoningContent) reasoning_content = '';
+      return `${reasoning_content}${contents.trim()}`;
     } catch (e) {
       if (String(e).includes("Bad Request")) {
         console.dir(config.data.messages);
