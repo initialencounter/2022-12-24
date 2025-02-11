@@ -494,7 +494,7 @@ class DVc extends Dvc {
         data
       );
       if (!this.pluginConfig.enableReasoningContent) reasoning_content = "";
-      return `<think>${reasoning_content}</think>\n${contents}`;
+      return `<think>${reasoning_content.trim()}</think>\n${contents.trim()}`;
     } catch (e) {
       if (String(e).includes("Bad Request")) {
         console.dir(config.data.messages);
