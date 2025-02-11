@@ -50,6 +50,7 @@ export namespace Dvc {
     recall: boolean
     recall_time: number
 
+    enableReasoningContent: boolean
     lang: string
     max_tokens: number
     temperature: number
@@ -123,8 +124,9 @@ export namespace Dvc {
 
       lang: Schema.string().description('要翻译的目标语言').default('英文'),
 
+      enableReasoningContent: Schema.boolean().default(false).description('是否输出思维链内容'),
       max_tokens: Schema.number().description('请求长度,否则报错').default(3000),
-      temperature: Schema.number().role('slider').min(0).max(1).step(0.01).default(0).description('温度'),
+      temperature: Schema.number().role('slider').min(0.01).max(1).step(0.01).default(0.01).description('温度'),
       authority: Schema.number().role('slider').min(0).max(5).step(1).description('允许使用的最低权限').default(1),
       superuser: Schema.array(String).default(['3118087750']).description('可以无限调用的用户'),
       usage: Schema.number().description('每人每日可用次数').default(100),

@@ -386,10 +386,9 @@ class DVc extends Dvc {
       prompt = await this.ctx.censor.transform(prompt, session);
     // 启用/关闭上下文
     if (!this.pluginConfig.enableContext) {
-      const text: string = await this.chat_with_gpt(
-        [{ role: "user", content: prompt }],
-        session
-      );
+      const text = await this.chat_with_gpt([
+        { role: "user", content: prompt },
+      ]);
       const resp = [
         { role: "user", content: prompt },
         { role: "assistant", content: text },
@@ -462,7 +461,7 @@ class DVc extends Dvc {
    * @returns 将返回文字处理成json
    */
 
-  async chat_with_gpt(message: Dvc.Msg[], session?: Session): Promise<string> {
+  async chat_with_gpt(message: Dvc.Msg[]): Promise<string> {
     let url = trimSlash(
       `${
         this.pluginConfig.baseURL ?? "https://api.openai.com"
@@ -491,15 +490,15 @@ class DVc extends Dvc {
     let data: ReadableStream;
     try {
       data = (await this.ctx.http<ReadableStream>("POST", url, config)).data;
-      const { contents, reasoning_content } = await this.readableStreamDecoder(
+      let { contents, reasoning_content } = await this.readableStreamDecoder(
         data
       );
-      if (session && reasoning_content) session.send(reasoning_content);
-      return contents;
+      if (!this.pluginConfig.enableReasoningContent) reasoning_content = "";
+      return `<think>${reasoning_content}</think>\n${contents}`;
     } catch (e) {
       if (String(e).includes("Bad Request")) {
         console.dir(config.data.messages);
-        return "Bad Request，请清空会话";
+        return "Bad Request";
       }
       this.switch_key(e);
       return "";
@@ -615,7 +614,7 @@ class DVc extends Dvc {
       }
       session_of_id.push(rawMsg);
       // 与ChatGPT交互获得对话内容
-      message = await this.try_control(session_of_id, session);
+      message = await this.try_control(session_of_id);
     }
 
     // 记录上下文
@@ -649,11 +648,10 @@ class DVc extends Dvc {
    * @param session_of_id 会话 ID
    * @returns
    */
-  async try_control(session_of_id: Dvc.Msg[], session?: Session) {
+  async try_control(session_of_id: Dvc.Msg[]) {
     let try_times = 0;
     while (try_times < this.pluginConfig.maxRetryTimes) {
-      const res = await this.chat_with_gpt(session_of_id, session);
-      console.log(res);
+      const res = await this.chat_with_gpt(session_of_id);
       if (res !== "") return res;
       try_times++;
       await this.ctx.sleep(500);
