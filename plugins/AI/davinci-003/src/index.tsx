@@ -494,7 +494,10 @@ class DVc extends Dvc {
         data
       );
       reasoning_content = `<think>\n${reasoning_content.trim()}\n</think>\n\n`;
-      if (!this.pluginConfig.enableReasoningContent) reasoning_content = '';
+      if (!this.pluginConfig.enableReasoningContent) {
+        reasoning_content = ''
+        contents = contents.replace(/<think>[\s\S]*?<\/think>/g, '')
+      };
       return `${reasoning_content}${contents.trim()}`;
     } catch (e) {
       if (String(e).includes("Bad Request")) {
