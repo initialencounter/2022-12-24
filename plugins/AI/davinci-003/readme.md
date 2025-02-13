@@ -57,6 +57,8 @@ QQ 群：399899914
 小伙伴如果遇到问题或者有新的想法，欢迎到[这里](https://github.com/initialencounter/2022-12-24/issues)反馈哦~
 
 # 更新日志
+- v7.0.11
+  - 在控制台添加人格
 - v7.0.8
   - 添加是否输出 reasoning_content 的配置选项
   - 将 reasoning_content 放到 `think` 标签里面

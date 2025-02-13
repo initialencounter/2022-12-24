@@ -29,8 +29,20 @@ declare module "@koishijs/plugin-console" {
   interface Events {
     "davinci-003/getusage"(): string;
     "davinci-003/chatTest"(text: string): Promise<string>;
+    "davinci-003/addPersonality"(personality: PersonalityConfig): Promise<string>
   }
 }
+
+interface Personality {
+  role: "system" | "user" | "assistant";
+  content: string;
+}
+
+interface PersonalityConfig {
+  name: string;
+  personality: Personality[];
+}
+
 
 declare module "koishi" {
   interface Context {
@@ -260,6 +272,15 @@ class DVc extends Dvc {
     });
     ctx.console.addListener("davinci-003/getusage", () => {
       return localUsage;
+    });
+    ctx.console.addListener("davinci-003/addPersonality", async (personality: PersonalityConfig) => {
+      try{
+        this.personality[personality.name] = personality.personality;
+        fs.writeFileSync("./personality.json", JSON.stringify(this.personality, null, 2));
+        return "success";
+      } catch (e) {
+        return "error" + e;
+      }
     });
   }
 
