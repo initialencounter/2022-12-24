@@ -33,14 +33,15 @@
   ],
   "devDependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
-    "@koishijs/client": "^5.29.4",
+    "@koishijs/client": "^5.30.7",
     "@types/clone-deep": "^4",
     "@types/diff": "^7",
-    "@types/os-name": "^3.1.0"
+    "@types/os-name": "^3.1.0",
+    "openai": "^4.90.0"
   },
   "peerDependencies": {
-    "@koishijs/plugin-console": "^5.29.4",
-    "koishi": "^4.18.0"
+    "@koishijs/plugin-console": "^5.30.7",
+    "koishi": "^4.18.7"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.8.0",
@@ -52,6 +53,6 @@
     "os-name": "^6.0.0",
     "serialize-error": "^12.0.0",
     "vue3-json-viewer": "^2.3.0",
-    "zod": "^3.24.2"
+    "zod": "^3.25.0-canary.20250211T214501"
   }
 }

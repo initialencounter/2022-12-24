@@ -323,6 +323,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@esbuild/aix-ppc64@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/aix-ppc64@npm:0.25.1"
+  conditions: os=aix & cpu=ppc64
+  languageName: node
+  linkType: hard
+
 "@esbuild/android-arm64@npm:0.18.20":
   version: 0.18.20
   resolution: "@esbuild/android-arm64@npm:0.18.20"
@@ -347,6 +354,13 @@ __metadata:
 "@esbuild/android-arm64@npm:0.24.2":
   version: 0.24.2
   resolution: "@esbuild/android-arm64@npm:0.24.2"
+  conditions: os=android & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@esbuild/android-arm64@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/android-arm64@npm:0.25.1"
   conditions: os=android & cpu=arm64
   languageName: node
   linkType: hard
@@ -379,6 +393,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@esbuild/android-arm@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/android-arm@npm:0.25.1"
+  conditions: os=android & cpu=arm
+  languageName: node
+  linkType: hard
+
 "@esbuild/android-x64@npm:0.18.20":
   version: 0.18.20
   resolution: "@esbuild/android-x64@npm:0.18.20"
@@ -403,6 +424,13 @@ __metadata:
 "@esbuild/android-x64@npm:0.24.2":
   version: 0.24.2
   resolution: "@esbuild/android-x64@npm:0.24.2"
+  conditions: os=android & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@esbuild/android-x64@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/android-x64@npm:0.25.1"
   conditions: os=android & cpu=x64
   languageName: node
   linkType: hard
@@ -435,6 +463,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@esbuild/darwin-arm64@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/darwin-arm64@npm:0.25.1"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
 "@esbuild/darwin-x64@npm:0.18.20":
   version: 0.18.20
   resolution: "@esbuild/darwin-x64@npm:0.18.20"
@@ -459,6 +494,13 @@ __metadata:
 "@esbuild/darwin-x64@npm:0.24.2":
   version: 0.24.2
   resolution: "@esbuild/darwin-x64@npm:0.24.2"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@esbuild/darwin-x64@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/darwin-x64@npm:0.25.1"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
@@ -491,6 +533,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@esbuild/freebsd-arm64@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/freebsd-arm64@npm:0.25.1"
+  conditions: os=freebsd & cpu=arm64
+  languageName: node
+  linkType: hard
+
 "@esbuild/freebsd-x64@npm:0.18.20":
   version: 0.18.20
   resolution: "@esbuild/freebsd-x64@npm:0.18.20"
@@ -515,6 +564,13 @@ __metadata:
 "@esbuild/freebsd-x64@npm:0.24.2":
   version: 0.24.2
   resolution: "@esbuild/freebsd-x64@npm:0.24.2"
+  conditions: os=freebsd & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@esbuild/freebsd-x64@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/freebsd-x64@npm:0.25.1"
   conditions: os=freebsd & cpu=x64
   languageName: node
   linkType: hard
@@ -547,6 +603,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@esbuild/linux-arm64@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/linux-arm64@npm:0.25.1"
+  conditions: os=linux & cpu=arm64
+  languageName: node
+  linkType: hard
+
 "@esbuild/linux-arm@npm:0.18.20":
   version: 0.18.20
   resolution: "@esbuild/linux-arm@npm:0.18.20"
@@ -571,6 +634,13 @@ __metadata:
 "@esbuild/linux-arm@npm:0.24.2":
   version: 0.24.2
   resolution: "@esbuild/linux-arm@npm:0.24.2"
+  conditions: os=linux & cpu=arm
+  languageName: node
+  linkType: hard
+
+"@esbuild/linux-arm@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/linux-arm@npm:0.25.1"
   conditions: os=linux & cpu=arm
   languageName: node
   linkType: hard
@@ -603,6 +673,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@esbuild/linux-ia32@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/linux-ia32@npm:0.25.1"
+  conditions: os=linux & cpu=ia32
+  languageName: node
+  linkType: hard
+
 "@esbuild/linux-loong64@npm:0.18.20":
   version: 0.18.20
   resolution: "@esbuild/linux-loong64@npm:0.18.20"
@@ -627,6 +704,13 @@ __metadata:
 "@esbuild/linux-loong64@npm:0.24.2":
   version: 0.24.2
   resolution: "@esbuild/linux-loong64@npm:0.24.2"
+  conditions: os=linux & cpu=loong64
+  languageName: node
+  linkType: hard
+
+"@esbuild/linux-loong64@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/linux-loong64@npm:0.25.1"
   conditions: os=linux & cpu=loong64
   languageName: node
   linkType: hard
@@ -659,6 +743,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@esbuild/linux-mips64el@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/linux-mips64el@npm:0.25.1"
+  conditions: os=linux & cpu=mips64el
+  languageName: node
+  linkType: hard
+
 "@esbuild/linux-ppc64@npm:0.18.20":
   version: 0.18.20
   resolution: "@esbuild/linux-ppc64@npm:0.18.20"
@@ -683,6 +774,13 @@ __metadata:
 "@esbuild/linux-ppc64@npm:0.24.2":
   version: 0.24.2
   resolution: "@esbuild/linux-ppc64@npm:0.24.2"
+  conditions: os=linux & cpu=ppc64
+  languageName: node
+  linkType: hard
+
+"@esbuild/linux-ppc64@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/linux-ppc64@npm:0.25.1"
   conditions: os=linux & cpu=ppc64
   languageName: node
   linkType: hard
@@ -715,6 +813,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@esbuild/linux-riscv64@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/linux-riscv64@npm:0.25.1"
+  conditions: os=linux & cpu=riscv64
+  languageName: node
+  linkType: hard
+
 "@esbuild/linux-s390x@npm:0.18.20":
   version: 0.18.20
   resolution: "@esbuild/linux-s390x@npm:0.18.20"
@@ -739,6 +844,13 @@ __metadata:
 "@esbuild/linux-s390x@npm:0.24.2":
   version: 0.24.2
   resolution: "@esbuild/linux-s390x@npm:0.24.2"
+  conditions: os=linux & cpu=s390x
+  languageName: node
+  linkType: hard
+
+"@esbuild/linux-s390x@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/linux-s390x@npm:0.25.1"
   conditions: os=linux & cpu=s390x
   languageName: node
   linkType: hard
@@ -771,9 +883,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@esbuild/linux-x64@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/linux-x64@npm:0.25.1"
+  conditions: os=linux & cpu=x64
+  languageName: node
+  linkType: hard
+
 "@esbuild/netbsd-arm64@npm:0.24.2":
   version: 0.24.2
   resolution: "@esbuild/netbsd-arm64@npm:0.24.2"
+  conditions: os=netbsd & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@esbuild/netbsd-arm64@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/netbsd-arm64@npm:0.25.1"
   conditions: os=netbsd & cpu=arm64
   languageName: node
   linkType: hard
@@ -806,6 +932,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@esbuild/netbsd-x64@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/netbsd-x64@npm:0.25.1"
+  conditions: os=netbsd & cpu=x64
+  languageName: node
+  linkType: hard
+
 "@esbuild/openbsd-arm64@npm:0.23.1":
   version: 0.23.1
   resolution: "@esbuild/openbsd-arm64@npm:0.23.1"
@@ -816,6 +949,13 @@ __metadata:
 "@esbuild/openbsd-arm64@npm:0.24.2":
   version: 0.24.2
   resolution: "@esbuild/openbsd-arm64@npm:0.24.2"
+  conditions: os=openbsd & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@esbuild/openbsd-arm64@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/openbsd-arm64@npm:0.25.1"
   conditions: os=openbsd & cpu=arm64
   languageName: node
   linkType: hard
@@ -848,6 +988,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@esbuild/openbsd-x64@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/openbsd-x64@npm:0.25.1"
+  conditions: os=openbsd & cpu=x64
+  languageName: node
+  linkType: hard
+
 "@esbuild/sunos-x64@npm:0.18.20":
   version: 0.18.20
   resolution: "@esbuild/sunos-x64@npm:0.18.20"
@@ -872,6 +1019,13 @@ __metadata:
 "@esbuild/sunos-x64@npm:0.24.2":
   version: 0.24.2
   resolution: "@esbuild/sunos-x64@npm:0.24.2"
+  conditions: os=sunos & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@esbuild/sunos-x64@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/sunos-x64@npm:0.25.1"
   conditions: os=sunos & cpu=x64
   languageName: node
   linkType: hard
@@ -904,6 +1058,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@esbuild/win32-arm64@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/win32-arm64@npm:0.25.1"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
 "@esbuild/win32-ia32@npm:0.18.20":
   version: 0.18.20
   resolution: "@esbuild/win32-ia32@npm:0.18.20"
@@ -932,6 +1093,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@esbuild/win32-ia32@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/win32-ia32@npm:0.25.1"
+  conditions: os=win32 & cpu=ia32
+  languageName: node
+  linkType: hard
+
 "@esbuild/win32-x64@npm:0.18.20":
   version: 0.18.20
   resolution: "@esbuild/win32-x64@npm:0.18.20"
@@ -956,6 +1124,13 @@ __metadata:
 "@esbuild/win32-x64@npm:0.24.2":
   version: 0.24.2
   resolution: "@esbuild/win32-x64@npm:0.24.2"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@esbuild/win32-x64@npm:0.25.1":
+  version: 0.25.1
+  resolution: "@esbuild/win32-x64@npm:0.25.1"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -1086,7 +1261,7 @@ __metadata:
   dependencies:
     jimp: "npm:^0.22.12"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -1097,7 +1272,7 @@ __metadata:
     "@initencounter/jimp": "npm:^0.0.5"
     jimp: "npm:^0.22.12"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -1184,7 +1359,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@initencounter/sst@workspace:plugins/Tool/sst"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -1201,7 +1376,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@initencounter/vits@workspace:plugins/Tool/vits"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -2479,50 +2654,50 @@ __metadata:
     "@initencounter/jimp": "workspace:^"
     "@initencounter/sst": "workspace:^"
     "@initencounter/vits": "workspace:^"
-    "@koishijs/client": "npm:^5.29.4"
-    "@koishijs/core": "npm:^4.18.0"
-    "@koishijs/loader": "npm:^4.6.0"
+    "@koishijs/client": "npm:^5.30.7"
+    "@koishijs/core": "npm:^4.18.7"
+    "@koishijs/loader": "npm:^4.6.7"
     "@koishijs/plugin-actions": "npm:^0.0.2"
-    "@koishijs/plugin-adapter-discord": "npm:^4.5.9"
-    "@koishijs/plugin-adapter-kook": "npm:^4.6.4"
+    "@koishijs/plugin-adapter-discord": "npm:^4.5.10"
+    "@koishijs/plugin-adapter-kook": "npm:^4.6.5"
     "@koishijs/plugin-adapter-qq": "npm:4.8.3"
-    "@koishijs/plugin-adapter-satori": "npm:^1.3.1"
-    "@koishijs/plugin-adapter-telegram": "npm:^4.5.8"
+    "@koishijs/plugin-adapter-satori": "npm:^1.5.1"
+    "@koishijs/plugin-adapter-telegram": "npm:^4.5.10"
     "@koishijs/plugin-admin": "npm:^2.0.0-beta.4"
     "@koishijs/plugin-analytics": "npm:^2.0.6"
     "@koishijs/plugin-auth": "npm:^4.1.6"
     "@koishijs/plugin-bind": "npm:^1.5.1"
     "@koishijs/plugin-commands": "npm:^3.5.4"
-    "@koishijs/plugin-config": "npm:^2.8.5"
-    "@koishijs/plugin-console": "npm:^5.29.4"
+    "@koishijs/plugin-config": "npm:^2.8.6"
+    "@koishijs/plugin-console": "npm:^5.30.7"
     "@koishijs/plugin-database-sqlite": "npm:^4.6.0"
     "@koishijs/plugin-explorer": "npm:^1.5.5"
-    "@koishijs/plugin-help": "npm:^2.4.4"
+    "@koishijs/plugin-help": "npm:^2.4.5"
     "@koishijs/plugin-hmr": "npm:^1.2.9"
     "@koishijs/plugin-http": "npm:0.6.1"
     "@koishijs/plugin-insight": "npm:^3.5.2"
     "@koishijs/plugin-inspect": "npm:1.1.7"
     "@koishijs/plugin-locales": "npm:^2.5.3"
-    "@koishijs/plugin-logger": "npm:^2.6.8"
+    "@koishijs/plugin-logger": "npm:^2.6.9"
     "@koishijs/plugin-market": "npm:2.11.2"
     "@koishijs/plugin-notifier": "npm:^1.2.1"
     "@koishijs/plugin-oobe": "npm:^0.0.2"
     "@koishijs/plugin-proxy-agent": "npm:0.3.3"
     "@koishijs/plugin-sandbox": "npm:3.4.1"
-    "@koishijs/plugin-server": "npm:^3.2.3"
+    "@koishijs/plugin-server": "npm:^3.2.4"
     "@koishijs/plugin-server-satori": "npm:2.7.2"
-    "@koishijs/plugin-server-temp": "npm:^1.4.0"
+    "@koishijs/plugin-server-temp": "npm:^1.5.0"
     "@koishijs/plugin-status": "npm:^7.4.10"
-    "@koishijs/scripts": "npm:^4.6.0"
+    "@koishijs/scripts": "npm:^4.6.1"
     "@satorijs/element": "npm:^3.1.7"
-    "@types/node": "npm:^20.16.13"
-    "@types/react": "npm:^18.3.11"
+    "@types/node": "npm:^20.17.28"
+    "@types/react": "npm:^18.3.20"
     cross-env: "npm:^7.0.3"
     esbuild: "npm:^0.18.20"
     esbuild-register: "npm:@shigma/esbuild-register@^1.1.1"
     jimp: "npm:1.6.0"
-    koishi: "npm:^4.18.0"
-    koishi-plugin-adapter-onebot: "npm:^6.7.2"
+    koishi: "npm:^4.18.7"
+    koishi-plugin-adapter-onebot: "npm:^6.8.0"
     koishi-plugin-adapter-red: "npm:3.2.3"
     koishi-plugin-android: "npm:^0.0.1"
     koishi-plugin-assets-local: "npm:3.3.2"
@@ -2538,17 +2713,17 @@ __metadata:
     koishi-plugin-open-vits: "npm:^2.0.6"
     koishi-plugin-puppeteer: "npm:^3.9.0"
     koishi-plugin-rate-limit: "npm:^2.0.4"
-    koishi-plugin-silk: "npm:^1.5.1"
+    koishi-plugin-silk: "npm:^1.5.2"
     koishi-plugin-telemetry: "npm:0.2.3"
-    koishi-plugin-theme-vanilla: "npm:^1.0.6"
+    koishi-plugin-theme-vanilla: "npm:^1.1.0"
     koishi-plugin-toutai: "npm:1.1.9"
-    tsx: "npm:^4.19.1"
-    typescript: "npm:^5.7.0-dev.20241019"
-    yakumo: "npm:^1.0.0-beta.18"
-    yakumo-esbuild: "npm:^1.0.0-beta.7"
+    tsx: "npm:^4.19.3"
+    typescript: "npm:^5.9.0-dev.20250329"
+    yakumo: "npm:^1.0.0"
+    yakumo-esbuild: "npm:^1.0.0"
     yakumo-esbuild-yaml: "npm:^1.0.0-alpha.0"
     yakumo-publish-sync: "npm:^1.0.0-alpha.1"
-    yakumo-tsc: "npm:^1.0.0-beta.5"
+    yakumo-tsc: "npm:^1.0.0"
     yml-register: "npm:^1.2.5"
   languageName: unknown
   linkType: soft
@@ -2571,18 +2746,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koishijs/client@npm:^5.29.4":
-  version: 5.30.2
-  resolution: "@koishijs/client@npm:5.30.2"
+"@koishijs/client@npm:^5.30.7":
+  version: 5.30.7
+  resolution: "@koishijs/client@npm:5.30.7"
   dependencies:
-    "@koishijs/components": "npm:1.5.15"
+    "@koishijs/components": "npm:1.5.19"
     "@maikolib/vite-plugin-yaml": "npm:^1.0.1"
-    "@satorijs/protocol": "npm:^1.4.2"
+    "@satorijs/protocol": "npm:^1.6.0"
     "@vitejs/plugin-vue": "npm:^5.1.4"
     "@vueuse/core": "npm:^11.1.0"
     cac: "npm:^6.7.14"
     cordis: "npm:^3.18.1"
-    cosmokit: "npm:^1.6.3"
+    cosmokit: "npm:^1.7.2"
     element-plus: "npm:2.7.7"
     marked-vue: "npm:^1.3.0"
     ns-require: "npm:^1.1.4"
@@ -2594,20 +2769,20 @@ __metadata:
     vue-router: "npm:^4.4.5"
   bin:
     koishi-console: bin.js
-  checksum: 10/d3bb919362b7b702608097ec2f3a37595fb51de89b523d216fba6efc84bc48ac2e016d1b8cfed0384f4fe2a7444291a1dc16d45b1bef1315f5526906cbb32b99
+  checksum: 10/69a47709903661d8027b4241faffb87d80b266dee3c5fa36c57de8dde6acebe716dfd04bc964a7e922a4fc732c4011f25232bfedc929d14d6cf39dc6fd1d2d4d
   languageName: node
   linkType: hard
 
-"@koishijs/components@npm:1.5.15":
-  version: 1.5.15
-  resolution: "@koishijs/components@npm:1.5.15"
+"@koishijs/components@npm:1.5.19":
+  version: 1.5.19
+  resolution: "@koishijs/components@npm:1.5.19"
   dependencies:
     "@satorijs/element": "npm:^3.1.7"
-    cosmokit: "npm:^1.6.3"
-    schemastery-vue: "npm:^7.3.9"
+    cosmokit: "npm:^1.7.2"
+    schemastery-vue: "npm:^7.3.11"
   peerDependencies:
     vue: ^3
-  checksum: 10/f58d385b96d2ed2bfa72f917883e2c9deb123fb0f5e6cd405e7a517576784568cbe57ca7e717cddc692fc579386036cb682a3a67858eb40aac635e9ac8faa431
+  checksum: 10/4c0bc4c8b59e9c554103e23f7002ca4d0de312fc67d33dd1f44ef5917d18c995d53d49fe95a4d770ec4fa341598c123e21d7f56eaa366f0f441ee8e7c257e089
   languageName: node
   linkType: hard
 
@@ -2620,7 +2795,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koishijs/core@npm:4.18.7, @koishijs/core@npm:^4.18.0":
+"@koishijs/console@npm:^5.30.7":
+  version: 5.30.7
+  resolution: "@koishijs/console@npm:5.30.7"
+  peerDependencies:
+    koishi: ^4.18.7
+  checksum: 10/6945e90eb1b6f133096404dbc345ff588d2c2d7dc62391d53dbc6061c7698a896ad745e635194aaf9eb9499d8a524fd52bd9a3bcf5bd87021c881c068b69a2cc
+  languageName: node
+  linkType: hard
+
+"@koishijs/core@npm:4.18.7, @koishijs/core@npm:^4.18.7":
   version: 4.18.7
   resolution: "@koishijs/core@npm:4.18.7"
   dependencies:
@@ -2644,7 +2828,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koishijs/loader@npm:4.6.7, @koishijs/loader@npm:^4.6.0":
+"@koishijs/loader@npm:4.6.7, @koishijs/loader@npm:^4.6.7":
   version: 4.6.7
   resolution: "@koishijs/loader@npm:4.6.7"
   dependencies:
@@ -2669,7 +2853,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koishijs/plugin-adapter-discord@npm:^4.5.9":
+"@koishijs/plugin-adapter-discord@npm:^4.5.10":
   version: 4.5.10
   resolution: "@koishijs/plugin-adapter-discord@npm:4.5.10"
   dependencies:
@@ -2680,7 +2864,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koishijs/plugin-adapter-kook@npm:^4.6.4":
+"@koishijs/plugin-adapter-kook@npm:^4.6.5":
   version: 4.6.5
   resolution: "@koishijs/plugin-adapter-kook@npm:4.6.5"
   dependencies:
@@ -2702,7 +2886,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koishijs/plugin-adapter-satori@npm:^1.3.1":
+"@koishijs/plugin-adapter-satori@npm:^1.5.1":
   version: 1.5.1
   resolution: "@koishijs/plugin-adapter-satori@npm:1.5.1"
   dependencies:
@@ -2713,14 +2897,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koishijs/plugin-adapter-telegram@npm:^4.5.8":
-  version: 4.5.8
-  resolution: "@koishijs/plugin-adapter-telegram@npm:4.5.8"
+"@koishijs/plugin-adapter-telegram@npm:^4.5.10":
+  version: 4.5.10
+  resolution: "@koishijs/plugin-adapter-telegram@npm:4.5.10"
   dependencies:
-    "@satorijs/adapter-telegram": "npm:^4.5.8"
+    "@satorijs/adapter-telegram": "npm:^4.5.10"
   peerDependencies:
-    koishi: ^4.17.12
-  checksum: 10/0f057987eabcec64464b4fb9ba16c32b4ff9bb5b3e660b912ea6a5f494ecbed8f4af798fc9f6a76f523bb22b1b12a3a1201aafc03d09930065de5b107d036149
+    koishi: ^4.18.7
+  checksum: 10/2116dca580c84230d06e2f36b167c34ddc5cf740bf5be10aa56585385229b95fc62aac6e89bf425577ca3c6c3fd9252402fa22c6ea796aa3aab00064cd8de462
   languageName: node
   linkType: hard
 
@@ -2787,7 +2971,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koishijs/plugin-config@npm:^2.8.5":
+"@koishijs/plugin-config@npm:^2.8.6":
   version: 2.8.6
   resolution: "@koishijs/plugin-config@npm:2.8.6"
   dependencies:
@@ -2801,21 +2985,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koishijs/plugin-console@npm:^5.29.4":
-  version: 5.30.2
-  resolution: "@koishijs/plugin-console@npm:5.30.2"
+"@koishijs/plugin-console@npm:^5.30.7":
+  version: 5.30.7
+  resolution: "@koishijs/plugin-console@npm:5.30.7"
   dependencies:
-    "@koishijs/console": "npm:^5.30.2"
+    "@koishijs/console": "npm:^5.30.7"
     open: "npm:^8.4.2"
     uuid: "npm:^8.3.2"
     ws: "npm:^8.16.0"
   peerDependencies:
-    "@koishijs/client": ^5.30.2
-    koishi: ^4.18.3
+    "@koishijs/client": ^5.30.7
+    koishi: ^4.18.7
   peerDependenciesMeta:
     "@koishijs/client":
       optional: true
-  checksum: 10/363818aa71b9525d44e9b7f094ed873c5d7bbb46798871b81ab8f641366bbe40a06ad8786c4f2103e92de8a9e3088aa18019a27b969c9df392e055568871329e
+  checksum: 10/a4690db39e56e0b5bc791143e36df82d958f85948edbebcc507011b7ca942ff1e575f4d6042ff1744df34fa5459080ed83480da38e832910f2637b52f6f5516e
   languageName: node
   linkType: hard
 
@@ -2847,7 +3031,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koishijs/plugin-help@npm:^2.4.4":
+"@koishijs/plugin-help@npm:^2.4.5":
   version: 2.4.5
   resolution: "@koishijs/plugin-help@npm:2.4.5"
   peerDependencies:
@@ -2928,7 +3112,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koishijs/plugin-logger@npm:^2.6.8":
+"@koishijs/plugin-logger@npm:^2.6.9":
   version: 2.6.9
   resolution: "@koishijs/plugin-logger@npm:2.6.9"
   dependencies:
@@ -3021,7 +3205,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koishijs/plugin-server-temp@npm:^1.4.0":
+"@koishijs/plugin-server-temp@npm:^1.5.0":
   version: 1.5.0
   resolution: "@koishijs/plugin-server-temp@npm:1.5.0"
   dependencies:
@@ -3032,7 +3216,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koishijs/plugin-server@npm:^3.2.3, @koishijs/plugin-server@npm:^3.2.4":
+"@koishijs/plugin-server@npm:^3.2.4":
   version: 3.2.4
   resolution: "@koishijs/plugin-server@npm:3.2.4"
   dependencies:
@@ -3068,7 +3252,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koishijs/scripts@npm:^4.6.0":
+"@koishijs/scripts@npm:^4.6.1":
   version: 4.6.1
   resolution: "@koishijs/scripts@npm:4.6.1"
   dependencies:
@@ -3754,14 +3938,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@satorijs/adapter-telegram@npm:^4.5.8":
-  version: 4.5.8
-  resolution: "@satorijs/adapter-telegram@npm:4.5.8"
+"@satorijs/adapter-telegram@npm:^4.5.10":
+  version: 4.5.10
+  resolution: "@satorijs/adapter-telegram@npm:4.5.10"
   dependencies:
     file-type: "npm:^16.5.4"
   peerDependencies:
-    "@satorijs/core": ^4.2.6
-  checksum: 10/9cc02ca76b0370bece6065d3d5f02e17bb2cd4d162e49be8a5c1bdfc5bc2f5f7b53ea27cae3d32e817f8cfa8914b7bcd102c8438a599db7b74a06c89622c9eb3
+    "@satorijs/core": ^4.5.0
+  checksum: 10/5cd0717f9545f543c245208e4fe253d47e5ca5d5bb0aa229833f1f063bb21a31bea7d3cbb35a6eae41c2942dbba68518eb14a15fd42d3e7d3624dae1203e8e5b
   languageName: node
   linkType: hard
 
@@ -3801,7 +3985,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@satorijs/protocol@npm:^1.4.2, @satorijs/protocol@npm:^1.6.0":
+"@satorijs/protocol@npm:^1.6.0":
   version: 1.6.0
   resolution: "@satorijs/protocol@npm:1.6.0"
   dependencies:
@@ -4361,12 +4545,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^20.16.13":
-  version: 20.17.17
-  resolution: "@types/node@npm:20.17.17"
+"@types/node@npm:^20.17.28":
+  version: 20.17.28
+  resolution: "@types/node@npm:20.17.28"
   dependencies:
     undici-types: "npm:~6.19.2"
-  checksum: 10/97319597fb277185df99271e20fc29f2bdd772090ffcd31a7aed6c5e59cd530352ed74674dd4bff9ed2950731e6309afef7c2a1a02331bdd15fda0022263585a
+  checksum: 10/eda2517544666c7b7f020f8fbea0fe32b66b1e70e0f63ee83bb2deb6615748491ebd8dab5cc98d86d436e604faf440de420f565d7a542287b3be47a254a76468
   languageName: node
   linkType: hard
 
@@ -4400,13 +4584,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:^18.3.11":
-  version: 18.3.18
-  resolution: "@types/react@npm:18.3.18"
+"@types/react@npm:^18.3.20":
+  version: 18.3.20
+  resolution: "@types/react@npm:18.3.20"
   dependencies:
     "@types/prop-types": "npm:*"
     csstype: "npm:^3.0.2"
-  checksum: 10/7fdd8b853e0d291d4138133f93f8d5c333da918e5804afcea61a923aab4bdfc9bb15eb21a5640959b452972b8715ddf10ffb12b3bd071898b9e37738636463f2
+  checksum: 10/020c51e63b60862e6d772f0cdea0b9441182eedab6289dabd8add0708ded62003834c4e7c6f23a1ccd3ca9486b46296057c3f881c34261a0483765351f8d0bc3
   languageName: node
   linkType: hard
 
@@ -5240,7 +5424,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.1.3, axios@npm:^1.3.1, axios@npm:^1.7.7":
+"axios@npm:^1.1.3, axios@npm:^1.3.1":
   version: 1.7.9
   resolution: "axios@npm:1.7.9"
   dependencies:
@@ -5248,6 +5432,17 @@ __metadata:
     form-data: "npm:^4.0.0"
     proxy-from-env: "npm:^1.1.0"
   checksum: 10/b7a5f660ea53ba9c2a745bf5ad77ad8bf4f1338e13ccc3f9f09f810267d6c638c03dac88b55dae8dc98b79c57d2d6835be651d58d2af97c174f43d289a9fd007
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.8.4":
+  version: 1.8.4
+  resolution: "axios@npm:1.8.4"
+  dependencies:
+    follow-redirects: "npm:^1.15.6"
+    form-data: "npm:^4.0.0"
+    proxy-from-env: "npm:^1.1.0"
+  checksum: 10/a10f0dd836613924e48cf03dc2eff3fd21b14f764807aedaee4880a70c0f142aaebdb21da7ce27104d4c16ca00d0e452a20a20851f60e385a8d5bad1ae909d46
   languageName: node
   linkType: hard
 
@@ -5748,10 +5943,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chess.js@npm:^1.0.0-beta.8":
-  version: 1.0.0
-  resolution: "chess.js@npm:1.0.0"
-  checksum: 10/d675730aa5b54ebb95a39aa431a5beb29987e6020ef30c8f196c2de88586daa3a7ae4b257324c16af74c412eb8e49014f17ee5f6a2555153381e6e2f424471aa
+"chess.js@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "chess.js@npm:1.1.0"
+  checksum: 10/61ffefc699174dcf39c98630d2cdd59dbdc3f567da095da94b107a9b5f395315b38d3ed3440bec4789e4123f8e16e0bee4b7d48ec7cac2b40dfad9b2f2013bb3
   languageName: node
   linkType: hard
 
@@ -6260,6 +6455,13 @@ __metadata:
   version: 1.7.0
   resolution: "cosmokit@npm:1.7.0"
   checksum: 10/4f5566f26db84a943c96e20a87399b5625f2cb164eb8f1364822d959a31708001284fb71204d5e471f74c252f3539ef50d5a12eae99be6e0d2311b08cfb141dc
+  languageName: node
+  linkType: hard
+
+"cosmokit@npm:^1.7.2":
+  version: 1.8.0
+  resolution: "cosmokit@npm:1.8.0"
+  checksum: 10/35a7f80bcf9d36b76a276f1c95ca7107e15196c2db5d49a664322d90909b1c9eccd39beb1ec81a1099298c2d8de29e01a22f62c9aea6f2177ecd126857ce30ea
   languageName: node
   linkType: hard
 
@@ -7323,16 +7525,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dtsc@npm:^3.0.4":
-  version: 3.0.4
-  resolution: "dtsc@npm:3.0.4"
+"dtsc@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "dtsc@npm:3.1.0"
   dependencies:
-    tsconfig-utils: "npm:^4.0.5"
+    tsconfig-utils: "npm:^4.1.1"
   peerDependencies:
     typescript: "*"
   bin:
     dtsc: lib/bin.js
-  checksum: 10/424ade989eecf527ec435f5ef824055260e86646eae69f2af6a349525a32c192a878170d26e93fbe06b2f6e2c98bbe9c6169db31efcdba453d42587a5b84c3e2
+  checksum: 10/afd1e12769ed8f4d951353c33829bfb0de637ea4cf5cf1424e7528bba6071cc9c92bfc07e1aced1aed59d3e35c58d17fcd9d6761aceabfe2a058ca813a2bb5a7
   languageName: node
   linkType: hard
 
@@ -7956,6 +8158,92 @@ __metadata:
   bin:
     esbuild: bin/esbuild
   checksum: 10/f55fbd0bfb0f86ce67a6d2c6f6780729d536c330999ecb9f5a38d578fb9fda820acbbc67d6d1d377eed8fed50fc38f14ff9cb014f86dafab94269a7fb2177018
+  languageName: node
+  linkType: hard
+
+"esbuild@npm:~0.25.0":
+  version: 0.25.1
+  resolution: "esbuild@npm:0.25.1"
+  dependencies:
+    "@esbuild/aix-ppc64": "npm:0.25.1"
+    "@esbuild/android-arm": "npm:0.25.1"
+    "@esbuild/android-arm64": "npm:0.25.1"
+    "@esbuild/android-x64": "npm:0.25.1"
+    "@esbuild/darwin-arm64": "npm:0.25.1"
+    "@esbuild/darwin-x64": "npm:0.25.1"
+    "@esbuild/freebsd-arm64": "npm:0.25.1"
+    "@esbuild/freebsd-x64": "npm:0.25.1"
+    "@esbuild/linux-arm": "npm:0.25.1"
+    "@esbuild/linux-arm64": "npm:0.25.1"
+    "@esbuild/linux-ia32": "npm:0.25.1"
+    "@esbuild/linux-loong64": "npm:0.25.1"
+    "@esbuild/linux-mips64el": "npm:0.25.1"
+    "@esbuild/linux-ppc64": "npm:0.25.1"
+    "@esbuild/linux-riscv64": "npm:0.25.1"
+    "@esbuild/linux-s390x": "npm:0.25.1"
+    "@esbuild/linux-x64": "npm:0.25.1"
+    "@esbuild/netbsd-arm64": "npm:0.25.1"
+    "@esbuild/netbsd-x64": "npm:0.25.1"
+    "@esbuild/openbsd-arm64": "npm:0.25.1"
+    "@esbuild/openbsd-x64": "npm:0.25.1"
+    "@esbuild/sunos-x64": "npm:0.25.1"
+    "@esbuild/win32-arm64": "npm:0.25.1"
+    "@esbuild/win32-ia32": "npm:0.25.1"
+    "@esbuild/win32-x64": "npm:0.25.1"
+  dependenciesMeta:
+    "@esbuild/aix-ppc64":
+      optional: true
+    "@esbuild/android-arm":
+      optional: true
+    "@esbuild/android-arm64":
+      optional: true
+    "@esbuild/android-x64":
+      optional: true
+    "@esbuild/darwin-arm64":
+      optional: true
+    "@esbuild/darwin-x64":
+      optional: true
+    "@esbuild/freebsd-arm64":
+      optional: true
+    "@esbuild/freebsd-x64":
+      optional: true
+    "@esbuild/linux-arm":
+      optional: true
+    "@esbuild/linux-arm64":
+      optional: true
+    "@esbuild/linux-ia32":
+      optional: true
+    "@esbuild/linux-loong64":
+      optional: true
+    "@esbuild/linux-mips64el":
+      optional: true
+    "@esbuild/linux-ppc64":
+      optional: true
+    "@esbuild/linux-riscv64":
+      optional: true
+    "@esbuild/linux-s390x":
+      optional: true
+    "@esbuild/linux-x64":
+      optional: true
+    "@esbuild/netbsd-arm64":
+      optional: true
+    "@esbuild/netbsd-x64":
+      optional: true
+    "@esbuild/openbsd-arm64":
+      optional: true
+    "@esbuild/openbsd-x64":
+      optional: true
+    "@esbuild/sunos-x64":
+      optional: true
+    "@esbuild/win32-arm64":
+      optional: true
+    "@esbuild/win32-ia32":
+      optional: true
+    "@esbuild/win32-x64":
+      optional: true
+  bin:
+    esbuild: bin/esbuild
+  checksum: 10/f1dcaa7c72133c4e130dc7a6c05158d48d7ccf6643efb12fd0c5a9727226a9249d3ea4a4ea34f879c4559819d9dd706a968fd34d5c180ae019ea0403246c5564
   languageName: node
   linkType: hard
 
@@ -9957,7 +10245,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"koishi-plugin-adapter-onebot@npm:^6.7.2":
+"koishi-plugin-adapter-onebot@npm:^6.8.0":
   version: 6.8.0
   resolution: "koishi-plugin-adapter-onebot@npm:6.8.0"
   dependencies:
@@ -9984,7 +10272,7 @@ __metadata:
     file-type: "npm:16.5.4"
     koishi-plugin-markdown: "npm:^1.1.1"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -9992,15 +10280,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "koishi-plugin-adapter-wechat4u@workspace:plugins/Adapter/adapter-wechat4u"
   dependencies:
-    "@koishijs/client": "npm:^5.29.4"
+    "@koishijs/client": "npm:^5.30.7"
     file-box: "npm:^1.5.5"
     file-type: "npm:16.5.4"
     raven: "npm:^2.6.4"
-    type-fest: "npm:^4.26.1"
+    type-fest: "npm:^4.38.0"
     wechaty: "npm:^1.20.2"
   peerDependencies:
-    "@koishijs/plugin-console": ^5.29.4
-    koishi: ^4.18.0
+    "@koishijs/plugin-console": ^5.30.7
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10017,9 +10305,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "koishi-plugin-arcadia@workspace:plugins/AI/arcadia"
   dependencies:
-    axios: "npm:^1.7.7"
+    axios: "npm:^1.8.4"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10027,7 +10315,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "koishi-plugin-artwise@workspace:plugins/AI/artwise"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10047,9 +10335,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "koishi-plugin-autoxjs-sender@workspace:plugins/Adapter/autoxjs-sender"
   dependencies:
-    ws: "npm:^8.18.0"
+    ws: "npm:^8.18.1"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10059,7 +10347,7 @@ __metadata:
   dependencies:
     "@initencounter/sst": "npm:^0.0.1"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10069,7 +10357,7 @@ __metadata:
   dependencies:
     "@initencounter/vits": "npm:^0.0.2"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10096,7 +10384,7 @@ __metadata:
   resolution: "koishi-plugin-cline@workspace:plugins/AI/cline"
   dependencies:
     "@anthropic-ai/sdk": "npm:^0.39.0"
-    "@koishijs/client": "npm:^5.29.4"
+    "@koishijs/client": "npm:^5.30.7"
     "@modelcontextprotocol/sdk": "npm:^1.8.0"
     "@types/clone-deep": "npm:^4"
     "@types/diff": "npm:^7"
@@ -10106,13 +10394,14 @@ __metadata:
     diff: "npm:^7.0.0"
     fast-deep-equal: "npm:^3.1.3"
     ignore: "npm:^7.0.3"
+    openai: "npm:^4.90.0"
     os-name: "npm:^6.0.0"
     serialize-error: "npm:^12.0.0"
     vue3-json-viewer: "npm:^2.3.0"
-    zod: "npm:^3.24.2"
+    zod: "npm:^3.25.0-canary.20250211T214501"
   peerDependencies:
-    "@koishijs/plugin-console": ^5.29.4
-    koishi: ^4.18.0
+    "@koishijs/plugin-console": ^5.30.7
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10121,9 +10410,9 @@ __metadata:
   resolution: "koishi-plugin-clock@workspace:plugins/Manager/clock"
   dependencies:
     koishi-plugin-cron: "npm:^3.1.0"
-    koishi-plugin-shutdown: "npm:^0.3.1"
+    koishi-plugin-shutdown: "npm:^0.3.2"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10133,7 +10422,7 @@ __metadata:
   dependencies:
     "@satorijs/element": "npm:^3.1.7"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10141,10 +10430,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "koishi-plugin-copyhub@workspace:plugins/Console/copyhub"
   dependencies:
-    "@koishijs/client": "npm:^5.29.4"
+    "@koishijs/client": "npm:^5.30.7"
   peerDependencies:
-    "@koishijs/plugin-console": ^5.29.4
-    koishi: ^4.18.0
+    "@koishijs/plugin-console": ^5.30.7
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10152,7 +10441,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "koishi-plugin-couplet@workspace:plugins/Recreation/couplet"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
     koishi-plugin-rate-limit: ^2.0.4
   languageName: unknown
   linkType: soft
@@ -10163,7 +10452,7 @@ __metadata:
   dependencies:
     koishi-plugin-markdown: "npm:^1.1.1"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10183,13 +10472,13 @@ __metadata:
   resolution: "koishi-plugin-cube@workspace:plugins/Recreation/cube"
   dependencies:
     "@types/tar": "npm:^6.1.13"
-    axios: "npm:^1.7.7"
+    axios: "npm:^1.8.4"
     env-paths: "npm:^3.0.0"
-    get-registry: "npm:^1.1.0"
+    get-registry: "npm:^1.2.0"
     path: "npm:^0.12.7"
     tar: "npm:^7.4.3"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10212,10 +10501,10 @@ __metadata:
     "@initencounter/sst": "npm:^0.0.1"
     "@initencounter/vits": "npm:^0.0.3"
     "@koishijs/censor": "npm:^1.1.0"
-    "@koishijs/client": "npm:^5.29.4"
+    "@koishijs/client": "npm:^5.30.7"
   peerDependencies:
-    "@koishijs/plugin-console": ^5.29.4
-    koishi: ^4.18.0
+    "@koishijs/plugin-console": ^5.30.7
+    koishi: ^4.18.7
     koishi-plugin-rate-limit: ^2.0.4
   languageName: unknown
   linkType: soft
@@ -10247,10 +10536,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "koishi-plugin-facercg@workspace:plugins/AI/facercg"
   dependencies:
-    "@koishijs/plugin-console": "npm:^5.29.4"
+    "@koishijs/plugin-console": "npm:^5.30.7"
     "@koishijs/plugin-notifier": "npm:^1.2.1"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10271,7 +10560,7 @@ __metadata:
   dependencies:
     "@initencounter/vits": "npm:^0.0.2"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10279,9 +10568,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "koishi-plugin-furbot@workspace:plugins/News/furbot"
   dependencies:
-    axios: "npm:^1.7.7"
+    axios: "npm:^1.8.4"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10289,11 +10578,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "koishi-plugin-genshin-atlas@workspace:plugins/Games/genshin-atlas"
   dependencies:
-    "@koishijs/client": "npm:^5.29.4"
-    axios: "npm:^1.7.7"
+    "@koishijs/client": "npm:^5.30.7"
+    axios: "npm:^1.8.4"
   peerDependencies:
-    "@koishijs/plugin-console": ^5.29.4
-    koishi: ^4.18.0
+    "@koishijs/plugin-console": ^5.30.7
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10303,7 +10592,7 @@ __metadata:
   dependencies:
     koishi-plugin-cron: "npm:^3.1.0"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10322,7 +10611,7 @@ __metadata:
   dependencies:
     "@satorijs/element": "npm:^3.1.7"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10330,9 +10619,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "koishi-plugin-ichess@workspace:plugins/Recreation/ichess"
   dependencies:
-    chess.js: "npm:^1.0.0-beta.8"
+    chess.js: "npm:^1.1.0"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
     koishi-plugin-puppeteer: ^3.9.0
   languageName: unknown
   linkType: soft
@@ -10365,7 +10654,7 @@ __metadata:
   dependencies:
     "@initencounter/jimp": "npm:^0.0.3"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10375,7 +10664,7 @@ __metadata:
   dependencies:
     mqtt: "npm:^4.3.8"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10408,7 +10697,7 @@ __metadata:
   peerDependencies:
     "@initencounter/sst": ^0.0.1
     "@initencounter/vits": ^0.0.3
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10432,7 +10721,7 @@ __metadata:
     "@initencounter/jimp": "npm:^0.0.4"
     "@initencounter/puzzle": "npm:^0.2.0"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10453,11 +10742,11 @@ __metadata:
     koishi-plugin-davinci-003: "npm:^7.0.4"
     koishi-plugin-puppeteer: "npm:^3.9.0"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
-"koishi-plugin-shutdown@npm:^0.3.1":
+"koishi-plugin-shutdown@npm:^0.3.2":
   version: 0.3.2
   resolution: "koishi-plugin-shutdown@npm:0.3.2"
   dependencies:
@@ -10468,7 +10757,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"koishi-plugin-silk@npm:^1.5.1":
+"koishi-plugin-silk@npm:^1.5.2":
   version: 1.5.2
   resolution: "koishi-plugin-silk@npm:1.5.2"
   dependencies:
@@ -10486,7 +10775,7 @@ __metadata:
   dependencies:
     "@satorijs/element": "npm:^3.1.7"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10496,7 +10785,7 @@ __metadata:
   dependencies:
     pngjs: "npm:^7.0.0"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
     koishi-plugin-puppeteer: ^3.9.0
   languageName: unknown
   linkType: soft
@@ -10509,7 +10798,7 @@ __metadata:
     xmldom: "npm:^0.6.0"
     xpath: "npm:^0.0.32"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10518,9 +10807,9 @@ __metadata:
   resolution: "koishi-plugin-tc-sst@workspace:plugins/Tool/tc-sst"
   dependencies:
     "@initencounter/sst": "npm:^0.0.1"
-    tencentcloud-sdk-nodejs-asr: "npm:^4.0.943"
+    tencentcloud-sdk-nodejs-asr: "npm:^4.0.1054"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10538,9 +10827,9 @@ __metadata:
   resolution: "koishi-plugin-tencent-tts@workspace:plugins/Tool/tencent-tts"
   dependencies:
     "@initencounter/vits": "npm:^0.0.2"
-    tencentcloud-sdk-nodejs-tts: "npm:^4.0.947"
+    tencentcloud-sdk-nodejs-tts: "npm:^4.0.1003"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
@@ -10548,11 +10837,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "koishi-plugin-test@workspace:external/test"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
-"koishi-plugin-theme-vanilla@npm:^1.0.6":
+"koishi-plugin-theme-vanilla@npm:^1.1.0":
   version: 1.1.0
   resolution: "koishi-plugin-theme-vanilla@npm:1.1.0"
   peerDependencies:
@@ -10577,11 +10866,11 @@ __metadata:
   dependencies:
     "@initencounter/sst": "npm:^0.0.1"
   peerDependencies:
-    koishi: ^4.18.0
+    koishi: ^4.18.7
   languageName: unknown
   linkType: soft
 
-"koishi@npm:^4.18.0":
+"koishi@npm:^4.18.7":
   version: 4.18.7
   resolution: "koishi@npm:4.18.7"
   dependencies:
@@ -12085,6 +12374,31 @@ __metadata:
     is-docker: "npm:^2.1.1"
     is-wsl: "npm:^2.2.0"
   checksum: 10/acd81a1d19879c818acb3af2d2e8e9d81d17b5367561e623248133deb7dd3aefaed527531df2677d3e6aaf0199f84df57b6b2262babff8bf46ea0029aac536c9
+  languageName: node
+  linkType: hard
+
+"openai@npm:^4.90.0":
+  version: 4.90.0
+  resolution: "openai@npm:4.90.0"
+  dependencies:
+    "@types/node": "npm:^18.11.18"
+    "@types/node-fetch": "npm:^2.6.4"
+    abort-controller: "npm:^3.0.0"
+    agentkeepalive: "npm:^4.2.1"
+    form-data-encoder: "npm:1.7.2"
+    formdata-node: "npm:^4.3.2"
+    node-fetch: "npm:^2.6.7"
+  peerDependencies:
+    ws: ^8.18.0
+    zod: ^3.23.8
+  peerDependenciesMeta:
+    ws:
+      optional: true
+    zod:
+      optional: true
+  bin:
+    openai: bin/cli
+  checksum: 10/4514f62e08d498cce03fd9037c12026598cb1d13e93d05fefeb90e6045758be208f39f8df5db41f138bf21830f480cd5513fd45d70e6a4aa05d3c68caa4cf850
   languageName: node
   linkType: hard
 
@@ -13604,25 +13918,34 @@ __metadata:
   languageName: node
   linkType: hard
 
-"schemastery-vue@npm:^7.3.9":
-  version: 7.3.9
-  resolution: "schemastery-vue@npm:7.3.9"
+"schemastery-vue@npm:^7.3.11":
+  version: 7.3.11
+  resolution: "schemastery-vue@npm:7.3.11"
   dependencies:
-    schemastery: "npm:^3.14.7"
+    schemastery: "npm:^3.16.1"
   peerDependencies:
     "@vueuse/core": ">=10"
     element-plus: ^2
     vue: ^3
-  checksum: 10/a8a7c39286f6c8531a9d8fd2d692f1e0b511c9818035af8b406ed811566fc25cbd2c19cdae4b0ae4550446720c62cce383945b7be8cd9896eb3a11f9f2466f82
+  checksum: 10/52d3405a4f90e1f2572e014f72467615f7368cfb0790624881994e7a4337759c214ecb8ac30458a9d33913e34101da3752f3bb00623bc5dc6ea75e515e777d13
   languageName: node
   linkType: hard
 
-"schemastery@npm:^3.14.6, schemastery@npm:^3.14.7":
+"schemastery@npm:^3.14.6":
   version: 3.15.0
   resolution: "schemastery@npm:3.15.0"
   dependencies:
     cosmokit: "npm:^1.6.3"
   checksum: 10/bdee6422c47cf46e482e8de11d3f37b829a8bce5881bc55ad5deb551a0be6a0fad78828d6dcb4935d80335a3defba7cdfd795249dca8e2bd704a0ffa24e6e780
+  languageName: node
+  linkType: hard
+
+"schemastery@npm:^3.16.1":
+  version: 3.16.1
+  resolution: "schemastery@npm:3.16.1"
+  dependencies:
+    cosmokit: "npm:^1.7.2"
+  checksum: 10/64183810be2fa7bd3239aa0daebab69c0e3de67d53a75e4cf5d6173efb41a22e67e1df0d3fbf7c1f9994c6835f18f9dc5da532f786eceb1d96c8ab8222260db9
   languageName: node
   linkType: hard
 
@@ -14315,13 +14638,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tencentcloud-sdk-nodejs-asr@npm:^4.0.943":
-  version: 4.0.1020
-  resolution: "tencentcloud-sdk-nodejs-asr@npm:4.0.1020"
+"tencentcloud-sdk-nodejs-asr@npm:^4.0.1054":
+  version: 4.0.1054
+  resolution: "tencentcloud-sdk-nodejs-asr@npm:4.0.1054"
   dependencies:
-    tencentcloud-sdk-nodejs-common: "npm:^4.0.488"
+    tencentcloud-sdk-nodejs-common: "npm:*"
     tslib: "npm:1.13.0"
-  checksum: 10/e0cb05e4c4119301b8c4fa79468258858bc673a5890a1f5ea9035d1ccd3eccbb43bf2d7d512e6708770515b976e821d4a239b49ec3a0cacfaea6e0c772502055
+  checksum: 10/827032023bada0ee85fc0e5f7183d24ecce06c1317f7b901c1c8844f05913c8ffbea776af78b377f20ca0baa4ac555cb87797ad6d8e8d9bbe41ff0afa7b4828e
+  languageName: node
+  linkType: hard
+
+"tencentcloud-sdk-nodejs-common@npm:*":
+  version: 4.1.1
+  resolution: "tencentcloud-sdk-nodejs-common@npm:4.1.1"
+  dependencies:
+    form-data: "npm:^3.0.0"
+    get-stream: "npm:^6.0.0"
+    https-proxy-agent: "npm:^5.0.0"
+    is-stream: "npm:^2.0.0"
+    json-bigint: "npm:^1.0.0"
+    node-fetch: "npm:^2.2.0"
+    tslib: "npm:1.13.0"
+    uuid: "npm:^9.0.1"
+  checksum: 10/1d34cd4dce913e9a99f7edd5549a6e069841c41fb7d72a912f013f547f43f312952cecbb1ab64754293601f555115f153f0f0e65ef2d5893c38d1792f98952b2
   languageName: node
   linkType: hard
 
@@ -14341,7 +14680,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tencentcloud-sdk-nodejs-tts@npm:^4.0.947":
+"tencentcloud-sdk-nodejs-tts@npm:^4.0.1003":
   version: 4.0.1003
   resolution: "tencentcloud-sdk-nodejs-tts@npm:4.0.1003"
   dependencies:
@@ -14574,7 +14913,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsx@npm:^4.19.1, tsx@npm:^4.19.2":
+"tsx@npm:^4.19.2":
   version: 4.19.2
   resolution: "tsx@npm:4.19.2"
   dependencies:
@@ -14587,6 +14926,22 @@ __metadata:
   bin:
     tsx: dist/cli.mjs
   checksum: 10/4c5610ed1fb2f80d766681f8ac7827e1e8118dfe354c18f74800691f3ef1e9ed676a29842ab818806bcf8613cdc97c6af84b5645e768ddb7f4b0527b9100deda
+  languageName: node
+  linkType: hard
+
+"tsx@npm:^4.19.3":
+  version: 4.19.3
+  resolution: "tsx@npm:4.19.3"
+  dependencies:
+    esbuild: "npm:~0.25.0"
+    fsevents: "npm:~2.3.3"
+    get-tsconfig: "npm:^4.7.5"
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    tsx: dist/cli.mjs
+  checksum: 10/a7e7f41e5593b242772050abacf51908aa8a6d4d9ea6c29e80161eb557d664a0f4cc8d38d0c8c151fddb6c2e9e337af27ba0e269c9707ccd7eeff0e0ea7fcf98
   languageName: node
   linkType: hard
 
@@ -14625,14 +14980,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^4.26.1, type-fest@npm:^4.3.1":
+"type-fest@npm:^4.3.1":
   version: 4.33.0
   resolution: "type-fest@npm:4.33.0"
   checksum: 10/0d179e66fa765bd0a25a785b12dc797f90f2f92bdb8c9c8a789f3fd8e5a4492444e7ef83551b3b8463aeab24fd6195761e26b03174722de636b4b75aa5726fb7
   languageName: node
   linkType: hard
 
-"type-fest@npm:^4.31.0":
+"type-fest@npm:^4.31.0, type-fest@npm:^4.38.0":
   version: 4.38.0
   resolution: "type-fest@npm:4.38.0"
   checksum: 10/7e29b678dca2dee071380ace370fecb7fa177faa557125134dd24ce784d90f84bf55ebf143092308f090d59e52a5b78653d63c8e5ad96e9f089e0029223e6221
@@ -14696,13 +15051,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^5.7.0-dev.20241019":
-  version: 5.7.3
-  resolution: "typescript@npm:5.7.3"
+"typescript@npm:^5.9.0-dev.20250329":
+  version: 5.9.0-dev.20250329
+  resolution: "typescript@npm:5.9.0-dev.20250329"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10/6a7e556de91db3d34dc51cd2600e8e91f4c312acd8e52792f243c7818dfadb27bae677175fad6947f9c81efb6c57eb6b2d0c736f196a6ee2f1f7d57b74fc92fa
+  checksum: 10/c1afe299451e8df6c7a3fe71e5ff9689e94e4754f83ca88c00bfc0a195016d41c8e596cd8269a8c0ad78f1af3f74fa069cb46a4f6688336f6d616c3357d35140
   languageName: node
   linkType: hard
 
@@ -14716,13 +15071,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A^5.7.0-dev.20241019#optional!builtin<compat/typescript>":
-  version: 5.7.3
-  resolution: "typescript@patch:typescript@npm%3A5.7.3#optional!builtin<compat/typescript>::version=5.7.3&hash=5786d5"
+"typescript@patch:typescript@npm%3A^5.9.0-dev.20250329#optional!builtin<compat/typescript>":
+  version: 5.9.0-dev.20250329
+  resolution: "typescript@patch:typescript@npm%3A5.9.0-dev.20250329#optional!builtin<compat/typescript>::version=5.9.0-dev.20250329&hash=5786d5"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10/dc58d777eb4c01973f7fbf1fd808aad49a0efdf545528dab9b07d94fdcb65b8751742804c3057e9619a4627f2d9cc85547fdd49d9f4326992ad0181b49e61d81
+  checksum: 10/f94d4c3f2c6f879bc079de1fe963c289d9e072b4fc9bf3aa9c5ffe47e6c23ac76138bda33988c28ab7ed4117a486432611ead2f35662a8e7e4d7204398ff6265
   languageName: node
   linkType: hard
 
@@ -15663,6 +16018,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ws@npm:^8.18.1":
+  version: 8.18.1
+  resolution: "ws@npm:8.18.1"
+  peerDependencies:
+    bufferutil: ^4.0.1
+    utf-8-validate: ">=5.0.2"
+  peerDependenciesMeta:
+    bufferutil:
+      optional: true
+    utf-8-validate:
+      optional: true
+  checksum: 10/3f38e9594f2af5b6324138e86b74df7d77bbb8e310bf8188679dd80bac0d1f47e51536a1923ac3365f31f3d8b25ea0b03e4ade466aa8292a86cd5defca64b19b
+  languageName: node
+  linkType: hard
+
 "xhr@npm:^2.0.1":
   version: 2.6.0
   resolution: "xhr@npm:2.6.0"
@@ -15775,16 +16145,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yakumo-esbuild@npm:^1.0.0-beta.7":
-  version: 1.0.0-beta.7
-  resolution: "yakumo-esbuild@npm:1.0.0-beta.7"
+"yakumo-esbuild@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "yakumo-esbuild@npm:1.0.0"
   dependencies:
     dumble: "npm:^0.2.1"
-    tsconfig-utils: "npm:^4.0.5"
+    schemastery: "npm:^3.16.1"
+    tsconfig-utils: "npm:^4.1.1"
   peerDependencies:
     esbuild: "*"
-    yakumo: ^1.0.0-beta.18
-  checksum: 10/7f5fd66d4d5bcaca360e5446dc4e76cd5ab31a37d3e0231b16c9c214b9469ab165dc2104a69d1d9f6e67b8bf9db8dcaebc710e8e74472174a7b8337898e7417c
+    yakumo: ^1.0.0
+  checksum: 10/7c0b9522607300e0fe66e99fb126285f82a6d6366232b028ca28903120273aead5a625fcef6a3244fdb8bcb618a90396668c4a6dc0f72d84fcb8393003806738
   languageName: node
   linkType: hard
 
@@ -15797,26 +16168,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yakumo-tsc@npm:^1.0.0-beta.5":
-  version: 1.0.0-beta.5
-  resolution: "yakumo-tsc@npm:1.0.0-beta.5"
+"yakumo-tsc@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "yakumo-tsc@npm:1.0.0"
   dependencies:
     atsc: "npm:^2.1.0"
-    dtsc: "npm:^3.0.4"
+    dtsc: "npm:^3.1.0"
     tsconfig-utils: "npm:^4.1.1"
   peerDependencies:
     typescript: "*"
-    yakumo: ^1.0.0-beta.18
-  checksum: 10/1164cc8b2044a0377014e5297aa153838c7f841e7af07127d5828f1092d51ca3b1d7944cca615b22f82b09691e2a413eff5f471283811fb530e1e27dc6692d7a
+    yakumo: ^1.0.0
+  checksum: 10/b2fa8dea9d921bba133b416db49b1759945418be84d7c8c4d5de9c8e4cd6c05bbd354507db6e94f9c3ae30a25691a7a331dfb0e36576187952b70f1eefd3e671
   languageName: node
   linkType: hard
 
-"yakumo@npm:^1.0.0-beta.18":
-  version: 1.0.0-beta.21
-  resolution: "yakumo@npm:1.0.0-beta.21"
+"yakumo@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "yakumo@npm:1.0.0"
   dependencies:
     cordis: "npm:^3.18.1"
-    cosmokit: "npm:^1.7.0"
+    cosmokit: "npm:^1.7.2"
     detect-indent: "npm:^6.1.0"
     execa: "npm:^5.1.1"
     get-registry: "npm:^1.2.0"
@@ -15834,7 +16205,7 @@ __metadata:
     cordis: ^3.18.1
   bin:
     yakumo: lib/cli.js
-  checksum: 10/51a3c39583e814c38501d5cf4122e21c020e8a3c61bd2ffdd43ee12b9b6d307aa9a0dcad3058f3a013db8fa67ddd1b53d6c3460bfd4e5680e1a75b864bd02282
+  checksum: 10/e4626df43e2bddf96a1dc56acfdfc83612915fffecb4c153a1be68d1d330ed720fa69849a0566b6453e85bb54a45d710e937aaf424e708c0a931a53dd62c388e
   languageName: node
   linkType: hard
 
@@ -15973,9 +16344,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.24.2":
-  version: 3.24.2
-  resolution: "zod@npm:3.24.2"
-  checksum: 10/604c62a8cf8e330d78b106a557f4b44f5d14845d20b1360a423ccc09b58cb8525ccf7e4b40cf1bd4852d22393d2c67774b5817ec5a2fedab25f543b36ed15943
+"zod@npm:^3.25.0-canary.20250211T214501":
+  version: 3.25.0-canary.20250211T214501
+  resolution: "zod@npm:3.25.0-canary.20250211T214501"
+  checksum: 10/0db8954ec61b03737c5f5f06de0af9b28f863016bafea2898bd1362149e9a423e31d47de7a5db76f61889625c38a40e749e9b66463d65d07a927f51d23b179f0
   languageName: node
   linkType: hard
