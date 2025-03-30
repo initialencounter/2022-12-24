@@ -10648,6 +10648,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"koishi-plugin-mcp-server@workspace:plugins/AI/mcp-server":
+  version: 0.0.0-use.local
+  resolution: "koishi-plugin-mcp-server@workspace:plugins/AI/mcp-server"
+  dependencies:
+    uuid: "npm:^11.1.0"
+  peerDependencies:
+    koishi: ^4.18.7
+  languageName: unknown
+  linkType: soft
+
 "koishi-plugin-minesweeper-ending@workspace:plugins/Recreation/minesweeper-ending":
   version: 0.0.0-use.local
   resolution: "koishi-plugin-minesweeper-ending@workspace:plugins/Recreation/minesweeper-ending"
@@ -15362,6 +15372,15 @@ __metadata:
   bin:
     uuid: ./bin/uuid
   checksum: 10/3834a826020a23fca314116c2becddc7f5d756b0280d630b58a65e700afeefd89d78ae97ddbdea5dcad497666cda6e9b0390ba74508e650d43d83a32d1e7cd19
+  languageName: node
+  linkType: hard
+
+"uuid@npm:^11.1.0":
+  version: 11.1.0
+  resolution: "uuid@npm:11.1.0"
+  bin:
+    uuid: dist/esm/bin/uuid
+  checksum: 10/d2da43b49b154d154574891ced66d0c83fc70caaad87e043400cf644423b067542d6f3eb641b7c819224a7cd3b4c2f21906acbedd6ec9c6a05887aa9115a9cf5
   languageName: node
   linkType: hard
 

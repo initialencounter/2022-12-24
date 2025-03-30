@@ -1,0 +1,40 @@
+{
+  "name": "koishi-plugin-mcp-server",
+  "description": "Convert koishi command to mcp tools",
+  "version": "0.0.1",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "AGPL-3.0",
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/2022-12-24.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/2022-12-24/issues"
+  },
+  "homepage": "https://github.com/initialencounter/2022-12-24/tree/neat/plugins/AI/cline#readme",
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "mcp-server",
+    "mcp",
+    "modelcontextprotocol",
+    "AI Agent"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.18.7"
+  },
+  "dependencies": {
+    "uuid": "^11.1.0"
+  }
+}
