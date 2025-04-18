@@ -26,7 +26,6 @@ const cwd = process.cwd()
 type ToolResponse = string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam>
 
 export class Cline {
-  readonly taskId: string
   readonly apiProvider?: string
   customInstructions?: string
   apiConversationHistory: Anthropic.MessageParam[] = []
@@ -130,7 +129,7 @@ export class Cline {
   }
 
   async createSystemPrompt(): Promise<string> {
-    let systemPrompt = SYSTEM_PROMPT(cwd, false, this.mcpHub)
+    let systemPrompt = await SYSTEM_PROMPT(cwd, false, this.mcpHub)
     let settingsCustomInstructions = this.customInstructions?.trim()
     const preferredLanguage = getLanguageKey(undefined)
     const preferredLanguageInstructions =
