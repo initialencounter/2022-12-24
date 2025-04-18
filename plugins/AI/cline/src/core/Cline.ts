@@ -1,7 +1,6 @@
 import type { Anthropic } from "@anthropic-ai/sdk"
 import fs from "fs/promises"
 import * as path from "path"
-import { serializeError } from "serialize-error"
 import { findLastIndex } from "../shared/array"
 import {
   ClineAsk,
@@ -76,7 +75,6 @@ export class Cline {
   // Task lifecycle
 
   async startTask(task: string, session: Session): Promise<void> {
-    await this.say("task", task)
     this.session = session
     // conversationHistory (for API) and clineMessages (for webview) need to be in sync
     // if the extension process were killed, then on restart the clineMessages might not be empty, so we need to set it to [] when we create a new Cline client (otherwise webview would show stale messages from previous session)
@@ -233,7 +231,7 @@ export class Cline {
   }
 
   async say(type: ClineSay, text?: string): Promise<undefined> {
-    this.session.send(`Cline Saying $type: ${type}, $text: ${text}`)
+    this.session.send(`Cline Saying type:\n${type}, text:\n${text}`)
     this.logger.info("Saying", type, text)
   }
   async presentAssistantMessage() {
@@ -397,10 +395,10 @@ export class Cline {
           if (this.abandoned) {
             return
           }
-          const errorString = `Error ${action}: ${JSON.stringify(serializeError(error))}`
+          const errorString = `Error ${action}: ${JSON.stringify(error)}`
           await this.say(
             "error",
-            `Error ${action}:\n${error.message ?? JSON.stringify(serializeError(error), null, 2)}`,
+            `Error ${action}:\n${error.message ?? JSON.stringify(error, null, 2)}`,
           )
           // this.toolResults.push({
           // 	type: "tool_result",
