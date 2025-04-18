@@ -10396,7 +10396,6 @@ __metadata:
     ignore: "npm:^7.0.3"
     openai: "npm:^4.90.0"
     os-name: "npm:^6.0.0"
-    serialize-error: "npm:^12.0.0"
     vue3-json-viewer: "npm:^2.3.0"
     zod: "npm:^3.25.0-canary.20250211T214501"
   peerDependencies:
@@ -13995,15 +13994,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"serialize-error@npm:^12.0.0":
-  version: 12.0.0
-  resolution: "serialize-error@npm:12.0.0"
-  dependencies:
-    type-fest: "npm:^4.31.0"
-  checksum: 10/733ddb9a2bd86515d18ef43f6bcb1f55a9d9b900944420e5606725668e64b752e5da971071d8fe1562961a926796257d2edb9fad828ec90a35cc6c32a75449bb
-  languageName: node
-  linkType: hard
-
 "serve-static@npm:^2.1.0":
   version: 2.2.0
   resolution: "serve-static@npm:2.2.0"
@@ -14989,7 +14979,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^4.31.0, type-fest@npm:^4.38.0":
+"type-fest@npm:^4.38.0":
   version: 4.38.0
   resolution: "type-fest@npm:4.38.0"
   checksum: 10/7e29b678dca2dee071380ace370fecb7fa177faa557125134dd24ce784d90f84bf55ebf143092308f090d59e52a5b78653d63c8e5ad96e9f089e0029223e6221
