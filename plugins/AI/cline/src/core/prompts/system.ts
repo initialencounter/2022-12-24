@@ -1,12 +1,11 @@
 import { getShell } from "../../utils/shell"
 import os from "os"
-// import osName from "os-name"
 import { McpHub } from "../../services/mcp/McpHub"
 
 export const SYSTEM_PROMPT = async (
-	cwd: string,
-	supportsComputerUse: boolean,
-	mcpHub: McpHub,
+  cwd: string,
+  supportsComputerUse: boolean,
+  mcpHub: McpHub,
 ) => {
 
   const osName =(await eval('import("os-name")')).default
@@ -39,9 +38,8 @@ Always adhere to this format for the tool use to ensure proper parsing and execu
 
 # Tools
 
-${
-	mcpHub.getMode() !== "off"
-		? `
+${mcpHub.getMode() !== "off"
+      ? `
 ## use_mcp_tool
 Description: Request to use a tool provided by a connected MCP server. Each MCP server can provide multiple tools with different capabilities. Tools have defined input schemas that specify required and optional parameters.
 Parameters:
@@ -60,12 +58,11 @@ Usage:
 </arguments>
 </use_mcp_tool>
 `
-		: ""
-}
+      : ""
+    }
 
-${
-	mcpHub.getMode() !== "off"
-		? `
+${mcpHub.getMode() !== "off"
+      ? `
 
 
 ## attempt_completion
@@ -114,8 +111,8 @@ Your final result description here
 }
 </arguments>
 </use_mcp_tool>`
-		: ""
-}
+      : ""
+    }
 
 ## Example 3:
 
@@ -145,9 +142,8 @@ It is crucial to proceed step-by-step, waiting for the user's message after each
 
 By waiting for and carefully considering the user's response after each tool use, you can react accordingly and make informed decisions about how to proceed with the task. This iterative process helps ensure the overall success and accuracy of your work.
 
-${
-	mcpHub.getMode() !== "off"
-		? `
+${mcpHub.getMode() !== "off"
+      ? `
 ====
 
 MCP SERVERS
@@ -158,45 +154,44 @@ The Model Context Protocol (MCP) enables communication between the system and lo
 
 When a server is connected, you can use the server's tools via the \`use_mcp_tool\` tool, and access the server's resources via the \`access_mcp_resource\` tool.
 
-${
-	mcpHub.getServers().length > 0
-		? `${mcpHub
-				.getServers()
-				.filter((server) => server.status === "connected")
-				.map((server) => {
-					const tools = server.tools
-						?.map((tool) => {
-							const schemaStr = tool.inputSchema
-								? `    Input Schema:
+${mcpHub.getServers().length > 0
+        ? `${mcpHub
+          .getServers()
+          .filter((server) => server.status === "connected")
+          .map((server) => {
+            const tools = server.tools
+              ?.map((tool) => {
+                const schemaStr = tool.inputSchema
+                  ? `    Input Schema:
     ${JSON.stringify(tool.inputSchema, null, 2).split("\n").join("\n    ")}`
-								: ""
+                  : ""
 
-							return `- ${tool.name}: ${tool.description}\n${schemaStr}`
-						})
-						.join("\n\n")
+                return `- ${tool.name}: ${tool.description}\n${schemaStr}`
+              })
+              .join("\n\n")
 
-					const templates = server.resourceTemplates
-						?.map((template) => `- ${template.uriTemplate} (${template.name}): ${template.description}`)
-						.join("\n")
+            const templates = server.resourceTemplates
+              ?.map((template) => `- ${template.uriTemplate} (${template.name}): ${template.description}`)
+              .join("\n")
 
-					const resources = server.resources
-						?.map((resource) => `- ${resource.uri} (${resource.name}): ${resource.description}`)
-						.join("\n")
+            const resources = server.resources
+              ?.map((resource) => `- ${resource.uri} (${resource.name}): ${resource.description}`)
+              .join("\n")
 
-					const config = JSON.parse(server.config)
+            const config = JSON.parse(server.config)
 
-					return (
-						`## ${server.name} (\`${config.command}${config.args && Array.isArray(config.args) ? ` ${config.args.join(" ")}` : ""}\`)` +
-						(tools ? `\n\n### Available Tools\n${tools}` : "") +
-						(templates ? `\n\n### Resource Templates\n${templates}` : "") +
-						(resources ? `\n\n### Direct Resources\n${resources}` : "")
-					)
-				})
-				.join("\n\n")}`
-		: "(No MCP servers currently connected)"
-}`
-		: ""
-}
+            return (
+              `## ${server.name} (\`${config.command}${config.args && Array.isArray(config.args) ? ` ${config.args.join(" ")}` : ""}\`)` +
+              (tools ? `\n\n### Available Tools\n${tools}` : "") +
+              (templates ? `\n\n### Resource Templates\n${templates}` : "") +
+              (resources ? `\n\n### Direct Resources\n${resources}` : "")
+            )
+          })
+          .join("\n\n")}`
+        : "(No MCP servers currently connected)"
+      }`
+      : ""
+    }
 
 ====
 
@@ -215,11 +210,10 @@ RULES
 - You are only allowed to ask the user questions using the ask_followup_question tool. Use this tool only when you need additional details to complete a task, and be sure to use a clear and concise question that will help you move forward with the task. However if you can use the available tools to avoid having to ask the user questions, you should do so. For example, if the user mentions a file that may be in an outside directory like the Desktop, you should use the list_files tool to list the files in the Desktop and check if the file they are talking about is there, rather than asking the user to provide the file path themselves.
 - When executing commands, if you don't see the expected output, assume the terminal executed the command successfully and proceed with the task. The user's terminal may be unable to stream the output back properly. If you absolutely need to see the actual terminal output, use the ask_followup_question tool to request the user to copy and paste it back to you.
 - The user may provide a file's contents directly in their message, in which case you shouldn't use the read_file tool to get the file contents again since you already have it.
-- Your goal is to try to accomplish the user's task, NOT engage in a back and forth conversation.${
-	supportsComputerUse
-		? `\n- The user may ask generic non-development tasks, such as "what\'s the latest news" or "look up the weather in San Diego", in which case you might use the browser_action tool to complete the task if it makes sense to do so, rather than trying to create a website or using curl to answer the question.${mcpHub.getMode() !== "off" ? "However, if an available MCP server tool or resource can be used instead, you should prefer to use it over browser_action." : ""}`
-		: ""
-}
+- Your goal is to try to accomplish the user's task, NOT engage in a back and forth conversation.${supportsComputerUse
+      ? `\n- The user may ask generic non-development tasks, such as "what\'s the latest news" or "look up the weather in San Diego", in which case you might use the browser_action tool to complete the task if it makes sense to do so, rather than trying to create a website or using curl to answer the question.${mcpHub.getMode() !== "off" ? "However, if an available MCP server tool or resource can be used instead, you should prefer to use it over browser_action." : ""}`
+      : ""
+    }
 - NEVER end attempt_completion result with a question or request to engage in further conversation! Formulate the end of your result in a way that is final and does not require further input from the user.
 - You are STRICTLY FORBIDDEN from starting your messages with "Great", "Certainly", "Okay", "Sure". You should NOT be conversational in your responses, but rather direct and to the point. For example you should NOT say "Great, I've updated the CSS" but instead something like "I've updated the CSS". It is important you be clear and technical in your messages.
 - When presented with images, utilize your vision capabilities to thoroughly examine them and extract meaningful information. Incorporate these insights into your thought process as you accomplish the user's task.
@@ -227,18 +221,16 @@ RULES
 - Before executing commands, check the "Actively Running Terminals" section in environment_details. If present, consider how these active processes might impact your task. For example, if a local development server is already running, you wouldn't need to start it again. If no active terminals are listed, proceed with command execution as normal.
 - When using the replace_in_file tool, you must include complete lines in your SEARCH blocks, not partial lines. The system requires exact line matches and cannot match partial lines. For example, if you want to match a line containing "const x = 5;", your SEARCH block must include the entire line, not just "x = 5" or other fragments.
 - When using the replace_in_file tool, if you use multiple SEARCH/REPLACE blocks, list them in the order they appear in the file. For example if you need to make changes to both line 10 and line 50, first include the SEARCH/REPLACE block for line 10, followed by the SEARCH/REPLACE block for line 50.
-- It is critical you wait for the user's response after each tool use, in order to confirm the success of the tool use. For example, if asked to make a todo app, you would create a file, wait for the user's response it was created successfully, then create another file if needed, wait for the user's response it was created successfully, etc.${
-	supportsComputerUse
-		? " Then if you want to test your work, you might use browser_action to launch the site, wait for the user's response confirming the site was launched along with a screenshot, then perhaps e.g., click a button to test functionality if needed, wait for the user's response confirming the button was clicked along with a screenshot of the new state, before finally closing the browser."
-		: ""
-}
-${
-	mcpHub.getMode() !== "off"
-		? `
+- It is critical you wait for the user's response after each tool use, in order to confirm the success of the tool use. For example, if asked to make a todo app, you would create a file, wait for the user's response it was created successfully, then create another file if needed, wait for the user's response it was created successfully, etc.${supportsComputerUse
+      ? " Then if you want to test your work, you might use browser_action to launch the site, wait for the user's response confirming the site was launched along with a screenshot, then perhaps e.g., click a button to test functionality if needed, wait for the user's response confirming the button was clicked along with a screenshot of the new state, before finally closing the browser."
+      : ""
+    }
+${mcpHub.getMode() !== "off"
+      ? `
 - MCP operations should be used one at a time, similar to other tool usage. Wait for confirmation of success before proceeding with additional operations.
 `
-		: ""
-}
+      : ""
+    }
 
 ====
 
@@ -265,26 +257,26 @@ You accomplish a given task iteratively, breaking it down into clear steps and w
 
 
 export function addUserInstructions(
-	settingsCustomInstructions?: string,
-	clineRulesFileInstructions?: string,
-	clineIgnoreInstructions?: string,
-	preferredLanguageInstructions?: string,
+  settingsCustomInstructions?: string,
+  clineRulesFileInstructions?: string,
+  clineIgnoreInstructions?: string,
+  preferredLanguageInstructions?: string,
 ) {
-	let customInstructions = ""
-	if (preferredLanguageInstructions) {
-		customInstructions += preferredLanguageInstructions + "\n\n"
-	}
-	if (settingsCustomInstructions) {
-		customInstructions += settingsCustomInstructions + "\n\n"
-	}
-	if (clineRulesFileInstructions) {
-		customInstructions += clineRulesFileInstructions + "\n\n"
-	}
-	if (clineIgnoreInstructions) {
-		customInstructions += clineIgnoreInstructions
-	}
+  let customInstructions = ""
+  if (preferredLanguageInstructions) {
+    customInstructions += preferredLanguageInstructions + "\n\n"
+  }
+  if (settingsCustomInstructions) {
+    customInstructions += settingsCustomInstructions + "\n\n"
+  }
+  if (clineRulesFileInstructions) {
+    customInstructions += clineRulesFileInstructions + "\n\n"
+  }
+  if (clineIgnoreInstructions) {
+    customInstructions += clineIgnoreInstructions
+  }
 
-	return `
+  return `
 ====
 
 USER'S CUSTOM INSTRUCTIONS

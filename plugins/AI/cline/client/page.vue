@@ -33,7 +33,7 @@
 
           <details class="mt-2" open>
             <summary class="cursor-pointer">
-              可用工具 ({{ server.tools.length }})
+              可用工具 ({{ server.tools?.length }})
             </summary>
             <div class="mt-2">
               <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -72,7 +72,6 @@ const error = ref(null)
 
 
 send('get-mcp-servers').then(data => {
-  console.log(data, "data")
   servers.value = data
   loading.value = false
 })
