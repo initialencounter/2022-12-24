@@ -6,7 +6,7 @@ export interface WebHookResponse {
   command: string
   args: string[]
   options: Record<string, any>
-  taskId: string
+  taskId?: string
 }
 
 export interface TaskResult {

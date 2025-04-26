@@ -115,6 +115,7 @@
     "koishi-plugin-ffmpeg": "^1.1.0",
     "koishi-plugin-group-manage": "1.3.1",
     "koishi-plugin-markdown-to-image-service": "1.2.5",
+    "koishi-plugin-news": "0.5.0",
     "koishi-plugin-nix": "0.0.3",
     "koishi-plugin-open-vits": "^2.0.6",
     "koishi-plugin-puppeteer": "^3.9.0",
@@ -123,6 +124,7 @@
     "koishi-plugin-telemetry": "0.2.3",
     "koishi-plugin-theme-vanilla": "^1.1.0",
     "koishi-plugin-toutai": "1.1.9",
+    "koishi-plugin-weather": "2.0.4",
     "yakumo-esbuild-yaml": "^0.3.1",
     "yakumo-publish-sync": "^0.3.3"
   }

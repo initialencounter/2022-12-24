@@ -6,10 +6,15 @@ Convert koishi command to mcp tools
 
 使用 http 请求调用 koishi 的命令
 
-## TODO
+## 使用方法
 
-- 将所有 koishi插件的命令通过 http 的方式命令转成 mcp-tool 供 AI 调用
-
+```json
+"koishi": {
+  "url": "http://127.0.0.1:5140/sse",
+  "disabled": false,
+  "autoApprove": []
+}
+```
 
 ## 请求示例
 
@@ -19,7 +24,7 @@ command --options1 options1value --options2 options2value arg1 arg2
 ```
 
 ```shell
-curl --location --request POST 'http://127.0.0.1:5140/mcp' \
+curl --location --request POST 'http://127.0.0.1:5140/executor' \
 --header 'Content-Type: application/json' \
 --header 'Accept: */*' \
 --header 'Host: 127.0.0.1:5140' \

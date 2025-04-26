@@ -1,6 +1,11 @@
 import { Context, Element, Logger } from "koishi";
 import { TaskResult } from "./utils";
 
+declare module 'koishi' {
+  interface Events {
+    "mcp-result"(taskId: string, result: string): void
+  }
+}
 
 export const inject = ['server']
 const logger = new Logger('mcp-server')
@@ -19,11 +24,13 @@ export function apply(ctx: Context) {
       if (!taskId || !command) {
         return;
       }
-      const executeCommand = `${command.trim()} ${commandOptions.trim()} ${args.join(' ').trim()}`
+      const executeCommand = `${command.trim()} ${args.join(' ').trim()} ${commandOptions.trim()}`
       logger.info(`MCP适配器代理执行命令: ${executeCommand}`)
       const result = await session.execute(executeCommand, true);
+      ctx.emit("mcp-result", taskId, elementToText(result));
       TaskResult[taskId] = { result: elementToText(result), timestamp: Date.now() };
     });
+
 
   ctx.server.post("/get-mcp-result", async (ctx1) => {
     const taskId = ctx1.request.body.taskId;

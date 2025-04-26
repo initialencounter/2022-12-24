@@ -19,11 +19,9 @@ class McpBot<C extends Context> extends Bot<C> {
 namespace McpBot {
   export interface Config {
     selfId: string
-    path: string
   }
   export const Config: Schema<Config> = Schema.object({
     selfId: Schema.string().default('0').description('机器人的唯一标识'),
-    path: Schema.string().default('/mcp').description('mcp 服务器的路径'),
   });
 }
 
