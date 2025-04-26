@@ -12,7 +12,7 @@ const logger = new Logger('mcp-server')
 const TaskResult: Record<string, { result: any; timestamp: number }> = {};
 
 export function apply(ctx: Context) {
-  ctx.command("EhSH6624QAubdPQvZvPCW", "mcp 执行器")
+  ctx.command("EhSH6624QAubdPQvZvPCW", "mcp 执行器", {hidden: true})
     .option("command", "-m <command:string>")
     .option("taskId", "-t <taskId:string>")
     .option("options", "-o <options:string>")
