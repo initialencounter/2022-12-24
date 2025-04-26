@@ -72,42 +72,8 @@ function commandToMCPTool(ctx: Context, command: Command): MCPTool {
     if (!('hidden' in opt) || !opt.hidden) return opt
   })
   const paramsSchema: z.ZodRawShape = {
-    args: z.string().array().describe(`
-Please enter the corresponding combination of command parameters according to the JSON format description of the following command-line parameters. Requirement:
-
-- Only output the actual available combinations of command parameters
-
-- Each parameter can be used alone or in combination
-
-- Follow the standard command-line syntax norms
-
-- No explanation is needed. Just output the possible combinations directly
-
-Sample input format:\n${JSON.stringify(args)}`),
-    options: z.string().describe(`
-Please input the corresponding JSON format command option output based on the provided command option definitions for the JavaScript object array format. It is required to strictly follow the structure of the input data for conversion.
-
-Input format description:
-
-Each option object contains the following key fields:
-
-- name: Option name (as the key for outputting JSON)
-
-- type: Option type (determines the type of the output value)
-
-Other fields (such as syntax, etc.) can be ignored
-
-Output requirements:
-
-- Only include the option of type: 'boolean'
-
-- All Boolean options output true by default
-
-- The field name is consistent with the input "name" field
-
-- Output in standard JSON format
-
-Sample input format:\n${JSON.stringify(options)}`),
+    args: z.string().array().describe(`Sample input format:\n${JSON.stringify(args)}`),
+    options: z.string().describe(`Sample input format:\n${JSON.stringify(options)}`),
   }
   const cb = async ({ args, options }) => {
     const port = ctx.server.port
@@ -154,7 +120,45 @@ Sample input format:\n${JSON.stringify(options)}`),
 export async function setupMCPServer(ctx: Context) {
   const server = new McpServer({
     name: "koishi-mcp",
-    version: "1.0.0"
+    version: "1.0.0",
+    description: `Koishi MCP Server\n\n
+# This mcp tool from this koishi-mcp service only contains two parameters, namely args and options. Please strictly follow the following rules to determine the values of the parameters
+
+## args:
+
+Please enter the corresponding combination of command parameters according to the JSON format description of the following command-line parameters. Requirement:
+
+- Only output the actual available combinations of command parameters
+
+- Each parameter can be used alone or in combination
+
+- Follow the standard command-line syntax norms
+
+- No explanation is needed. Just output the possible combinations directly
+
+## options:
+
+Please input the corresponding JSON format command option output based on the provided command option definitions for the JavaScript object array format. It is required to strictly follow the structure of the input data for conversion.
+
+Input format description:
+
+Each option object contains the following key fields:
+
+- name: Option name (as the key for outputting JSON)
+
+- type: Option type (determines the type of the output value)
+
+Other fields (such as syntax, etc.) can be ignored
+
+Output requirements:
+
+- Only include the option of type: 'boolean'
+
+- All Boolean options output true by default
+
+- The field name is consistent with the input "name" field
+
+- Output in standard JSON format`,
   });
   const $ = ctx.$commander
   const commands = $._commandList.filter(cmd => cmd.parent === null)
