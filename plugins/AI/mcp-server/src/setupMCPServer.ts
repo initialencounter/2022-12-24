@@ -2,7 +2,7 @@ import { McpServer, ToolCallback } from "@modelcontextprotocol/sdk/server/mcp.js
 import { } from "@koishijs/plugin-server"
 import { z } from "zod";
 import { Command, Computed, Context, h, Session } from "koishi";
-import { WebHookResponse } from "./utils";
+import { generateTaskId, WebHookResponse } from "./utils";
 
 declare module 'koishi' {
   interface Events {
@@ -77,32 +77,15 @@ function commandToMCPTool(ctx: Context, command: Command): MCPTool {
   }
 
   const cb = async ({ args, options }) => {
-    const port = ctx.server.port
     let optionsObj = {}
     try { optionsObj = JSON.parse(options) } catch (e) { }
-    const taskId: string = await ctx.http.post(`http://127.0.0.1:${port}/executor`, {
-      command: name,
-      args: args,
-      options: optionsObj,
-    })
+
+    const taskId = generateTaskId()
+
     return await new Promise((resolve, reject) => {
-      let count = 0
-      const dispose = setInterval(async () => {
-        count++
-        let result: string
-        try {
-          result = await ctx.http.post(`http://127.0.0.1:${port}/get-mcp-result`, {
-            taskId
-          }, { responseType: 'text' })
-        } catch (e) {
-          ctx.logger.error(`Error: ${e}`)
-          if (count > 30 * 60 * 10) {
-            clearInterval(dispose)
-            reject(new Error('timeout'))
-          }
-        };
-        if (result) {
-          clearInterval(dispose)
+      const dispose = ctx.on('mcp-result', (taskId1: string, result: string) => {
+        if (taskId === taskId1) {
+          dispose()
           resolve({
             content: [
               {
@@ -112,7 +95,17 @@ function commandToMCPTool(ctx: Context, command: Command): MCPTool {
             ],
           });
         }
-      }, 100)
+      })
+      ctx.emit("create-task", {
+        command: name,
+        args: args,
+        options: optionsObj,
+        taskId: taskId,
+      })
+      setTimeout(() => {
+        dispose()
+        reject(new Error('timeout'))
+      }, 30 * 60 * 1000)
     });
   }
   //@ts-ignore

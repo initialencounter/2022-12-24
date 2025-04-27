@@ -109,11 +109,12 @@ class McpAdapter<C extends Context> extends Adapter<C, McpBot<C>> {
   }
 
   async createTask(data: WebHookResponse) {
-    const taskId = generateTaskId()
-    data['taskId'] = taskId
+    if (!data.taskId) {
+      data.taskId = generateTaskId()
+    }
     const session = await createSession(this.bot, data)
     this.bot.dispatch(session)
-    return taskId
+    return data.taskId
   }
 }
 
