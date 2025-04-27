@@ -59,6 +59,7 @@ export class Cline {
   constructor(
     mcphub: McpHub,
     api: OpenAiCaller,
+    private sendThinking: boolean,
   ) {
     this.mcpHub = mcphub
     this.clineIgnoreController = new ClineIgnoreController(cwd)
@@ -71,9 +72,33 @@ export class Cline {
     this.result = "请求失败，请查看日志"
   }
 
+  async dispose(): Promise<void> {
+    try {
+      this.mcpHub?.dispose();
+      this.clineIgnoreController?.dispose?.();
+
+      // 清理资源
+      this.contextManager = null;
+      this.assistantMessageContent = null;
+      this.userMessageContent = null;
+      this.api = null;
+      this.session = null;
+      this.clineMessages = null;
+      this.apiConversationHistory = null;
+
+      // 标记实例已被销毁
+      this.isInitialized = false;
+      this.abandoned = true;
+
+      this.logger.info("Cline instance disposed successfully");
+    } catch (error) {
+      this.logger.error("Error during Cline disposal:", error);
+    }
+  }
   // Task lifecycle
 
   async startTask(task: string, session: Session): Promise<void> {
+    this.logger.info("Starting Cline task with content:", task)
     this.session = session
     // conversationHistory (for API) and clineMessages (for webview) need to be in sync
     // if the extension process were killed, then on restart the clineMessages might not be empty, so we need to set it to [] when we create a new Cline client (otherwise webview would show stale messages from previous session)
@@ -230,8 +255,8 @@ export class Cline {
   }
 
   async say(type: ClineSay, text?: string): Promise<undefined> {
-    this.session.send(`Cline Saying type:\n${type}, text:\n${text}`)
-    this.logger.info("Saying", type, text)
+    if (this.sendThinking) this.session.send(`Cline Saying type:\n${type}, text:\n${text}`)
+    this.logger.info(`Cline Saying type:\n${type}, text:\n${text}`)
   }
   async presentAssistantMessage() {
     this.needContinue = false
