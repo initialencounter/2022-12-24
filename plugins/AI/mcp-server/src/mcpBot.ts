@@ -30,6 +30,7 @@ namespace McpBot {
   export interface Config {
     selfId: string
     commandAdditionDescription: CommandAdditionDescription[]
+    sleepTime: number
   }
   export const Config: Schema<Config> = Schema.object({
     selfId: Schema.string().default('0').description('机器人的唯一标识'),
@@ -45,6 +46,7 @@ namespace McpBot {
         },
       ]
     ).description('命令的覆盖描述会覆盖掉默认的描述'),
+    sleepTime: Schema.number().default(1000).description('等待全部指令加载的时间，单位为毫秒'),
   });
 }
 

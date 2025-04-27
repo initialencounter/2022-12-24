@@ -11,7 +11,7 @@ class MCPRouter {
     this.initialize()
   }
   async initialize() {
-    // await this.ctx.sleep(5*1000)
+    await this.ctx.sleep(this.config.sleepTime);
     const transports = new Map<string, SSEServerTransport>();
     const mcpServer = await setupMCPServer(this.ctx, this.config);
     this.ctx.server.get('/sse', async (ctx) => {
