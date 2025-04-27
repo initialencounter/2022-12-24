@@ -2,6 +2,7 @@ import { Context, Bot, Logger, Schema } from "koishi";
 import McpAdapter from "./adapter";
 import * as excutor from "./excutor";
 import { McpMessenger } from "./message";
+import MCPRouter from "./MCPRouter";
 
 export const name = "mcp-bot";
 class McpBot<C extends Context> extends Bot<C> {
@@ -12,6 +13,7 @@ class McpBot<C extends Context> extends Bot<C> {
     this.platform = 'mcp-server'
     this.selfId = config.selfId
     ctx.plugin(McpAdapter, this)
+    ctx.plugin(MCPRouter, config)
     ctx.plugin(excutor)
   }
 }
