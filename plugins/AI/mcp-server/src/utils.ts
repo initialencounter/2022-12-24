@@ -23,7 +23,9 @@ export async function createSession(bot: McpBot<Context>, data: WebHookResponse)
   const { command, args, taskId, options } = data
   const session = bot.session()
   session.type = 'message'
-  const optionsQuery = new URLSearchParams(options).toString()
+  let optionsQuery = ''
+  try { optionsQuery = new URLSearchParams(options).toString() } catch { }
+
   const content = `EhSH6624QAubdPQvZvPCW -t ${taskId} -m ${command} -o ${optionsQuery} ${args.join(' ')}`
   const name = 'mcp'
   bot.logger.info(`MCP适配器:${yellow}${bot.config.selfId}${reset} 收到消息: 发送者: ${green}${name}${reset} 内容: ${content}`)

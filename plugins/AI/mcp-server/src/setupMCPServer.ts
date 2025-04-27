@@ -75,14 +75,17 @@ function commandToMCPTool(ctx: Context, command: Command): MCPTool {
     args: z.string().array().describe(`Sample input format:\n${JSON.stringify(args)}`),
     options: z.string().describe(`Sample input format:\n${JSON.stringify(options)}`),
   }
+
   const cb = async ({ args, options }) => {
     const port = ctx.server.port
+    let optionsObj = {}
+    try { optionsObj = JSON.parse(options) } catch (e) { }
     const taskId: string = await ctx.http.post(`http://127.0.0.1:${port}/executor`, {
       command: name,
       args: args,
-      options: JSON.parse(options),
+      options: optionsObj,
     })
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       let count = 0
       const dispose = setInterval(async () => {
         count++
@@ -97,7 +100,6 @@ function commandToMCPTool(ctx: Context, command: Command): MCPTool {
             clearInterval(dispose)
             reject(new Error('timeout'))
           }
-          return; // Continue polling if error is not timeout
         };
         if (result) {
           clearInterval(dispose)
