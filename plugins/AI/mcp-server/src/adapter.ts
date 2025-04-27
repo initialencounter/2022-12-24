@@ -36,11 +36,12 @@ class McpAdapter<C extends Context> extends Adapter<C, McpBot<C>> {
   }
 
   async initialize() {
+    await this.ctx.sleep(5 * 1000)
     this.ctx.on('create-task', async (data: WebHookResponse) => {
       return await this.createTask(data)
     })
     const transports = new Map<string, SSEServerTransport>();
-    const mcpServer = await setupMCPServer(this.ctx)
+    const mcpServer = await setupMCPServer(this.ctx, this.bot.config);
     this.ctx.server.get('/sse', async (ctx) => {
       ctx.set({
         'Content-Type': 'text/event-stream',

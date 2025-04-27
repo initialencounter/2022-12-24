@@ -3,6 +3,7 @@ import { } from "@koishijs/plugin-server"
 import { z } from "zod";
 import { Command, Computed, Context, h, Session } from "koishi";
 import { generateTaskId, WebHookResponse } from "./utils";
+import McpBot from "./mcpBot";
 
 declare module 'koishi' {
   interface Events {
@@ -64,9 +65,14 @@ interface Options {
   required?: boolean;
 }
 
-function commandToMCPTool(ctx: Context, command: Command): MCPTool {
+function commandToMCPTool(ctx: Context, command: Command, commandAdditionDescription: Record<string, string>): MCPTool {
   const name = command.name
-  const description = ctx.i18n.get(`commands.${name}.description`, ['zh-CN'])['zh-CN'] ?? ''
+  let description = ''
+  if (commandAdditionDescription[name]) {
+    description = commandAdditionDescription[name]
+  } else {
+    description = ctx.i18n.get(`commands.${name}.description`, ['zh-CN'])['zh-CN'] ?? ''
+  }
   const args = command._arguments
   const options: Options[] = Object.values(command._options).map((opt) => {
     if (!('hidden' in opt) || !opt.hidden) return opt
@@ -112,7 +118,11 @@ function commandToMCPTool(ctx: Context, command: Command): MCPTool {
   return { name, description, paramsSchema, cb }
 
 }
-export async function setupMCPServer(ctx: Context) {
+export async function setupMCPServer(ctx: Context, config: McpBot.Config) {
+  const commandAdditionDescriptionMap = {}
+  for (const commandDesc of config.commandAdditionDescription) {
+    commandAdditionDescriptionMap[commandDesc.name] = commandDesc.description
+  }
   const server = new McpServer({
     name: "koishi-mcp",
     version: "1.0.0",
@@ -156,9 +166,9 @@ Output requirements:
 - Output in standard JSON format`,
   });
   const $ = ctx.$commander
-  const commands = $._commandList.filter(cmd => cmd.parent === null)
+  const commands = $._commandList.filter(cmd => !cmd.config?.hidden)
   for (const command of commands) {
-    const { name, description, paramsSchema, cb } = commandToMCPTool(ctx, command)
+    const { name, description, paramsSchema, cb } = commandToMCPTool(ctx, command, commandAdditionDescriptionMap)
     server.tool(name, description, paramsSchema, cb)
   }
 
