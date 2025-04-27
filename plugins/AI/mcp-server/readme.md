@@ -8,6 +8,8 @@ Convert koishi command to mcp tools
 
 ## 使用方法
 
+如果 cline 插件报错 `Invalid content type, expected "text/event-stream"`, 则需要在 cline 端重载 mcp-server 配置
+
 ```json
 "koishi": {
   "url": "http://127.0.0.1:5140/sse",
