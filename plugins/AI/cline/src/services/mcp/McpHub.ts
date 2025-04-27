@@ -137,7 +137,7 @@ export class McpHub {
   }
 
 
-  private async initializeMcpServers(): Promise<void> {
+  async initializeMcpServers(): Promise<void> {
     const settings = await this.readAndValidateMcpSettingsFile()
     if (settings) {
       await this.updateServerConnections(settings.mcpServers)

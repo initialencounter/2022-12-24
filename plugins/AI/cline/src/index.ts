@@ -109,6 +109,7 @@ namespace ClineBot {
 
   export async function withCline<T>(mcpHub: McpHub, api: OpenAiCaller, sendThinking: boolean,
     fn: (cline: Cline) => Promise<T>): Promise<T> {
+    await mcpHub.initializeMcpServers()
     const cline = new Cline(mcpHub, api, sendThinking)
     try {
       return await fn(cline)
