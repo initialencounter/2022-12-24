@@ -8,7 +8,20 @@
     "lib",
     "dist"
   ],
-  "license": "MIT",
+  "license": "AGPL-3.0",
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/2022-12-24.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/2022-12-24/issues"
+  },
+  "homepage": "https://github.com/initialencounter/2022-12-24/tree/neat/plugins/Behavior/tapsss#readme",
   "keywords": [
     "chatbot",
     "koishi",
