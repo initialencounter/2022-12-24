@@ -10526,6 +10526,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"koishi-plugin-tapsss@workspace:plugins/Behavior/tapsss":
+  version: 0.0.0-use.local
+  resolution: "koishi-plugin-tapsss@workspace:plugins/Behavior/tapsss"
+  dependencies:
+    koishi-plugin-adapter-onebot: "npm:^6.8.0"
+    koishi-plugin-puppeteer: "npm:^3.9.0"
+    outdent: "npm:^0.8.0"
+  peerDependencies:
+    koishi: ^4.18.7
+  languageName: unknown
+  linkType: soft
+
 "koishi-plugin-tc-sst@workspace:plugins/Tool/tc-sst":
   version: 0.0.0-use.local
   resolution: "koishi-plugin-tc-sst@workspace:plugins/Tool/tc-sst"
@@ -12153,6 +12165,13 @@ __metadata:
   bin:
     osx-release: cli.js
   checksum: 10/48f442f836e514d08ce73ef786db8d7cf0958e8c64a04548767ddf1081454e323fa3b7b83dcf084ecf70fe304f484e6dab0fe33e80459ac0cf7d15c1bbbe9243
+  languageName: node
+  linkType: hard
+
+"outdent@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "outdent@npm:0.8.0"
+  checksum: 10/a556c5c308705ad4e3441be435f2b2cf014cb5f9753a24cbd080eadc473b988c77d0d529a6a9a57c3931fb4178e5a81d668cc4bc49892b668191a5d0ba3df76e
   languageName: node
   linkType: hard
 
