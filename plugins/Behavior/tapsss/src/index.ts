@@ -30,7 +30,9 @@ class Tapsss {
         )
         const el = h.parse(imgEle)
         const imgUrl = el[0].attrs.src
-        session.onebot.bot.internal.setQqAvatar(imgUrl)
+        if (config.setAvatar) {
+          session.onebot.bot.internal.setQqAvatar(imgUrl)
+        }
         if (config.snedXibao) {
           session.send(imgEle)
         }
@@ -49,6 +51,7 @@ namespace Tapsss {
   }
 
   export interface Config {
+    setAvatar: boolean
     snedXibao: boolean
     listenUsers: string[]
     xibao: StyleConfig
@@ -60,7 +63,8 @@ namespace Tapsss {
   }
 
   export const Config = Schema.object({
-    snedXibao: Schema.boolean().default(false).description('是否发送喜报'),
+    snedXibao: Schema.boolean().default(true).description('是否发送喜报'),
+    setAvatar: Schema.boolean().default(false).description('是否设置头像'),
     listenUsers: Schema.array(Schema.string()).default(['6747720298']).description('监听的用户列表，默认监听小萌'),
     xibao: Schema.object({
       fontFamily: Schema.string().default('"HarmonyOS Sans SC", "Source Han Sans CN", sans-serif')
