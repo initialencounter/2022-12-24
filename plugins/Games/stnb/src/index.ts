@@ -44,13 +44,13 @@ export const usage = `${readFileSync(resolve(__dirname, '../readme.md')).toStrin
 export function apply(ctx: Context, config: Config) {
   ctx.i18n.define('zh', require('./locales/zh'))
   ctx.plugin(saolei)
-  ctx.command('stnb <prompt:text>')
+  ctx.command('stnb <time:number> <bvs:number> <mode:number>', '扫雷stnb计算')
     .alias(config.cmd)
-    .action(async ({ session, options }, prompt) => {
+    .action(async ({ session }, ...prompt) => {
       try {
-        const time: number = parseInt(prompt.split(' ')[0])
-        const bvs: number = parseInt(prompt.split(' ')[1])
-        const mode: number = parseInt(prompt.split(' ')[2])
+        const time: number = prompt?.[0]
+        const bvs: number = prompt?.[1]
+        let mode: number = prompt?.[2] ?? 3
         if (!bvs) {
           return session.text('.nobvs')
         }
@@ -59,6 +59,9 @@ export function apply(ctx: Context, config: Config) {
         }
         if (!mode) {
           return session.text('.nomode')
+        }
+        if (![1, 2, 3].includes(Number(mode))){
+          mode = 3
         }
         return compute(mode, time, bvs)
       }
