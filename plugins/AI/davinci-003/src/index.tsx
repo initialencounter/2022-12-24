@@ -587,8 +587,8 @@ class DVc extends Dvc {
     // 查询余额
     logger.info(
       `key${this.key_number + 1}. ${
-        this.pluginConfig.key[this.key_number]
-      } 报错：${String(e)}`
+        this.pluginConfig.key[this.key_number].slice(0, 10)
+      }*** 报错：${String(e)}`
     );
     // 余额为 0 ,切换 key
     this.key_number_pp();
