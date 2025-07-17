@@ -33,7 +33,7 @@ jobs:
       - name: Build
         run: |
           yarn build tapsss
-          cp plugins/Behavior/tapsss/src/xibao.jpg plugins/Behavior/tapsss/lib/xibao.jpg
+          cp plugins/Behavior/tapsss/src/xibao.jpg plugins/Behavior/tapsss/lib/xiBao.jpg
       - name: Publish
         run: |
           npm config set provenance true
