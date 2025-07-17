@@ -1,3 +1,6 @@
+import { Schema } from "koishi";
+import { Rule } from "./activeMsg";
+
 export interface PostList {
     code: number;
     data: Datum[];
@@ -139,3 +142,11 @@ export interface DatumUser {
     uid: string;
     vip: boolean;
 }
+
+export interface PostListConfig {
+  rules: Rule[]
+}
+
+export const PostListConfig: Schema<PostListConfig> = Schema.object({
+  rules: Schema.array(Rule).description('推送规则'),
+}).description('帖子列表配置');

@@ -6,7 +6,8 @@ import { GameNewsConfig } from "./types/gameNewsConfig";
 import XiBao from "./service/xiBao";
 import { XiBaoConfig } from "./types/xibao";
 import ActiveMsg from "./service/activeMsg";
-import { Rule } from "./types/activeMsg";
+import PostListService from "./service/postList";
+import { PostListConfig } from "./types/postList";
 
 class Tapsss {
   constructor(ctx: Context, config: Tapsss.Config) {
@@ -14,6 +15,7 @@ class Tapsss {
     ctx.plugin(XiBao, config.xiBao);
     ctx.plugin(ActiveMsg);
     ctx.plugin(GameNewsProvider, config.gameNews);
+    ctx.plugin(PostListService, config.postList);
   }
 }
 
@@ -22,11 +24,13 @@ namespace Tapsss {
     http: HttpServiceConfig;
     gameNews: GameNewsConfig;
     xiBao: XiBaoConfig;
+    postList: PostListConfig;
   }
   export const Config: Schema<Config> = Schema.object({
     http: HttpServiceConfig.description('HTTP 服务配置。'),
     gameNews: GameNewsConfig.description('游戏资讯服务配置。'),
     xiBao: XiBaoConfig.description('喜报渲染配置。'),
+    postList: PostListConfig.description('帖子推送配置。'),
   });
 }
 
