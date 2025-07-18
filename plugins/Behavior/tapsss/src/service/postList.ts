@@ -38,7 +38,7 @@ class PostListService extends Service {
 
   private async initializeLatestTimes(): Promise<void> {
     try {
-      const json = await this.fetchPostList(0, 0, 20);
+      const json = await this.fetchPostList({ type: 0, page: 0, count: 20 });
       if (json.data.length > 0) {
         // 排除置顶帖子，只考虑普通帖子来初始化时间
         const normalPosts = json.data.filter(post => post.stick === 0);
@@ -82,7 +82,7 @@ class PostListService extends Service {
     let shouldContinue = true;
 
     while (shouldContinue) {
-      const json = await this.fetchPostList(0, page, 20);
+      const json = await this.fetchPostList({ type: 0, page, count: 20 });
 
       if (!json.data || json.data.length === 0) {
         break;
@@ -155,18 +155,10 @@ class PostListService extends Service {
     }
   }
 
-  async fetchPostList(type: number = 0, page: number = 0, count: number = 20): Promise<PostList> {
+  async fetchPostList(params: { type: number, page: number, count: number }): Promise<PostList> {
     const path = '/Minesweeper/post/list';
-    const body = this.ctx.httpService.encryptBody(`type=${type}&page=${page}&count=${count}`);
-    const timeStamp = Date.now().toString();
-    // const timeStamp = '1752668107525'; // 获取当前时间戳
-    const apiKey = this.ctx.httpService.makeApiKey(body, timeStamp);
-    const headers = this.ctx.httpService.headers;
-    headers['time-stamp'] = timeStamp;
-    headers['api-key'] = apiKey;
-    headers['Content-Length'] = body.length.toString(); // 获取字符串长度
-    headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8';
-    return this.ctx.httpService.executeRequest<PostList>(path, 'POST', headers, body);
+    const method = 'POST';
+    return this.ctx.httpService.executeRequest<PostList>(path, method, params);
   }
 }
 

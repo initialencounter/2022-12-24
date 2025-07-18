@@ -1,7 +1,7 @@
-import {Context, HTTP, Service} from "koishi";
-import {computeMD5} from "../utils/md5";
-import {aesEcbEncrypt, extractJsonFromEncrypted} from "../utils/aes";
-import {Headers, HttpServiceConfig} from "../types/httpService";
+import { Context, HTTP, Service } from "koishi";
+import { computeMD5 } from "../utils/md5";
+import { aesEcbEncrypt, extractJsonFromEncrypted } from "../utils/aes";
+import { Headers, HttpServiceConfig } from "../types/httpService";
 
 class HttpService extends Service {
   headers: Headers;
@@ -28,7 +28,18 @@ class HttpService extends Service {
     return aesEcbEncrypt(body, this.encryptSecretKey);
   }
 
-  async executeRequest<T>(path: string, method: HTTP.Method, headers: Headers, body: string): Promise<T> {
+  async executeRequest<T>(path: string, method: HTTP.Method, params: Record<string, any>): Promise<T> {
+    const data = new URLSearchParams(params).toString();
+    const body = this.encryptBody(data);
+    const timeStamp = Date.now().toString();
+    // const timeStamp = '1752668107525'; // 获取当前时间戳
+    const apiKey = this.makeApiKey(body, timeStamp);
+    const headers = this.headers;
+    headers['time-stamp'] = timeStamp;
+    headers['api-key'] = apiKey;
+    headers['Content-Length'] = body.length.toString(); // 获取字符串长度
+    headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8';
+
     try {
       const response = await fetch(`http://${headers['Host']}${path}`,
         {

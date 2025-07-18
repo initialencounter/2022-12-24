@@ -112,18 +112,10 @@ class GameNewsProvider extends Service {
      * @param page 页码
      * @param count 每页数量
      */
-  async postGameNews(page: number = 0, count: number = 20): Promise<GameNews> {
-    const urlQuery = `page=${page}&count=${count}`;
-    const body = this.ctx.httpService.encryptBody(urlQuery);
-    const timeStamp = Date.now().toString();
-    // const timeStamp = '1752668107525'; // 获取当前时间戳
-    const apiKey = this.ctx.httpService.makeApiKey(body, timeStamp);
-    const headers = this.ctx.httpService.headers;
-    headers['time-stamp'] = timeStamp;
-    headers['api-key'] = apiKey;
-    headers['Content-Length'] = body.length.toString(); // 获取字符串长度
-    headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8';
-    return this.ctx.httpService.executeRequest<GameNews>(`/Minesweeper/game/news`, 'POST', headers, body);
+  async postGameNews(params: { page: number, count: number }): Promise<GameNews> {
+    const path = '/Minesweeper/game/news';
+    const method = 'POST';
+    return this.ctx.httpService.executeRequest<GameNews>(path, method, params);
   }
 
   /**
@@ -141,7 +133,7 @@ class GameNewsProvider extends Service {
     while (hasMoreNews) {
       try {
         this.ctx.logger('GameNews').debug(`正在获取第 ${currentPage + 1} 页...`);
-        const gameNews = await this.postGameNews(currentPage, 20);
+        const gameNews = await this.postGameNews({ page: currentPage, count: 20 });
 
         if (!gameNews.data) {
           this.ctx.logger('GameNews').warn("获取游戏资讯失败，数据格式不正确");
