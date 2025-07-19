@@ -135,13 +135,35 @@ export async function apply(ctx: Context, config: Config) {
     usageName: 'face'
   })
     .alias(config.cmd)
+    // 在 apply 函数内部修改命令处理器
     .action(async ({ session }) => {
       session.send(session.text('.running'))
-      if (session.content.indexOf('url=') == -1) {
-        return session.text('.noimg')
+      
+      // 提取图片的通用函数
+      const findImage = (content: string) => {
+        const images = segment.select(content, "image")
+        return images.length > 0 ? images[0].attrs.url : null
       }
-      const image = segment.select(session.content, "image")[0];
-      const img_url = image?.attrs?.url
+    
+      // 尝试从当前消息获取图片
+      let img_url = findImage(session.content)
+      
+      // 尝试从引用消息获取图片
+      if (!img_url && session.quote) {
+        img_url = findImage(session.quote.content)
+        
+        // 添加引用信息来源提示
+        if (img_url) session.send(session.text('.quote-source'))
+      }
+    
+      // 无图片处理
+      if (!img_url) {
+        // 根据场景返回不同提示
+        return session.quote 
+          ? session.text('.noimg-quote')  // 引用消息无图片
+          : session.text('.noimg')        // 当前消息无图片
+      }
+      // ... 保持后续处理逻辑不变 ...
       let resp:Response
       try {
         if (config.type == 'BaiduApi') {
@@ -151,6 +173,20 @@ export async function apply(ctx: Context, config: Config) {
           payload["image"] = base64
           resp = await ctx.http.post(`${api_url}?access_token=${access_token}`, payload, headers)//获取颜值评分
 
+        } else {
+          resp = await ctx.http.post(config.endpoint, {
+            'type': 'url',
+            'data': img_url
+          })
+        }
+      }
+          // 克隆 payload 避免污染
+          const requestPayload = { ...payload, image: base64 }
+          resp = await ctx.http.post(
+            `${api_url}?access_token=${access_token}`,
+            requestPayload,
+            headers
+          )
         } else {
           resp = await ctx.http.post(config.endpoint, {
             'type': 'url',
