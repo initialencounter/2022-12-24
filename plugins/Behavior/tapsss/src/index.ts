@@ -10,6 +10,7 @@ import PostListService from "./service/postList";
 import { PostListConfig } from "./types/postList";
 import TapsssAPI from "./service/api";
 import PostStorage from "./service/postStorage";
+import TapsssCommand from "./plugin/command";
 import DailyStar from "./plugin/dailyStar";
 import { DailyStarConfig } from "./types/dailyStarConfig";
 
@@ -22,6 +23,7 @@ class Tapsss {
     ctx.plugin(PostListService, config.postList);
     ctx.plugin(TapsssAPI);
     ctx.plugin(PostStorage);
+    ctx.plugin(TapsssCommand);
     ctx.plugin(DailyStar, config.dailyStar);
   }
 }
