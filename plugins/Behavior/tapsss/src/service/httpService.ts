@@ -3,12 +3,19 @@ import { computeMD5 } from "../utils/md5";
 import { aesEcbEncrypt, extractJsonFromEncrypted } from "../utils/aes";
 import { Headers, HttpServiceConfig } from "../types/httpService";
 
+declare module 'koishi' {
+  interface Context {
+    httpService: HttpService;
+  }
+}
+
 class HttpService extends Service {
   headers: Headers;
   uid: string;
   token: string;
   decryptSecretKey: string
   encryptSecretKey: string
+
   constructor(ctx: Context, config: HttpServiceConfig) {
     super(ctx, 'httpService');
     this.uid = config.headers.uid || '';
@@ -17,6 +24,7 @@ class HttpService extends Service {
     this.encryptSecretKey = config.encryptSecretKey;
     this.headers = ctx.config.headers;
   }
+
   makeApiKey(
     body: string,
     timeStamp: string = Date.now().toString(),
@@ -50,6 +58,9 @@ class HttpService extends Service {
       const cipher = await response.text();
       const jsonStr = extractJsonFromEncrypted(cipher, this.decryptSecretKey) as string;
       const json = JSON.parse(jsonStr);
+      if (path === '/Minesweeper/post/comment/good') {
+        console.log('评论点赞返回:', json);
+      }
       return json as T;
     } catch (error) {
       this.ctx.logger('GameNews').error('获取游戏资讯失败:', error);

@@ -1,15 +1,13 @@
 import { Context, Service } from "koishi";
-import { Datum, GameNews } from "../types/gameNews";
-import HttpService from "./httpService";
+import { Datum } from "../types/gameNews";
 import { GameNewsConfig } from "../types/gameNewsConfig";
-import XiBao from "./xiBao";
-import ActiveMsg from "./activeMsg";
+import { } from "./xiBao";
+import { } from "./activeMsg";
+import { } from "./api";
 
 declare module 'koishi' {
   interface Context {
-    httpService: HttpService;
-    xiBao: XiBao;
-    activeMsg: ActiveMsg;
+    gameNews: GameNewsProvider;
   }
 }
 
@@ -17,6 +15,7 @@ class GameNewsProvider extends Service {
   static inject = ['xiBao', 'httpService', 'activeMsg'];
   private newsCheckTimer: NodeJS.Timeout | null = null;
   private readonly pluginConfig: GameNewsConfig;
+
   constructor(ctx: Context, config: GameNewsConfig) {
     super(ctx, 'gameNews')
     this.pluginConfig = config;
@@ -30,6 +29,7 @@ class GameNewsProvider extends Service {
       this.stopPeriodicNewsCheck();
     });
   }
+
   flitterNewsByPushRecordConfig(newsText: string, recordType: number): boolean {
     const config = this.pluginConfig.passLine;
     let mode: string = newsText.match(/(\d+x\d+)/)?.[1];
@@ -52,11 +52,9 @@ class GameNewsProvider extends Service {
           } else {
             if (newsText.includes('初级')) {
               return time >= config.minesweeper.classic.bvs.beg;
-            }
-            else if (newsText.includes('中级')) {
+            } else if (newsText.includes('中级')) {
               return time >= config.minesweeper.classic.bvs.int;
-            }
-            else if (newsText.includes('高级')) {
+            } else if (newsText.includes('高级')) {
               return time >= config.minesweeper.classic.bvs.exp;
             }
           }
@@ -107,16 +105,7 @@ class GameNewsProvider extends Service {
     }
   }
 
-  /**
-     * 获取游戏资讯
-     * @param page 页码
-     * @param count 每页数量
-     */
-  async postGameNews(params: { page: number, count: number }): Promise<GameNews> {
-    const path = '/Minesweeper/game/news';
-    const method = 'POST';
-    return this.ctx.httpService.executeRequest<GameNews>(path, method, params);
-  }
+
 
   /**
    * 获取所有新的游戏资讯
@@ -124,7 +113,10 @@ class GameNewsProvider extends Service {
    * @param isFirstTime 是否为首次获取（首次只获取第一页用于初始化）
    * @returns 返回所有新的游戏资讯和更新后的最大ID
    */
-  async getAllGameNews(lastRecordId: number = 0, isFirstTime: boolean = false): Promise<{ allNews: Datum[], maxRecordId: number }> {
+  async getAllGameNews(lastRecordId: number = 0, isFirstTime: boolean = false): Promise<{
+    allNews: Datum[],
+    maxRecordId: number
+  }> {
     const allNews: Datum[] = [];
     let currentPage = 0;
     let maxRecordId = lastRecordId;
@@ -133,7 +125,7 @@ class GameNewsProvider extends Service {
     while (hasMoreNews) {
       try {
         this.ctx.logger('GameNews').debug(`正在获取第 ${currentPage + 1} 页...`);
-        const gameNews = await this.postGameNews({ page: currentPage, count: 20 });
+        const gameNews = await this.ctx.tapsssAPI.postGameNews({ page: currentPage, count: 20 });
 
         if (!gameNews.data) {
           this.ctx.logger('GameNews').warn("获取游戏资讯失败，数据格式不正确");

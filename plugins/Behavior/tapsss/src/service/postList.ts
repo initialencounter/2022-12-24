@@ -1,19 +1,17 @@
-import { Context, Service } from "koishi";
-import { Datum, LastComment, PostList, PostListConfig } from "../types/postList";
-import HttpService from "./httpService";
-import XiBao from "./xiBao";
-import ActiveMsg from "./activeMsg";
+import { Context, h, Service } from "koishi";
+import { Datum, PostListConfig } from "../types/postList";
+import { } from "../service/activeMsg";
+import { } from "../service/postStorage";
+import { } from "../service/api";
 
 declare module 'koishi' {
   interface Context {
-    httpService: HttpService;
-    xiBao: XiBao;
-    activeMsg: ActiveMsg;
+    postList: PostListService;
   }
 }
 
 class PostListService extends Service {
-  static inject = ['xiBao', 'httpService', 'activeMsg'];
+  static inject = ['activeMsg', 'postStorage', 'tapsssAPI'];
   private readonly pluginConfig: PostListConfig;
   private LatestPostCreateTime = 0;
   private LatestPostCommentTime = 0;
@@ -23,7 +21,6 @@ class PostListService extends Service {
   constructor(ctx: Context, config: PostListConfig) {
     super(ctx, 'postList');
     this.pluginConfig = config;
-
     ctx.on('ready', async () => {
       this.ctx.logger('PostList').info('PostList service is ready.');
       await this.initializeLatestTimes();
@@ -38,7 +35,7 @@ class PostListService extends Service {
 
   private async initializeLatestTimes(): Promise<void> {
     try {
-      const json = await this.fetchPostList({ type: 0, page: 0, count: 20 });
+      const json = await this.ctx.tapsssAPI.fetchPostList({ type: 0, page: 0, count: 20 });
       if (json.data.length > 0) {
         // 排除置顶帖子，只考虑普通帖子来初始化时间
         const normalPosts = json.data.filter(post => post.stick === 0);
@@ -82,7 +79,7 @@ class PostListService extends Service {
     let shouldContinue = true;
 
     while (shouldContinue) {
-      const json = await this.fetchPostList({ type: 0, page, count: 20 });
+      const json = await this.ctx.tapsssAPI.fetchPostList({ type: 0, page, count: 20 });
 
       if (!json.data || json.data.length === 0) {
         break;
@@ -142,7 +139,18 @@ class PostListService extends Service {
     for (const post of posts) {
       const message = `新帖子: [${post.user.nickName}]: ${post.title || (post.text.length > 20 ? post.text.slice(0, 20) : post.text)}\n${post?.text}`;
       this.ctx.logger('PostList').info(message);
-      await this.ctx.activeMsg.pushMessage(this.pluginConfig.rules, message);
+      const messageIds = await this.ctx.activeMsg.pushMessage(this.pluginConfig.rules, h.text(message));
+      for (const messageId of messageIds) {
+        // 保存帖子到缓存
+        await this.ctx.postStorage.createPost({
+          postId: post.id,
+          isComment: false,
+          uid: post.uid,
+          createTime: new Date(post.createTime),
+          parentId: post.id,
+          messageId: messageId,
+        });
+      }
     }
   }
 
@@ -151,14 +159,20 @@ class PostListService extends Service {
     for (const post of posts) {
       const message = `${post.title || (post.text.length > 20 ? post.text.slice(0, 20) : post.text)}\n新评论: [${post.lastComment.user.nickName}]: ${post.lastComment.comment}`;
       this.ctx.logger('PostList').info(message);
-      await this.ctx.activeMsg.pushMessage(this.pluginConfig.rules, message);
+      const messageIds = await this.ctx.activeMsg.pushMessage(this.pluginConfig.rules, h.text(message));
+      for (const messageId of messageIds) {
+        // 保存帖子到缓存
+        await this.ctx.postStorage.createPost({
+          postId: post.id,
+          commentId: post.lastComment.id,
+          isComment: true,
+          uid: post.uid,
+          createTime: new Date(post.createTime),
+          parentId: post.id,
+          messageId: messageId,
+        });
+      }
     }
-  }
-
-  async fetchPostList(params: { type: number, page: number, count: number }): Promise<PostList> {
-    const path = '/Minesweeper/post/list';
-    const method = 'POST';
-    return this.ctx.httpService.executeRequest<PostList>(path, method, params);
   }
 }
 

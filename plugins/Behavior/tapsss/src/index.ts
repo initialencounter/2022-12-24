@@ -8,6 +8,8 @@ import { XiBaoConfig } from "./types/xibao";
 import ActiveMsg from "./service/activeMsg";
 import PostListService from "./service/postList";
 import { PostListConfig } from "./types/postList";
+import TapsssAPI from "./service/api";
+import PostStorage from "./service/postStorage";
 
 class Tapsss {
   constructor(ctx: Context, config: Tapsss.Config) {
@@ -16,6 +18,8 @@ class Tapsss {
     ctx.plugin(ActiveMsg);
     ctx.plugin(GameNewsProvider, config.gameNews);
     ctx.plugin(PostListService, config.postList);
+    ctx.plugin(TapsssAPI);
+    ctx.plugin(PostStorage);
   }
 }
 
@@ -25,12 +29,15 @@ namespace Tapsss {
     gameNews: GameNewsConfig;
     xiBao: XiBaoConfig;
     postList: PostListConfig;
+    dailyStar: DailyStarConfig;
   }
+
   export const Config: Schema<Config> = Schema.object({
     http: HttpServiceConfig.description('HTTP 服务配置。'),
     gameNews: GameNewsConfig.description('游戏资讯服务配置。'),
     xiBao: XiBaoConfig.description('喜报渲染配置。'),
     postList: PostListConfig.description('帖子推送配置。'),
+    dailyStar: DailyStarConfig.description('今日之星配置。'),
   });
 }
 
