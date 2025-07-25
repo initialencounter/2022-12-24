@@ -6,6 +6,7 @@
   "typings": "lib/index.d.ts",
   "files": [
     "lib",
+    "assets",
     "dist"
   ],
   "license": "AGPL-3.0",
@@ -36,5 +37,17 @@
   "devDependencies": {
     "koishi-plugin-adapter-onebot": "^6.8.0",
     "koishi-plugin-puppeteer": "^3.9.0"
+  },
+  "koishi": {
+    "description": "AI 聊天",
+    "service": {
+      "optional": [
+        "cron"
+      ],
+      "required": [
+        "database",
+        "canvas"
+      ]
+    }
   }
 }
