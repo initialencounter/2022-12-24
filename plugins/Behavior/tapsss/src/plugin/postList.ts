@@ -3,10 +3,12 @@ import { Datum, PostListConfig } from "../types/postList";
 import { } from "../service/activeMsg";
 import { } from "../service/postStorage";
 import { } from "../service/api";
+import { } from "@koishijs/canvas"
+import { renderPost } from "../utils/renderPost";
 
 
 class PostListService {
-  static inject = ['activeMsg', 'postStorage', 'tapsssAPI'];
+  static inject = ['activeMsg', 'postStorage', 'tapsssAPI', 'canvas', 'imageCache'];
   private readonly pluginConfig: PostListConfig;
   private LatestPostCreateTime = 0;
   private LatestPostCommentTime = 0;
@@ -133,7 +135,8 @@ class PostListService {
     for (const post of posts) {
       const message = `新帖子: [${post.user.nickName}]: ${post.title || (post.text.length > 20 ? post.text.slice(0, 20) : post.text)}\n${post?.text}`;
       this.ctx.logger('[Tapsss] PostList').info(message);
-      const messageIds = await this.ctx.activeMsg.pushMessage(this.pluginConfig.rules, h.text(message));
+      const img = await renderPost(post, this.ctx.canvas, this.ctx.imageCache);
+      const messageIds = await this.ctx.activeMsg.pushMessage(this.pluginConfig.rules, h.image(img, 'image/png'));
       for (const messageId of messageIds) {
         // 保存帖子到缓存
         await this.ctx.postStorage.createPost({
@@ -153,7 +156,8 @@ class PostListService {
     for (const post of posts) {
       const message = `${post.title || (post.text.length > 20 ? post.text.slice(0, 20) : post.text)}\n新评论: [${post.lastComment.user.nickName}]: ${post.lastComment.comment}`;
       this.ctx.logger('[Tapsss] PostList').info(message);
-      const messageIds = await this.ctx.activeMsg.pushMessage(this.pluginConfig.rules, h.text(message));
+      const img = await renderPost(post, this.ctx.canvas, this.ctx.imageCache);
+      const messageIds = await this.ctx.activeMsg.pushMessage(this.pluginConfig.rules, h.image(img, 'image/png'));
       for (const messageId of messageIds) {
         // 保存帖子到缓存
         await this.ctx.postStorage.createPost({

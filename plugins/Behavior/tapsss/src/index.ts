@@ -24,9 +24,9 @@ class Tapsss {
     ctx.plugin(ActiveMsg);
     ctx.plugin(XiBao, config.xiBao);
     ctx.plugin(TapsssAPI, config.api);
+    ctx.plugin(PostStorage);
     ctx.plugin(GameNewsProvider, config.gameNews);
     ctx.plugin(PostListService, config.postList);
-    ctx.plugin(PostStorage);
     ctx.plugin(TapsssCommand);
     ctx.plugin(DailyStar, config.dailyStar);
   }
