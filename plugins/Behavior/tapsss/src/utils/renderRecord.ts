@@ -150,7 +150,7 @@ function drawStats(ctx: CanvasRenderingContext2D, data: DailyStarResponse["data"
   ctx.fillStyle = 'white';
   ctx.font = 'bold 18px Arial, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('📊 游戏统计', baseX + 360, baseY + 30);
+  ctx.fillText('📊 成绩', baseX + 360, baseY + 30);
 
   // 内容区域背景
   const boardGradient = ctx.createLinearGradient(baseX + 30, baseY + 50, baseX + 690, baseY + 230);
@@ -295,23 +295,11 @@ async function drawGameInfo(ctx: CanvasRenderingContext2D, data: DailyStarRespon
   // 游戏信息背景
   ctx.beginPath();
   ctx.fillStyle = '#b6ccd2ff';
-  ctx.roundRect(baseX + 30, baseY, 660, 340, 15);
+  ctx.roundRect(baseX + 30, baseY, 660, 380, 15);
   ctx.fill();
 
-  // 标题
-  ctx.fillStyle = '#2c3e50';
-  ctx.font = 'bold 20px Arial, sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText('🎮 游戏信息', baseX + 50, baseY + 30);
-
   // 绘制地图
-  await drawMineMap(ctx, data.map, data.row, data.column, baseX + 180, baseY + 50);
-
-  // 游戏详情
-  ctx.fillStyle = '#495057';
-  ctx.font = '16px Arial, sans-serif';
-  ctx.fillText(`难度: ${computeType(data.row, data.column, data.mine)}`, baseX + 50, baseY + 60);
-  ctx.fillText(`模式: ${data.mode === 1 ? '经典模式' : '其他模式'}`, baseX + 50, baseY + 85);
+  await drawMineMap(ctx, data.map, data.row, data.column, baseX + 60, baseY + 30);
 }
 
 async function drawMineMap(ctx: CanvasRenderingContext2D, mapString: string, row: number, column: number, offsetX: number, offsetY: number) {
@@ -337,7 +325,7 @@ async function drawMineMap(ctx: CanvasRenderingContext2D, mapString: string, row
     column = tmp; // 更新列数
   }
   mapString = mapString.replace(/-/g, ''); // 移除连字符
-  const cellSize = 16;
+  const cellSize = 20;
 
   // 地图背景
   ctx.beginPath();
@@ -365,10 +353,17 @@ async function drawMineMap(ctx: CanvasRenderingContext2D, mapString: string, row
       index++;
     }
   }
+
+  // 绘制地图边框
+  ctx.strokeStyle = '#808080';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(offsetX, offsetY, column * cellSize, row * cellSize, 4);
+  ctx.stroke();
 }
 
 function computeType(row: number, column: number, mine: number): string {
-  if (row === 16 && column === 30 && mine === 99) return "高级";
+  if (row * column === 480 && mine === 99) return "高级";
   if (row === 16 && column === 16 && mine === 40) return "中级";
   if (row === 8 && column === 8 && mine === 10) return "初级";
   return `${row}×${column} ${mine}`;
