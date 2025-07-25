@@ -33,3 +33,8 @@ wxid*
 /.yarn/install-state.gz
 *.node
 test*
+/*.msr
+/*.gif
+/*.png
+/*.jpg
+tmp*
