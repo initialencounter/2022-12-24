@@ -1,6 +1,4 @@
-import { createDecipheriv, createCipheriv } from 'crypto';
-
-
+import { createCipheriv, createDecipheriv } from 'crypto';
 
 
 /**
@@ -13,6 +11,7 @@ export function aesEcbEncrypt(
   plaintext: string,
   key: string
 ): string {
+  if (!plaintext) return '';
   // 确保密钥是 Buffer
   const keyBuffer = Buffer.from(key, 'utf8');
 
@@ -80,72 +79,6 @@ function aesEcbDecryptNoPadding(
   return decrypted;
 }
 
-/**
- * 智能AES ECB解密 - 自动处理填充和数据偏移
- * @param encryptedData 加密的数据 (十六进制字符串)
- * @param key 密钥 (字符串)
- * @returns 解密后的JSON字符串
- */
-function smartAesEcbDecrypt(
-  encryptedData: string,
-  key: string
-): string {
-  // 使用NoPadding模式解密
-  const rawBuffer = aesEcbDecryptNoPadding(encryptedData, key);
-
-  // 转换为字符串
-  const str = rawBuffer.toString('utf8');
-
-  // 找到JSON开始位置
-  const jsonStart = str.indexOf('{"') >= 0 ? str.indexOf('{"') : str.indexOf('[{');
-  if (jsonStart < 0) {
-    throw new Error('No JSON data found in decrypted content');
-  }
-
-  // 提取JSON部分
-  let jsonStr = str.substring(jsonStart);
-
-  // 移除末尾的null字节和其他无效字符
-  jsonStr = jsonStr.replace(/\0+$/, ''); // 移除末尾null字节
-  jsonStr = jsonStr.replace(/[^\x20-\x7E\u4e00-\u9fa5{}[\]":,.\-\d]/g, ''); // 只保留有效字符
-
-  // 智能提取完整的JSON结构
-  let validJson = '';
-  let braceCount = 0;
-  let bracketCount = 0;
-  let inString = false;
-  let escaped = false;
-
-  for (let i = 0; i < jsonStr.length; i++) {
-    const char = jsonStr[i];
-    validJson += char;
-
-    if (!escaped && char === '"') {
-      inString = !inString;
-    } else if (!inString) {
-      if (char === '{') braceCount++;
-      else if (char === '}') braceCount--;
-      else if (char === '[') bracketCount++;
-      else if (char === ']') bracketCount--;
-    }
-
-    escaped = !escaped && char === '\\';
-
-    // 如果JSON结构完整，尝试解析
-    if (braceCount === 0 && bracketCount === 0 && validJson.length > 10) {
-      try {
-        JSON.parse(validJson); // 验证JSON有效性
-        return validJson;
-      } catch (e) {
-        // 继续尝试
-      }
-    }
-  }
-
-  // 如果没有找到完整结构，返回清理后的字符串
-  throw new Error('Failed to extract valid JSON from decrypted content');
-}
-
 
 /**
  * 智能提取JSON - 直接从Buffer中提取，避免UTF-8编码问题
@@ -159,31 +92,8 @@ export function extractJsonFromEncrypted(
 ): string {
   // 获取原始解密Buffer
   const rawBuffer = aesEcbDecryptNoPadding(encryptedData, key);
+  let jsonStartByte = 0;
 
-  // 在Buffer中查找JSON起始位置 (寻找 '{"' 或 '[{' 的字节模式)
-  let jsonStartByte = -1;
-
-  // 查找 '{"' (0x7B 0x22)
-  for (let i = 0; i < rawBuffer.length - 1; i++) {
-    if (rawBuffer[i] === 0x7B && rawBuffer[i + 1] === 0x22) {
-      jsonStartByte = i;
-      break;
-    }
-  }
-
-  // 如果没找到 '{"'，查找 '[{' (0x5B 0x7B)
-  if (jsonStartByte === -1) {
-    for (let i = 0; i < rawBuffer.length - 1; i++) {
-      if (rawBuffer[i] === 0x5B && rawBuffer[i + 1] === 0x7B) {
-        jsonStartByte = i;
-        break;
-      }
-    }
-  }
-
-  if (jsonStartByte === -1) {
-    throw new Error('No JSON data found in decrypted content');
-  }
 
   // 从JSON起始位置提取Buffer
   const jsonBuffer = rawBuffer.subarray(jsonStartByte);
@@ -196,53 +106,22 @@ export function extractJsonFromEncrypted(
 
   // 提取有效的JSON Buffer并转换为字符串
   const validJsonBuffer = jsonBuffer.subarray(0, endByte);
-  const jsonStr = validJsonBuffer.toString('utf8');
-
-  // 验证JSON有效性
-  try {
-    JSON.parse(jsonStr);
-    return jsonStr;
-  } catch (e) {
-    // 如果直接解析失败，尝试智能提取完整结构
-    return extractCompleteJson(jsonStr);
-  }
-}
-
-/**
- * 提取完整的JSON结构
- */
-function extractCompleteJson(jsonStr: string): string {
-  let validJson = '';
-  let braceCount = 0;
-  let bracketCount = 0;
-  let inString = false;
-  let escaped = false;
+  let jsonStr = validJsonBuffer.toString('utf8');
 
   for (let i = 0; i < jsonStr.length; i++) {
-    const char = jsonStr[i];
-    validJson += char;
-
-    if (!escaped && char === '"') {
-      inString = !inString;
-    } else if (!inString) {
-      if (char === '{') braceCount++;
-      else if (char === '}') braceCount--;
-      else if (char === '[') bracketCount++;
-      else if (char === ']') bracketCount--;
-    }
-
-    escaped = !escaped && char === '\\';
-
-    // 如果JSON结构完整，尝试解析
-    if (braceCount === 0 && bracketCount === 0 && validJson.length > 10) {
-      try {
-        JSON.parse(validJson);
-        return validJson;
-      } catch (e) {
-        // 继续尝试
-      }
+    const char = jsonStr.slice(i, i + 4);
+    if (char === 'rl":') {
+      jsonStr = '{"url":' + jsonStr.slice(i + 4);
+      break;
     }
   }
 
-  throw new Error('Failed to extract complete JSON structure');
+  // 清理字符串 - 移除可能的问题字符
+  jsonStr = jsonStr
+    .replace(/[\x00-\x1F\x7F-\x9F]/g, '') // 移除控制字符
+  // .replace(/\0/g, '') // 移除null字符
+  // .replace('/\\u000[a-f]/g', '')
+  // .replace('/\\u000\d/g', '')
+
+  return jsonStr;
 }
