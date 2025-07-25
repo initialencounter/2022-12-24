@@ -68,9 +68,6 @@ class TapsssAPI extends Service {
       const cipher = await response.text();
       const jsonStr = extractJsonFromEncrypted(cipher, this.decryptSecretKey) as string;
       const json = JSON.parse(jsonStr);
-      if (path === '/Minesweeper/post/comment/good') {
-        console.log('评论点赞返回:', json);
-      }
       return json as T;
     } catch (error) {
       this.ctx.logger('[Tapsss] GameNews').error('获取游戏资讯失败:', error);

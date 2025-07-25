@@ -29,7 +29,6 @@ class ActiveMsg extends Service {
       const messageId = await bot?.sendMessage(channelId, content, guildId)
       //@ts-ignore
       results.push(messageId[0]);
-      console.log(`Message sent to ${platform} channel ${channelId} by bot ${selfId}: ${messageId}`);
     }
     return results;
   }
