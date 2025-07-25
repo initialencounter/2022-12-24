@@ -10,6 +10,8 @@ import PostListService from "./service/postList";
 import { PostListConfig } from "./types/postList";
 import TapsssAPI from "./service/api";
 import PostStorage from "./service/postStorage";
+import DailyStar from "./plugin/dailyStar";
+import { DailyStarConfig } from "./types/dailyStarConfig";
 
 class Tapsss {
   constructor(ctx: Context, config: Tapsss.Config) {
@@ -20,6 +22,7 @@ class Tapsss {
     ctx.plugin(PostListService, config.postList);
     ctx.plugin(TapsssAPI);
     ctx.plugin(PostStorage);
+    ctx.plugin(DailyStar, config.dailyStar);
   }
 }
 
