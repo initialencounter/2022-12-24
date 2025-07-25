@@ -315,6 +315,27 @@ async function drawGameInfo(ctx: CanvasRenderingContext2D, data: DailyStarRespon
 }
 
 async function drawMineMap(ctx: CanvasRenderingContext2D, mapString: string, row: number, column: number, offsetX: number, offsetY: number) {
+  const rows = mapString.split('-')
+  if (row > column) {
+    // 地图是纵向的，需要转换为横向
+    const list: string[][] = [];
+    for (let i = 0; i < column; i++) {
+      const tmpList: string[] = []
+      for (let j = 0; j < row; j++) {
+        tmpList.push('');
+      }
+      list.push(tmpList);
+    }
+    for (let c = 0; c < column; c++) {
+      for (let r = 0; r < row; r++) {
+        list[c][r] = rows[r][Math.abs(column - 1 - c)];
+      }
+    }
+    mapString = list.map(row => row.join('')).join('-');
+    const tmp = row;
+    row = column;
+    column = tmp; // 更新列数
+  }
   mapString = mapString.replace(/-/g, ''); // 移除连字符
   const cellSize = 16;
 
