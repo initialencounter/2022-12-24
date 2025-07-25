@@ -35,6 +35,8 @@ jobs:
           yarn build jimp-abstract
           yarn build jimp
           yarn build minesweeper-ending
+          cp -r plugins/Recreation/minesweeper-ending/src/theme plugins/Recreation/minesweeper-ending/lib/
+          cp -r plugins/Recreation/minesweeper-ending/src/text plugins/Recreation/minesweeper-ending/lib/
       - name: Publish
         run: |
           npm config set provenance true
