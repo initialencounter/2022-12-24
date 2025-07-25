@@ -15,9 +15,9 @@ export interface GameInfo {
 
 /**
  * 无猜暴力求解
- * @param m 
- * @param cell 
- * @returns 
+ * @param m
+ * @param cell
+ * @returns
  */
 export function findNoGuess(m: Minefield, cell: string) {
     // 直到找到无猜
@@ -35,10 +35,10 @@ export function findNoGuess(m: Minefield, cell: string) {
 
 /**
  * 数据库操作，抄自[koishi-plugin-minesweeper](https://github.com/araea/koishi-plugin-minesweeper)
- * @param ctx 
- * @param userId 
- * @param userName 
- * @param score 
+ * @param ctx
+ * @param userId
+ * @param userName
+ * @param score
  */
 
 export async function updateRank(ctx: Context, info: GameInfo) {
@@ -70,10 +70,10 @@ export async function updateRank(ctx: Context, info: GameInfo) {
 
 /**
  * 设置挑战模式分数
- * @param ctx 
- * @param userId 
- * @param userName 
- * @param score 
+ * @param ctx
+ * @param userId
+ * @param userName
+ * @param score
  */
 
 export async function updateChallengeRank(session: Session, ctx: Context, userId: string, userName: string, score: number) {
@@ -129,7 +129,7 @@ export function getMineNums(x: number, y: number): number {
 /**
  * 睡眠函数
  * @param ms 等待时间
- * @returns 
+ * @returns
  */
 export function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms))
@@ -137,9 +137,9 @@ export function sleep(ms: number) {
 
 /**
 * 获取所有数据
-* @param ctx 
-* @param userId 
-* @returns 
+* @param ctx
+* @param userId
+* @returns
 */
 export async function getProfiles(ctx: Context, userId: string): Promise<Pick<MinesweeperRank, Keys<MinesweeperRank, any>>> {
     const rankInfo = await ctx.model.get('minesweeper_ending_rank', { userId: userId })
@@ -173,9 +173,9 @@ export function makePool(m: Minefield) {
 
 /**
  * 渲染
- * @param ctx 
- * @param info 
- * @returns 
+ * @param ctx
+ * @param info
+ * @returns
  */
 export async function renderProfiles(ctx: Context, info: Pick<MinesweeperRank, Keys<MinesweeperRank, any>>) {
     if (!info) {
@@ -207,5 +207,5 @@ export async function renderProfiles(ctx: Context, info: Pick<MinesweeperRank, K
 局数: ${info.games}\n
 胜率: ${(info.wins / info.games) * 100}%\n
 开启方块: ${info.openNums}\n
-`+h.image(`http://q1.qlogo.cn/g?b=qq&nk=${info.userId}&s=100`)
+`
 }
