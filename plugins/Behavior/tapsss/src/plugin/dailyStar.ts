@@ -21,6 +21,11 @@ class DailyStar {
         console.error('Failed to fetch daily star:', error);
       }
     })
+    ctx.command('今日之星', '获取今日之星')
+      .action(async () => {
+        const dailyStar = await this.getDailyStar()
+        return h.image(dailyStar, 'image/png');
+      })
   };
 
 
