@@ -40,6 +40,7 @@ class PostStorage extends Service {
       primary: 'messageId', //设置 uid 为主键
     })
     this.clearCache(); // 清理旧缓存
+    ctx.logger('[Tapsss] postStorage').warn('PostStorage 服务已启动，使用的表名:', TABLE_NAME);
   }
 
   // Method to get a post from the cache

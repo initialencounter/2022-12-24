@@ -17,12 +17,12 @@ export interface Headers {
   'Accept-Encoding': string;
   'User-Agent': string;
 };
-export interface HttpServiceConfig {
+export interface APIServiceConfig {
   headers: Headers
   decryptSecretKey: string;
   encryptSecretKey: string;
 }
-export const HttpServiceConfig: Schema<HttpServiceConfig> = Schema.object({
+export const APIServiceConfig: Schema<APIServiceConfig> = Schema.object({
   headers: Schema.object({
     device: Schema.string().default('OPD2413').description('设备型号'),
     version: Schema.string().default('30610').description('联萌版本号'),

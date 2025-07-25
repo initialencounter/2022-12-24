@@ -1,26 +1,20 @@
-import { Context, Service } from "koishi";
+import { Context } from "koishi";
 import { Datum } from "../types/gameNews";
 import { GameNewsConfig } from "../types/gameNewsConfig";
-import { } from "./xiBao";
-import { } from "./activeMsg";
-import { } from "./api";
+import { } from "../service/xiBao";
+import { } from "../service/activeMsg";
+import { } from "../service/api";
 
-declare module 'koishi' {
-  interface Context {
-    gameNews: GameNewsProvider;
-  }
-}
-
-class GameNewsProvider extends Service {
-  static inject = ['xiBao', 'httpService', 'activeMsg'];
+class GameNewsProvider {
+  static inject = ['xiBao', 'activeMsg', 'tapsssAPI'];
   private newsCheckTimer: NodeJS.Timeout | null = null;
   private readonly pluginConfig: GameNewsConfig;
 
-  constructor(ctx: Context, config: GameNewsConfig) {
-    super(ctx, 'gameNews')
+  constructor(private ctx: Context, config: GameNewsConfig) {
     this.pluginConfig = config;
 
     ctx.on('ready', async () => {
+      ctx.logger('[Tapsss] gameNews').info('gameNews 已启动，定期检查间隔:');
       this.startPeriodicNewsCheck(30 * 1000);
     });
 
@@ -124,25 +118,25 @@ class GameNewsProvider extends Service {
 
     while (hasMoreNews) {
       try {
-        this.ctx.logger('GameNews').debug(`正在获取第 ${currentPage + 1} 页...`);
+        this.ctx.logger('[Tapsss] GameNews').debug(`正在获取第 ${currentPage + 1} 页...`);
         const gameNews = await this.ctx.tapsssAPI.postGameNews({ page: currentPage, count: 20 });
 
         if (!gameNews.data) {
-          this.ctx.logger('GameNews').warn("获取游戏资讯失败，数据格式不正确");
+          this.ctx.logger('[Tapsss] GameNews').warn("获取游戏资讯失败，数据格式不正确");
           break;
         }
 
         if (gameNews.data.length === 0) {
-          this.ctx.logger('GameNews').debug("没有更多游戏资讯");
+          this.ctx.logger('[Tapsss] GameNews').debug("没有更多游戏资讯");
           break;
         }
 
         // 如果是首次获取，只处理第一页并设置初始ID
         if (isFirstTime) {
-          this.ctx.logger('GameNews').debug("首次获取，只处理第一页用于初始化");
+          this.ctx.logger('[Tapsss] GameNews').debug("首次获取，只处理第一页用于初始化");
           // 首次获取时，纪录最新的ID作为起点，不添加任何资讯到结果中
           maxRecordId = gameNews.data[0].id;
-          this.ctx.logger('GameNews').debug(`初始化最大ID: ${maxRecordId}`);
+          this.ctx.logger('[Tapsss] GameNews').debug(`初始化最大ID: ${maxRecordId}`);
           break;
         }
 
@@ -176,12 +170,12 @@ class GameNewsProvider extends Service {
         await new Promise(resolve => setTimeout(resolve, 100));
 
       } catch (error) {
-        this.ctx.logger('GameNews').error(`获取第 ${currentPage + 1} 页游戏资讯失败:`, error);
+        this.ctx.logger('[Tapsss] GameNews').error(`获取第 ${currentPage + 1} 页游戏资讯失败:`, error);
         break;
       }
     }
 
-    this.ctx.logger('GameNews').debug(`共获取到 ${allNews.length} 条新游戏资讯，最大ID: ${maxRecordId}`);
+    this.ctx.logger('[Tapsss] GameNews').debug(`共获取到 ${allNews.length} 条新游戏资讯，最大ID: ${maxRecordId}`);
     return { allNews, maxRecordId };
   }
 
@@ -198,18 +192,18 @@ class GameNewsProvider extends Service {
 
     const checkNews = async () => {
       try {
-        this.ctx.logger('GameNews').debug(`开始定期检查游戏资讯，当前最新纪录ID: ${latestRecordId}`);
+        this.ctx.logger('[Tapsss] GameNews').debug(`开始定期检查游戏资讯，当前最新纪录ID: ${latestRecordId}`);
         const { allNews, maxRecordId } = await this.getAllGameNews(latestRecordId, isFirstCheck);
 
         if (isFirstCheck) {
-          this.ctx.logger('GameNews').debug(`首次初始化，设置起始ID: ${maxRecordId}`);
+          this.ctx.logger('[Tapsss] GameNews').debug(`首次初始化，设置起始ID: ${maxRecordId}`);
           isFirstCheck = false;
         } else if (allNews.length > 0) {
           for (const news of allNews) {
-            this.ctx.logger('GameNews').success(this.formatNews(news));
+            this.ctx.logger('[Tapsss] GameNews').success(this.formatNews(news));
             if (this.flitterNewsByPushRecordConfig(news.text, news.recordType)) {
               const imgEle = await this.ctx.xiBao.render(this.formatNews(news))
-              this.ctx.logger('GameNews').success(`符合推送条件: ${news.text}`);
+              this.ctx.logger('[Tapsss] GameNews').success(`符合推送条件: ${news.text}`);
               await this.ctx.activeMsg.pushMessage(this.pluginConfig.rules, imgEle);
             }
           }
@@ -217,12 +211,12 @@ class GameNewsProvider extends Service {
           // 这里可以添加推送通知逻辑
           // 例如：向特定频道发送消息
         } else {
-          this.ctx.logger('GameNews').debug("没有新的游戏资讯");
+          this.ctx.logger('[Tapsss] GameNews').debug("没有新的游戏资讯");
         }
 
         latestRecordId = maxRecordId;
       } catch (error) {
-        this.ctx.logger('GameNews').error("定期检查游戏资讯失败:", error);
+        this.ctx.logger('[Tapsss] GameNews').error("定期检查游戏资讯失败:", error);
       }
     };
 
@@ -231,7 +225,7 @@ class GameNewsProvider extends Service {
 
     // 设置定期检查
     this.newsCheckTimer = setInterval(checkNews, intervalMs);
-    this.ctx.logger('GameNews').info(`已启动游戏资讯定期检查，间隔: ${intervalMs / 1000}秒`);
+    this.ctx.logger('[Tapsss] GameNews').info(`已启动游戏资讯定期检查，间隔: ${intervalMs / 1000}秒`);
   }
 
   formatNews(news: Datum): string {
@@ -276,7 +270,7 @@ class GameNewsProvider extends Service {
     if (this.newsCheckTimer) {
       clearInterval(this.newsCheckTimer);
       this.newsCheckTimer = null;
-      this.ctx.logger('GameNews').info('已停止游戏资讯定期检查');
+      this.ctx.logger('[Tapsss] GameNews').info('已停止游戏资讯定期检查');
     }
   }
 }

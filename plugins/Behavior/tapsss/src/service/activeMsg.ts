@@ -10,6 +10,7 @@ declare module 'koishi' {
 class ActiveMsg extends Service {
   constructor(ctx: Context) {
     super(ctx, 'activeMsg');
+    ctx.logger('[Tapsss] ActiveMsg').warn('ActiveMsg 服务已启动.');
   }
 
   async pushMessage(targets: Rule[], content: h): Promise<string[]> {

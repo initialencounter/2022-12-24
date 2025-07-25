@@ -1,16 +1,11 @@
-import { Context, h, Service } from "koishi";
+import { Context, h } from "koishi";
 import { Datum, PostListConfig } from "../types/postList";
 import { } from "../service/activeMsg";
 import { } from "../service/postStorage";
 import { } from "../service/api";
 
-declare module 'koishi' {
-  interface Context {
-    postList: PostListService;
-  }
-}
 
-class PostListService extends Service {
+class PostListService {
   static inject = ['activeMsg', 'postStorage', 'tapsssAPI'];
   private readonly pluginConfig: PostListConfig;
   private LatestPostCreateTime = 0;
@@ -18,17 +13,16 @@ class PostListService extends Service {
   private timer: NodeJS.Timeout | null = null;
   private isFirstFetch = true;
 
-  constructor(ctx: Context, config: PostListConfig) {
-    super(ctx, 'postList');
+  constructor(private ctx: Context, config: PostListConfig) {
     this.pluginConfig = config;
     ctx.on('ready', async () => {
-      this.ctx.logger('PostList').info('PostList service is ready.');
+      ctx.logger('[Tapsss] PostList').warn('PostList 服务已启动.');
       await this.initializeLatestTimes();
       this.startPeriodicFetch();
     });
 
     ctx.on('dispose', () => {
-      this.ctx.logger('PostList').info('PostList service is being disposed.');
+      ctx.logger('[Tapsss] PostList').warn('PostList 服务副作用已回收.');
       this.stopPeriodicFetch();
     });
   }
@@ -39,7 +33,7 @@ class PostListService extends Service {
       if (json.data.length > 0) {
         // 排除置顶帖子，只考虑普通帖子来初始化时间
         const normalPosts = json.data.filter(post => post.stick === 0);
-        this.ctx.logger('PostList').info(normalPosts[0]?.text ?? normalPosts[0]?.title ?? 'No posts found');
+        this.ctx.logger('[Tapsss] PostList').info(normalPosts[0]?.text ?? normalPosts[0]?.title ?? 'No posts found');
 
         // 设置为当前时间前30秒，避免旧帖子因新评论被顶上来的问题
         // 时间戳单位为毫秒，30秒 = 30 * 1000 毫秒
@@ -49,7 +43,7 @@ class PostListService extends Service {
       }
       this.isFirstFetch = false;
     } catch (error) {
-      this.ctx.logger('PostList').error('Failed to initialize latest times:', error);
+      this.ctx.logger('[Tapsss] PostList').error('Failed to initialize latest times:', error);
     }
   }
 
@@ -58,7 +52,7 @@ class PostListService extends Service {
       try {
         await this.checkForNewPostsAndComments();
       } catch (error) {
-        this.ctx.logger('PostList').error('Error during periodic fetch:', error);
+        this.ctx.logger('[Tapsss] PostList').error('Error during periodic fetch:', error);
       }
     }, 30 * 1000); // 30秒
   }
@@ -138,7 +132,7 @@ class PostListService extends Service {
     // 处理新帖子的逻辑
     for (const post of posts) {
       const message = `新帖子: [${post.user.nickName}]: ${post.title || (post.text.length > 20 ? post.text.slice(0, 20) : post.text)}\n${post?.text}`;
-      this.ctx.logger('PostList').info(message);
+      this.ctx.logger('[Tapsss] PostList').info(message);
       const messageIds = await this.ctx.activeMsg.pushMessage(this.pluginConfig.rules, h.text(message));
       for (const messageId of messageIds) {
         // 保存帖子到缓存
@@ -158,7 +152,7 @@ class PostListService extends Service {
     // 处理新评论的逻辑
     for (const post of posts) {
       const message = `${post.title || (post.text.length > 20 ? post.text.slice(0, 20) : post.text)}\n新评论: [${post.lastComment.user.nickName}]: ${post.lastComment.comment}`;
-      this.ctx.logger('PostList').info(message);
+      this.ctx.logger('[Tapsss] PostList').info(message);
       const messageIds = await this.ctx.activeMsg.pushMessage(this.pluginConfig.rules, h.text(message));
       for (const messageId of messageIds) {
         // 保存帖子到缓存
