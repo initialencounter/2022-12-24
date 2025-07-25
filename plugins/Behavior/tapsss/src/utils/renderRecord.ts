@@ -5,7 +5,6 @@ import path from "path";
 
 const isDev = process.env.NODE_ENV === 'development';
 const resourcesPath = isDev ? path.resolve(__dirname, '../../assets') : path.resolve(__dirname, '../assets');
-const defaultAvatar = readFileSync(path.resolve(resourcesPath, 'Z7.png'));
 const defaultMineTheme: Buffer[] = []
 for (let i = 0; i <= 9; i++) {
   defaultMineTheme[i] = readFileSync(path.resolve(resourcesPath, `theme/wom/type${i}.png`));
@@ -13,9 +12,8 @@ for (let i = 0; i <= 9; i++) {
 
 // 缓存加载的图片
 let loadedMineThemeImages: Image[] = [];
-let loadedDefaultAvatar: Image = null;
 
-export async function render(data: DailyStarResponse["data"], canvasService: CanvasService): Promise<Buffer> {
+export async function render(data: DailyStarResponse["data"], canvasService: CanvasService, avatar: Image): Promise<Buffer> {
   // 预加载图片
   await preloadImages(canvasService);
   const width = 800;
@@ -42,7 +40,7 @@ export async function render(data: DailyStarResponse["data"], canvasService: Can
 
   // 绘制用户信息
   //@ts-ignore
-  await drawUserInfo(ctx, data, canvasService, 40, 160);
+  await drawUserInfo(ctx, data, canvasService, avatar, 40, 160);
 
   // 绘制统计数据
   //@ts-ignore
@@ -62,10 +60,6 @@ async function preloadImages(canvasService: CanvasService) {
     for (let i = 0; i <= 9; i++) {
       loadedMineThemeImages[i] = await canvasService.loadImage(defaultMineTheme[i]);
     }
-  }
-
-  if (!loadedDefaultAvatar) {
-    loadedDefaultAvatar = await canvasService.loadImage(defaultAvatar);
   }
 }
 
@@ -89,7 +83,7 @@ async function drawHeader(ctx: CanvasRenderingContext2D, baseX: number, baseY: n
   ctx.fillText('Daily Star Player', baseX + 360, baseY + 80);
 }
 
-async function drawUserInfo(ctx: CanvasRenderingContext2D, data: DailyStarResponse["data"], canvasService: CanvasService, baseX: number, baseY: number) {
+async function drawUserInfo(ctx: CanvasRenderingContext2D, data: DailyStarResponse["data"], avatarImg: Image, canvasService: CanvasService, baseX: number, baseY: number) {
   // 用户信息背景
   ctx.beginPath();
   ctx.fillStyle = '#f8f9fa';
@@ -98,8 +92,6 @@ async function drawUserInfo(ctx: CanvasRenderingContext2D, data: DailyStarRespon
 
   // 头像
   try {
-    const avatarImg = await fetchAvatar(data.user.avatar, canvasService);
-
     ctx.save();
     ctx.beginPath();
     ctx.arc(baseX + 90, baseY + 55, 40, 0, Math.PI * 2);
@@ -382,22 +374,6 @@ function compute(mode: number, time: number, bvs: number) {
   }
   const st: number = cont / ((time ** 1.7) / (time * bvs))
   return st.toFixed(3)
-}
-
-async function fetchAvatar(url: string, canvasService: CanvasService): Promise<Image> {
-  if (!url) return loadedDefaultAvatar;
-  try {
-    const respones = await fetch(url)
-    if (!respones.ok) {
-      console.error(`Failed to fetch avatar from ${url}`);
-      return loadedDefaultAvatar;
-    }
-    const buffer = await respones.arrayBuffer();
-    return await canvasService.loadImage(buffer);
-  } catch (error) {
-    console.error(`Error fetching avatar from ${url}:`, error);
-    return loadedDefaultAvatar;
-  }
 }
 
 

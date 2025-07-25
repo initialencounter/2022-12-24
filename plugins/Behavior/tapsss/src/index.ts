@@ -12,6 +12,7 @@ import { DailyStarConfig } from "./types/dailyStarConfig";
 import { APIServiceConfig } from "./types/apiService";
 import GameNewsProvider from "./plugin/gameNews";
 import PostListService from "./plugin/postList";
+import ImageCache from "./service/imageCache";
 
 class Tapsss {
   static inject = {
@@ -19,6 +20,7 @@ class Tapsss {
     optional: ['cron',]
   };
   constructor(ctx: Context, config: Tapsss.Config) {
+    ctx.plugin(ImageCache);
     ctx.plugin(ActiveMsg);
     ctx.plugin(XiBao, config.xiBao);
     ctx.plugin(TapsssAPI, config.api);

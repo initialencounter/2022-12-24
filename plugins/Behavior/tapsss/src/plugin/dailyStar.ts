@@ -6,9 +6,11 @@ import { } from "koishi-plugin-puppeteer";
 import { DailyStarConfig } from "../types/dailyStarConfig";
 import { DailyStarResponse } from "../types/response/DailyStar";
 import { render } from "../utils/renderRecord";
+import { } from "../service/imageCache";
+
 
 class DailyStar {
-  static inject = ['cron', 'tapsssAPI', 'activeMsg', 'canvas'];
+  static inject = ['cron', 'tapsssAPI', 'activeMsg', 'canvas', 'imageCache'];
   constructor(private ctx: Context, config: DailyStarConfig) {
     ctx.cron('2 0 * * *', async () => {
       try {
@@ -24,7 +26,8 @@ class DailyStar {
 
   async getDailyStar(): Promise<Buffer> {
     const response: DailyStarResponse = await this.ctx.tapsssAPI.getStar();
-    return render(response.data, this.ctx.canvas);
+    const avatar = await this.ctx.imageCache.fetchImage(response.data.user.avatar);
+    return render(response.data, this.ctx.canvas, avatar);
   }
 
 }
