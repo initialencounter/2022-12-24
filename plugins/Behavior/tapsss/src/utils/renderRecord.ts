@@ -40,7 +40,7 @@ export async function render(data: DailyStarResponse["data"], canvasService: Can
 
   // 绘制用户信息
   //@ts-ignore
-  await drawUserInfo(ctx, data, canvasService, avatar, 40, 160);
+  await drawUserInfo(ctx, data, avatar, 40, 160);
 
   // 绘制统计数据
   //@ts-ignore
@@ -83,7 +83,7 @@ async function drawHeader(ctx: CanvasRenderingContext2D, baseX: number, baseY: n
   ctx.fillText('Daily Star Player', baseX + 360, baseY + 80);
 }
 
-async function drawUserInfo(ctx: CanvasRenderingContext2D, data: DailyStarResponse["data"], avatarImg: Image, canvasService: CanvasService, baseX: number, baseY: number) {
+async function drawUserInfo(ctx: CanvasRenderingContext2D, data: DailyStarResponse["data"], avatarImg: Image, baseX: number, baseY: number) {
   // 用户信息背景
   ctx.beginPath();
   ctx.fillStyle = '#f8f9fa';
@@ -91,31 +91,20 @@ async function drawUserInfo(ctx: CanvasRenderingContext2D, data: DailyStarRespon
   ctx.fill();
 
   // 头像
-  try {
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(baseX + 90, baseY + 55, 40, 0, Math.PI * 2);
-    ctx.clip();
-    // @ts-ignore
-    ctx.drawImage(avatarImg, baseX + 50, baseY + 15, 80, 80);
-    ctx.restore();
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(baseX + 90, baseY + 55, 40, 0, Math.PI * 2);
+  ctx.clip();
+  // @ts-ignore
+  ctx.drawImage(avatarImg, baseX + 50, baseY + 15, 80, 80);
+  ctx.restore();
 
-    // 头像边框
-    ctx.strokeStyle = '#4ECDC4';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.arc(baseX + 90, baseY + 55, 40, 0, Math.PI * 2);
-    ctx.stroke();
-  } catch (error) {
-    // 如果头像加载失败，绘制默认头像
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(baseX + 90, baseY + 60, 40, 0, Math.PI * 2);
-    ctx.clip();
-    // @ts-ignore
-    ctx.drawImage(loadedDefaultAvatar, baseX + 50, baseY + 20, 80, 80);
-    ctx.restore();
-  }
+  // 头像边框
+  ctx.strokeStyle = '#4ECDC4';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(baseX + 90, baseY + 55, 40, 0, Math.PI * 2);
+  ctx.stroke();
 
   // 用户详情
   ctx.fillStyle = '#2c3e50';
