@@ -29,3 +29,9 @@ apk add font-noto-emoji
 # 重建字体缓存
 fc-cache -fv
 ```
+
+```Dockerfile
+FROM koishijs/koishi:latest
+
+RUN apk add --no-cache fontconfig ttf-dejavu ttf-liberation ttf-opensans font-noto-emoji
+```
