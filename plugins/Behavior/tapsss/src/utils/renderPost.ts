@@ -244,13 +244,21 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
   ctx.drawImage(commentImage, 260, bottomY - 50, 75, 75);
   // ctx.fillText('💬', 300, bottomY);
   ctx.font = '36px Arial';
+  if (commentCount < 1000)
+    ctx.fillText(commentCount.toString(), 350, bottomY);
+  else
+    // 如果评论数超过1000，显示为千位数
   ctx.fillText(`${(commentCount / 1000).toFixed(1)}k`, 350, bottomY);
 
   // 点赞数
   // ctx.fillText('👍', 600, bottomY);
   ctx.drawImage(goodImage, 580, bottomY - 55, 80, 80);
   ctx.font = '36px Arial';
-  ctx.fillText(goodCount.toString(), 665, bottomY);
+  if (goodCount < 1000)
+    ctx.fillText(goodCount.toString(), 665, bottomY);
+  else
+    // 如果点赞数超过1000，显示为千位数
+  ctx.fillText(`${(goodCount / 1000).toFixed(1)}k`, 665, bottomY);
 
   return canvas.toBuffer('image/png');
 }
