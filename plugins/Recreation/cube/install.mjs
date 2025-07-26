@@ -7,7 +7,7 @@ import axios from 'axios'
 import pkg from './utils.js';
 const { getNativeBinding } = pkg;
 
-const version = '0.2.2'
+const version = '0.2.3'
 const { platform, arch } = process
 
 

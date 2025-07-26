@@ -3,7 +3,7 @@ import envPaths from './envPath';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
-const version = '0.2.2'
+const version = '0.2.3'
 const { platform, arch } = process
 
 export declare class CubeCore {
