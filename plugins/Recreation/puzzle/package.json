@@ -15,12 +15,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/initialencounter/puzzle.git"
+    "url": "git+https://github.com/initialencounter/2022-12-24.git"
   },
   "bugs": {
-    "url": "https://github.com/initialencounter/puzzle/issues"
+    "url": "https://github.com/initialencounter/2022-12-24/issues"
   },
-  "homepage": "https://github.com/initialencounter/puzzle",
+  "homepage": "https://github.com/initialencounter/2022-12-24/tree/neat/plugins/Recreation/puzzle#华容",
   "license": "MIT",
   "keywords": [
     "chatbot",
