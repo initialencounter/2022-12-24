@@ -42,11 +42,11 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
     commentImage = await canvasService.loadImage(commentImageBuffer);
   }
   const { title, text, device, record, user: { avatar, nickName, timingLevel, timingRank, vip }, createTime, goodCount, commentCount, lastComment } = post;
-  let height = 30 + 250 + 105 + 205;
+  let height = 220 + 105 + 205;
   if (title) height += 53 + 33; // 如果有标题，增加额外空间
   if (isIncludedImage(text)) height += 326 + 20; // 如果有图片，增加额外空间
   if (record.id) height += 138 + 33; // 如果有记录，增加额外空间
-  if (text) height += (text.length > 50 ? 2 : Math.floor(text.length / 30)) * 60; // 如果有正文内容，增加额外空间
+  if (removeImagesAndLinksFromMarkdown(text)) height += (removeImagesAndLinksFromMarkdown(text).length > 24 ? 2 : 1) * 60; // 如果有正文内容，增加额外空间
   if (lastComment) height += Math.floor(lastComment.comment.length / 30) * 55 // 计算最新评论的高度，假设每30个字符占55px高度
   const canvas = await canvasService.createCanvas(1080, height);
   const ctx = canvas.getContext('2d');
@@ -135,7 +135,7 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
   if (showText) {
     ctx.fillStyle = '#E0E0E0';
     ctx.font = '40px Arial';
-    const maxTextLength = 50; // 最大字符数
+    const maxTextLength = 48; // 最大字符数
     const displayText = showText.length > maxTextLength ? showText.substring(0, maxTextLength) + '...' : showText;
     //@ts-ignore
     const wrappedText = wrapText(ctx, displayText, 1000);
