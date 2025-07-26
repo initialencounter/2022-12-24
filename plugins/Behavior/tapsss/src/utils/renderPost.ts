@@ -4,13 +4,13 @@ import ImageCache from "../service/imageCache";
 import path from "path";
 import { readFileSync } from "fs";
 
-const TIMING_LEVELS_MAP = [
+export const TIMING_LEVELS_MAP = [
   '雷帝', 'E', 'D',
   'C', 'B', 'A',
   'S', 'SS', 'SSS',
   '☆', '☆☆'
 ]
-const TIMING_LEVELS_COLOR = [
+export const TIMING_LEVELS_COLOR = [
   '#DC281E', '#A3AFC2',
   '#607D8B', '#8BCA34',
   '#2196F3', '#673AB7',
@@ -18,7 +18,7 @@ const TIMING_LEVELS_COLOR = [
   '#FB7299', '#DC281E',
   '#DC281E'
 ]
-const TIMING_LEVELS_TEXT_COLOR = [
+export const TIMING_LEVELS_TEXT_COLOR = [
   '#FFFF00', '#FFFFFF',
   '#FFFFFF', '#FFFFFF',
   '#FFFFFF', '#FFFFFF',

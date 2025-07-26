@@ -2,6 +2,7 @@ import { DailyStarResponse } from "../types/response/DailyStar";
 import { readFileSync } from "fs";
 import CanvasService, { Image } from "@koishijs/canvas";
 import path from "path";
+import { TIMING_LEVELS_COLOR, TIMING_LEVELS_MAP, TIMING_LEVELS_TEXT_COLOR } from "./renderPost";
 
 const isDev = process.env.NODE_ENV === 'development';
 const resourcesPath = isDev ? path.resolve(__dirname, '../../assets') : path.resolve(__dirname, '../assets');
@@ -17,7 +18,7 @@ export async function render(data: DailyStarResponse["data"], canvasService: Can
   // 预加载图片
   await preloadImages(canvasService);
   const width = 800;
-  const height = 1070; // 增加高度以容纳更多内容
+  const height = 950; // 减少总高度
   const canvas = await canvasService.createCanvas(width, height);
   const ctx = canvas.getContext('2d');
 
@@ -34,21 +35,19 @@ export async function render(data: DailyStarResponse["data"], canvasService: Can
   ctx.roundRect(40, 40, canvas.width - 80, height - 80, 20);
   ctx.fill();
 
-  // 绘制头部
+  // 绘制用户信息和标题在同一行
   //@ts-ignore
-  await drawHeader(ctx, 40, 40);
-
-  // 绘制用户信息
+  await drawHeader(ctx, 370, 60); // 标题放在用户信息右侧
   //@ts-ignore
-  await drawUserInfo(ctx, data, avatar, 40, 160);
+  await drawUserInfo(ctx, data, avatar, 40, 60);
 
   // 绘制统计数据
   //@ts-ignore
-  drawStats(ctx, data, 40, 280);
+  drawStats(ctx, data, 40, 180);
 
   // 绘制游戏信息
   //@ts-ignore
-  await drawGameInfo(ctx, data, canvasService, 40, 610);
+  await drawGameInfo(ctx, data, canvasService, 40, 510);
 
   return canvas.toBuffer('image/png');
 }
@@ -64,32 +63,26 @@ async function preloadImages(canvasService: CanvasService) {
 }
 
 async function drawHeader(ctx: CanvasRenderingContext2D, baseX: number, baseY: number) {
-  const headerGradient = ctx.createLinearGradient(baseX, baseY, baseX + 720, baseY + 100);
-  headerGradient.addColorStop(0, '#FF6B6B');
-  headerGradient.addColorStop(1, '#4ECDC4');
+  const headerGradient = ctx.createLinearGradient(baseX, baseY, baseX + 350, baseY + 120);
+  headerGradient.addColorStop(0.3, '#FA7299');
+  headerGradient.addColorStop(0.6, '#FEB47B');
   ctx.beginPath();
   ctx.fillStyle = headerGradient;
-  ctx.roundRect(baseX, baseY, 720, 100, [20, 20, 0, 0]);
+  ctx.roundRect(70, baseY, 660, 110, 15);
   ctx.fill();
 
   // 标题
   ctx.fillStyle = 'white';
-  ctx.font = 'bold 32px Arial, sans-serif';
+  ctx.font = 'bold 38px Arial, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('🌟 今日之星 🌟', baseX + 360, baseY + 50);
+  ctx.fillText('🌟 今日之星 🌟', baseX + 175, baseY + 55);
 
   // 副标题
-  ctx.font = '16px Arial, sans-serif';
-  ctx.fillText('Daily Star Player', baseX + 360, baseY + 80);
+  ctx.font = '20px Arial, sans-serif';
+  ctx.fillText('Daily Star Player', baseX + 175, baseY + 90);
 }
 
 async function drawUserInfo(ctx: CanvasRenderingContext2D, data: DailyStarResponse["data"], avatarImg: Image, baseX: number, baseY: number) {
-  // 用户信息背景
-  ctx.beginPath();
-  ctx.fillStyle = '#f8f9fa';
-  ctx.roundRect(baseX + 30, baseY, 660, 120, 15);
-  ctx.fill();
-
   // 头像
   ctx.save();
   ctx.beginPath();
@@ -112,19 +105,34 @@ async function drawUserInfo(ctx: CanvasRenderingContext2D, data: DailyStarRespon
   ctx.textAlign = 'left';
   ctx.fillText(data.user.nickName, baseX + 150, baseY + 35);
 
-  ctx.fillStyle = '#7f8c8d';
+  ctx.fillStyle = '#2c3e50';
   ctx.font = '16px Arial, sans-serif';
   ctx.fillText(`UID: ${data.user.uid}`, baseX + 150, baseY + 60);
 
   // 排名徽章
-  ctx.beginPath();
-  ctx.fillStyle = '#FF6B6B';
-  ctx.roundRect(baseX + 150, baseY + 70, 122, 25, 12);
-  ctx.fill();
-  ctx.fillStyle = 'white';
-  ctx.font = 'bold 14px Arial, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(`时间排名 #${data.user.timingRank || '未排名'}`, baseX + 211, baseY + 87);
+  const { timingLevel, timingRank } = data.user;
+  const nicknameWidth = ctx.measureText(data.user.nickName).width;
+  const nickNameX = baseX + 150;
+  const nickNameY = baseY + 60;
+  // 绘制等级标签
+  const levelIndex = timingLevel == -1 ? 0 : timingLevel;
+  const levelText = TIMING_LEVELS_MAP[levelIndex];
+  const levelColor = TIMING_LEVELS_COLOR[levelIndex];
+  const textColor = TIMING_LEVELS_TEXT_COLOR[levelIndex] || '#FFFFFF';
+
+  const rankText = timingRank == 1 ? '雷帝' : `${levelText} ${timingRank <= 300 ? timingRank : ''}`
+  if (levelIndex < TIMING_LEVELS_MAP.length) {
+    ctx.beginPath();
+    ctx.fillStyle = levelColor;
+    ctx.roundRect(baseX + 150, baseY + 71, 80, 25, 12);
+    ctx.fill();
+    ctx.fillStyle = textColor;
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 18px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(rankText, baseX + 190, baseY + 90);
+    ctx.textAlign = 'left';
+  }
 }
 
 function drawStats(ctx: CanvasRenderingContext2D, data: DailyStarResponse["data"], baseX: number, baseY: number) {
@@ -407,6 +415,8 @@ function compute(mode: number, time: number, bvs: number) {
 //         console.log("解压结果:", decompressed);
 //     } catch (error) {
 //         console.error("解压过程中出错:", error);
+//     }
+// }
 //     }
 // }
 
