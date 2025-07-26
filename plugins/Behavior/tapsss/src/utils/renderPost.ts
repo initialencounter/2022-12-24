@@ -78,26 +78,28 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
   // 计算昵称宽度，用于动态调整等级标签位置
   const nicknameWidth = ctx.measureText(nickName).width;
 
-  // 绘制等级标签
-  const levelIndex = timingLevel == -1 ? 0 : timingLevel;
-  const levelText = TIMING_LEVELS_MAP[levelIndex];
-  const levelColor = TIMING_LEVELS_COLOR[levelIndex];
-  const textColor = TIMING_LEVELS_TEXT_COLOR[levelIndex] || '#FFFFFF';
+  if (timingRank !== 0) {
+    // 绘制等级标签
+    const levelIndex = timingLevel == -1 ? 0 : timingLevel;
+    const levelText = TIMING_LEVELS_MAP[levelIndex];
+    const levelColor = TIMING_LEVELS_COLOR[levelIndex];
+    const textColor = TIMING_LEVELS_TEXT_COLOR[levelIndex] || '#FFFFFF';
 
-  const rankText = timingRank == 1 ? '雷帝' : `${levelText} ${timingRank <= 300 ? timingRank : ''}`
-  const rankTextWidth = ctx.measureText(rankText).width;
-  if (levelIndex < TIMING_LEVELS_MAP.length) {
-    const labelX = 30 + nicknameWidth + nickNameX;
-    const labelHeight = 25;
-    ctx.beginPath();
-    ctx.fillStyle = levelColor;
-    ctx.roundRect(labelX, nickNameY - labelHeight, rankTextWidth * 0.6, labelHeight, 4);
-    ctx.fill();
-    ctx.fillStyle = textColor;
-    ctx.font = '18px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText(rankText, labelX + 35, nickNameY - 7);
-    ctx.textAlign = 'left';
+    const rankText = timingRank === 1 ? '雷帝' : `${levelText}${timingRank <= 300 ? ' ' + timingRank : ''}`
+    const rankTextWidth = 40 + (rankText.length - 1) * 11;
+    console.log('rankTextWidth:', rankTextWidth, rankText, rankText.length);
+    if (levelIndex < TIMING_LEVELS_MAP.length) {
+      const labelX = 30 + nicknameWidth + nickNameX;
+      const labelHeight = 25;
+      ctx.beginPath();
+      ctx.fillStyle = levelColor;
+      ctx.roundRect(labelX, nickNameY - labelHeight, rankTextWidth, labelHeight, 4);
+      ctx.fill();
+      ctx.fillStyle = textColor;
+      ctx.font = '18px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText(rankText, labelX + 10, nickNameY - 6);
+    }
   }
 
   const timeX = nickNameX
@@ -248,7 +250,7 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
     ctx.fillText(commentCount.toString(), 350, bottomY);
   else
     // 如果评论数超过1000，显示为千位数
-  ctx.fillText(`${(commentCount / 1000).toFixed(1)}k`, 350, bottomY);
+    ctx.fillText(`${(commentCount / 1000).toFixed(1)}k`, 350, bottomY);
 
   // 点赞数
   // ctx.fillText('👍', 600, bottomY);
@@ -258,7 +260,7 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
     ctx.fillText(goodCount.toString(), 665, bottomY);
   else
     // 如果点赞数超过1000，显示为千位数
-  ctx.fillText(`${(goodCount / 1000).toFixed(1)}k`, 665, bottomY);
+    ctx.fillText(`${(goodCount / 1000).toFixed(1)}k`, 665, bottomY);
 
   return canvas.toBuffer('image/png');
 }
