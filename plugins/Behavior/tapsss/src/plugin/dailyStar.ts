@@ -7,6 +7,7 @@ import { DailyStarConfig } from "../types/dailyStarConfig";
 import { DailyStarResponse } from "../types/response/DailyStar";
 import { render } from "../utils/renderRecord";
 import { } from "../service/imageCache";
+import { writeFileSync } from "fs";
 
 
 class DailyStar {
@@ -26,6 +27,20 @@ class DailyStar {
         const dailyStar = await this.getDailyStar()
         return h.image(dailyStar, 'image/png');
       })
+
+    const isDev = process.env.NODE_ENV === 'development';
+    if (isDev) {
+      ctx.on('ready', async () => {
+        ctx.logger('[Tapsss] DailyStar').warn('DailyStar 服务已启动.');
+        // 立即执行一次获取今日之星的任务
+        try {
+          const dailyStar = await this.getDailyStar();
+          writeFileSync('dailyStar.png', dailyStar);
+        } catch (error) {
+          ctx.logger('[Tapsss] DailyStar').error('Failed to fetch daily star:', error);
+        }
+      });
+    }
   };
 
 
