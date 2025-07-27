@@ -42,8 +42,10 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
     commentImage = await canvasService.loadImage(commentImageBuffer);
   }
   const { title, text, device, record, user: { avatar, nickName, timingLevel, timingRank, vip }, createTime, goodCount, commentCount, lastComment } = post;
-  let height = 220 + 105 + 205;
+  let height = 200 + 105 + 205;
   if (title) height += 53 + 33; // 如果有标题，增加额外空间
+  const tag = findHashWrappedStrings(text);
+  if (tag.length > 0) height += tag.length * 60; // 如果有标签，增加额外空间
   if (isIncludedImage(text)) height += 326 + 20; // 如果有图片，增加额外空间
   if (record.id) height += 138 + 33; // 如果有记录，增加额外空间
   if (removeImagesAndLinksFromMarkdown(text)) height += (removeImagesAndLinksFromMarkdown(text).length > 24 ? 2 : 1) * 60; // 如果有正文内容，增加额外空间
@@ -57,14 +59,14 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
 
   // 绘制用户头像
   const avatarX = 39;
-  const avatarY = 28;
+  let yPos = 28;
   const avatarRadius = 52;
   const avatarImage = await imageCache.fetchImage(avatar);
   ctx.save();
   ctx.beginPath();
-  ctx.arc(avatarX + avatarRadius, avatarY + avatarRadius, avatarRadius, 0, 2 * Math.PI);
+  ctx.arc(avatarX + avatarRadius, yPos + avatarRadius, avatarRadius, 0, 2 * Math.PI);
   ctx.clip();
-  ctx.drawImage(avatarImage, avatarX, avatarY, avatarRadius * 2, avatarRadius * 2);
+  ctx.drawImage(avatarImage, avatarX, yPos, avatarRadius * 2, avatarRadius * 2);
   ctx.restore();
 
 
@@ -103,7 +105,7 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
   }
 
   const timeX = nickNameX
-  const timeY = avatarY + avatarRadius * 2 - 6;
+  yPos += avatarRadius * 2 - 6;
   // 绘制时间和设备信息
   const timeStr = new Date(createTime).toLocaleString('zh-CN', {
     month: '2-digit',
@@ -113,9 +115,9 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
   });
   ctx.fillStyle = '#999';
   ctx.font = '26px Arial';
-  ctx.fillText(`${timeStr}   📱${device}`, timeX, timeY);
+  ctx.fillText(`${timeStr}   📱${device}`, timeX, yPos);
 
-  let yPos = timeY + 80;
+  yPos += 60;
   // 绘制帖子标题
   if (title) {
     ctx.fillStyle = '#FFFFFF';
@@ -130,7 +132,19 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
 
   yPos += 23
 
-  const showText = removeImagesAndLinksFromMarkdown(text).trim();
+  if (tag.length > 0) {
+    // 绘制标签
+    ctx.fillStyle = '#FA7299';
+    ctx.font = 'bold 40px Arial';
+    tag.forEach((t, index) => {
+      const tagText = `#${t}#`;
+      const tagWidth = ctx.measureText(tagText).width;
+      ctx.fillText(tagText, avatarX + index * (tagWidth + 20), yPos);
+    });
+    yPos += 60; // 标签占用一行高度
+  }
+
+  const showText = removeHashWrappedStrings(removeImagesAndLinksFromMarkdown(text)).trim();
   // 绘制帖子正文内容
   if (showText) {
     ctx.fillStyle = '#E0E0E0';
@@ -144,7 +158,6 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
       ctx.fillText(line, 40, yPos);
       yPos += 60;
     });
-    yPos += 10;
   }
 
   // 绘制帖子内容（image）
@@ -171,6 +184,10 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
       imageX += 336; // 每张图片之间的间隔
     }
     yPos += 326 + 20;
+  }
+
+  if (record.id) {
+    
   }
 
   let commentContentY = yPos + 20;
@@ -324,4 +341,45 @@ function removeImagesAndLinksFromMarkdown(markdownText: string): string {
   result = result.replace(/<a\b[^>]*>(.*?)<\/a>/g, '$1'); // 保留链接文本
 
   return result;
+}
+
+/**
+ * 移除字符串中所有被 # 包裹的部分
+ * @param input 输入字符串
+ * @returns 处理后的字符串，所有被 # 包裹的部分已被移除
+ */
+function removeHashWrappedStrings(input: string): string {
+  // 使用正则表达式替换被 # 包裹的字符串为空
+  // 正则解释：
+  // # 匹配 # 字符
+  // [^#]+ 匹配一个或多个非 # 字符
+  // # 匹配结束的 # 字符
+  // g 表示全局匹配
+  return input.replace(/#[^#]+#/g, '');
+}
+
+/**
+ * 匹配所有被 # 包裹的字符串
+ * @param input 输入字符串
+ * @returns 匹配到的所有被 # 包裹的字符串数组
+ */
+function findHashWrappedStrings(input: string): string[] {
+  // 使用正则表达式匹配被 # 包裹的字符串
+  // 正则解释：
+  // # 匹配 # 字符
+  // ([^#]+) 匹配一个或多个非 # 字符（捕获组）
+  // # 匹配结束的 # 字符
+  // g 表示全局匹配
+  const regex = /#([^#]+)#/g;
+
+  const matches: string[] = [];
+  let match;
+
+  // 使用循环获取所有匹配项
+  while ((match = regex.exec(input)) !== null) {
+    // match[1] 是第一个捕获组，即 # 之间的内容
+    matches.push(match[1]);
+  }
+
+  return matches;
 }
