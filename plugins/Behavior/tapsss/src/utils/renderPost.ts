@@ -27,10 +27,18 @@ export const TIMING_LEVELS_TEXT_COLOR = [
   '#FFFFFF',
 ]
 
+export const recordBgColor = ['#2A2124', '#202329', '#252525', '#292219', '#28261B'];
+export const recordTextColor = ['#FB7299', '#5D9CEC', '#F15021', '#F18400', '#EEBF1D'];
 const isDev = process.env.NODE_ENV === 'development';
 const resourcesPath = isDev ? path.resolve(__dirname, '../../assets') : path.resolve(__dirname, '../assets');
 const commentImageBuffer = readFileSync(path.resolve(resourcesPath, 'EQ.png'));
 const goodImageBuffer = readFileSync(path.resolve(resourcesPath, 'vO.png'));
+const recordIconsBuffer: Buffer[] = [null];
+for (let i = 0; i < 5; i++) {
+  const iconPath = path.resolve(resourcesPath, `icon/${i}.png`);
+  recordIconsBuffer[i] = readFileSync(iconPath)
+}
+let recordIcons: Image[] | null = null;
 let goodImage: Image | null = null;
 let commentImage: Image | null = null;
 
@@ -41,14 +49,18 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
   if (!commentImage) {
     commentImage = await canvasService.loadImage(commentImageBuffer);
   }
-  const { title, text, device, record, user: { avatar, nickName, timingLevel, timingRank, vip }, createTime, goodCount, commentCount, lastComment } = post;
+  if (!recordIcons) {
+    recordIcons = await Promise.all(recordIconsBuffer.map(buffer => canvasService.loadImage(buffer)));
+  }
+  const { title, text, device, record, puzzleRecord, schulteRecord, tzfeRecord, nonoRecord, recordType, user: { avatar, nickName, timingLevel, timingRank, vip }, createTime, goodCount, commentCount, lastComment } = post;
   let height = 200 + 105 + 205;
   if (title) height += 53 + 33; // 如果有标题，增加额外空间
   const tag = findHashWrappedStrings(text);
-  if (tag.length > 0) height += tag.length * 60; // 如果有标签，增加额外空间
+  if (tag.length > 0) height += (tag.join(' ').length > 24 ? 2 : 1) * 60; // 如果有标签，增加额外空间
   if (isIncludedImage(text)) height += 326 + 20; // 如果有图片，增加额外空间
   if (record.id) height += 138 + 33; // 如果有记录，增加额外空间
-  if (removeImagesAndLinksFromMarkdown(text)) height += (removeImagesAndLinksFromMarkdown(text).length > 24 ? 2 : 1) * 60; // 如果有正文内容，增加额外空间
+  const showText = removeHashWrappedStrings(removeImagesAndLinksFromMarkdown(text)).trim();
+  if (showText) height += (showText.length > 24 ? 2 : 1) * 60; // 如果有正文内容，增加额外空间
   if (lastComment) height += Math.floor(lastComment.comment.length / 30) * 55 // 计算最新评论的高度，假设每30个字符占55px高度
   const canvas = await canvasService.createCanvas(1080, height);
   const ctx = canvas.getContext('2d');
@@ -144,7 +156,6 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
     yPos += 60; // 标签占用一行高度
   }
 
-  const showText = removeHashWrappedStrings(removeImagesAndLinksFromMarkdown(text)).trim();
   // 绘制帖子正文内容
   if (showText) {
     ctx.fillStyle = '#E0E0E0';
@@ -187,7 +198,85 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
   }
 
   if (record.id) {
-    
+    const icon = recordIcons[recordType];
+    const bgColor = recordBgColor[recordType];
+    const textColor = recordTextColor[recordType];
+    ctx.beginPath();
+    ctx.fillStyle = bgColor;
+    ctx.roundRect(avatarX, yPos, 1002, 138, 10);
+    ctx.fill();
+
+    const iconX = avatarX + 65;
+    const iconY = yPos + 41;
+
+    ctx.textAlign = 'center'
+    ctx.fillStyle = textColor;
+    const font = 'bold 30px Arial';
+    const labelFont = '24px Arial'
+    const textY = yPos + 58;
+    const labelY = textY + 46;
+    const textX = 67 + 270;
+
+    if (recordType !== 4) {
+      ctx.drawImage(icon, iconX, iconY, 56, 56);
+
+      ctx.font = labelFont;
+      ctx.fillText('难度', textX, labelY);
+      ctx.fillText('时间', textX + 270, labelY);
+    }
+
+    switch (recordType) {
+      case 0: // 扫雷
+        ctx.font = font;
+        ctx.fillText(computeType(record.row, record.column, record.mine), textX, textY);
+        ctx.fillText(String(record.time), textX + 270, textY);
+        ctx.fillText(String(record.bvs), textX + 270 + 270, textY);
+
+        ctx.font = labelFont;
+        ctx.fillText('3BV/s', textX + 270 + 270, labelY);
+        break;
+      case 1: // 数字华容道
+        ctx.font = font;
+        ctx.fillText(`${puzzleRecord.row}x${puzzleRecord.column}`, textX, textY);
+        ctx.fillText(String(puzzleRecord.time), textX + 270, textY);
+        ctx.fillText(String(puzzleRecord.step), textX + 270 + 270, textY);
+
+        ctx.font = labelFont;
+        ctx.fillText('步数', textX + 270 + 270, labelY);
+        break;
+      case 2: // 2048
+        ctx.font = font;
+        ctx.fillText(`${tzfeRecord.row}x${tzfeRecord.column}`, textX, textY);
+        ctx.fillText(String(tzfeRecord.time), textX + 270, textY);
+        ctx.fillText(String(tzfeRecord.score), textX + 270 + 270, textY);
+
+        ctx.font = labelFont;
+        ctx.fillText('分数', textX + 270 + 270, labelY);
+        break;
+      case 3: // 舒尔特方格
+        ctx.font = font;
+        ctx.fillText(`${schulteRecord.row}x${schulteRecord.column}`, textX, textY);
+        ctx.fillText(String(schulteRecord.time), textX + 270, textY);
+        ctx.fillText(String(schulteRecord.row * schulteRecord.column - schulteRecord.tapCorrect), textX + 270 + 270, textY);
+
+        ctx.font = labelFont;
+        ctx.fillText('错误', textX + 270 + 270, labelY);
+        break;
+      case 4: // 数织
+        const nonoIconX = 140
+        const nonoTextX = 67 + 378
+        ctx.drawImage(icon, nonoIconX, iconY, 56, 56);
+
+        ctx.font = font;
+        ctx.fillText(`${computeNonoType(nonoRecord.mine)}`, nonoTextX, textY);
+        ctx.fillText(String(nonoRecord.time / 1000), nonoTextX + 378, textY);
+        ctx.font = labelFont;
+        ctx.fillText('难度', nonoTextX, labelY);
+        ctx.fillText('时间', nonoTextX + 378, labelY);
+        break;
+    }
+    ctx.textAlign = 'left';
+    yPos += 138 + 33; // 增加记录区域的高度
   }
 
   let commentContentY = yPos + 20;
@@ -382,4 +471,18 @@ function findHashWrappedStrings(input: string): string[] {
   }
 
   return matches;
+}
+
+function computeType(row: number, column: number, mine: number): string {
+  if (row * column === 480 && mine === 99) return "高级";
+  if (row === 16 && column === 16 && mine === 40) return "中级";
+  if (row === 8 && column === 8 && mine === 10) return "初级";
+  return `${row}x${column}x${mine}`;
+}
+
+function computeNonoType(mine: number): string {
+  if (mine === 27) return `初级`;
+  if (mine === 64) return `中级`;
+  if (mine === 90) return `高级`;
+  if (mine === 148) return `专家`;
 }

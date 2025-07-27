@@ -24,14 +24,14 @@ export interface Datum {
   lastComment: LastComment;
   minesweeperThemeId: number;
   minesweeperThemeScore: number;
-  nonoRecord: null;
+  nonoRecord: null | NonoRecord;
   nonoThemeId: number;
   nonoThemeScore: number;
   puzzleRecord: null | PuzzleRecord;
   record: Record;
   recordId: number;
   recordType: number;
-  schulteRecord: null;
+  schulteRecord: null | SchulteRecord;
   sourceUid: null;
   status: number;
   stick: number;
@@ -101,6 +101,44 @@ export interface Record {
   mine: number;
   row: number;
   time: number;
+}
+
+export interface SchulteRecord {
+    actions: null;
+    blind: boolean;
+    column: number;
+    createTime: null;
+    id: number;
+    map: null;
+    maps: null;
+    playCount: number;
+    postId: number;
+    reactionTime: number;
+    row: number;
+    tap: number;
+    tapCorrect: number;
+    time: number;
+    type: number;
+    uid: null;
+}
+
+export interface NonoRecord {
+    column: number;
+    createTime: number;
+    finishMode: number;
+    handle: null;
+    id: number;
+    map: null;
+    mine: number;
+    mode: number;
+    playCount: number;
+    postId: number;
+    row: number;
+    themeId: number;
+    time: number;
+    type: number;
+    uid: null;
+    upload: boolean;
 }
 
 export interface TzfeRecord {

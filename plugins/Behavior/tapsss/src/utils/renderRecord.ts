@@ -370,13 +370,6 @@ async function drawMineMap(ctx: CanvasRenderingContext2D, mapString: string, row
   ctx.stroke();
 }
 
-function computeType(row: number, column: number, mine: number): string {
-  if (row * column === 480 && mine === 99) return "高级";
-  if (row === 16 && column === 16 && mine === 40) return "中级";
-  if (row === 8 && column === 8 && mine === 10) return "初级";
-  return `${row}×${column} ${mine}`;
-}
-
 function compute(mode: number, time: number, bvs: number) {
   var cont: number = 435.001
   if (mode == 1) {
