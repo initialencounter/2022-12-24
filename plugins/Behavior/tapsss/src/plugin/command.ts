@@ -7,10 +7,11 @@ class TapsssCommand {
   constructor(private ctx: Context) {
     ctx.command('评论 <content:text>', '添加评论')
       .action(async ({ session }) => {
-        const content = this.getContent(session).slice(3).trim();
+        let content = this.getContent(session).slice(3).trim();
         if (!content) {
           return '评论内容不能为空';
         }
+        content = `${session.author.name ?? session.author.id}@qq: ${content}`;
         const post = await this.getPostId(session);
         if (!post) return '找不到帖子或评论';
         try {
