@@ -1,5 +1,5 @@
-import { Datum } from "../types/postList";
-import CanvasService, { Image } from "@koishijs/canvas";
+import { Datum, LastComment } from "../types/postList";
+import CanvasService, { Image, CanvasRenderingContext2D } from "@koishijs/canvas";
 import ImageCache from "../service/imageCache";
 import path from "path";
 import { readFileSync } from "fs";
@@ -41,6 +41,7 @@ for (let i = 0; i < 5; i++) {
 let recordIcons: Image[] | null = null;
 let goodImage: Image | null = null;
 let commentImage: Image | null = null;
+let lastYPos = 0;
 
 export async function renderPost(post: Datum, canvasService: CanvasService, imageCache: ImageCache): Promise<Buffer> {
   if (!goodImage) {
@@ -52,16 +53,41 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
   if (!recordIcons) {
     recordIcons = await Promise.all(recordIconsBuffer.map(buffer => canvasService.loadImage(buffer)));
   }
-  const { title, text, device, record, puzzleRecord, schulteRecord, tzfeRecord, nonoRecord, recordType, user: { avatar, nickName, timingLevel, timingRank, vip }, createTime, goodCount, commentCount, lastComment } = post;
-  let height = 130 + 100; // 初始高度，包含头像和点赞评论
-  if (title) height += 60 + 23; // 如果有标题，增加额外空间
+  const { title, text, record, lastComment } = post;
+
+  // 重新计算高度，与实际绘制保持一致
+  let height = 0;
+  height += 126; // drawUserInfo: avatarRadius * 2 + 28 (头像高度104px + 时间信息28px)
+
+  if (title) height += 60 + 23; // drawTitle: 60 + 23
+
   const tag = findHashWrappedStrings(text);
-  if (tag.length > 0) height += (tag.join(' ').length > 24 ? 2 : 1) * 45 + 26; // 如果有标签，增加额外空间
-  if (isIncludedImage(text)) height += 326 + 20; // 如果有图片，增加额外空间
-  if (record.id) height += 138 + 33; // 如果有记录，增加额外空间
   const showText = removeHashWrappedStrings(removeImagesAndLinksFromMarkdown(text)).trim();
-  if (showText) height += (showText.length > 24 ? 2 : 1) * 60 + 33; // 如果有正文内容，增加额外空间
-  if (lastComment) height += 23 + 120 + ((Math.floor(lastComment.comment.length / 28) > 1) ? 110 : 55) // 计算最新评论的高度，假设每30个字符占55px高度
+
+  if (tag.length > 0) {
+    const tagText = tag.join(' ');
+    const tagLines = Math.min(3, tagText.length > 24 ? 2 : 1); // 最多3行，但实际可能是1-2行
+    height += tagLines * 45; // 每行45px
+  }
+
+  if (showText) {
+    const maxTextLength = 48;
+    const displayText = showText.length > maxTextLength ? showText.substring(0, maxTextLength) + '...' : showText;
+    const textLines = displayText.length > 24 ? 2 : 1; // 最多3行
+    height += textLines * 70 + 33; // 每行60px + 13 + 33px间距
+  }
+
+  if (isIncludedImage(text)) height += 326 + 20; // 图片高度
+
+  if (record.id) height += 138 + 33; // 记录高度
+
+  if (lastComment) {
+    const lastCommentHeight = 75 + (lastComment.comment.length > 28 ? 110 : 55);
+    height += lastCommentHeight + 50; // 评论高度 + 底部间距50px
+  }
+
+  height += 135; // drawFooter: 80 + 120
+
   const canvas = await canvasService.createCanvas(1080, height);
   const ctx = canvas.getContext('2d');
 
@@ -69,301 +95,31 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
   ctx.fillStyle = '#1B1B1B';
   ctx.fillRect(0, 0, 1080, height);
 
-  // 绘制用户头像
-  const avatarX = 39;
-  let yPos = 28;
-  const avatarRadius = 52;
-  const avatarImage = await imageCache.fetchImage(avatar);
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(avatarX + avatarRadius, yPos + avatarRadius, avatarRadius, 0, 2 * Math.PI);
-  ctx.clip();
-  ctx.drawImage(avatarImage, avatarX, yPos, avatarRadius * 2, avatarRadius * 2);
-  ctx.restore();
-
-
-  const nickNameX = 172
-  const nickNameY = 70;
-  // 绘制用户昵称 - 与头像顶部对齐
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = 'bold 36px Arial';
-  ctx.fillText(nickName, nickNameX, nickNameY);
-
-  // 计算昵称宽度，用于动态调整等级标签位置
-  const nicknameWidth = ctx.measureText(nickName).width;
-
-  if (timingRank !== 0) {
-    // 绘制等级标签
-    const levelIndex = timingLevel == -1 ? 0 : timingLevel;
-    const levelText = TIMING_LEVELS_MAP[levelIndex];
-    const levelColor = TIMING_LEVELS_COLOR[levelIndex];
-    const textColor = TIMING_LEVELS_TEXT_COLOR[levelIndex] || '#FFFFFF';
-
-    const rankText = timingRank === 1 ? '雷帝' : `${levelText}${timingRank <= 300 ? ' ' + timingRank : ''}`
-    const rankTextWidth = 40 + (rankText.length - 1) * 11;
-    if (levelIndex < TIMING_LEVELS_MAP.length) {
-      const labelX = 30 + nicknameWidth + nickNameX;
-      const labelHeight = 25;
-      ctx.beginPath();
-      ctx.fillStyle = levelColor;
-      ctx.roundRect(labelX, nickNameY - labelHeight, rankTextWidth, labelHeight, 4);
-      ctx.fill();
-      ctx.fillStyle = textColor;
-      ctx.font = '18px Arial';
-      ctx.textAlign = 'left';
-      ctx.fillText(rankText, labelX + 10, nickNameY - 6);
-    }
-  }
-
-  const timeX = nickNameX
-  yPos += avatarRadius * 2 - 6;
-  // 绘制时间和设备信息
-  const timeStr = new Date(createTime).toLocaleString('zh-CN', {
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-  ctx.fillStyle = '#999';
-  ctx.font = '26px Arial';
-  ctx.fillText(`${timeStr}   📱${device}`, timeX, yPos);
-
-  yPos += 13
-
+  let yPos = 0;
+  yPos = await drawUserInfo(post, ctx, imageCache, yPos);
+  drawLine(ctx, yPos);
   // 绘制帖子标题
-  if (title) {
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 40px Arial';
-    yPos += 60;
-    //@ts-ignore
-    ctx.fillText(title.slice(0, 28), avatarX, yPos);
-    yPos += 23
-  }
-
-
-  if (tag.length > 0) {
-    // 绘制标签
-    yPos += 13
-    ctx.fillStyle = '#FA7299';
-    ctx.font = '40px Arial';
-    const tagText = tag.join(' ');
-    // @ts-ignore
-    const wrappedTag = wrapText(ctx, tagText, 1002);
-    wrappedTag.slice(0, 3).forEach(line => { // 最多显示3行
-      yPos += 45;
-      ctx.fillText(line, 40, yPos);
-    });
-    yPos += 13
-  }
-
-  // 绘制帖子正文内容
-  if (showText) {
-    ctx.fillStyle = '#E0E0E0';
-    ctx.font = '40px Arial';
-    const maxTextLength = 48; // 最大字符数
-    const displayText = showText.length > maxTextLength ? showText.substring(0, maxTextLength) + '...' : showText;
-    //@ts-ignore
-    const wrappedText = wrapText(ctx, displayText, 1000);
-
-    wrappedText.slice(0, 3).forEach(line => { // 最多显示3行
-      yPos += 60;
-      ctx.fillText(line, 40, yPos);
-    });
-    yPos += 33;
-  }
-
+  yPos = await drawTitle(ctx, title, yPos);
+  drawLine(ctx, yPos);
+  // 绘制标签
+  yPos = await drawTags(ctx, tag, yPos);
+  drawLine(ctx, yPos);
+  // 绘制正文内容
+  yPos = await drawContent(ctx, showText, yPos);
+  drawLine(ctx, yPos);
   // 绘制帖子内容（image）
-  if (isIncludedImage(text)) {
-    let imageX = avatarX;
-    const imgUrl = extractImageLinksFromMarkdown(text).slice(0, 3)
-    for (let i = 0; i < imgUrl.length; i++) {
-      const image = await imageCache.fetchImage(imgUrl[i]);
-
-      // 保存当前绘图状态
-      ctx.save();
-
-      // 创建圆角矩形路径
-      ctx.beginPath();
-      ctx.roundRect(imageX, yPos, 326, 326, 12);
-      ctx.clip();
-
-      // 绘制图片
-      ctx.drawImage(image, imageX, yPos, 326, 326);
-
-      // 恢复绘图状态
-      ctx.restore();
-
-      imageX += 336; // 每张图片之间的间隔
-    }
-    yPos += 326 + 20;
-  }
-
-  if (record.id) {
-    const icon = recordIcons[recordType];
-    const bgColor = recordBgColor[recordType];
-    const textColor = recordTextColor[recordType];
-    ctx.beginPath();
-    ctx.fillStyle = bgColor;
-    ctx.roundRect(avatarX, yPos, 1002, 138, 10);
-    ctx.fill();
-
-    const iconX = avatarX + 65;
-    const iconY = yPos + 41;
-
-    ctx.textAlign = 'center'
-    ctx.fillStyle = textColor;
-    const font = 'bold 30px Arial';
-    const labelFont = '24px Arial'
-    const textY = yPos + 58;
-    const labelY = textY + 46;
-    const textX = 67 + 270;
-
-    if (recordType !== 4) {
-      ctx.drawImage(icon, iconX, iconY, 56, 56);
-
-      ctx.font = labelFont;
-      ctx.fillText('难度', textX, labelY);
-      ctx.fillText('时间', textX + 270, labelY);
-    }
-
-    switch (recordType) {
-      case 0: // 扫雷
-        ctx.font = font;
-        ctx.fillText(computeType(record.row, record.column, record.mine), textX, textY);
-        ctx.fillText(String(record.time), textX + 270, textY);
-        ctx.fillText(String(record.bvs), textX + 270 + 270, textY);
-
-        ctx.font = labelFont;
-        ctx.fillText('3BV/s', textX + 270 + 270, labelY);
-        break;
-      case 1: // 数字华容道
-        ctx.font = font;
-        ctx.fillText(`${puzzleRecord.row}x${puzzleRecord.column}`, textX, textY);
-        ctx.fillText(String(puzzleRecord.time), textX + 270, textY);
-        ctx.fillText(String(puzzleRecord.step), textX + 270 + 270, textY);
-
-        ctx.font = labelFont;
-        ctx.fillText('步数', textX + 270 + 270, labelY);
-        break;
-      case 2: // 2048
-        ctx.font = font;
-        ctx.fillText(`${tzfeRecord.row}x${tzfeRecord.column}`, textX, textY);
-        ctx.fillText(String(tzfeRecord.time), textX + 270, textY);
-        ctx.fillText(String(tzfeRecord.score), textX + 270 + 270, textY);
-
-        ctx.font = labelFont;
-        ctx.fillText('分数', textX + 270 + 270, labelY);
-        break;
-      case 3: // 舒尔特方格
-        ctx.font = font;
-        ctx.fillText(`${schulteRecord.row}x${schulteRecord.column}`, textX, textY);
-        ctx.fillText(String(schulteRecord.time), textX + 270, textY);
-        ctx.fillText(String(schulteRecord.row * schulteRecord.column - schulteRecord.tapCorrect), textX + 270 + 270, textY);
-
-        ctx.font = labelFont;
-        ctx.fillText('错误', textX + 270 + 270, labelY);
-        break;
-      case 4: // 数织
-        const nonoIconX = 140
-        const nonoTextX = 67 + 378
-        ctx.drawImage(icon, nonoIconX, iconY, 56, 56);
-
-        ctx.font = font;
-        ctx.fillText(`${computeNonoType(nonoRecord.mine)}`, nonoTextX, textY);
-        ctx.fillText(String(nonoRecord.time / 1000), nonoTextX + 378, textY);
-        ctx.font = labelFont;
-        ctx.fillText('难度', nonoTextX, labelY);
-        ctx.fillText('时间', nonoTextX + 378, labelY);
-        break;
-    }
-    ctx.textAlign = 'left';
-    yPos += 138 + 33; // 增加记录区域的高度
-  }
-
+  yPos = await drawImages(ctx, imageCache, text, yPos);
+  drawLine(ctx, yPos);
+  // 绘制纪录信息
+  yPos = await drawRecord(ctx, post, yPos);
+  drawLine(ctx, yPos);
   // 绘制最新评论
-  if (lastComment && lastComment.user) {
-    // @ts-ignore
-    const wrappedComment = wrapText(ctx, lastComment.comment, 720);
-    let lastCommentHeight = 120 + (wrappedComment.length > 1 ? 110 : 55);
-    // 绘制评论背景
-    ctx.fillStyle = '#2A2A2A';
-    ctx.beginPath();
-    ctx.roundRect(avatarX, yPos, 1000, lastCommentHeight, 8);
-    ctx.fill();
-
-    // 绘制"最新评论"标题
-    ctx.fillStyle = '#8D9E4B';
-    ctx.font = '30px Arial';
-    ctx.fillText('最新评论', 80, yPos + 55);
-
-    // 绘制评论者头像
-    const commentAvatarX = 960;
-    const commentAvatarRadius = 30;
-    const commentAvatarY = yPos + 15;
-    const commentAvatarImage = await imageCache.fetchImage(lastComment.user.avatar);
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(commentAvatarX + commentAvatarRadius, commentAvatarY + commentAvatarRadius, commentAvatarRadius, 0, 2 * Math.PI);
-    ctx.clip();
-    ctx.drawImage(commentAvatarImage, commentAvatarX, commentAvatarY, commentAvatarRadius * 2, commentAvatarRadius * 2);
-    ctx.restore();
-
-
-    // 绘制评论者昵称 - 与头像顶部对齐
-    const lastCommentNickNameLength = ctx.measureText(lastComment.user.nickName).width;
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '24px Arial';
-    ctx.fillText(lastComment.user.nickName, commentAvatarX - 70 - lastCommentNickNameLength * 0.5, commentAvatarY + 25);
-
-    // 绘制评论时间
-    const commentTimeStr = new Date(lastComment.createTime).toLocaleString('zh-CN', {
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-    ctx.fillStyle = '#999';
-    ctx.font = '20px Arial';
-    ctx.fillText(commentTimeStr, commentAvatarX - 70 - lastCommentNickNameLength * 0.5, commentAvatarY + 55);
-
-    // 绘制评论内容
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '30px Arial';
-    yPos += 75;
-    for (let i = 0; i < 2; i++) {
-      yPos += 55;
-      if (i === 1) {
-        ctx.fillText(wrappedComment[i].slice(0, 28) + '...', 80, yPos);
-        break;
-      }
-      ctx.fillText(wrappedComment[i], 80, yPos);
-    }
-    yPos += 50
-  }
-
+  yPos = await drawLastComment(ctx, imageCache, lastComment, yPos);
+  drawLine(ctx, yPos);
   // 绘制底部互动信息
-  const bottomY = yPos + 70;
+  yPos = await drawFooter(ctx, post, goodImage, commentImage, yPos);
 
-  // 评论数
-  ctx.fillStyle = '#9EA1A6';
-  ctx.drawImage(commentImage, 280, bottomY - 50, 75, 75);
-  // ctx.fillText('💬', 300, bottomY);
-  ctx.font = '36px Arial';
-  if (commentCount < 1000)
-    ctx.fillText(commentCount.toString(), 370, bottomY);
-  else
-    // 如果评论数超过1000，显示为千位数
-    ctx.fillText(`${(commentCount / 1000).toFixed(1)}k`, 350, bottomY);
-
-  // 点赞数
-  // ctx.fillText('👍', 600, bottomY);
-  ctx.drawImage(goodImage, 590, bottomY - 55, 80, 80);
-  ctx.font = '36px Arial';
-  if (goodCount < 1000)
-    ctx.fillText(goodCount.toString(), 675, bottomY);
-  else
-    // 如果点赞数超过1000，显示为千位数
-    ctx.fillText(`${(goodCount / 1000).toFixed(1)}k`, 675, bottomY);
+  drawLine(ctx, yPos);
 
   return canvas.toBuffer('image/png');
 }
@@ -400,7 +156,7 @@ function isIncludedImage(text: string): boolean {
 function extractImageLinksFromMarkdown(markdownText: string): string[] {
   // Markdown 图片语法正则表达式
   // 匹配 ![alt text](url) 和 <img src="url"> 格式
-  const imageRegex = /!\[.*?\]\((.*?)\)|<img[^>]+src="([^">]+)"/g;
+  const imageRegex = /!\[.*?]\((.*?)\)|<img[^>]+src="([^">]+)"/g;
 
   const links: string[] = [];
   let match: RegExpExecArray | null;
@@ -419,11 +175,11 @@ function extractImageLinksFromMarkdown(markdownText: string): string[] {
 
 function removeImagesAndLinksFromMarkdown(markdownText: string): string {
   // 去除图片：![alt](url) 和 <img> 标签
-  let result = markdownText.replace(/!\[.*?\]\(.*?\)/g, '');
+  let result = markdownText.replace(/!\[.*?]\(.*?\)/g, '');
   result = result.replace(/<img[^>]*>/g, '');
 
   // 去除超链接：[text](url) 和 <a> 标签
-  result = result.replace(/\[(.*?)\]\(.*?\)/g, '$1'); // 保留链接文本
+  result = result.replace(/\[(.*?)]\(.*?\)/g, '$1'); // 保留链接文本
   result = result.replace(/<a\b[^>]*>(.*?)<\/a>/g, '$1'); // 保留链接文本
 
   return result;
@@ -482,4 +238,331 @@ function computeNonoType(mine: number): string {
   if (mine === 64) return `中级`;
   if (mine === 90) return `高级`;
   if (mine === 148) return `专家`;
+}
+
+async function drawUserInfo(post: Datum, ctx: CanvasRenderingContext2D, imageCache: ImageCache, yPos: number): Promise<number> {
+  const { device, user: { avatar, nickName, timingLevel, timingRank }, createTime } = post;
+  // 绘制用户头像
+  yPos += 28;
+  const avatarX = 39;
+  const avatarRadius = 52;
+  const avatarImage = await imageCache.fetchImage(avatar);
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(avatarX + avatarRadius, yPos + avatarRadius, avatarRadius, 0, 2 * Math.PI);
+  ctx.clip();
+  ctx.drawImage(avatarImage, avatarX, yPos, avatarRadius * 2, avatarRadius * 2);
+  ctx.restore();
+
+
+  const nickNameX = 172
+  const nickNameY = 70;
+  // 绘制用户昵称 - 与头像顶部对齐
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 36px Arial';
+  ctx.fillText(nickName, nickNameX, nickNameY);
+
+  // 计算昵称宽度，用于动态调整等级标签位置
+  const nicknameWidth = ctx.measureText(nickName).width;
+
+  if (timingRank !== 0) {
+    // 绘制等级标签
+    const levelIndex = timingLevel == -1 ? 0 : timingLevel;
+    const levelText = TIMING_LEVELS_MAP[levelIndex];
+    const levelColor = TIMING_LEVELS_COLOR[levelIndex];
+    const textColor = TIMING_LEVELS_TEXT_COLOR[levelIndex] || '#FFFFFF';
+
+    const rankText = timingRank === 1 ? '雷帝' : `${levelText}${timingRank <= 300 ? ' ' + timingRank : ''}`
+    const rankTextWidth = 40 + (rankText.length - 1) * 11;
+    if (levelIndex < TIMING_LEVELS_MAP.length) {
+      const labelX = 30 + nicknameWidth + nickNameX;
+      const labelHeight = 25;
+      ctx.beginPath();
+      ctx.fillStyle = levelColor;
+      ctx.roundRect(labelX, nickNameY - labelHeight, rankTextWidth, labelHeight, 4);
+      ctx.fill();
+      ctx.fillStyle = textColor;
+      ctx.font = '18px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText(rankText, labelX + 10, nickNameY - 6);
+    }
+  }
+
+  const timeX = nickNameX
+  yPos += avatarRadius * 2 - 6;
+  // 绘制时间和设备信息
+  const timeStr = new Date(createTime).toLocaleString('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  ctx.fillStyle = '#999';
+  ctx.font = '26px Arial';
+  ctx.fillText(`${timeStr}   ${device ? `📱${device}` : ''}`, timeX, yPos);
+  return yPos
+}
+
+async function drawTitle(ctx: CanvasRenderingContext2D, title: string, yPos: number): Promise<number> {
+  if (!title) return yPos;
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 40px Arial';
+  yPos += 60;
+  //@ts-ignore
+  ctx.fillText(title.slice(0, 28), 39, yPos);
+  yPos += 23; // 标题下方留出空间
+  return yPos
+}
+
+async function drawTags(ctx: CanvasRenderingContext2D, tags: string[], yPos: number): Promise<number> {
+  if (tags.length === 0) return yPos;
+
+  ctx.fillStyle = '#FA7299';
+  ctx.font = '40px Arial';
+  const tagText = tags.join(' ');
+  // @ts-ignore
+  const wrappedTag = wrapText(ctx, tagText, 1002);
+  wrappedTag.slice(0, 3).forEach(line => { // 最多显示3行
+    yPos += 45;
+    ctx.fillText(line, 40, yPos);
+  });
+  return yPos
+}
+
+async function drawContent(ctx: CanvasRenderingContext2D, text: string, yPos: number): Promise<number> {
+  const showText = removeHashWrappedStrings(removeImagesAndLinksFromMarkdown(text)).trim();
+  if (!showText) return yPos;
+
+  ctx.fillStyle = '#E0E0E0';
+  ctx.font = '40px Arial';
+  const maxTextLength = 48; // 最大字符数
+  const displayText = showText.length > maxTextLength ? showText.substring(0, maxTextLength) + '...' : showText;
+  //@ts-ignore
+  const wrappedText = wrapText(ctx, displayText, 1000);
+
+  wrappedText.slice(0, 3).forEach(line => { // 最多显示3行
+    yPos += 70;
+    ctx.fillText(line, 40, yPos);
+  });
+  yPos += 33;
+  return yPos
+}
+
+async function drawImages(ctx: CanvasRenderingContext2D, imageCache: ImageCache, text: string, yPos: number): Promise<number> {
+  if (!isIncludedImage(text)) return yPos;
+  let imageX = 39;
+  const imgUrl = extractImageLinksFromMarkdown(text).slice(0, 3)
+  for (let i = 0; i < imgUrl.length; i++) {
+    const image = await imageCache.fetchImage(imgUrl[i]);
+
+    // 保存当前绘图状态
+    ctx.save();
+
+    // 创建圆角矩形路径
+    ctx.beginPath();
+    ctx.roundRect(imageX, yPos, 326, 326, 12);
+    ctx.clip();
+
+    // 绘制图片
+    ctx.drawImage(image, imageX, yPos, 326, 326);
+
+    // 恢复绘图状态
+    ctx.restore();
+
+    imageX += 336; // 每张图片之间的间隔
+  }
+  yPos += 326 + 20;
+  return yPos;
+}
+
+async function drawRecord(ctx: CanvasRenderingContext2D, post: Datum, yPos: number): Promise<number> {
+  const { recordId, record, puzzleRecord, schulteRecord, tzfeRecord, nonoRecord, recordType } = post;
+  if (!recordId) return yPos; // 如果没有记录，直接返回
+  const icon = recordIcons[recordType];
+  const bgColor = recordBgColor[recordType];
+  const textColor = recordTextColor[recordType];
+  ctx.beginPath();
+  ctx.fillStyle = bgColor;
+  ctx.roundRect(39, yPos, 1002, 138, 10);
+  ctx.fill();
+
+  const iconX = 39 + 65;
+  const iconY = yPos + 41;
+
+  ctx.textAlign = 'center'
+  ctx.fillStyle = textColor;
+  const font = 'bold 30px Arial';
+  const labelFont = '24px Arial'
+  const textY = yPos + 58;
+  const labelY = textY + 46;
+  const textX = 67 + 270;
+
+  if (recordType !== 4) {
+    ctx.drawImage(icon, iconX, iconY, 56, 56);
+
+    ctx.font = labelFont;
+    ctx.fillText('难度', textX, labelY);
+    ctx.fillText('时间', textX + 270, labelY);
+  }
+
+  switch (recordType) {
+    case 0: // 扫雷
+      ctx.font = font;
+      ctx.fillText(computeType(record.row, record.column, record.mine), textX, textY);
+      ctx.fillText(String(record.time / 1000), textX + 270, textY);
+      ctx.fillText(String(record.bvs), textX + 270 + 270, textY);
+
+      ctx.font = labelFont;
+      ctx.fillText('3BV/s', textX + 270 + 270, labelY);
+      break;
+    case 1: // 数字华容道
+      ctx.font = font;
+      ctx.fillText(`${puzzleRecord.row}x${puzzleRecord.column}`, textX, textY);
+      ctx.fillText(String(puzzleRecord.time / 1000), textX + 270, textY);
+      ctx.fillText(String(puzzleRecord.step), textX + 270 + 270, textY);
+
+      ctx.font = labelFont;
+      ctx.fillText('步数', textX + 270 + 270, labelY);
+      break;
+    case 2: // 2048
+      ctx.font = font;
+      ctx.fillText(`${tzfeRecord.row}x${tzfeRecord.column}`, textX, textY);
+      ctx.fillText(String(tzfeRecord.time / 1000), textX + 270, textY);
+      ctx.fillText(String(tzfeRecord.score), textX + 270 + 270, textY);
+
+      ctx.font = labelFont;
+      ctx.fillText('分数', textX + 270 + 270, labelY);
+      break;
+    case 3: // 舒尔特方格
+      ctx.font = font;
+      ctx.fillText(`${schulteRecord.row}x${schulteRecord.column}`, textX, textY);
+      ctx.fillText(String(schulteRecord.time / 1000), textX + 270, textY);
+      ctx.fillText(String(schulteRecord.row * schulteRecord.column - schulteRecord.tapCorrect), textX + 270 + 270, textY);
+
+      ctx.font = labelFont;
+      ctx.fillText('错误', textX + 270 + 270, labelY);
+      break;
+    case 4: // 数织
+      const nonoIconX = 140
+      const nonoTextX = 67 + 378
+      ctx.drawImage(icon, nonoIconX, iconY, 56, 56);
+
+      ctx.font = font;
+      ctx.fillText(`${computeNonoType(nonoRecord.mine)}`, nonoTextX, textY);
+      ctx.fillText(String(nonoRecord.time / 1000), nonoTextX + 378, textY);
+      ctx.font = labelFont;
+      ctx.fillText('难度', nonoTextX, labelY);
+      ctx.fillText('时间', nonoTextX + 378, labelY);
+      break;
+  }
+  ctx.textAlign = 'left';
+  yPos += 138 + 33; // 增加记录区域的高度
+  return yPos;
+}
+
+async function drawLastComment(ctx: CanvasRenderingContext2D, imageCache: ImageCache, lastComment: LastComment, yPos: number): Promise<number> {
+  if (!lastComment) return yPos;
+
+  // @ts-ignore
+  const wrappedComment = wrapText(ctx, lastComment.comment, 720);
+  let lastCommentHeight = 120 + (wrappedComment.length > 1 ? 110 : 55);
+
+  // 绘制评论背景
+  ctx.fillStyle = '#2A2A2A';
+  ctx.beginPath();
+  ctx.roundRect(39, yPos, 1000, lastCommentHeight, 8);
+  ctx.fill();
+
+  // 绘制"最新评论"标题
+  ctx.fillStyle = '#8D9E4B';
+  ctx.font = '30px Arial';
+  ctx.fillText('最新评论', 80, yPos + 55);
+
+  // 绘制评论者头像
+  const commentAvatarX = 960;
+  const commentAvatarRadius = 30;
+  const commentAvatarY = yPos + 15;
+  const commentAvatarImage = await imageCache.fetchImage(lastComment.user.avatar);
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(commentAvatarX + commentAvatarRadius, commentAvatarY + commentAvatarRadius, commentAvatarRadius, 0, 2 * Math.PI);
+  ctx.clip();
+  ctx.drawImage(commentAvatarImage, commentAvatarX, commentAvatarY, commentAvatarRadius * 2, commentAvatarRadius * 2);
+  ctx.restore();
+
+
+  // 绘制评论者昵称 - 与头像顶部对齐
+  const lastCommentNickNameLength = ctx.measureText(lastComment.user.nickName).width;
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '24px Arial';
+  ctx.fillText(lastComment.user.nickName, commentAvatarX - 70 - lastCommentNickNameLength * 0.5, commentAvatarY + 25);
+
+  // 绘制评论时间
+  const commentTimeStr = new Date(lastComment.createTime).toLocaleString('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  ctx.fillStyle = '#999';
+  ctx.font = '20px Arial';
+  ctx.fillText(commentTimeStr, commentAvatarX - 70 - lastCommentNickNameLength * 0.5, commentAvatarY + 55);
+
+  // 绘制评论内容
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '30px Arial';
+  yPos += 75;
+  for (let i = 0; i < Math.min(2, wrappedComment.length); i++) { // 确保最多2行
+    yPos += 55;
+    if (i === 1 && wrappedComment[i]) {
+      ctx.fillText(wrappedComment[i].slice(0, 28) + '...', 80, yPos);
+      break;
+    }
+    if (wrappedComment[i]) {
+      ctx.fillText(wrappedComment[i], 80, yPos);
+    }
+  }
+  yPos += 50;
+  return yPos;
+}
+
+async function drawFooter(ctx: CanvasRenderingContext2D, post: Datum, goodImage: Image, commentImage: Image, yPos: number): Promise<number> {
+  const { commentCount, goodCount } = post;
+  yPos += 80;
+  // 评论数
+  ctx.fillStyle = '#9EA1A6';
+  ctx.drawImage(commentImage, 280, yPos - 50, 75, 75);
+  ctx.font = '36px Arial';
+  if (commentCount < 1000)
+    ctx.fillText(commentCount.toString(), 370, yPos);
+  else
+    // 如果评论数超过1000，显示为千位数
+    ctx.fillText(`${(commentCount / 1000).toFixed(1)}k`, 350, yPos);
+
+  // 点赞数
+  ctx.drawImage(goodImage, 590, yPos - 55, 80, 80);
+  ctx.font = '36px Arial';
+  if (goodCount < 1000)
+    ctx.fillText(goodCount.toString(), 675, yPos);
+  else
+    // 如果点赞数超过1000，显示为千位数
+    ctx.fillText(`${(goodCount / 1000).toFixed(1)}k`, 675, yPos);
+
+  yPos += 55;
+  return yPos;
+}
+
+
+function drawLine(ctx: CanvasRenderingContext2D, yPos: number): void {
+  if (!isDev) return; // 开发环境不绘制调试线
+  ctx.fillStyle = 'rgba(255, 0, 0)'; // 半透明红色
+  ctx.font = '40px Arial';
+  ctx.strokeStyle = 'red';
+  ctx.beginPath();
+  ctx.moveTo(0, yPos);
+  ctx.lineTo(1080, yPos);
+  ctx.fillText(String(yPos - lastYPos), 1000, yPos - 10);
+  ctx.stroke();
+  lastYPos = yPos; // 更新最后的yPos
 }
