@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-tapsss",
   "description": "扫雷联萌专属插件",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
