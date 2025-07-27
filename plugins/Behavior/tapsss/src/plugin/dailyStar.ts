@@ -2,7 +2,6 @@ import { Context, h } from "koishi";
 import { } from "koishi-plugin-cron";
 import { } from "../service/api";
 import { } from "../service/activeMsg";
-import { } from "koishi-plugin-puppeteer";
 import { DailyStarConfig } from "../types/dailyStarConfig";
 import { DailyStarResponse } from "../types/response/DailyStar";
 import { render } from "../utils/renderRecord";

@@ -111,9 +111,6 @@ async function drawUserInfo(ctx: CanvasRenderingContext2D, data: DailyStarRespon
 
   // 排名徽章
   const { timingLevel, timingRank } = data.user;
-  const nicknameWidth = ctx.measureText(data.user.nickName).width;
-  const nickNameX = baseX + 150;
-  const nickNameY = baseY + 60;
   // 绘制等级标签
   const levelIndex = timingLevel == -1 ? 0 : timingLevel;
   const levelText = TIMING_LEVELS_MAP[levelIndex];

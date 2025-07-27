@@ -3,6 +3,7 @@ import CanvasService, { Image, CanvasRenderingContext2D } from "@koishijs/canvas
 import ImageCache from "../service/imageCache";
 import path from "path";
 import { readFileSync } from "fs";
+import stringWidth from "string-width";
 
 export const TIMING_LEVELS_MAP = [
   '雷帝', 'E', 'D',
@@ -66,14 +67,13 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
 
   if (tag.length > 0) {
     const tagText = tag.join(' ');
-    const tagLines = Math.min(3, tagText.length > 24 ? 2 : 1); // 最多3行，但实际可能是1-2行
+    const tagLines = tagText.length > 24 ? 2 : 1;
     height += tagLines * 45; // 每行45px
   }
 
   if (showText) {
-    const maxTextLength = 48;
-    const displayText = showText.length > maxTextLength ? showText.substring(0, maxTextLength) + '...' : showText;
-    const textLines = displayText.length > 24 ? 2 : 1; // 最多3行
+    const textWidth = stringWidth(showText);
+    const textLines = textWidth > 50 ? 2 : 1; // 最多3行
     height += textLines * 70 + 33; // 每行60px + 13 + 33px间距
   }
 
@@ -82,7 +82,8 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
   if (record.id) height += 138 + 33; // 记录高度
 
   if (lastComment) {
-    const lastCommentHeight = 75 + (lastComment.comment.length > 28 ? 110 : 55);
+    const textWidth = stringWidth(lastComment.comment);
+    const lastCommentHeight = 75 + (textWidth > 61 ? 110 : 55);
     height += lastCommentHeight + 50; // 评论高度 + 底部间距50px
   }
 
@@ -323,7 +324,7 @@ async function drawTags(ctx: CanvasRenderingContext2D, tags: string[], yPos: num
   const tagText = tags.join(' ');
   // @ts-ignore
   const wrappedTag = wrapText(ctx, tagText, 1002);
-  wrappedTag.slice(0, 3).forEach(line => { // 最多显示3行
+  wrappedTag.slice(0, 2).forEach(line => { // 最多显示2行
     yPos += 45;
     ctx.fillText(line, 40, yPos);
   });
@@ -336,15 +337,19 @@ async function drawContent(ctx: CanvasRenderingContext2D, text: string, yPos: nu
 
   ctx.fillStyle = '#E0E0E0';
   ctx.font = '40px Arial';
-  const maxTextLength = 48; // 最大字符数
-  const displayText = showText.length > maxTextLength ? showText.substring(0, maxTextLength) + '...' : showText;
   //@ts-ignore
-  const wrappedText = wrapText(ctx, displayText, 1000);
-
-  wrappedText.slice(0, 3).forEach(line => { // 最多显示3行
+  const wrappedText = wrapText(ctx, text, 1000);
+  for (let i = 0; i < Math.min(2, wrappedText.length); i++) { // 确保最多2行
     yPos += 70;
-    ctx.fillText(line, 40, yPos);
-  });
+    if (i === 1 && stringWidth(text) > 100) {
+      const textLength = wrappedText[i].length;
+      ctx.fillText(wrappedText[i].slice(0, textLength - 3) + '...', 80, yPos);
+      break;
+    }
+    if (wrappedText[i]) {
+      ctx.fillText(wrappedText[i], 40, yPos);
+    }
+  }
   yPos += 33;
   return yPos
 }
@@ -465,7 +470,7 @@ async function drawLastComment(ctx: CanvasRenderingContext2D, imageCache: ImageC
   if (!lastComment) return yPos;
 
   // @ts-ignore
-  const wrappedComment = wrapText(ctx, lastComment.comment, 720);
+  const wrappedComment = wrapText(ctx, lastComment.comment, 1220);
   let lastCommentHeight = 120 + (wrappedComment.length > 1 ? 110 : 55);
 
   // 绘制评论背景
@@ -515,8 +520,9 @@ async function drawLastComment(ctx: CanvasRenderingContext2D, imageCache: ImageC
   yPos += 75;
   for (let i = 0; i < Math.min(2, wrappedComment.length); i++) { // 确保最多2行
     yPos += 55;
-    if (i === 1 && wrappedComment[i]) {
-      ctx.fillText(wrappedComment[i].slice(0, 28) + '...', 80, yPos);
+    if (i === 1 && stringWidth(lastComment.comment) > 122) {
+      const textLength = wrappedComment[i].length;
+      ctx.fillText(wrappedComment[i].slice(0, textLength -3) + '...', 80, yPos);
       break;
     }
     if (wrappedComment[i]) {
@@ -556,6 +562,7 @@ async function drawFooter(ctx: CanvasRenderingContext2D, post: Datum, goodImage:
 
 function drawLine(ctx: CanvasRenderingContext2D, yPos: number): void {
   if (!isDev) return; // 开发环境不绘制调试线
+  if (yPos - lastYPos === 0) return; // 如果yPos没有变化，则不绘制线
   ctx.fillStyle = 'rgba(255, 0, 0)'; // 半透明红色
   ctx.font = '40px Arial';
   ctx.strokeStyle = 'red';
