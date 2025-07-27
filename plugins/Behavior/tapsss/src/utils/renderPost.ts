@@ -3,7 +3,6 @@ import CanvasService, { Image, CanvasRenderingContext2D } from "@koishijs/canvas
 import ImageCache from "../service/imageCache";
 import path from "path";
 import { readFileSync } from "fs";
-import stringWidth from "string-width";
 
 export const TIMING_LEVELS_MAP = [
   '雷帝', 'E', 'D',
@@ -43,6 +42,7 @@ let recordIcons: Image[] | null = null;
 let goodImage: Image | null = null;
 let commentImage: Image | null = null;
 let lastYPos = 0;
+let stringWidth = null;
 
 export async function renderPost(post: Datum, canvasService: CanvasService, imageCache: ImageCache): Promise<Buffer> {
   if (!goodImage) {
@@ -53,6 +53,9 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
   }
   if (!recordIcons) {
     recordIcons = await Promise.all(recordIconsBuffer.map(buffer => canvasService.loadImage(buffer)));
+  }
+  if (!stringWidth) {
+    stringWidth = (await import('string-width')).default;
   }
   const { title, text, record, lastComment } = post;
 
