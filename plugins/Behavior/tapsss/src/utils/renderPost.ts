@@ -53,15 +53,15 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
     recordIcons = await Promise.all(recordIconsBuffer.map(buffer => canvasService.loadImage(buffer)));
   }
   const { title, text, device, record, puzzleRecord, schulteRecord, tzfeRecord, nonoRecord, recordType, user: { avatar, nickName, timingLevel, timingRank, vip }, createTime, goodCount, commentCount, lastComment } = post;
-  let height = 200 + 105 + 205;
-  if (title) height += 53 + 33; // 如果有标题，增加额外空间
+  let height = 130 + 100; // 初始高度，包含头像和点赞评论
+  if (title) height += 60 + 23; // 如果有标题，增加额外空间
   const tag = findHashWrappedStrings(text);
-  if (tag.length > 0) height += (tag.join(' ').length > 24 ? 2 : 1) * 60; // 如果有标签，增加额外空间
+  if (tag.length > 0) height += (tag.join(' ').length > 24 ? 2 : 1) * 45 + 26; // 如果有标签，增加额外空间
   if (isIncludedImage(text)) height += 326 + 20; // 如果有图片，增加额外空间
   if (record.id) height += 138 + 33; // 如果有记录，增加额外空间
   const showText = removeHashWrappedStrings(removeImagesAndLinksFromMarkdown(text)).trim();
-  if (showText) height += (showText.length > 24 ? 2 : 1) * 60; // 如果有正文内容，增加额外空间
-  if (lastComment) height += Math.floor(lastComment.comment.length / 30) * 55 // 计算最新评论的高度，假设每30个字符占55px高度
+  if (showText) height += (showText.length > 24 ? 2 : 1) * 60 + 33; // 如果有正文内容，增加额外空间
+  if (lastComment) height += 23 + 120 + ((Math.floor(lastComment.comment.length / 28) > 1) ? 110 : 55) // 计算最新评论的高度，假设每30个字符占55px高度
   const canvas = await canvasService.createCanvas(1080, height);
   const ctx = canvas.getContext('2d');
 
@@ -101,7 +101,6 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
 
     const rankText = timingRank === 1 ? '雷帝' : `${levelText}${timingRank <= 300 ? ' ' + timingRank : ''}`
     const rankTextWidth = 40 + (rankText.length - 1) * 11;
-    console.log('rankTextWidth:', rankTextWidth, rankText, rankText.length);
     if (levelIndex < TIMING_LEVELS_MAP.length) {
       const labelX = 30 + nicknameWidth + nickNameX;
       const labelHeight = 25;
@@ -129,32 +128,32 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
   ctx.font = '26px Arial';
   ctx.fillText(`${timeStr}   📱${device}`, timeX, yPos);
 
-  yPos += 60;
+  yPos += 13
+
   // 绘制帖子标题
   if (title) {
     ctx.fillStyle = '#FFFFFF';
     ctx.font = 'bold 40px Arial';
+    yPos += 60;
     //@ts-ignore
-    const wrappedTitle = wrapText(ctx, title, 1002);
-    wrappedTitle.forEach(line => {
-      ctx.fillText(line, avatarX, yPos);
-      yPos += 60;
-    });
+    ctx.fillText(title.slice(0, 28), avatarX, yPos);
+    yPos += 23
   }
 
-  yPos += 23
 
   if (tag.length > 0) {
     // 绘制标签
+    yPos += 13
     ctx.fillStyle = '#FA7299';
-    ctx.font = 'bold 40px Arial';
+    ctx.font = '40px Arial';
     const tagText = tag.join(' ');
     // @ts-ignore
     const wrappedTag = wrapText(ctx, tagText, 1002);
     wrappedTag.slice(0, 3).forEach(line => { // 最多显示3行
+      yPos += 45;
       ctx.fillText(line, 40, yPos);
-      yPos += 60;
     });
+    yPos += 13
   }
 
   // 绘制帖子正文内容
@@ -167,9 +166,10 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
     const wrappedText = wrapText(ctx, displayText, 1000);
 
     wrappedText.slice(0, 3).forEach(line => { // 最多显示3行
-      ctx.fillText(line, 40, yPos);
       yPos += 60;
+      ctx.fillText(line, 40, yPos);
     });
+    yPos += 33;
   }
 
   // 绘制帖子内容（image）
@@ -280,32 +280,26 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
     yPos += 138 + 33; // 增加记录区域的高度
   }
 
-  let commentContentY = yPos + 20;
   // 绘制最新评论
   if (lastComment && lastComment.user) {
-    const commentY = yPos + 40;
-
-    const maxCommentLength = 60;
-    const displayComment = lastComment.comment.length > maxCommentLength ?
-      lastComment.comment.substring(0, maxCommentLength) + '...' : lastComment.comment;
     // @ts-ignore
-    const wrappedComment = wrapText(ctx, displayComment, 1220);
-    let lastCommentHeight = 120 + wrappedComment.length * 50;
+    const wrappedComment = wrapText(ctx, lastComment.comment, 720);
+    let lastCommentHeight = 120 + (wrappedComment.length > 1 ? 110 : 55);
     // 绘制评论背景
     ctx.fillStyle = '#2A2A2A';
     ctx.beginPath();
-    ctx.roundRect(avatarX, commentY - 20, 1000, lastCommentHeight, 8);
+    ctx.roundRect(avatarX, yPos, 1000, lastCommentHeight, 8);
     ctx.fill();
 
     // 绘制"最新评论"标题
     ctx.fillStyle = '#8D9E4B';
     ctx.font = '30px Arial';
-    ctx.fillText('最新评论', 80, commentY + 30);
+    ctx.fillText('最新评论', 80, yPos + 55);
 
     // 绘制评论者头像
     const commentAvatarX = 960;
     const commentAvatarRadius = 30;
-    const commentAvatarY = commentY - 10;
+    const commentAvatarY = yPos + 15;
     const commentAvatarImage = await imageCache.fetchImage(lastComment.user.avatar);
     ctx.save();
     ctx.beginPath();
@@ -335,39 +329,41 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
     // 绘制评论内容
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '30px Arial';
-
-    // @ts-ignore
-
-    commentContentY = commentY + 100;
-    wrappedComment.slice(0, 2).forEach(line => { // 最多显示2行
-      ctx.fillText(line, 80, commentContentY);
-      commentContentY += 55;
-    });
+    yPos += 75;
+    for (let i = 0; i < 2; i++) {
+      yPos += 55;
+      if (i === 1) {
+        ctx.fillText(wrappedComment[i].slice(0, 28) + '...', 80, yPos);
+        break;
+      }
+      ctx.fillText(wrappedComment[i], 80, yPos);
+    }
+    yPos += 50
   }
 
   // 绘制底部互动信息
-  const bottomY = commentContentY + 70;
+  const bottomY = yPos + 70;
 
   // 评论数
   ctx.fillStyle = '#9EA1A6';
-  ctx.drawImage(commentImage, 260, bottomY - 50, 75, 75);
+  ctx.drawImage(commentImage, 280, bottomY - 50, 75, 75);
   // ctx.fillText('💬', 300, bottomY);
   ctx.font = '36px Arial';
   if (commentCount < 1000)
-    ctx.fillText(commentCount.toString(), 350, bottomY);
+    ctx.fillText(commentCount.toString(), 370, bottomY);
   else
     // 如果评论数超过1000，显示为千位数
     ctx.fillText(`${(commentCount / 1000).toFixed(1)}k`, 350, bottomY);
 
   // 点赞数
   // ctx.fillText('👍', 600, bottomY);
-  ctx.drawImage(goodImage, 580, bottomY - 55, 80, 80);
+  ctx.drawImage(goodImage, 590, bottomY - 55, 80, 80);
   ctx.font = '36px Arial';
   if (goodCount < 1000)
-    ctx.fillText(goodCount.toString(), 665, bottomY);
+    ctx.fillText(goodCount.toString(), 675, bottomY);
   else
     // 如果点赞数超过1000，显示为千位数
-    ctx.fillText(`${(goodCount / 1000).toFixed(1)}k`, 665, bottomY);
+    ctx.fillText(`${(goodCount / 1000).toFixed(1)}k`, 675, bottomY);
 
   return canvas.toBuffer('image/png');
 }
