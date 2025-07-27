@@ -148,12 +148,13 @@ export async function renderPost(post: Datum, canvasService: CanvasService, imag
     // 绘制标签
     ctx.fillStyle = '#FA7299';
     ctx.font = 'bold 40px Arial';
-    tag.forEach((t, index) => {
-      const tagText = `#${t}#`;
-      const tagWidth = ctx.measureText(tagText).width;
-      ctx.fillText(tagText, avatarX + index * (tagWidth + 20), yPos);
+    const tagText = tag.join(' ');
+    // @ts-ignore
+    const wrappedTag = wrapText(ctx, tagText, 1002);
+    wrappedTag.slice(0, 3).forEach(line => { // 最多显示3行
+      ctx.fillText(line, 40, yPos);
+      yPos += 60;
     });
-    yPos += 60; // 标签占用一行高度
   }
 
   // 绘制帖子正文内容
@@ -467,7 +468,7 @@ function findHashWrappedStrings(input: string): string[] {
   // 使用循环获取所有匹配项
   while ((match = regex.exec(input)) !== null) {
     // match[1] 是第一个捕获组，即 # 之间的内容
-    matches.push(match[1]);
+    matches.push(`#${match[1]}#`);
   }
 
   return matches;
