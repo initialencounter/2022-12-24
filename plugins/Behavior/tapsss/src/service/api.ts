@@ -12,6 +12,7 @@ import { GameNews } from "../types/gameNews";
 import { APIServiceConfig } from "../types/apiService";
 import { aesEcbEncrypt, extractJsonFromEncrypted } from "../utils/aes";
 import { computeMD5 } from "../utils/md5";
+import { LoginResponse } from "../types/response/LoginResponse";
 
 declare module 'koishi' {
   interface Context {
@@ -73,6 +74,12 @@ class TapsssAPI extends Service {
       this.ctx.logger('[Tapsss] GameNews').error('获取游戏资讯失败:', error);
       throw error;
     }
+  }
+
+  async login(params: { username: string, password: string }): Promise<LoginResponse> {
+    const path = '/Minesweeper/user/login';
+    const method = 'POST';
+    return this.executeRequest<LoginResponse>(path, method, params);
   }
 
   async good(params: { postId: number, isGood: boolean }): Promise<PostResponse> {
