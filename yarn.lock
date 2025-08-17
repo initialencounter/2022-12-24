@@ -10338,6 +10338,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"koishi-plugin-jgame@workspace:plugins/Games/jgame":
+  version: 0.0.0-use.local
+  resolution: "koishi-plugin-jgame@workspace:plugins/Games/jgame"
+  peerDependencies:
+    koishi: ^4.18.7
+  languageName: unknown
+  linkType: soft
+
 "koishi-plugin-markdown-to-image-service@npm:1.2.5":
   version: 1.2.5
   resolution: "koishi-plugin-markdown-to-image-service@npm:1.2.5"

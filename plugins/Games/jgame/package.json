@@ -1,0 +1,48 @@
+{
+  "name": "koishi-plugin-jgame",
+  "description": "金铲铲战绩查询",
+  "version": "0.0.1",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "assets",
+    "dist"
+  ],
+  "license": "AGPL-3.0",
+  "author": {
+    "name": "initencounter",
+    "email": "2911583893@qq.com",
+    "url": "https://github.com/initialencounter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/initialencounter/2022-12-24.git"
+  },
+  "bugs": {
+    "url": "https://github.com/initialencounter/2022-12-24/issues"
+  },
+  "homepage": "https://github.com/initialencounter/2022-12-24/blob/neat/plugins/Games/jgame#readme.md",
+
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "金铲铲",
+    "战绩",
+    "jgame",
+    "金铲铲之战"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.18.7"
+  },
+  "koishi": {
+    "description": "金铲铲战绩查询",
+    "service": {
+      "required": [
+        "database",
+        "canvas"
+      ]
+    }
+  }
+}
