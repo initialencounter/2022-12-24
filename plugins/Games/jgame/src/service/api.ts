@@ -3,6 +3,7 @@ import { JGameAPIConfig } from "../types/api";
 import { BattleList } from "../types";
 import { prependBufferToStringTyped } from "../utils";
 import { BasicInfoResponse } from "../types/basicInfo";
+import { BattleStatEntryResponse } from "../types/battleStatEntry";
 
 declare module 'koishi' {
   interface Context {
@@ -69,6 +70,26 @@ class JGameAPI extends Service {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     return await response.json() as Promise<BasicInfoResponse>;
+  }
+
+  async fetchBattleStatEntry(scene: string, baton?: string): Promise<BattleStatEntryResponse> {
+    const bodyParams = { scene, filter: 'all' };
+    if (baton) {
+      bodyParams['baton'] = prependBufferToStringTyped(baton)
+    }
+    const body = JSON.stringify(bodyParams);
+    const path = '/go/jgame/get_battle_stat_entry'
+    const headers = this.makeHeaders(body.length, 'POST', path);
+    const url = this.pluginConfig.baseURL + path;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { ...headers },
+      body
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json() as Promise<BattleStatEntryResponse>;
   }
 }
 
