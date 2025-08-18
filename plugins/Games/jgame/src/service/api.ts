@@ -4,6 +4,7 @@ import { BattleList } from "../types";
 import { prependBufferToStringTyped } from "../utils";
 import { BasicInfoResponse } from "../types/basicInfo";
 import { BattleStatEntryResponse } from "../types/battleStatEntry";
+import { OnLineStateResponse } from "../types/onlineState";
 
 declare module 'koishi' {
   interface Context {
@@ -90,6 +91,23 @@ class JGameAPI extends Service {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     return await response.json() as Promise<BattleStatEntryResponse>;
+  }
+
+  async getOnlineState(scene: string): Promise<OnLineStateResponse> {
+    const bodyParams = { scene };
+    const body = JSON.stringify(bodyParams);
+    const path = '/go/jgame/get_online_state'
+    const headers = this.makeHeaders(body.length, 'POST', path);
+    const url = this.pluginConfig.baseURL + path;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { ...headers },
+      body
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json() as Promise<OnLineStateResponse>;
   }
 }
 
