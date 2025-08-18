@@ -2,6 +2,7 @@ import { Context, Service } from "koishi";
 import { JGameAPIConfig } from "../types/api";
 import { BattleList } from "../types";
 import { prependBufferToStringTyped } from "../utils";
+import { BasicInfoResponse } from "../types/basicInfo";
 
 declare module 'koishi' {
   interface Context {
@@ -22,7 +23,7 @@ class JGameAPI extends Service {
     });
   }
 
-  async makeHeaders(bodyLength: number, method: string, path: string) {
+  makeHeaders(bodyLength: number, method: string, path: string) {
     const headers = this.pluginConfig.headers;
     headers['content-type'] = 'application/json';
     headers['content-length'] = bodyLength.toString();
@@ -41,7 +42,7 @@ class JGameAPI extends Service {
       bodyParams['baton'] = prependBufferToStringTyped(baton)
     }
     const body = JSON.stringify(bodyParams);
-    const headers = await this.makeHeaders(body.length, 'POST', '/go/jgame/get_battle_list');
+    const headers = this.makeHeaders(body.length, 'POST', '/go/jgame/get_battle_list');
     const url = this.pluginConfig.baseURL + '/go/jgame/get_battle_list';
     const response = await fetch(url, {
       method: 'POST',
@@ -54,6 +55,21 @@ class JGameAPI extends Service {
     return await response.json() as Promise<BattleList>;
   }
 
+  async fetchBasicInfo(scene: string): Promise<BasicInfoResponse> {
+    const bodyParams = { scene };
+    const body = JSON.stringify(bodyParams);
+    const headers = this.makeHeaders(body.length, 'POST', '/go/jgame/get_basic_info');
+    const url = this.pluginConfig.baseURL + '/go/jgame/get_basic_info';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { ...headers },
+      body
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json() as Promise<BasicInfoResponse>;
+  }
 }
 
 export default JGameAPI;
