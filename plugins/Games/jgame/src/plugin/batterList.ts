@@ -2,6 +2,7 @@ import { Context, h, Schema } from "koishi";
 import { render } from "../utils/renderBattleList";
 import { } from '../service/api';
 import { validateAndFormatDate } from "../utils";
+import { writeFileSync } from "fs";
 
 
 declare module 'koishi' {
@@ -20,6 +21,14 @@ class BattleList {
       jgameScene: 'string',
     })
 
+    // ctx.on('ready', async () => {
+    //   const scene = 'v3_ucoL3BN_EgTfuZ2vCuWHZC_cgqtjVkJXiCeJxo-g2JgKODIGiyvAc62HAZFhb1ObLJ2d6jVagvzWoAHWEFC--8k9ifYQy2wOGGqTSMVyFPlsM5FHlNQrpnNiQHgQ5RXsuwJfmwahsPRVLkKVxnXXSw=='
+    //   const battleList = await ctx.jgameAPI.fetchBattleList(scene);
+    //   const basicInfo = await ctx.jgameAPI.fetchBasicInfo(scene);
+    //   const battleStatEntry = await ctx.jgameAPI.fetchBattleStatEntry(scene);
+    //   const img = await render(battleList, ctx.canvas, ctx.jgameImageCache, basicInfo, battleStatEntry);
+    //   writeFileSync('battleList.png', img);
+    // })
     ctx.command('金铲铲战绩', '查询金铲铲战绩')
       .option('date', '-d <date:string> 开始日期, 格式2025-08-17T14:12:19')
       .alias('jgame scene')
@@ -42,7 +51,9 @@ class BattleList {
           return h.quote(session.messageId) + '' + h.at(session.userId) + '未查询到战绩';
         }
 
-        const img = await render(battleList, ctx.canvas, ctx.jgameImageCache);
+        const basicInfo = await ctx.jgameAPI.fetchBasicInfo(scene);
+        const battleStatEntry = await ctx.jgameAPI.fetchBattleStatEntry(scene);
+        const img = await render(battleList, ctx.canvas, ctx.jgameImageCache, basicInfo, battleStatEntry);
         return h.image(img, 'image/png');
       });
 

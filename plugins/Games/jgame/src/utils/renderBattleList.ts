@@ -2,11 +2,35 @@ import CanvasService, { Image } from "@koishijs/canvas";
 import { BattleList, BattleListElement, PieceList } from "../types/index";
 import ImageCache from "../service/jgameImageCache";
 import { CanvasRenderingContext2D } from "@koishijs/canvas";
+import { BasicInfoResponse } from "../types/basicInfo";
+import { BattleStatEntryResponse } from "../types/battleStatEntry";
+import path from "path";
+import { readFileSync } from "fs";
 
-export async function render(data: BattleList, canvasService: CanvasService, imageCache: ImageCache): Promise<Buffer> {
+const isDev = process.env.NODE_ENV === 'development';
+const resourcesPath = isDev ? path.resolve(__dirname, '../../assets') : path.resolve(__dirname, '../assets');
+const HONOR_SILK_BLOOD_BUFFER = readFileSync(path.resolve(resourcesPath, 'honor_jk_win_silk_blood.png'));
+const HONOR_TOP4_BUFFER = readFileSync(path.resolve(resourcesPath, 'honor_jk_top4.png'));
+const HONOR_TOP_BUFFER = readFileSync(path.resolve(resourcesPath, 'honor_tft_top.png'));
+
+let honorTopImage: Image | null = null;
+let honorTop4Image: Image | null = null;
+let honorSilkBloodImage: Image | null = null;
+
+export async function render(data: BattleList, canvasService: CanvasService, imageCache: ImageCache, basicInfo: BasicInfoResponse, battleStatEntry: BattleStatEntryResponse): Promise<Buffer> {
+  if (!honorTopImage) {
+    honorTopImage = await canvasService.loadImage(HONOR_TOP_BUFFER);
+  }
+  if (!honorTop4Image) {
+    honorTop4Image = await canvasService.loadImage(HONOR_TOP4_BUFFER);
+  }
+  if (!honorSilkBloodImage) {
+    honorSilkBloodImage = await canvasService.loadImage(HONOR_SILK_BLOOD_BUFFER);
+  }
   const battles = data.data.battle_list || [];
   const width = 1050;
-  let height = 250; // 增加头部空间
+  const battleListY = 120 + 360; // 调整用户信息区域空间
+  let height = battleListY; // 调整用户信息区域空间
   const cardHeight = 170; // 每个战斗卡片高度
   height += battles.length * cardHeight;
   for (const battle of battles) {
@@ -27,11 +51,17 @@ export async function render(data: BattleList, canvasService: CanvasService, ima
   // 绘制标题区域
   await drawHeader(ctx, canvasService, battles);
 
+  const userInfoY = 120;
+  // 绘制用户信息区域
+  await drawUserInfo(ctx, userInfoY, basicInfo, battleStatEntry, imageCache);
+
+
   // 绘制统计信息
-  await drawStats(ctx, battles);
+  const statsY = 390; // 调整统计信息位置
+  await drawStats(ctx, battles, statsY); // 120
 
   // 绘制战斗记录列表
-  let currentY = 250;
+  let currentY = statsY + 100; // 从统计信息下方开始绘制
   for (const battle of battles) {
     await drawBattleCard(ctx, canvasService, battle, currentY, imageCache);
     if (battle.specific_user_battle.piece_list.length > 10) {
@@ -69,8 +99,220 @@ async function drawHeader(ctx: CanvasRenderingContext2D, canvasService: CanvasSe
   ctx.fillText('🏆 铲铲记录', 525, 90);
 }
 
+// 绘制用户信息区域
+async function drawUserInfo(ctx: CanvasRenderingContext2D, userInfoY: number, basicInfo: BasicInfoResponse, battleStatEntry: BattleStatEntryResponse, imageCache: ImageCache): Promise<void> {
+  const userInfo = basicInfo.data;
+  const statsInfo = battleStatEntry.data;
+
+  // 绘制用户信息背景
+  const userInfoBg = ctx.createLinearGradient(0, 120, 0, 340);
+  userInfoBg.addColorStop(0, 'rgba(255,255,255,0.05)');
+  userInfoBg.addColorStop(1, 'rgba(255,255,255,0.02)');
+  ctx.fillStyle = userInfoBg;
+  ctx.beginPath();
+  ctx.roundRect(30, userInfoY, 990, 250, 15); // 调整高度
+  ctx.fill();
+
+  // 绘制边框
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // 绘制用户头像
+  const avatarImage = await imageCache.fetchImage(userInfo.icon_url);
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(120, userInfoY + 80, 50, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.drawImage(avatarImage, 70, userInfoY + 30, 100, 100);
+  ctx.restore();
+
+  // 头像边框
+  ctx.strokeStyle = '#4c8cff';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(120, userInfoY + 80, 50, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 绘制用户昵称
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 24px Arial';
+  ctx.textAlign = 'left';
+  ctx.fillText(userInfo.nickname, 200, userInfoY + 55);
+
+  // 绘制服务器信息
+  ctx.fillStyle = '#aaa';
+  ctx.font = '16px Arial';
+  ctx.fillText(`${userInfo.area_name} | Lv${userInfo.level} | ${userInfo.tier}`, 200, userInfoY + 80);
+
+  // 绘制在线状态
+  ctx.fillStyle = userInfo.online_color;
+  ctx.fillText(userInfo.online_text, 200, userInfoY + 100);
+
+  let rankX = 500
+  let rankTxetBias = 170
+  // 绘制段位图标
+  if (statsInfo.game_rank?.rank_url) {
+    const rankImage = await imageCache.fetchImage(statsInfo.game_rank.rank_url);
+    ctx.drawImage(rankImage, rankX, userInfoY - 20, 160, 160);
+  }
+
+  // 绘制段位信息
+  ctx.fillStyle = '#4c8cff';
+  ctx.font = 'bold 20px Arial';
+  ctx.textAlign = 'left';
+  ctx.fillText(statsInfo.game_rank?.full_rank_title || userInfo.tier, rankX + rankTxetBias, 170);
+
+  if (statsInfo.game_rank?.tier_rank_text) {
+    ctx.fillStyle = '#fff';
+    ctx.font = '16px Arial';
+    ctx.fillText(`当前段位素质段位前${statsInfo.game_rank.tier_rank_text}%选手`, rankX + rankTxetBias, userInfoY + 75);
+  }
+
+  // 绘制进度条区域
+  const totalGames = statsInfo.stat_list?.total || 0;
+  const top1Count = statsInfo.stat_list?.top1 || 0;
+  const top4Count = statsInfo.stat_list?.top4 || 0;
+  const winRate = totalGames > 0 ? (top1Count / totalGames * 100) : 0;
+  const topFourRate = totalGames > 0 ? (top4Count / totalGames * 100) : 0;
+
+  // 绘制总战绩统计
+  ctx.fillStyle = '#fff';
+  ctx.font = '16px Arial';
+  ctx.textAlign = 'left';
+  ctx.fillText(`共${totalGames}场`, rankX + rankTxetBias, userInfoY + 100);  // 绘制成就徽章
+
+  // 合并进度条
+  const progressBarX = 50;
+  const progressBarY = userInfoY + 190;
+  const progressBarWidth = 420;
+  const progressBarHeight = 16; // 增加高度以便更好地显示
+
+  // 进度条标签
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 14px Arial';
+  ctx.textAlign = 'left';
+  ctx.fillText('胜率统计', progressBarX, progressBarY - 8);
+
+  // 右侧显示百分比
+  ctx.textAlign = 'right';
+  ctx.fillText(`前四率 ${topFourRate.toFixed(1)}%  第一名率 ${winRate.toFixed(1)}%`, progressBarX + progressBarWidth, progressBarY + 38);
+
+  // 绘制进度条背景
+  ctx.fillStyle = 'rgba(255,255,255,0.1)';
+  ctx.beginPath();
+  ctx.roundRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight, 15);
+  ctx.fill();
+
+  // 先绘制前四率（底层，蓝色）
+  const topFourRateFillWidth = (topFourRate / 100) * progressBarWidth;
+  const topFourRateGradient = ctx.createLinearGradient(progressBarX, progressBarY, progressBarX + topFourRateFillWidth, progressBarY);
+  topFourRateGradient.addColorStop(0, '#4c8cff');
+  topFourRateGradient.addColorStop(1, '#6aa3ff');
+  ctx.fillStyle = topFourRateGradient;
+  ctx.beginPath();
+  ctx.roundRect(progressBarX, progressBarY, topFourRateFillWidth, progressBarHeight, 15);
+  ctx.fill();
+
+  // 再绘制第一名率（覆盖层，金色）
+  const winRateFillWidth = (winRate / 100) * progressBarWidth;
+  const winRateGradient = ctx.createLinearGradient(progressBarX, progressBarY, progressBarX + winRateFillWidth, progressBarY);
+  winRateGradient.addColorStop(0, '#FFD700');
+  winRateGradient.addColorStop(1, '#FFA500');
+  ctx.fillStyle = winRateGradient;
+  ctx.beginPath();
+  ctx.roundRect(progressBarX, progressBarY, winRateFillWidth, progressBarHeight, 15);
+  ctx.fill();
+
+  // 绘制进度条边框
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight, 15);
+  ctx.stroke();
+
+  // 添加图例
+  const legendY = progressBarY + progressBarHeight + 10;
+
+  // 前四率图例
+  ctx.fillStyle = '#6aa3ff';
+  ctx.beginPath();
+  ctx.roundRect(progressBarX, legendY, 15, 15, 3);
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = '12px Arial';
+  ctx.textAlign = 'left';
+  ctx.fillText('前四率', progressBarX + 25, legendY + 12);
+
+  // 第一名率图例
+  ctx.fillStyle = '#FFA500';
+  ctx.beginPath();
+  ctx.roundRect(progressBarX + 100, legendY, 15, 15, 3);
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = '12px Arial';
+  ctx.fillText('第一名率', progressBarX + 125, legendY + 12);
+
+  if (userInfo.achievements && userInfo.achievements.length > 0) {
+    ctx.fillStyle = '#4c8cff';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'left';
+
+    let badgeX = 220;
+    for (let i = 0; i < Math.min(userInfo.achievements.length, 2); i++) {
+      const achievement = userInfo.achievements[i];
+      try {
+        const badgeImage = await imageCache.fetchImage(achievement.icon);
+        ctx.drawImage(badgeImage, badgeX, userInfoY + 110, 40, 40);
+
+        // 成就名称
+        ctx.fillStyle = '#fff';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        const achievementName = achievement.name.length > 8 ? achievement.name.substring(0, 7) + '...' : achievement.name;
+        ctx.fillText(achievementName, badgeX + 20, userInfoY + 165);
+
+        badgeX += 80;
+      } catch (error) {
+        console.error('Failed to load achievement icon:', error);
+      }
+    }
+  }
+
+  // 绘制徽章统计
+  if (statsInfo.badge_list && statsInfo.badge_list.length > 0) {
+    let badgeStatsX = 520; // 调整到右侧，与进度条平行
+    const badgeStatsY = userInfoY + 130; // 调整高度
+
+    for (const badge of statsInfo.badge_list) {
+      let continued = 0
+      if (badge.badge_id === 1201) {
+        ctx.drawImage(honorTopImage, badgeStatsX, badgeStatsY, 80, 80); // 稍微缩小
+        continued = 1
+      } else if (badge.badge_id === 1202) {
+        ctx.drawImage(honorTop4Image, badgeStatsX, badgeStatsY, 80, 80);
+        continued = 1
+      } else if (badge.badge_id === 1207) {
+        ctx.drawImage(honorSilkBloodImage, badgeStatsX, badgeStatsY, 80, 80);
+        continued = 1
+      }
+      if (continued) {
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(badge.count + '次', badgeStatsX + 40, badgeStatsY + 68);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(badge.name, badgeStatsX + 40, badgeStatsY + 100);
+        badgeStatsX += 160; // 缩小间距
+      }
+    }
+  }
+}
+
 // 绘制统计信息
-async function drawStats(ctx: CanvasRenderingContext2D, battles: BattleListElement[]): Promise<void> {
+async function drawStats(ctx: CanvasRenderingContext2D, battles: BattleListElement[], startY: number = 120): Promise<void> {
   const totalGames = battles.length;
   const firstPlaces = battles.filter(b => b.specific_user_battle.ranking === 1).length;
   const topFour = battles.filter(b => b.specific_user_battle.ranking <= 4).length;
@@ -87,7 +329,6 @@ async function drawStats(ctx: CanvasRenderingContext2D, battles: BattleListEleme
   const cardHeight = 95;
   const gap = 42.5;
   const startX = 30 + gap;
-  const startY = 120;
 
   stats.forEach((stat, index) => {
     const x = startX + index * (cardWidth + gap);
