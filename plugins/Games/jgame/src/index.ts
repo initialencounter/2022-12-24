@@ -3,7 +3,13 @@ import ImageCache from './service/jgameImageCache'
 import BattleList from './plugin/batterList'
 import JGameAPI from './service/api'
 import { JGameAPIConfig } from './types/api'
+import { readFileSync } from 'fs'
+import { resolve } from 'path'
 export const name = 'jgame'
+
+const localUsage = readFileSync(resolve(__dirname, "../readme.md"))
+  .toString("utf-8")
+export const usage = localUsage
 
 export interface Config {
   api: JGameAPIConfig
