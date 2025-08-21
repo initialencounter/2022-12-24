@@ -5,6 +5,8 @@ import { prependBufferToStringTyped } from "../utils";
 import { BasicInfoResponse } from "../types/basicInfo";
 import { BattleStatEntryResponse } from "../types/battleStatEntry";
 import { OnLineStateResponse } from "../types/onlineState";
+import { UserProfileQueryUser } from "../types/response/UserProfileQueryUser";
+import { CookieParser } from "../utils/cookieParser";
 
 declare module 'koishi' {
   interface Context {
@@ -16,17 +18,19 @@ class JGameAPI extends Service {
   headers: Record<string, string>;
   logger = this.ctx.logger('JGame API');
   pluginConfig: JGameAPIConfig
+  opUuid: string
   constructor(ctx: Context, config: JGameAPIConfig) {
     super(ctx, 'jgameAPI');
     this.pluginConfig = config
+    this.opUuid = CookieParser.getCookieValue(config.headers.cookie, 'userId')
     this.headers = { ...config.headers };
     ctx.on('ready', () => {
-      this.logger.warn('JGame API 服务已启动');
+      this.logger.warn('JGame API 服务已启动, uid: ' + this.opUuid);
     });
   }
 
 
-  async makeRequest<T>(path: string, method: string, bodyParams: Record<string, string>): Promise<T> {
+  async makeRequest<T>(path: string, method: string, bodyParams: Record<string, any>): Promise<T> {
     const body = JSON.stringify(bodyParams);
     const headers = this.makeHeaders(body.length, method, path);
     const url = this.pluginConfig.baseURL + path;
@@ -75,6 +79,26 @@ class JGameAPI extends Service {
   async getOnlineState(scene: string): Promise<OnLineStateResponse> {
     const bodyParams = { scene };
     return await this.makeRequest<OnLineStateResponse>('/go/jgame/get_online_state', 'POST', bodyParams);
+  }
+
+  async getUserProfileQueryUser(uuid: string): Promise<UserProfileQueryUser> {
+    const bodyParams = {
+      "opUuid": this.opUuid,
+      "isNeedGameInfo": 1,
+      "isNeedMedal": 1,
+      "isNeedCommunityInfo": 1,
+      "isNeedMainInfo": 1,
+      "clientType": 9,
+      "isNeedDress": 1,
+      "isNeedRemark": 1,
+      "uuidSceneList": [
+        {
+          "uuid": uuid,
+          "scene": ""
+        }
+      ]
+    };
+    return await this.makeRequest<UserProfileQueryUser>('/go/user_profile/query/user', 'POST', bodyParams);
   }
 }
 
