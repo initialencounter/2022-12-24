@@ -23,7 +23,6 @@
     "url": "https://github.com/initialencounter/2022-12-24/issues"
   },
   "homepage": "https://github.com/initialencounter/2022-12-24/blob/neat/plugins/Games/jgame#readme.md",
-
   "keywords": [
     "chatbot",
     "koishi",
@@ -45,5 +44,8 @@
         "canvas"
       ]
     }
+  },
+  "dependencies": {
+    "uuid": "^11.1.0"
   }
 }

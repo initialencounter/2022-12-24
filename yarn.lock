@@ -10341,6 +10341,8 @@ __metadata:
 "koishi-plugin-jgame@workspace:plugins/Games/jgame":
   version: 0.0.0-use.local
   resolution: "koishi-plugin-jgame@workspace:plugins/Games/jgame"
+  dependencies:
+    uuid: "npm:^11.1.0"
   peerDependencies:
     koishi: ^4.18.7
   languageName: unknown
