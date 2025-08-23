@@ -3,11 +3,16 @@ import { render } from "../utils/renderBattleList";
 import { } from '../service/api';
 import { validateAndFormatDate } from "../utils";
 import { writeFileSync } from "fs";
+import { renderTFT } from "../utils/renderTFTBattleList";
 
 
 declare module 'koishi' {
   interface User {
     jgameScene: string
+    lolAppNum: string
+    tftScene: string
+    lolUuid: string
+    tftAreaId: number
   }
 }
 
@@ -19,6 +24,10 @@ class BattleList {
     this.pluginConfig = config;
     ctx.model.extend('user', {
       jgameScene: 'string',
+      lolAppNum: 'string',
+      tftScene: 'string',
+      lolUuid: 'string',
+      tftAreaId: 'integer',
     })
 
     // ctx.on('ready', async () => {
@@ -29,14 +38,23 @@ class BattleList {
     //   const img = await render(battleList, ctx.canvas, ctx.jgameImageCache, basicInfo, battleStatEntry);
     //   writeFileSync('battleList.png', img);
     // })
-    ctx.command('金铲铲战绩', '查询金铲铲战绩')
+    // ctx.on('ready', async () => {
+    //   const scene = 'v3_MvA2eDP8xKmoZu5lyMNdz-rOk4Nc6ebl46ucGv8LpaOCgr7Qam5Zx-Ru3ZonXA6DXmrBOfzaY27xXNCyUTk95JLVEhdzu9MSM8Ah82qeI3yZfrmODuwZ5b9jjJjCHDhl'
+    //   const lolUuid = '619b30f9-acb3-4fd8-9976-9de3a26d4dff';
+    //   const area_id = 14;
+    //   const battleList = await ctx.jgameAPI.fetchTFTBattleList(lolUuid, area_id);
+    //   const basicInfo = await ctx.jgameAPI.fetchTFTBasicInfo(scene);
+    //   const battleStatEntry = await ctx.jgameAPI.fetchTFTBattleStatEntry(lolUuid, area_id);
+    //   const img = await renderTFT(battleList, ctx.canvas, ctx.jgameImageCache, basicInfo, battleStatEntry);
+    //   writeFileSync('tftBattleList.png', img);
+    // })
+    ctx.command('铲铲战绩', '查询金铲铲战绩')
       .option('date', '-d <date:string> 开始日期, 格式2025-08-17T14:12:19')
-      .alias('jgame scene')
       .userFields(['jgameScene'])
       .action(async ({ session, options }) => {
         const scene = session.user.jgameScene;
         if (!scene) {
-          return h.quote(session.messageId) + '' + h.at(session.userId) + '未绑定战绩 scene, 请使用 `金铲铲战绩绑定 [scene:string]` 命令进行绑定';
+          return h.quote(session.messageId) + '' + h.at(session.userId) + '未绑定掌盟, 请使用 `绑定掌盟 [掌盟ID]` 命令进行绑定';
         }
         let baton: null | string = null
         if (options.date) {
@@ -57,12 +75,42 @@ class BattleList {
         return h.image(img, 'image/png');
       });
 
-    ctx.command('金铲铲战绩绑定 [scene:string]')
-      .userFields(['jgameScene'])
+    ctx.command('云顶战绩', '查询云顶之弈战绩')
+      .option('date', '-d <date:string> 开始日期, 格式2025-08-17T14:12:19')
+      .userFields(['lolUuid','tftScene', 'lolAppNum', 'tftAreaId'])
+      .action(async ({ session, options }) => {
+        const lolUuid = session.user.lolUuid;
+        const scene = session.user.tftScene;
+        const area_id = session.user.tftAreaId;
+        const lolAppNum = session.user.lolAppNum;
+        if (!lolAppNum) {
+          return h.quote(session.messageId) + '' + h.at(session.userId) + '未绑定掌盟, 请使用 `绑定掌盟 [掌盟ID]` 命令进行绑定';
+        }
+        let baton: null | string = null
+        if (options.date) {
+          const validatedBaton = validateAndFormatDate(options.date + 'z')
+          if (!validatedBaton) {
+            return h.quote(session.messageId) + '' + h.at(session.userId) + '日期格式错误, 请使用 `YYYY-MM-DDTHH:MM:SS` 格式';
+          }
+          baton = validatedBaton;
+        }
+        const battleList = await ctx.jgameAPI.fetchTFTBattleList(lolUuid, area_id, baton);
+        if (!battleList || !battleList.data.exploit_list.length) {
+          return h.quote(session.messageId) + '' + h.at(session.userId) + '未查询到战绩';
+        }
+
+        const basicInfo = await ctx.jgameAPI.fetchTFTBasicInfo(scene);
+        const battleStatEntry = await ctx.jgameAPI.fetchTFTBattleStatEntry(lolUuid, area_id);
+        const img = await renderTFT(battleList, ctx.canvas, ctx.jgameImageCache, basicInfo, battleStatEntry);
+        return h.image(img, 'image/png');
+      });
+
+    ctx.command('绑定掌盟 [id:string]', '绑定掌盟ID 068075508')
+      .userFields(['jgameScene', 'lolAppNum', 'tftScene', 'lolUuid', 'tftAreaId'])
       .action(async ({ session }, prompt) => {
-        const scene = session.user.jgameScene;
-        if (scene) {
-          session.send(`当前绑定的战绩 scene: ${scene} 是否覆盖?[Y/n]`);
+        const appNum = session.user.lolAppNum;
+        if (appNum) {
+          session.send(`当前绑定掌盟ID: ${appNum} 是否覆盖?[Y/n]`);
           const confirm = await session.prompt(60000);
           if (confirm && confirm.toLowerCase() !== 'y') {
             session.send('已取消绑定');
@@ -70,13 +118,18 @@ class BattleList {
           }
         }
         if (!prompt) {
-          session.send('请输入战绩绑定的 scene');
+          session.send('请输入掌盟ID');
           prompt = await session.prompt(60000)
           if (!prompt) {
             return;
           }
         }
-        session.user.jgameScene = prompt;
+        session.user.lolAppNum = prompt;
+        const scene = await ctx.jgameAPI.getSceneByAppNum(prompt);
+        session.user.tftScene = scene.tftScene;
+        session.user.jgameScene = scene.jgameScene;
+        session.user.lolUuid = scene.uuid;
+        session.user.tftAreaId = scene.tftAreaId;
         return h.quote(session.messageId) + '' + h.at(session.userId) + '绑定成功';
       })
   }

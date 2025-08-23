@@ -44,4 +44,10 @@ export class CookieParser {
 
     return result;
   }
+
+  static objectToCookieString(cookieObj: Record<string, string | number | boolean>): string {
+    return Object.entries(cookieObj)
+      .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`)
+      .join('; ') + ';';
+  }
 }
