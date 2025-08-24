@@ -16,6 +16,7 @@ import { writeFileSync, readFileSync, existsSync } from "fs";
 import { TFTBasicInfoResponse } from "../types/response/TFTBasicInfo";
 import { TFTBattleStatEntryResponse } from "../types/response/TFTBattleStatEntry";
 import { TFTBattleListResponse } from "../types/response/TFTBattleList";
+import { GameCardResponse } from "../types/response/GameCard";
 
 declare module 'koishi' {
   interface Context {
@@ -285,6 +286,15 @@ class JGameAPI extends Service {
     return await this.makeRequest<UserProfileQueryUser>('/go/user_profile/query/user', 'POST', bodyParams);
   }
 
+  async fetchGameCard(uid: string): Promise<GameCardResponse> {
+    const bodyParams = {
+      gameToken: "$GAME_TOKEN$",
+      scene: "",
+      uuid: uid
+    };
+    return await this.makeRequest<GameCardResponse>('/go/mine/card/get_list', 'POST', bodyParams);
+  }
+
   async searchUserByKeyword(appNum: string, page: number = 0, pageSize: number = 10): Promise<SearchUserByKeyword> {
     const bodyParams = {
       "keyWord": appNum,
@@ -300,28 +310,25 @@ class JGameAPI extends Service {
     tftScene: string | null;
     uuid: string | null;
     tftAreaId: number | null;
+    tftUuid: string | null;
   }> {
     const scene = {
       jgameScene: null,
       tftScene: null,
       uuid: null,
       tftAreaId: null,
+      tftUuid: null,
     }
     try {
       const userList: SearchUserByKeyword = await this.searchUserByKeyword(appNum);
       const uuid = userList.data?.userList[0]?.userId;
       scene['uuid'] = uuid;
-      const userProfile: UserProfileQueryUser = await this.getUserProfileQueryUser(uuid);
-
-      for (const item of userProfile.data[0].gameInfoList) {
-        if (item.gameId === 'jgame') {
-          scene.jgameScene = item.scene;
-        }
-        if (item.gameId === 'tft') {
-          scene.tftScene = item.scene;
-          scene.tftAreaId = item.areaId;
-        }
-      }
+      const gameCard: GameCardResponse = await this.fetchGameCard(uuid);
+      const tftSearchParams = new URL(gameCard.data.tftCard.intent).searchParams;
+      scene.tftScene = tftSearchParams.get('scene');
+      scene.tftUuid = tftSearchParams.get('uuid');
+      scene.tftAreaId = gameCard.data.tftCard.areaId;
+      scene.jgameScene = new URL(gameCard.data.jgCard.intent).searchParams.get('scene');
     } catch (error) {
       this.logger.error('获取JGame Scene失败:', error);
     }
