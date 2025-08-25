@@ -13,7 +13,9 @@ import { APIServiceConfig } from "../types/apiService";
 import { aesEcbEncrypt, extractJsonFromEncrypted } from "../utils/aes";
 import { computeMD5 } from "../utils/md5";
 import { LoginResponse } from "../types/response/LoginResponse";
+import { RecordGetResponse } from "../types/response/RecordGet";
 
+const GAME_PATH = ['minesweeper', 'puzzle', 'schulte', 'tzfe', 'nono']
 declare module 'koishi' {
   interface Context {
     tapsssAPI: TapsssAPI;
@@ -193,8 +195,15 @@ class TapsssAPI extends Service {
   async postGameNews(params: { page: number, count: number }): Promise<GameNews> {
     const path = '/Minesweeper/game/news';
     const method = 'POST';
-    return this.executeRequest<GameNews>(path, method, params);
+    return await this.executeRequest<GameNews>(path, method, params);
   }
+
+  async getRecord(params: { recordId: number }, gameType: number): Promise<RecordGetResponse> {
+    const path = `/Minesweeper/${GAME_PATH[gameType]}/record/get`;
+    const method = 'POST';
+    return await this.executeRequest<RecordGetResponse>(path, method, params);
+  }
+
 }
 
 export default TapsssAPI;

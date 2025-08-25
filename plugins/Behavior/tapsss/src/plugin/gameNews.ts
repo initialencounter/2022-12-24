@@ -4,9 +4,10 @@ import { GameNewsConfig } from "../types/gameNewsConfig";
 import { } from "../service/xiBao";
 import { } from "../service/activeMsg";
 import { } from "../service/api";
+import { TapsssPostStorage } from "../service/postStorage";
 
 class GameNewsProvider {
-  static inject = ['xiBao', 'activeMsg', 'tapsssAPI'];
+  static inject = ['xiBao', 'activeMsg', 'tapsssAPI', 'postStorage'];
   private newsCheckTimer: NodeJS.Timeout | null = null;
   private readonly pluginConfig: GameNewsConfig;
 
@@ -200,11 +201,24 @@ class GameNewsProvider {
           isFirstCheck = false;
         } else if (allNews.length > 0) {
           for (const news of allNews) {
-            this.ctx.logger('[Tapsss] GameNews').success(this.formatNews(news));
+            const record = await this.ctx.tapsssAPI.getRecord({ recordId: news.recordId }, news.recordType);
+            const postId = record.data.postId;
+            this.ctx.logger('[Tapsss] GameNews').success(this.formatNews(news, postId));
             if (this.flitterNewsByPushRecordConfig(news.text, news.recordType)) {
-              const imgEle = await this.ctx.xiBao.render(this.formatNews(news))
+              const imgEle = await this.ctx.xiBao.render(this.formatNews(news, postId))
               this.ctx.logger('[Tapsss] GameNews').success(`符合推送条件: ${news.text}`);
-              await this.ctx.activeMsg.pushMessage(this.pluginConfig.rules, imgEle);
+              const messageIds = await this.ctx.activeMsg.pushMessage(this.pluginConfig.rules, imgEle);
+              const post: Partial<TapsssPostStorage> = {
+                "postId": postId,
+                "createTime": new Date(news.createTime),
+                "isComment": false,
+                "uid": news.user.uid,
+                "parentId": 0
+              }
+              for (const messageId of messageIds) {
+                post['messageId'] = messageId
+                await this.ctx.postStorage.createPost(post as TapsssPostStorage);
+              }
             }
           }
 
@@ -228,7 +242,7 @@ class GameNewsProvider {
     this.ctx.logger('[Tapsss] GameNews').info(`已启动游戏资讯定期检查，间隔: ${intervalMs / 1000}秒`);
   }
 
-  formatNews(news: Datum): string {
+  formatNews(news: Datum, postId: number): string {
     let recordType: string
     let recordTypeEn: string
     switch (news.recordType) {
@@ -255,9 +269,9 @@ class GameNewsProvider {
     }
     let newsText: string;
     if (news.text.startsWith('Make')) {
-      newsText = `${recordTypeEn} ${news.user.nickName} ${news.text}`;
+      newsText = `${recordTypeEn} ${news.user.nickName} ${news.text} [帖子ID=${postId}]`;
     } else {
-      newsText = `${news.user.nickName}刷新${recordType}${news.text.slice(2)}`;
+      newsText = `${news.user.nickName}刷新${recordType}${news.text.slice(2)} [帖子ID=${postId}]`;
     }
     return newsText.trim();
   }
