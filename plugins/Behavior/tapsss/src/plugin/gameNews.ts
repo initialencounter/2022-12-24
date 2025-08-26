@@ -201,13 +201,15 @@ class GameNewsProvider {
           isFirstCheck = false;
         } else if (allNews.length > 0) {
           for (const news of allNews) {
+            if (!news.recordId) continue;
             const record = await this.ctx.tapsssAPI.getRecord({ recordId: news.recordId }, news.recordType);
-            const postId = record.data.postId;
+            const postId = record?.data?.postId ?? 0;
             this.ctx.logger('[Tapsss] GameNews').success(this.formatNews(news, postId));
             if (this.flitterNewsByPushRecordConfig(news.text, news.recordType)) {
               const imgEle = await this.ctx.xiBao.render(this.formatNews(news, postId))
               this.ctx.logger('[Tapsss] GameNews').success(`符合推送条件: ${news.text}`);
               const messageIds = await this.ctx.activeMsg.pushMessage(this.pluginConfig.rules, imgEle);
+              if (!postId) continue;
               const post: Partial<TapsssPostStorage> = {
                 "postId": postId,
                 "createTime": new Date(news.createTime),
@@ -230,6 +232,8 @@ class GameNewsProvider {
 
         latestRecordId = maxRecordId;
       } catch (error) {
+        const { maxRecordId } = await this.getAllGameNews(latestRecordId, isFirstCheck);
+        latestRecordId = maxRecordId;
         this.ctx.logger('[Tapsss] GameNews').error("定期检查游戏资讯失败:", error);
       }
     };
