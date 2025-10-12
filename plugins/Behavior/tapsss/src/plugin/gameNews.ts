@@ -278,9 +278,9 @@ class GameNewsProvider {
     }
     let newsText: string;
     if (news.text.startsWith('Make')) {
-      newsText = `${recordTypeEn} ${news.user.nickName} ${news.text} [帖子ID=${postId}]`;
+      newsText = `${recordTypeEn} ${news.user.nickName} ${news.text} \n[帖子ID=${postId}]`;
     } else {
-      newsText = `${news.user.nickName}刷新${recordType}${news.text.slice(2)} [帖子ID=${postId}]`;
+      newsText = `${news.user.nickName}刷新${recordType}${news.text.slice(2)} \n[帖子ID=${postId}]`;
     }
     return newsText.trim();
   }
