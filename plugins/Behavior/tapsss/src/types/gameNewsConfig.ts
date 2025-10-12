@@ -3,11 +3,24 @@ import { Rule } from "./activeMsg";
 
 export interface GameNewsConfig {
   passLine: PassLine;
-  rules: Rule[];
+  rules: GameNewsRule[];
 }
+
+export interface GameNewsRule extends Rule {
+  subscribeGames?: string;
+}
+
+export const GameNewsRule: Schema<GameNewsRule> = Schema.object({
+  platform: Schema.string().description('平台名称。').required(),
+  channelId: Schema.string().description('频道 ID。').required(),
+  guildId: Schema.string().description('群组 ID。'),
+  selfId: Schema.string().description('机器人 ID。'),
+  subscribeGames: Schema.string().description('订阅的游戏列表。0扫雷,1数字华容道,2舒尔特方格,32048,4数织').default('01234'),
+})
+
 export const GameNewsConfig: Schema<GameNewsConfig> = Schema.object({
   passLine: Schema.lazy(() => PassLine).description('推送纪录配置'),
-  rules: Schema.array(Rule).description('推送规则'),
+  rules: Schema.array(GameNewsRule).description('推送规则'),
 }).description('游戏资讯服务配置');
 
 export interface PassLine {

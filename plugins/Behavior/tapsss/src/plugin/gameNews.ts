@@ -1,6 +1,6 @@
 import { Context } from "koishi";
 import { Datum } from "../types/gameNews";
-import { GameNewsConfig } from "../types/gameNewsConfig";
+import { GameNewsConfig, GameNewsRule } from "../types/gameNewsConfig";
 import { } from "../service/xiBao";
 import { } from "../service/activeMsg";
 import { } from "../service/api";
@@ -24,7 +24,11 @@ class GameNewsProvider {
       this.stopPeriodicNewsCheck();
     });
   }
-
+  filterRules(rules: GameNewsRule[], recordType: number): GameNewsRule[] {
+    return rules.filter(rule =>
+      rule.subscribeGames.includes(String(recordType))
+    );
+  }
   flitterNewsByPushRecordConfig(newsText: string, recordType: number): boolean {
     const config = this.pluginConfig.passLine;
     let mode: string = newsText.match(/(\d+x\d+)/)?.[1];
@@ -205,10 +209,11 @@ class GameNewsProvider {
             const record = await this.ctx.tapsssAPI.getRecord({ recordId: news.recordId }, news.recordType);
             const postId = record?.data?.postId ?? 0;
             this.ctx.logger('[Tapsss] GameNews').success(this.formatNews(news, postId));
+            const rules = this.filterRules(this.pluginConfig.rules, news.recordType);
             if (this.flitterNewsByPushRecordConfig(news.text, news.recordType)) {
               const imgEle = await this.ctx.xiBao.render(this.formatNews(news, postId))
               this.ctx.logger('[Tapsss] GameNews').success(`符合推送条件: ${news.text}`);
-              const messageIds = await this.ctx.activeMsg.pushMessage(this.pluginConfig.rules, imgEle);
+              const messageIds = await this.ctx.activeMsg.pushMessage(rules, imgEle);
               if (!postId) continue;
               const post: Partial<TapsssPostStorage> = {
                 "postId": postId,
