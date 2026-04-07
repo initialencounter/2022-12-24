@@ -34,7 +34,7 @@
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.18.7"
+    "koishi": "^4.18.11"
   },
   "dependencies": {
     "@initencounter/jimp": "^0.0.5",

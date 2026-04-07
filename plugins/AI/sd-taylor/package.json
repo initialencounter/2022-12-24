@@ -30,13 +30,13 @@
     "AI"
   ],
   "dependencies": {
-    "@satorijs/element": "^3.1.7"
+    "@satorijs/element": "^3.2.0"
   },
   "devDependencies": {
     "koishi-plugin-davinci-003": "^7.0.4",
     "koishi-plugin-puppeteer": "^3.9.0"
   },
   "peerDependencies": {
-    "koishi": "^4.18.7"
+    "koishi": "^4.18.11"
   }
 }

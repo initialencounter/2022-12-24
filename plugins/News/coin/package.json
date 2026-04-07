@@ -28,10 +28,10 @@
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.18.7"
+    "koishi": "^4.18.11"
   },
   "dependencies": {
-    "@satorijs/element": "^3.1.7"
+    "@satorijs/element": "^3.2.0"
   },
   "koishi": {
     "service": {

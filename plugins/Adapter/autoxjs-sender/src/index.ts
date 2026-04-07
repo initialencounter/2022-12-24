@@ -30,6 +30,7 @@ class AutoX {
       session.send('close_client')
     })
     if (config.type == 'server') {
+      //@ts-ignore
       const ws = new WebSocket.Server({ port: config.port, host: "0.0.0.0" })
       ws.on('connection', ws_client => {
         const heartbeatInterval = config.heartbeatInterval; // 心跳间隔时间，单位：毫秒

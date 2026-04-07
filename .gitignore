@@ -38,3 +38,4 @@ test*
 /*.png
 /*.jpg
 tmp*
+/recent*.json

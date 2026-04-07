@@ -16,7 +16,7 @@ class VoceBot<C extends Context> extends Bot<C> {
   internal: Internal
   adminInternal: AdminInternal
   constructor(ctx: C, config: VoceBot.Config) {
-    super(ctx, config)
+    super(ctx, config, "voce")
     this.logger = new Logger(name)
     this.platform = 'voce'
     this.selfId = String(config.botUid)
