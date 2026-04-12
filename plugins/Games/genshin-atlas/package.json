@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-genshin-atlas",
   "description": "基于[玖玖](https://gitee.com/mingdiandianzhu/genshin-atlas)仓库的轻量《原神》图鉴引擎",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
