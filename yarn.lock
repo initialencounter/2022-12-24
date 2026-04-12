@@ -10792,7 +10792,6 @@ __metadata:
   resolution: "koishi-plugin-genshin-atlas@workspace:plugins/Games/genshin-atlas"
   dependencies:
     "@koishijs/client": "npm:^5.30.11"
-    axios: "npm:^1.14.0"
   peerDependencies:
     "@koishijs/plugin-console": ^5.30.11
     koishi: ^4.18.11

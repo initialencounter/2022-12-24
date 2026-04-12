@@ -3,7 +3,6 @@ export const name = 'genshin-atlas'
 import { resolve } from "path";
 import { pathToFileURL } from "url";
 import { readFileSync, writeFileSync } from 'fs';
-import axios from 'axios';
 import { DataService } from '@koishijs/plugin-console'
 
 const localUsage = readFileSync(resolve(__dirname, "../readme.md"))
@@ -11,10 +10,13 @@ const localUsage = readFileSync(resolve(__dirname, "../readme.md"))
 export const cloudUsage = async () => {
   const { name } = require(resolve(__dirname, "../package.json"))
   try {
-    const info = await axios.get(`https://www.npmmirror.com/api/info?pkgName=${name}`)
-    const version = info.data.data["dist-tags"].latest
-    const md = await axios.get(`https://registry.npmmirror.com/${name}/${version}/files/README.md`)
-    return md.data
+    const res = await fetch(`https://www.npmmirror.com/api/info?pkgName=${name}`)
+    if (!res.ok) throw new Error('Network response was not ok')
+    const info = await res.json()
+    const version = info.data["dist-tags"].latest
+    const mdRes = await fetch(`https://registry.npmmirror.com/${name}/${version}/files/README.md`)
+    if (!mdRes.ok) throw new Error('Network response was not ok')
+    return await mdRes.text()
   } catch (e) {
     return localUsage
   }
@@ -92,10 +94,13 @@ class GenshinAtlas extends DataService<GenshinAtlas.Data> {
     }
     return h.image(img_url);
   }
-  async updatePath(session: Session) {
-    const res = await axios.get('https://gitee.com/IKUN-HUANG/genshin-atlas/raw/master/path.json', { responseType: 'arraybuffer' })
-    writeFileSync(resolve(__dirname, 'path.json'), Buffer.from(res.data))
-    this.path_dict = JSON.parse(Buffer.from(res.data).toString())
+  async updatePath(session: Session | undefined) {
+    if (!session) return
+    const res = await fetch(`${this.ctx.config.repo}/raw/master/path.json`)
+    if (!res.ok) throw new Error('Network response was not ok')
+    const data = await res.arrayBuffer()
+    writeFileSync(resolve(__dirname, 'path.json'), Buffer.from(data))
+    this.path_dict = JSON.parse(Buffer.from(data).toString())
     return session.text('commands.update.messages.success')
   }
 
