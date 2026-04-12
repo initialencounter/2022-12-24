@@ -1,7 +1,6 @@
 import { Context, Schema, Session, h, Dict } from 'koishi'
 export const name = 'genshin-atlas'
 import { resolve } from "path";
-import { pathToFileURL } from "url";
 import { readFileSync, writeFileSync } from 'fs';
 import { DataService } from '@koishijs/plugin-console'
 
@@ -41,6 +40,8 @@ class GenshinAtlas extends DataService<GenshinAtlas.Data> {
         prod: resolve(__dirname, '../dist'),
       })
     })
+    this.path_dict = {}
+    this.name_list = []
     ctx.i18n.define('zh', require('./locales/zh'))
     ctx.on('ready', async () => {
       this.path_dict = require(resolve(__dirname, 'path.json'))
@@ -61,36 +62,41 @@ class GenshinAtlas extends DataService<GenshinAtlas.Data> {
     ]
     for (let i = 0; i < keys.length; i++) {
       ctx.command(this.ctx.config.prefix + alias[i][0], `原神${alias[i][0]}图鉴`).action(({ session }, ...prompt) => {
+        if (!session) return
         return this.handleAtlas(session, keys[i], prompt[0], this.ctx.config.engine)
       })
     }
     ctx.command('ys.atlas', '更新原神图鉴索引').alias('更新原神图鉴索引').action(({ session }) => this.updatePath(session))
-    ctx.command('ys.food', '随机原神食物').alias('今天吃什么').action(({ session }) => this.randomFood(session))
+    ctx.command('ys.food', '随机原神食物').alias('今天吃什么').action(() => this.randomFood())
   }
 
   async handleAtlas(session: Session, key: string, name: string, engine: boolean) {
     if (!name) return session.text('commands.update.messages.noPrompt')
-    console.log(name,key)
+    console.log(name, key)
     const pathName = this.rmSpace(name)
     const path = this.path_dict[key][pathName]
     let img_url: string
     if (engine) {
-      img_url = this.ctx.config.repo + path
+      img_url = this.ctx.config.repo + '/raw/master' + path
     } else {
-      img_url = pathToFileURL(resolve(this.ctx.config.src_path + path)).href
+      const buffer = readFileSync(resolve(this.ctx.config.src_path + path))
+      const base64 = buffer.toString('base64')
+      img_url = `data:image/png;base64,${base64}`
     }
     return h.image(img_url);
   }
 
-  async randomFood(session: Session) {
+  async randomFood() {
     const food_list = Object.keys(this.path_dict['food'])
     const food = food_list[Math.floor(Math.random() * food_list.length)]
     const food_path = this.path_dict['food'][food]
     let img_url: string
     if (this.ctx.config.engine) {
-      img_url = this.ctx.config.repo + food_path
+      img_url = this.ctx.config.repo + '/raw/master' + food_path
     } else {
-      img_url = pathToFileURL(resolve(this.ctx.config.src_path + food_path)).href
+      const buffer = readFileSync(resolve(this.ctx.config.src_path + food_path))
+      const base64 = buffer.toString('base64')
+      img_url = `data:image/png;base64,${base64}`
     }
     return h.image(img_url);
   }
@@ -164,7 +170,7 @@ namespace GenshinAtlas {
       prefix: Schema.string().default('#').description('匹配命令的前缀字符'),
       engine: Schema.boolean().default(true).description('是否使用在线引擎'),
       src_path: Schema.string().default('genshin-atlas').description('资源文件的路径'),
-      repo: Schema.string().default('https://gitee.com/IKUN-HUANG/genshin-atlas/raw/master').description('gitee在线资源的地址'),
+      repo: Schema.string().default('https://gitee.com/mingdiandianzhu/genshin-atlas').description('gitee在线资源的地址'),
       alias: Alias
     }).description('进阶设置')
 

@@ -1,6 +1,6 @@
 {
   "name": "koishi-plugin-genshin-atlas",
-  "description": "基于[Nwflower](https://gitee.com/Nwflower/genshin-atlas)仓库的轻量《原神》图鉴引擎",
+  "description": "基于[玖玖](https://gitee.com/mingdiandianzhu/genshin-atlas)仓库的轻量《原神》图鉴引擎",
   "version": "1.0.4",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -38,7 +38,7 @@
   },
   "koishi": {
     "description": {
-      "zh": "基于[Nwflower](https://gitee.com/Nwflower/genshin-atlas)仓库的轻量《原神》图鉴引擎",
+      "zh": "基于[玖玖](https://gitee.com/mingdiandianzhu/genshin-atlas)仓库的轻量《原神》图鉴引擎",
       "en": "✨ Get《GenShin》Atlas"
     }
   },

@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-genshin-atlas?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-genshin-atlas)
 
-如未启用在线引擎，请在前往 [IKUN-HUANG/genshin-atlas](https://gitee.com/IKUN-HUANG/genshin-atlas/tree/master/role) 中下载资源文件并解压
+如未启用在线引擎，请在前往 [mingdiandianzhu/genshin-atlas](https://gitee.com/mingdiandianzhu/genshin-atlas) 中下载资源文件并解压
 
 并填写资源文件的路径
 
