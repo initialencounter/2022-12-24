@@ -2722,7 +2722,7 @@ __metadata:
     esbuild-register: "npm:@shigma/esbuild-register@^1.1.1"
     jimp: "npm:1.6.0"
     koishi: "npm:^4.18.11"
-    koishi-plugin-adapter-onebot: "npm:^6.9.2"
+    koishi-plugin-adapter-onebot: "npm:^6.9.3"
     koishi-plugin-adapter-red: "npm:3.2.3"
     koishi-plugin-android: "npm:^0.0.1"
     koishi-plugin-assets-local: "npm:3.3.2"
@@ -5568,14 +5568,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.14.0":
-  version: 1.14.0
-  resolution: "axios@npm:1.14.0"
+"axios@npm:^1.15.0":
+  version: 1.15.0
+  resolution: "axios@npm:1.15.0"
   dependencies:
     follow-redirects: "npm:^1.15.11"
     form-data: "npm:^4.0.5"
     proxy-from-env: "npm:^2.1.0"
-  checksum: 10/c3444e9e3da1714916e4ddd7cda05bb41a5d5d80e3e27b099a116439684c63f2280c88503d1acd65841698b63af0b542b4d5780454e28fd0aed2d783ef90943e
+  checksum: 10/d39a2c0ebc7ff4739401b282e726cc2673377949d6c46d60eb619458f8d7a2f7eadbcada7097f4dbc7d5c59abb4d3bf6fac33d474412bc3415d3f5aa7ed45530
   languageName: node
   linkType: hard
 
@@ -10459,14 +10459,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"koishi-plugin-adapter-onebot@npm:^6.9.2":
-  version: 6.9.2
-  resolution: "koishi-plugin-adapter-onebot@npm:6.9.2"
+"koishi-plugin-adapter-onebot@npm:^6.9.3":
+  version: 6.9.3
+  resolution: "koishi-plugin-adapter-onebot@npm:6.9.3"
   dependencies:
     qface: "npm:^1.4.1"
   peerDependencies:
     koishi: ^4.18.6
-  checksum: 10/e849b0b16f8b9bc4cb08eae8c37577b34d1d5771c437cd0ea5410617bb8c8832ca51228357cb81604e55082fc971b9809ecfca7accaa3ff575c3cbb04c82d586
+  checksum: 10/836a8477b7244bf6ae3258b358e02e52c371bfe3865974b919a3ad938c8331ce8b130de2133b86a188fdcce90cb6474b0a9e5b1fd0751de5861637efdfbaf1b1
   languageName: node
   linkType: hard
 
@@ -10519,7 +10519,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "koishi-plugin-arcadia@workspace:plugins/AI/arcadia"
   dependencies:
-    axios: "npm:^1.14.0"
+    axios: "npm:^1.15.0"
   peerDependencies:
     koishi: ^4.18.11
   languageName: unknown
@@ -10685,7 +10685,7 @@ __metadata:
   resolution: "koishi-plugin-cube@workspace:plugins/Recreation/cube"
   dependencies:
     "@types/tar": "npm:^6.1.13"
-    axios: "npm:^1.14.0"
+    axios: "npm:^1.15.0"
     env-paths: "npm:^3.0.0"
     get-registry: "npm:^1.2.0"
     path: "npm:^0.12.7"
@@ -10781,7 +10781,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "koishi-plugin-furbot@workspace:plugins/News/furbot"
   dependencies:
-    axios: "npm:^1.14.0"
+    axios: "npm:^1.15.0"
   peerDependencies:
     koishi: ^4.18.11
   languageName: unknown

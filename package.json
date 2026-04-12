@@ -103,7 +103,7 @@
     "@koishijs/plugin-status": "^7.4.10",
     "jimp": "1.6.0",
     "koishi": "^4.18.11",
-    "koishi-plugin-adapter-onebot": "^6.9.2",
+    "koishi-plugin-adapter-onebot": "^6.9.3",
     "koishi-plugin-adapter-red": "3.2.3",
     "koishi-plugin-android": "^0.0.1",
     "koishi-plugin-assets-local": "3.3.2",

@@ -34,7 +34,7 @@
     "cube"
   ],
   "dependencies": {
-    "axios": "^1.14.0",
+    "axios": "^1.15.0",
     "env-paths": "^3.0.0",
     "get-registry": "^1.2.0",
     "path": "^0.12.7",
