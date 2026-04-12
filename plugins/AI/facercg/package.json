@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-facercg",
-  "description": "AI 颜值打分",
-  "version": "1.3.0",
+  "description": "AI 人脸颜值打分",
+  "version": "1.3.1",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
