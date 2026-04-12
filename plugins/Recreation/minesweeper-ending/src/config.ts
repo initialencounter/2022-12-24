@@ -3,6 +3,9 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 
 export const MineConfig = Schema.intersect([
+  Schema.object({
+      recall: Schema.boolean().default(true).description('撤回上一次发送的雷图消息，避免刷屏'),
+    }).description("基础设置"),
     Schema.object({
         MinHintTime: Schema.number().default(15000).description("获取提示的冷却时间"),
         wrongSleep: Schema.number().default(5000).description("猜错后的冷却时间"),
