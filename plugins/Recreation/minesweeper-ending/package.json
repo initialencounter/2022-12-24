@@ -42,11 +42,8 @@
     "service": {
       "required": [
         "database",
-        "jimp"
+        "canvas"
       ]
     }
-  },
-  "dependencies": {
-    "@initencounter/jimp": "^0.0.3"
   }
 }

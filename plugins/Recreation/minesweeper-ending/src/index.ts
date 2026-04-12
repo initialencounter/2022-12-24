@@ -1,7 +1,7 @@
 import { Context, Schema, Logger, Dict, Session, h, Keys } from 'koishi';
 import Minefield from "./minesweeper";
 import { } from '@initencounter/jimp';
-import { renderX, setTheme } from './renderJimp'
+import { renderX, setTheme } from './renderX'
 export const name = 'minesweeper-ending';
 
 import { MineConfig, mineUsage } from "./config"
@@ -43,7 +43,7 @@ declare module 'koishi' {
 
 class EndingGame {
   static inject = {
-    required: ['database', 'jimp']
+    required: ['database', 'canvas']
   }
   minefieldDict: Dict
   banList: Dict
@@ -231,9 +231,10 @@ class EndingGame {
           wins: 0
         }
         await updateRank(ctx, info)
-        let x: number = 0
-        let y: number = 0
-        let z: number = 0
+        console.log("输入参数：", args)
+        let x: number = 4
+        let y: number = 4
+        let z: number = 6
         if (args[0] && args[1]) {
           if (args[0] * args[1] < 9) {
             return "图太小了, bv数应当大于9"
@@ -744,9 +745,10 @@ ${rankInfo.map((player, index) => ` ${String(index + 1).padStart(2, ' ')}   ${pl
     if (!session?.channelId) return
     let m: Minefield = this.initialize(x, y, z)
     this.minefieldDict[session.channelId] = m
-    return "<p>" + h.at(session.userId) + `✨\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}</p>` + h.image(await renderX(m, ctx), "image/png")
+    const mg = "<p>" + h.at(session.userId) + `✨\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}</p>` + h.image(await renderX(m, ctx), "image/png")
+    console.log(mg)
+    return mg
   }
-
 
 
   /**
