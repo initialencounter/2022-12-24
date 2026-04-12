@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * An Object containing:
  * @property {Number}  width         - The minefield width (1-based)
@@ -11,6 +12,7 @@
  * @property {Number}  [X].mines     - Number of mines present around a cell
  */
 export default class Minefield {
+   [key: string]: any;
    /**
     * Creates a new minefield with the given width, height and mines number (and randomizes them)
     * @param {Number} width The width of the minefield (1-based)

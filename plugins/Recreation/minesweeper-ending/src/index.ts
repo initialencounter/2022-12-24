@@ -75,9 +75,10 @@ class EndingGame {
 
 
     ctx.command("ed.生涯 [at]", "查看自己或其他玩家的生涯").action(async ({ session }) => {
+      if (!session?.content || !session?.userId) return
       const target = session.content.match(/(?<=<at id=")([\s\S]*?)(?="\/>)/g)
       let uid: string = session.userId
-      if (target?.length > 0) {
+      if (target?.length && target?.length > 0) {
         uid = target[0]
       }
       const porfile: Pick<MinesweeperRank, Keys<MinesweeperRank, any>> = await getProfiles(ctx, uid)
@@ -87,6 +88,7 @@ class EndingGame {
     // 挑战玩法
     ctx.command("ed.fight", "开启扫雷挑战模式")
       .action(async ({ session }) => {
+        if (!session?.content || !session?.userId) return
         let last = await ctx.model.get('minesweeper_ending_rank', { userId: session.userId })
         const now = new Date().getDate()
         if (last.length === 0) {
@@ -197,6 +199,7 @@ class EndingGame {
       })
     ctx.command('ed.flag', '开启或关闭标记模式,仅对自己生效')
       .action(async ({ session }) => {
+        if (!session?.userId) return
         const target = await ctx.model.get('minesweeper_ending_rank', { userId: session.userId }, ["isFlag"])
         if (target.length > 0) {
           await ctx.model.set('minesweeper_ending_rank', { userId: session.userId }, { isFlag: target[0]?.isFlag ? false : true })
@@ -210,8 +213,9 @@ class EndingGame {
       .alias('扫雷残局', "minesweeper-ending")
       .option("force", "-f")
       .action(async ({ session, options }, ...args) => {
+        if (!session?.content || !session?.userId || !session?.channelId) return
         const m: Minefield = this.minefieldDict[session.channelId]
-        if (options.force) {
+        if (options?.force) {
           logger.info("强制重开")
         } else if (m?.isGoingOn()) {
           session.send("<p>" + h.at(session.userId) + `✨\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}</p>` + h.image(await renderX(m, ctx), "image/png"))
@@ -227,9 +231,9 @@ class EndingGame {
           wins: 0
         }
         await updateRank(ctx, info)
-        let x: number
-        let y: number
-        let z: number
+        let x: number = 0
+        let y: number = 0
+        let z: number = 0
         if (args[0] && args[1]) {
           if (args[0] * args[1] < 9) {
             return "图太小了, bv数应当大于9"
@@ -250,10 +254,12 @@ class EndingGame {
         return await this.renew(session as Session, x, y, z, ctx)
       })
     ctx.command("ed.end", "结束 ed").action(({ session }) => {
+      if (!session?.guildId) return
       this.minefieldDict[session.guildId] = null
       return "游戏结束"
     })
     ctx.command("ed.n", "刷新 ed").action(async ({ session }) => {
+      if (!session?.channelId) return
       const m: Minefield = this.minefieldDict[session.channelId]
       if (!m) {
         return "不存在残局"
@@ -261,6 +267,7 @@ class EndingGame {
       return await this.renew(session as Session, m.width, m.height, m.mines, ctx)
     })
     ctx.command("ed.l", "查看地雷").action(({ session }) => {
+      if (!session?.channelId) return
       let m = this.minefieldDict[session.channelId]
       return this.getHint(m, session as Session, ctx)
     })
@@ -272,7 +279,7 @@ class EndingGame {
      * 2.接收玩家的指令，将残局的所有雷标记出来的玩家获胜
      */
     ctx.command("ed.s [numberString:string]", "打开格子").action(async ({ session, options }, inputString) => {
-
+      if (!session?.content || !session?.userId || !session?.channelId) return
       //检查是否拥有操作权限
       const dt = this.checkPermision(session.userId)
       if (dt) {
@@ -283,7 +290,7 @@ class EndingGame {
       if (!m?.isGoingOn()) {
         return "不存在残局"
       }
-      const tmp = []
+      const tmp: string[] = []
       let step = m.cells < 99 ? 2 : (m.cells < 999 ? 3 : 4)
       for (let i = 0; i < inputString.length; i += step) {
         let pair = inputString.slice(i, i + step);
@@ -295,8 +302,8 @@ class EndingGame {
           tmp.push(pair)
         }
       }
-      const c: string[] = m["keyPool"].filter(function (v) { return tmp.indexOf(v) > -1 })
-      const wrong: string[] = tmp.filter(function (v) { return m["keyPool"].indexOf(v) == -1 })
+      const c: string[] = m["keyPool"].filter(function (v: string) { return tmp.indexOf(v) > -1 })
+      const wrong: string[] = tmp.filter(function (v: string) { return m["keyPool"].indexOf(v) == -1 })
       logger.info(`谜底：${m["keyPool"]}`)
       logger.info(`输入：${tmp}`)
       logger.info(`交集: ${c}`)
@@ -354,6 +361,7 @@ class EndingGame {
       }
     })
     ctx.command("ed.f [numberString:string]", "标记地雷").action(async ({ session, options }, inputString) => {
+      if (!session?.content || !session?.userId || !session?.channelId) return
 
       //检查是否拥有操作权限
       const dt = this.checkPermision(session.userId)
@@ -365,7 +373,7 @@ class EndingGame {
       if (!m?.isGoingOn()) {
         return "不存在残局"
       }
-      const tmp = []
+      const tmp: string[] = []
       let step = m.cells < 99 ? 2 : (m.cells < 999 ? 3 : 4)
       for (let i = 0; i < inputString.length; i += step) {
         let pair = inputString.slice(i, i + step);
@@ -377,8 +385,8 @@ class EndingGame {
           tmp.push(pair)
         }
       }
-      const c: string[] = m["dgPool"].filter(function (v) { return tmp.indexOf(v) > -1 })
-      const wrong: string[] = tmp.filter(function (v) { return m["dgPool"].indexOf(v) == -1 })
+      const c: string[] = m["dgPool"].filter(function (v: string) { return tmp.indexOf(v) > -1 })
+      const wrong: string[] = tmp.filter(function (v: string) { return m["dgPool"].indexOf(v) == -1 })
       logger.info(`正确的雷：${m["dgPool"]}`)
       logger.info(`输入：${tmp}`)
       logger.info(`交集: ${c}`)
@@ -439,8 +447,11 @@ class EndingGame {
       }
     })
     ctx.middleware(async (session, next) => {
+      if (!session?.content || !session?.userId || !session?.channelId) return next()
+
       if (session.content.startsWith("生涯")) {
         const target = session.content.match(/(?<=<at id=")([\s\S]*?)(?="\/>)/g)
+        if (!target || target.length == 0) return next()
         if (target.length > 0) {
           const uid = target[0]
           const porfile: Pick<MinesweeperRank, Keys<MinesweeperRank, any>> = await getProfiles(ctx, uid)
@@ -495,7 +506,7 @@ class EndingGame {
           // 定义排行榜的模板字符串
           const template = `
 雷神殿：
-排名  昵称   积分  
+排名  昵称   积分
 --------------------
 ${rankInfo.map((player, index) => ` ${String(index + 1).padStart(2, ' ')}   ${player.userName.padEnd(6, ' ')} ${player.score.toString().padEnd(4, ' ')}`).join('\n')}
 `
@@ -523,7 +534,7 @@ ${rankInfo.map((player, index) => ` ${String(index + 1).padStart(2, ' ')}   ${pl
           // 定义排行榜的模板字符串
           const template = `
 挑战榜：
-排名  昵称   用时  
+排名  昵称   用时
 --------------------
 ${rankInfo.map((player, index) => ` ${String(index + 1).padStart(2, ' ')}   ${player.userName.padEnd(6, ' ')} ${player.ChallengeScore.toString().padEnd(4, ' ')}`).join('\n')}
 `
@@ -537,7 +548,7 @@ ${rankInfo.map((player, index) => ` ${String(index + 1).padStart(2, ' ')}   ${pl
 
   /**
    * 冻结模块
-   * @param userId 
+   * @param userId
    */
   async ban(userId: string) {
     const now = Date.now()
@@ -564,9 +575,9 @@ ${rankInfo.map((player, index) => ` ${String(index + 1).padStart(2, ' ')}   ${pl
 
   /**
    * 提示模块
-   * @param m 
-   * @param session 
-   * @returns 
+   * @param m
+   * @param session
+   * @returns
    */
   async getHint(m: Minefield, session: Session, ctx: Context) {
     if (!m.isGoingOn()) return "不存在残局"
@@ -582,14 +593,14 @@ ${rankInfo.map((player, index) => ` ${String(index + 1).padStart(2, ' ')}   ${pl
 
 
   /**
-   * 
+   *
    * @param m 挑战模式 FL
-   * @param inputString 
-   * @param session 
-   * @returns 
+   * @param inputString
+   * @param session
+   * @returns
    */
   challengeFl(m: Minefield, inputString: string, session: Session) {
-    const tmp = []
+    const tmp: string[] = []
     for (let i = 0; i < inputString.length; i += 2) {
       let pair = inputString.slice(i, i + 2);
       if (pair.startsWith("0")) {
@@ -600,8 +611,8 @@ ${rankInfo.map((player, index) => ` ${String(index + 1).padStart(2, ' ')}   ${pl
         tmp.push(pair)
       }
     }
-    const c = m["dgPool"].filter(function (v) { return tmp.indexOf(v) > -1 })
-    const wrong = tmp.filter(function (v) { return m["dgPool"].indexOf(v) == -1 })
+    const c = m["dgPool"].filter(function (v: string) { return tmp.indexOf(v) > -1 })
+    const wrong = tmp.filter(function (v: string) { return m["dgPool"].indexOf(v) == -1 })
     logger.info(`正确的雷：${m["dgPool"]}`)
     logger.info(`输入：${tmp}`)
     logger.info(`交集: ${c}`)
@@ -620,13 +631,13 @@ ${rankInfo.map((player, index) => ` ${String(index + 1).padStart(2, ' ')}   ${pl
 
   /**
    * 挑战模式 NF
-   * @param m 
-   * @param inputString 
-   * @param session 
-   * @returns 
+   * @param m
+   * @param inputString
+   * @param session
+   * @returns
    */
   challengeNf(m: Minefield, inputString: string, session: Session) {
-    const tmp = []
+    const tmp: string[] = []
     for (let i = 0; i < inputString.length; i += 2) {
       let pair = inputString.slice(i, i + 2);
       if (pair.startsWith("0")) {
@@ -637,8 +648,8 @@ ${rankInfo.map((player, index) => ` ${String(index + 1).padStart(2, ' ')}   ${pl
         tmp.push(pair)
       }
     }
-    const c = m["keyPool"].filter(function (v) { return tmp.indexOf(v) > -1 })
-    const wrong = tmp.filter(function (v) { return m["keyPool"].indexOf(v) == -1 })
+    const c = m["keyPool"].filter(function (v: string) { return tmp.indexOf(v) > -1 })
+    const wrong = tmp.filter(function (v: string) { return m["keyPool"].indexOf(v) == -1 })
     logger.info(`谜底：${m["keyPool"]}`)
     logger.info(`输入：${tmp}`)
     logger.info(`交集: ${c}`)
@@ -723,13 +734,14 @@ ${rankInfo.map((player, index) => ` ${String(index + 1).padStart(2, ' ')}   ${pl
 
   /**
    * 重置游戏
-   * @param session 
-   * @param x 
-   * @param y 
-   * @param z 
-   * @returns 
+   * @param session
+   * @param x
+   * @param y
+   * @param z
+   * @returns
    */
   async renew(session: Session, x: number = this.config.width, y: number = this.config.height, z: number = this.config.mines, ctx: Context) {
+    if (!session?.channelId) return
     let m: Minefield = this.initialize(x, y, z)
     this.minefieldDict[session.channelId] = m
     return "<p>" + h.at(session.userId) + `✨\n雷数:${m["mines"]}\n剩余BV:${m["keyPool"].length}</p>` + h.image(await renderX(m, ctx), "image/png")
@@ -739,11 +751,11 @@ ${rankInfo.map((player, index) => ` ${String(index + 1).padStart(2, ' ')}   ${pl
 
   /**
    * 删除数字前面的0
-   * 01，0002 返回 1 2 
-   * @param s 
+   * 01，0002 返回 1 2
+   * @param s
    * @returns string
    */
-  remove0(s: String) {
+  remove0(s: string): string {
     if (s.length == 1) {
       return "0"
     }
