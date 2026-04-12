@@ -2706,6 +2706,7 @@ __metadata:
     "@koishijs/plugin-status": "npm:^7.4.10"
     "@koishijs/scripts": "npm:^4.6.2"
     "@satorijs/element": "npm:^3.2.0"
+    "@shangxueink/koishi-plugin-puppeteer-without-canvas": "npm:3.0.7"
     "@types/node": "npm:^20.19.39"
     "@types/react": "npm:^18.3.28"
     cross-env: "npm:^7.0.3"
@@ -4039,6 +4040,19 @@ __metadata:
     "@satorijs/element": "npm:^3.2.0"
     cosmokit: "npm:^1.8.1"
   checksum: 10/6dfbc09d5e8239ca5138e99e0982e273b5265ee4f0a8888a95bead2063bcb63186f05ffc35f7a9b5aeff0259b8780408d4f94ab8e32efb4fb8ce5ff4a5335944
+  languageName: node
+  linkType: hard
+
+"@shangxueink/koishi-plugin-puppeteer-without-canvas@npm:3.0.7":
+  version: 3.0.7
+  resolution: "@shangxueink/koishi-plugin-puppeteer-without-canvas@npm:3.0.7"
+  dependencies:
+    "@koishijs/canvas": "npm:^0.2.0"
+    puppeteer-core: "npm:^22.15.0"
+    puppeteer-finder: "npm:^1.1.0"
+  peerDependencies:
+    koishi: ^4.18.7
+  checksum: 10/b9d2d0bb4862e92d957613d5def0130e22a54dd50fb23ad29bba03b4fe5d93ccdbe20e5967541e9341c97e7f0e8f8baf7be6c78bc4dae91abf7952f0fb04df38
   languageName: node
   linkType: hard
 
@@ -13489,7 +13503,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"puppeteer-core@npm:^22.6.1":
+"puppeteer-core@npm:^22.15.0, puppeteer-core@npm:^22.6.1":
   version: 22.15.0
   resolution: "puppeteer-core@npm:22.15.0"
   dependencies:
@@ -13516,7 +13530,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"puppeteer-finder@npm:^1.1.1":
+"puppeteer-finder@npm:^1.1.0, puppeteer-finder@npm:^1.1.1":
   version: 1.1.1
   resolution: "puppeteer-finder@npm:1.1.1"
   checksum: 10/2e8b7780e0850899aff6df77487624acade59b9b644879643c5511c457705158200d50ff1ee61c16522f50a673a34f397271a3ae067b39c033a8607655e95042

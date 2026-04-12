@@ -101,6 +101,7 @@
     "@koishijs/plugin-server-satori": "2.7.2",
     "@koishijs/plugin-server-temp": "^1.5.0",
     "@koishijs/plugin-status": "^7.4.10",
+    "@shangxueink/koishi-plugin-puppeteer-without-canvas": "3.0.7",
     "jimp": "1.6.0",
     "koishi": "^4.18.11",
     "koishi-plugin-adapter-onebot": "^6.9.3",
