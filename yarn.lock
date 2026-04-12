@@ -1262,15 +1262,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@initencounter/jimp@npm:^0.0.3":
-  version: 0.0.3
-  resolution: "@initencounter/jimp@npm:0.0.3"
-  peerDependencies:
-    koishi: ^4.15.2
-  checksum: 10/7520fb41c6249c8cf1f557667d5f48e7538c61117cd52ed133bc3d52e94e0f638bc12f2b142df39d00d8b5535b24bc653746b453b2e9263f06378567665b7719
-  languageName: node
-  linkType: hard
-
 "@initencounter/jimp@npm:^0.0.4":
   version: 0.0.4
   resolution: "@initencounter/jimp@npm:0.0.4"
@@ -10889,8 +10880,6 @@ __metadata:
 "koishi-plugin-minesweeper-ending@workspace:plugins/Recreation/minesweeper-ending":
   version: 0.0.0-use.local
   resolution: "koishi-plugin-minesweeper-ending@workspace:plugins/Recreation/minesweeper-ending"
-  dependencies:
-    "@initencounter/jimp": "npm:^0.0.3"
   peerDependencies:
     koishi: ^4.18.11
   languageName: unknown
