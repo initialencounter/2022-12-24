@@ -31,10 +31,10 @@
   "koishi": {
     "service": {
       "required": [
-        "http"
+        "http",
+        "canvas"
       ],
       "optional": [
-        "puppeteer",
         "notifier"
       ]
     }
