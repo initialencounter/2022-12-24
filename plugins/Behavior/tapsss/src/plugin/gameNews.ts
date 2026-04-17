@@ -26,12 +26,13 @@ class GameNewsProvider {
   }
   filterRules(rules: GameNewsRule[], recordType: number): GameNewsRule[] {
     return rules.filter(rule =>
-      rule.subscribeGames.includes(String(recordType))
+      rule.subscribeGames && rule.subscribeGames.includes(String(recordType))
     );
   }
   flitterNewsByPushRecordConfig(newsText: string, recordType: number): boolean {
     const config = this.pluginConfig.passLine;
-    let mode: string = newsText.match(/(\d+x\d+)/)?.[1];
+    let mode: string | undefined = newsText.match(/(\d+x\d+)/)?.[1];
+    if (!mode) return false;
     let time = parseFloat(newsText.match(/\((\d+(\.\d+)?)\)/)?.[1] || '0');
     if (newsText.includes('平均') || newsText.includes('连拧')) return false;
     switch (recordType) {
@@ -61,32 +62,40 @@ class GameNewsProvider {
         return false;
       case 1: // 华容道
         if (newsText.includes('盲')) {
+          // @ts-ignore
           if (config.puzzle.blind[mode] >= time) return true;
         } else {
+          // @ts-ignore
           if (config.puzzle.classic[mode] >= time) return true;
         }
         return false;
       case 2:
         if (newsText.includes('打乱')) {
           if (newsText.includes('简单')) {
+            // @ts-ignore
             if (config.schulteGrid.simpleDisrupt[mode] >= time) return true
           } else {
+            // @ts-ignore
             if (config.schulteGrid.classicDisrupt[mode] >= time) return true
           }
         } else {
           if (newsText.includes('简单')) {
+            // @ts-ignore
             if (config.schulteGrid.simple[mode] >= time) return true;
           } else {
+            // @ts-ignore
             if (config.schulteGrid.classic[mode] >= time) return true;
           }
         }
         return false;
       case 3:
         if (newsText.includes('时间纪录')) {
+          // @ts-ignore
           if (config['2048'].time[mode] >= time) return true;
         }
         if (newsText.includes('分数纪录')) {
           const score = parseInt(newsText.match(/分数纪录\((\d+)/)?.[1] || '0');
+          // @ts-ignore
           if (config['2048'].score[mode] <= score) return true;
         }
         return false;

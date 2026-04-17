@@ -133,7 +133,7 @@ class PostListService {
   private async handleNewPosts(posts: Datum[]): Promise<void> {
     // 处理新帖子的逻辑
     for (const post of posts) {
-      const message = `新帖子: [${post.user.nickName}]: ${post.title || (post.text.length > 20 ? post.text.slice(0, 20) : post.text)}\n${post?.text}`;
+      const message = `新帖子: [${post.user.nickName}]: ${post.title || (post.text?.length ?? 0 > 20 ? post.text?.slice(0, 20) : post.text)}\n${post?.text}`;
       this.ctx.logger('[Tapsss] PostList').info(message);
       const img = await renderPost(post, this.ctx.canvas, this.ctx.imageCache);
       const messageIds = await this.ctx.activeMsg.pushMessage(this.pluginConfig.rules, h.image(img, 'image/png'));
@@ -154,7 +154,7 @@ class PostListService {
   private async handleNewComments(posts: Datum[]): Promise<void> {
     // 处理新评论的逻辑
     for (const post of posts) {
-      const message = `${post.title || (post.text.length > 20 ? post.text.slice(0, 20) : post.text)}\n新评论: [${post.lastComment.user.nickName}]: ${post.lastComment.comment}`;
+      const message = `${post.title || (post.text?.length ?? 0 > 20 ? post.text?.slice(0, 20) : post.text)}\n新评论: [${post.lastComment.user.nickName}]: ${post.lastComment.comment}`;
       this.ctx.logger('[Tapsss] PostList').info(message);
       const img = await renderPost(post, this.ctx.canvas, this.ctx.imageCache);
       const messageIds = await this.ctx.activeMsg.pushMessage(this.pluginConfig.rules, h.image(img, 'image/png'));

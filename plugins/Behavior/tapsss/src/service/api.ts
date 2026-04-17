@@ -158,7 +158,7 @@ class TapsssAPI extends Service {
     return this.executeRequest<UserSaoleiResponse>(path, method, {});
   }
 
-  async userHome(params: { targetUid: number }): Promise<UserHomeResponse> {
+  async userHome(params: { targetUid?: number, targetName?: string }): Promise<UserHomeResponse> {
     const path = '/Minesweeper/user/home';
     const method = 'POST';
     return this.executeRequest<UserHomeResponse>(path, method, params);

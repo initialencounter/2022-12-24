@@ -19,7 +19,7 @@ class ImageCache extends Service {
   static inject = ['canvas'];
   logger = this.ctx.logger('Tapsss ImageCache');
   cacheDir: string;
-  loadedDefaultImage: Image
+  loadedDefaultImage: Image | null = null;
   constructor(ctx: Context) {
     super(ctx, 'imageCache');
     this.cacheDir = resolve(ctx.root.baseDir, 'data/tapsss/imageCache');
@@ -44,7 +44,7 @@ class ImageCache extends Service {
     return path.resolve(this.cacheDir, this.generateCacheFileName(url));
   }
 
-  async fetchImage(url: string): Promise<Image> {
+  async fetchImage(url: string): Promise<Image | null> {
     if (!url) return this.loadedDefaultImage;
 
     try {

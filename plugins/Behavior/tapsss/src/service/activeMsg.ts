@@ -20,8 +20,9 @@ class ActiveMsg extends Service {
         continue
       }
       if (!selfId) {
+        //@ts-ignore
         const channel = (await this.ctx.database.getChannel(platform, channelId, ['assignee', 'guildId']))[0]
-        if (!channel) return
+        if (!channel) return []
         selfId = channel.assignee
         guildId = channel.guildId
       }

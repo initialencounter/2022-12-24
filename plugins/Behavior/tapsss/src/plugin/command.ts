@@ -7,6 +7,7 @@ class TapsssCommand {
   constructor(private ctx: Context) {
     ctx.command('评论 <content:text>', '添加评论')
       .action(async ({ session }) => {
+        if (!session) return
         let content = this.getContent(session).slice(3).trim();
         if (!content) {
           return '评论内容不能为空';
@@ -21,7 +22,7 @@ class TapsssCommand {
             replyId: post.isComment ? Number(post.uid) : 0,
             comment: content,
           });
-        } catch (error) {
+        } catch (error: any) {
           return `评论失败: ${error.message}`;
         }
       })
@@ -29,6 +30,7 @@ class TapsssCommand {
     ctx.command('删除评论 <commentId:number>', '删除评论')
       .option('commentId', '-c <commentId:number>')
       .action(async ({ session, options }, commentId) => {
+        if (!options) return;
         let id = commentId;
         if (!id) {
           if (options.commentId) {
@@ -40,7 +42,7 @@ class TapsssCommand {
         try {
           await ctx.tapsssAPI.commentDelete({ commentId: id });
           return '评论已删除';
-        } catch (error) {
+        } catch (error: any) {
           return `删除评论失败: ${error.message}`;
         }
       })
@@ -54,7 +56,7 @@ class TapsssCommand {
             const post = await this.ctx.postStorage.getPost(session.quote.id);
             if (post && post.length > 0) {
               const targetPost = post[0];
-              if (targetPost.isComment) {
+              if (targetPost.isComment && targetPost.commentId) {
                 await ctx.tapsssAPI.commentGood({ commentId: targetPost.commentId, isGood: true });
                 return '已点赞评论';
               } else {
@@ -67,7 +69,7 @@ class TapsssCommand {
           }
 
           return '请指定帖子ID(-p)、评论ID(-c)，或引用一条消息';
-        } catch (error) {
+        } catch (error: any) {
           return `点赞失败: ${error.message}`;
         }
       })
@@ -80,7 +82,7 @@ class TapsssCommand {
             const post = await this.ctx.postStorage.getPost(session.quote.id);
             if (post && post.length > 0) {
               const targetPost = post[0];
-              if (targetPost.isComment) {
+              if (targetPost.isComment && targetPost.commentId) {
                 await ctx.tapsssAPI.commentGood({ commentId: targetPost.commentId, isGood: false });
                 return '已取消点赞评论';
               } else {
@@ -93,7 +95,7 @@ class TapsssCommand {
           }
 
           return '请指定帖子ID(-p)、评论ID(-c)，或引用一条消息';
-        } catch (error) {
+        } catch (error: any) {
           return `取消点赞失败: ${error.message}`;
         }
       })
@@ -101,6 +103,7 @@ class TapsssCommand {
     ctx.command('点赞列表', '查看点赞用户列表')
       .option('postId', '-p <postId:number>')
       .action(async ({ session, options }) => {
+        if (!options || !session) return;
         let postId = options.postId;
         if (!options.postId) {
           postId = (await this.getPostId(session)).postId;
@@ -110,7 +113,7 @@ class TapsssCommand {
         try {
           const response = await ctx.tapsssAPI.listGoodUser({ postId, page: 0, count: 20 });
           return `点赞用户列表: ${response.data.map(user => user.nickName).join(', ')}`;
-        } catch (error) {
+        } catch (error: any) {
           return `获取点赞用户列表失败: ${error.message}`;
         }
       })
@@ -123,10 +126,11 @@ class TapsssCommand {
         return post[0];
       }
     }
-    return null;
+    throw new Error('未找到引用的帖子或评论');
   }
 
   getContent(session: Session): string {
+    if (!session.elements) return '';
     if (session.elements[0].type === 'text') {
       return session.elements[0].attrs.content
     }
