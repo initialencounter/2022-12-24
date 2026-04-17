@@ -56,13 +56,13 @@ class TapsssAPI extends Service {
     // const timeStamp = '1752668107525'; // 获取当前时间戳
     const apiKey = this.makeApiKey(body, timeStamp);
     const headers = this.headers;
-    headers['time-stamp'] = timeStamp;
-    headers['api-key'] = apiKey;
-    headers['Content-Length'] = body.length.toString(); // 获取字符串长度
-    headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8';
+    headers.set('time-stamp', timeStamp);
+    headers.set('api-key', apiKey);
+    headers.set('Content-Length', body.length.toString()); // 获取字符串长度
+    headers.set('Content-Type', 'application/x-www-form-urlencoded; charset=utf-8');
 
     try {
-      const response = await fetch(`http://${headers['Host']}${path}`,
+      const response = await fetch(`http://${headers.get('Host')}${path}`,
         {
           method,
           headers,
