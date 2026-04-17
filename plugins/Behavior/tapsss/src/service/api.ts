@@ -14,6 +14,7 @@ import { aesEcbEncrypt, extractJsonFromEncrypted } from "../utils/aes";
 import { computeMD5 } from "../utils/md5";
 import { LoginResponse } from "../types/response/LoginResponse";
 import { RecordGetResponse } from "../types/response/RecordGet";
+import { PostGetResponse } from "../types/response/PostGetResponse";
 
 const GAME_PATH = ['minesweeper', 'puzzle', 'schulte', 'tzfe', 'nono']
 declare module 'koishi' {
@@ -163,10 +164,10 @@ class TapsssAPI extends Service {
     return this.executeRequest<UserHomeResponse>(path, method, params);
   }
 
-  async postGet(params: { postId: number }): Promise<UserHomeResponse> {
+  async postGet(params: { postId: number }): Promise<PostGetResponse> {
     const path = '/Minesweeper/post/get';
     const method = 'POST';
-    return this.executeRequest<UserHomeResponse>(path, method, params);
+    return this.executeRequest<PostGetResponse>(path, method, params);
   }
 
   async getStar(): Promise<DailyStarResponse> {
