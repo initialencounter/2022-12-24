@@ -80,6 +80,10 @@ function loadMoreComments() {
   loadComments(sortType.value, currentPage.value)
 }
 
+function openImage(url: string) {
+  window.open(url, '_blank')
+}
+
 onMounted(() => {
   loadPost()
   loadComments()
@@ -138,7 +142,7 @@ onMounted(() => {
             :key="idx"
             :src="img"
             class="post-img"
-            @click="() => window.open(img, '_blank')"
+            @click="openImage(img)"
           />
         </div>
 
