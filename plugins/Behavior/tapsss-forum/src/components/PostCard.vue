@@ -21,7 +21,8 @@ const props = defineProps<{ post: Datum }>();
 const router = useRouter();
 
 function goToPostDetail() {
-  router.push(`/post/${props.post.id}`);
+  const routeData = router.resolve(`/post/${props.post.id}`);
+  window.open(routeData.href, '_blank');
 }
 
 const levelIndex = computed(() => props.post.user.timingLevel === -1 ? 0 : props.post.user.timingLevel);
