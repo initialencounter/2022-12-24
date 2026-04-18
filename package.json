@@ -51,6 +51,7 @@
     "@koishijs/plugin-hmr": "^1.2.9",
     "@koishijs/scripts": "^4.6.2",
     "@satorijs/element": "^3.2.0",
+    "@types/markdown-it": "^14.1.2",
     "@types/node": "^20.19.39",
     "@types/react": "^18.3.28",
     "cross-env": "^7.0.3",
@@ -126,6 +127,7 @@
     "koishi-plugin-theme-vanilla": "^1.1.0",
     "koishi-plugin-toutai": "1.1.9",
     "koishi-plugin-weather": "2.0.4",
+    "markdown-it": "^14.1.1",
     "yakumo-esbuild-yaml": "^0.3.1",
     "yakumo-publish-sync": "^0.3.3"
   }

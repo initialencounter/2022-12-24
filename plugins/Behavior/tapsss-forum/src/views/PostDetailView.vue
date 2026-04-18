@@ -3,7 +3,10 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { postGet, commentList } from '../api'
 import type { Datum } from '../types/response/PostCommentListResponse'
+import type { PostList, Datum as PostListDatum } from '../types'
 import { formatTime, removeHashWrappedStrings, removeImagesAndLinksFromMarkdown, extractImageLinksFromMarkdown, findHashWrappedStrings } from '../utils/constants'
+
+import MarkdownIt from 'markdown-it'
 
 const props = defineProps<{
   id: string
@@ -11,7 +14,7 @@ const props = defineProps<{
 
 const router = useRouter()
 
-const post = ref<any>(null)
+const post = ref<PostListDatum|null>(null)
 const comments = ref<Datum[]>([])
 const loading = ref(false)
 const commentLoading = ref(false)
@@ -31,6 +34,11 @@ const plainText = computed(() => {
   return removeHashWrappedStrings(removeImagesAndLinksFromMarkdown(post.value.text)).trim()
 })
 
+const md = new MarkdownIt({ breaks: true, linkify: true })
+const renderedText = computed(() => {
+  return md.render(plainText.value)
+})
+
 const images = computed(() => {
   if (!post.value?.text) return []
   return extractImageLinksFromMarkdown(post.value.text)
@@ -41,6 +49,7 @@ async function loadPost() {
   try {
     const response = await postGet(postId.value)
     if (response.code === 200 && response.data) {
+      // @ts-ignore
       post.value = response.data
     } else {
       console.error('Failed to fetch post:', response.msg)
@@ -141,7 +150,7 @@ onMounted(() => {
 
       <!-- 内容 -->
       <div class="post-body">
-        <p class="post-text">{{ plainText }}</p>
+        <div class="post-text markdown-body" v-html="renderedText"></div>
 
         <!-- 图片 -->
         <div class="post-images" v-if="images.length > 0">
@@ -379,6 +388,19 @@ onMounted(() => {
   line-height: 1.6;
   font-size: 1.1rem;
   margin-bottom: 20px;
+}
+
+.post-text :deep(p) {
+  margin-bottom: 10px;
+}
+
+.post-text :deep(a) {
+  color: #FA7299;
+  text-decoration: none;
+}
+
+.post-text :deep(a:hover) {
+  text-decoration: underline;
 }
 
 .post-images {
