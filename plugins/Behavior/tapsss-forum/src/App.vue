@@ -43,7 +43,7 @@ body {
 
 .main-content {
   flex: 1;
-  padding: 20px 0;
+  padding: 20px 0 100px;
 }
 
 a {
@@ -60,6 +60,11 @@ img {
 }
 
 .app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
   background-color: #1B1B1B;
   border-top: 1px solid #333;
   padding: 20px;
