@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useRouter } from 'vue-router';
-import type { Datum } from '../types';
+import { computed } from "vue";
+import { useRouter } from "vue-router";
+import type { Datum } from "../types";
 import {
   TIMING_LEVELS_MAP,
   TIMING_LEVELS_COLOR,
@@ -14,54 +14,72 @@ import {
   recordBgColor,
   recordTextColor,
   computeType,
-  computeNonoType
-} from '../utils/constants';
+  computeNonoType,
+} from "../utils/constants";
 
 const props = defineProps<{ post: Datum }>();
 const router = useRouter();
 
 function goToPostDetail() {
   const routeData = router.resolve(`/post/${props.post.id}`);
-  window.open(routeData.href, '_blank');
+  window.open(routeData.href, "_blank");
 }
 
-const levelIndex = computed(() => props.post.user.timingLevel === -1 ? 0 : props.post.user.timingLevel);
-const levelColor = computed(() => TIMING_LEVELS_COLOR[levelIndex.value] || '#000');
-const textColor = computed(() => TIMING_LEVELS_TEXT_COLOR[levelIndex.value] || '#FFF');
+const levelIndex = computed(() =>
+  props.post.user.timingLevel === -1 ? 0 : props.post.user.timingLevel,
+);
+const levelColor = computed(
+  () => TIMING_LEVELS_COLOR[levelIndex.value] || "#000",
+);
+const textColor = computed(
+  () => TIMING_LEVELS_TEXT_COLOR[levelIndex.value] || "#FFF",
+);
 const rankText = computed(() => {
   const r = props.post.user.timingRank;
-  if (!r) return '';
-  return r === 1 ? '雷帝' : `${TIMING_LEVELS_MAP[levelIndex.value]}${r <= 300 ? ' ' + r : ''}`;
+  if (!r) return "";
+  return r === 1
+    ? "雷帝"
+    : `${TIMING_LEVELS_MAP[levelIndex.value]}${r <= 300 ? " " + r : ""}`;
 });
 
-const tags = computed(() => findHashWrappedStrings(props.post.text || ''));
+const tags = computed(() => findHashWrappedStrings(props.post.text || ""));
 const plainText = computed(() => {
-  const t = props.post.text || '';
+  const t = props.post.text || "";
   return removeHashWrappedStrings(removeImagesAndLinksFromMarkdown(t)).trim();
 });
-const images = computed(() => extractImageLinksFromMarkdown(props.post.text || ''));
+const images = computed(() =>
+  extractImageLinksFromMarkdown(props.post.text || ""),
+);
 
 const hasRecord = computed(() => !!props.post.recordId);
 const recordGameType = computed(() => props.post.recordType); // 0=Minesweeper, 1=Puzzle, 2=2048, 3=Schulte, 4=Nono
 
 const recordBg = computed(() => recordBgColor[recordGameType.value]);
 const recordColor = computed(() => recordTextColor[recordGameType.value]);
-
 </script>
 
 <template>
   <div class="post-card" @click="goToPostDetail">
     <div class="user-info">
-      <img class="avatar" :src="post.user.avatar || 'https://via.placeholder.com/104'" alt="avatar" />
+      <img
+        class="avatar"
+        :src="post.user.avatar || 'https://via.placeholder.com/104'"
+        alt="avatar"
+      />
       <div class="user-meta">
         <div class="name-row">
           <span class="nickname">{{ post.user.nickName }}</span>
-          <span class="rank-badge" v-if="rankText" :style="{ backgroundColor: levelColor, color: textColor }">
+          <span
+            class="rank-badge"
+            v-if="rankText"
+            :style="{ backgroundColor: levelColor, color: textColor }"
+          >
             {{ rankText }}
           </span>
         </div>
         <div class="time-device">
-          {{ formatTime(post.createTime) }} <span v-if="post.device">📱{{ post.device }}</span>
+          {{ formatTime(post.createTime) }}
+          <span v-if="post.device">📱{{ post.device }}</span>
         </div>
       </div>
     </div>
@@ -78,51 +96,76 @@ const recordColor = computed(() => recordTextColor[recordGameType.value]);
         <span v-for="tag in tags" :key="tag" class="tag">{{ tag }}</span>
       </div>
 
-    <!-- Content -->
-    <p class="post-content" v-if="plainText">{{ plainText }}</p>
+      <!-- Content -->
+      <p class="post-content" v-if="plainText">
+        {{ plainText.slice(0, 100) + (plainText.length > 100 ? "..." : "") }}
+      </p>
 
-    <!-- Images -->
-    <div class="post-images" v-if="images.length > 0">
-      <img v-for="(img, idx) in images.slice(0, 3)" :key="idx" :src="img" class="post-img" />
-    </div>
+      <!-- Images -->
+      <div class="post-images" v-if="images.length > 0">
+        <img
+          v-for="(img, idx) in images.slice(0, 3)"
+          :key="idx"
+          :src="img"
+          class="post-img"
+        />
+      </div>
 
-    <!-- Record Box -->
-    <div class="record-box" v-if="hasRecord" :style="{ backgroundColor: recordBg, color: recordColor }">
-      <div class="record-icon">
-        <img :src="`/icon/${recordGameType}.png`" style="width: 48px; height: 48px; object-fit: contain;" alt="icon" />
+      <!-- Record Box -->
+      <div
+        class="record-box"
+        v-if="hasRecord"
+        :style="{ backgroundColor: recordBg, color: recordColor }"
+      >
+        <div class="record-icon">
+          <img
+            :src="`/icon/${recordGameType}.png`"
+            style="width: 48px; height: 48px; object-fit: contain"
+            alt="icon"
+          />
+        </div>
+        <div class="record-details">
+          <template v-if="recordGameType === 0 && post.record">
+            <div class="r-col">
+              <div class="r-val">
+                {{
+                  computeType(
+                    post.record.row,
+                    post.record.column,
+                    post.record.mine,
+                  )
+                }}
+              </div>
+              <div class="r-lbl">难度</div>
+            </div>
+            <div class="r-col">
+              <div class="r-val">{{ post.record.time / 1000 }}</div>
+              <div class="r-lbl">时间</div>
+            </div>
+            <div class="r-col">
+              <div class="r-val">{{ post.record.bvs }}</div>
+              <div class="r-lbl">3BV/s</div>
+            </div>
+          </template>
+          <template v-if="recordGameType === 1 && post.puzzleRecord">
+            <div class="r-col">
+              <div class="r-val">
+                {{ post.puzzleRecord.row }}x{{ post.puzzleRecord.column }}
+              </div>
+              <div class="r-lbl">难度</div>
+            </div>
+            <div class="r-col">
+              <div class="r-val">{{ post.puzzleRecord.time / 1000 }}</div>
+              <div class="r-lbl">时间</div>
+            </div>
+            <div class="r-col">
+              <div class="r-val">{{ post.puzzleRecord.step }}</div>
+              <div class="r-lbl">步数</div>
+            </div>
+          </template>
+          <!-- Similar for 2048, Schulte, Nono if provided -->
+        </div>
       </div>
-      <div class="record-details">
-        <template v-if="recordGameType === 0 && post.record">
-          <div class="r-col">
-            <div class="r-val">{{ computeType(post.record.row, post.record.column, post.record.mine) }}</div>
-            <div class="r-lbl">难度</div>
-          </div>
-          <div class="r-col">
-            <div class="r-val">{{ post.record.time / 1000 }}</div>
-            <div class="r-lbl">时间</div>
-          </div>
-          <div class="r-col">
-            <div class="r-val">{{ post.record.bvs }}</div>
-            <div class="r-lbl">3BV/s</div>
-          </div>
-        </template>
-        <template v-if="recordGameType === 1 && post.puzzleRecord">
-           <div class="r-col">
-            <div class="r-val">{{ post.puzzleRecord.row }}x{{ post.puzzleRecord.column }}</div>
-            <div class="r-lbl">难度</div>
-          </div>
-          <div class="r-col">
-            <div class="r-val">{{ post.puzzleRecord.time / 1000 }}</div>
-            <div class="r-lbl">时间</div>
-          </div>
-          <div class="r-col">
-            <div class="r-val">{{ post.puzzleRecord.step }}</div>
-            <div class="r-lbl">步数</div>
-          </div>
-        </template>
-        <!-- Similar for 2048, Schulte, Nono if provided -->
-      </div>
-    </div>
     </template>
 
     <!-- Details only if not sticked (or handle toggle logic if needed, but per request just show title and hide others) -->
@@ -130,24 +173,46 @@ const recordColor = computed(() => recordTextColor[recordGameType.value]);
       <!-- Last Comment Box inside card -->
       <div class="last-comment" v-if="post.lastComment">
         <div class="lc-title">最新评论</div>
-      <div class="lc-header">
-        <img class="lc-avatar" :src="post.lastComment.user.avatar || 'https://via.placeholder.com/60'" />
-        <div class="lc-meta">
-          <div class="lc-name">{{ post.lastComment.user.nickName }}</div>
-          <div class="lc-time">{{ formatTime(post.lastComment.createTime) }}</div>
+        <div class="lc-header">
+          <img
+            class="lc-avatar"
+            :src="
+              post.lastComment.user.avatar || 'https://via.placeholder.com/60'
+            "
+          />
+          <div class="lc-meta">
+            <div class="lc-name">{{ post.lastComment.user.nickName }}</div>
+            <div class="lc-time">
+              {{ formatTime(post.lastComment.createTime) }}
+            </div>
+          </div>
+        </div>
+        <div class="lc-content">
+          {{
+            post.lastComment.comment.slice(0, 100) +
+            (post.lastComment.comment.length > 100 ? "..." : "")
+          }}
         </div>
       </div>
-      <div class="lc-content">{{ post.lastComment.comment }}</div>
-    </div>
     </template>
 
     <!-- Footer -->
     <div class="post-footer">
       <div class="interaction">
-        <span class="icon">💬</span> {{ post.commentCount > 1000 ? (post.commentCount/1000).toFixed(1) + 'k' : post.commentCount }}
+        <span class="icon">💬</span>
+        {{
+          post.commentCount > 1000
+            ? (post.commentCount / 1000).toFixed(1) + "k"
+            : post.commentCount
+        }}
       </div>
       <div class="interaction">
-        <span class="icon">👍</span> {{ post.goodCount > 1000 ? (post.goodCount/1000).toFixed(1) + 'k' : post.goodCount }}
+        <span class="icon">👍</span>
+        {{
+          post.goodCount > 1000
+            ? (post.goodCount / 1000).toFixed(1) + "k"
+            : post.goodCount
+        }}
       </div>
     </div>
   </div>
@@ -158,14 +223,14 @@ const recordColor = computed(() => recordTextColor[recordGameType.value]);
   font-size: 0.8rem;
   padding: 2px 6px;
   border-radius: 4px;
-  background-color: #FA7299;
+  background-color: #fa7299;
   color: white;
   margin-right: 8px;
   vertical-align: middle;
 }
 .post-card {
-  background-color: #1B1B1B;
-  color: #FFFFFF;
+  background-color: #1b1b1b;
+  color: #ffffff;
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
@@ -177,7 +242,7 @@ const recordColor = computed(() => recordTextColor[recordGameType.value]);
 }
 
 .post-card:hover {
-  background-color: #2A2A2A;
+  background-color: #2a2a2a;
   border-color: #444;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -222,12 +287,12 @@ const recordColor = computed(() => recordTextColor[recordGameType.value]);
   margin: 10px 0;
 }
 .tag {
-  color: #FA7299;
+  color: #fa7299;
   margin-right: 10px;
   font-size: 1.1rem;
 }
 .post-content {
-  color: #E0E0E0;
+  color: #e0e0e0;
   line-height: 1.5;
   margin-bottom: 10px;
   font-size: 1.1rem;
@@ -270,13 +335,13 @@ const recordColor = computed(() => recordTextColor[recordGameType.value]);
   margin-top: 4px;
 }
 .last-comment {
-  background-color: #2A2A2A;
+  background-color: #2a2a2a;
   border-radius: 8px;
   padding: 15px;
   margin-bottom: 15px;
 }
 .lc-title {
-  color: #8D9E4B;
+  color: #8d9e4b;
   font-size: 1rem;
   margin-bottom: 10px;
 }
@@ -304,7 +369,7 @@ const recordColor = computed(() => recordTextColor[recordGameType.value]);
 .post-footer {
   display: flex;
   gap: 20px;
-  color: #9EA1A6;
+  color: #9ea1a6;
   font-size: 1.1rem;
 }
 .interaction {

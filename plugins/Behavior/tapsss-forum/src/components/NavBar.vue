@@ -1,24 +1,27 @@
 <script setup lang="ts">
-import { useRouter, useRoute } from 'vue-router'
-import { ref, watch } from 'vue'
+import { useRouter, useRoute } from "vue-router";
+import { ref, watch } from "vue";
 
-const router = useRouter()
-const route = useRoute()
-const searchKeyword = ref('')
+const router = useRouter();
+const route = useRoute();
+const searchKeyword = ref("");
 
 function goToHome() {
-  router.push('/')
+  router.push("/");
 }
 
 function goToSearch() {
   if (searchKeyword.value.trim()) {
-    router.push(`/search?q=${encodeURIComponent(searchKeyword.value.trim())}`)
+    router.push(`/search?q=${encodeURIComponent(searchKeyword.value.trim())}`);
   }
 }
 
-watch(() => route.path, () => {
-  searchKeyword.value = ''
-})
+watch(
+  () => route.path,
+  () => {
+    searchKeyword.value = "";
+  },
+);
 </script>
 
 <template>
@@ -28,7 +31,7 @@ watch(() => route.path, () => {
         <span class="brand-icon">💣</span>
         <span class="brand-text">扫雷社区</span>
       </div>
-      
+
       <div class="nav-search">
         <input
           v-model="searchKeyword"
@@ -37,16 +40,22 @@ watch(() => route.path, () => {
           class="nav-search-input"
           @keyup.enter="goToSearch"
         />
-        <button @click="goToSearch" class="nav-search-btn">
-          搜索
-        </button>
+        <button @click="goToSearch" class="nav-search-btn">搜索</button>
       </div>
-      
+
       <div class="nav-links">
-        <router-link to="/" class="nav-link" :class="{ active: route.path === '/' }">
+        <router-link
+          to="/"
+          class="nav-link"
+          :class="{ active: route.path === '/' }"
+        >
           首页
         </router-link>
-        <router-link to="/search" class="nav-link" :class="{ active: route.path === '/search' }">
+        <router-link
+          to="/search"
+          class="nav-link"
+          :class="{ active: route.path === '/search' }"
+        >
           搜索
         </router-link>
       </div>
@@ -56,7 +65,7 @@ watch(() => route.path, () => {
 
 <style scoped>
 .navbar {
-  background-color: #1B1B1B;
+  background-color: #1b1b1b;
   border-bottom: 1px solid #333;
   padding: 15px 0;
   position: sticky;
@@ -89,7 +98,7 @@ watch(() => route.path, () => {
 .brand-text {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #FFFFFF;
+  color: #ffffff;
   white-space: nowrap;
 }
 
@@ -103,8 +112,8 @@ watch(() => route.path, () => {
 .nav-search-input {
   flex: 1;
   padding: 10px 18px;
-  background-color: #2A2A2A;
-  color: #FFFFFF;
+  background-color: #2a2a2a;
+  color: #ffffff;
   border: 1px solid #444;
   border-radius: 20px;
   font-size: 0.95rem;
@@ -113,7 +122,7 @@ watch(() => route.path, () => {
 }
 
 .nav-search-input:focus {
-  border-color: #FA7299;
+  border-color: #fa7299;
 }
 
 .nav-search-input::placeholder {
@@ -122,8 +131,8 @@ watch(() => route.path, () => {
 
 .nav-search-btn {
   padding: 10px 24px;
-  background-color: #FA7299;
-  color: #FFFFFF;
+  background-color: #fa7299;
+  color: #ffffff;
   border: none;
   border-radius: 20px;
   cursor: pointer;
@@ -134,7 +143,7 @@ watch(() => route.path, () => {
 }
 
 .nav-search-btn:hover {
-  background-color: #E65C87;
+  background-color: #e65c87;
 }
 
 .nav-links {
@@ -143,7 +152,7 @@ watch(() => route.path, () => {
 }
 
 .nav-link {
-  color: #9EA1A6;
+  color: #9ea1a6;
   text-decoration: none;
   font-size: 1rem;
   padding: 8px 16px;
@@ -153,13 +162,13 @@ watch(() => route.path, () => {
 }
 
 .nav-link:hover {
-  color: #FFFFFF;
-  background-color: #2A2A2A;
+  color: #ffffff;
+  background-color: #2a2a2a;
 }
 
 .nav-link.active {
-  color: #FFFFFF;
-  background-color: #FA7299;
+  color: #ffffff;
+  background-color: #fa7299;
 }
 
 @media (max-width: 768px) {
@@ -167,12 +176,12 @@ watch(() => route.path, () => {
     flex-direction: column;
     gap: 15px;
   }
-  
+
   .nav-search {
     max-width: 100%;
     width: 100%;
   }
-  
+
   .nav-links {
     width: 100%;
     justify-content: center;

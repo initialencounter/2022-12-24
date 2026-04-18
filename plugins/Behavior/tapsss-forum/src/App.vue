@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
-import NavBar from './components/NavBar.vue'
+import { RouterView } from "vue-router";
+import NavBar from "./components/NavBar.vue";
 </script>
 
 <template>
@@ -29,8 +29,10 @@ import NavBar from './components/NavBar.vue'
 
 body {
   background-color: #121212;
-  color: #FFFFFF;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  color: #ffffff;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+    sans-serif;
   line-height: 1.6;
   min-height: 100vh;
 }
@@ -65,7 +67,7 @@ img {
   left: 0;
   width: 100%;
   z-index: 100;
-  background-color: #1B1B1B;
+  background-color: #1b1b1b;
   border-top: 1px solid #333;
   padding: 20px;
   text-align: center;

@@ -1,78 +1,81 @@
 <script lang="ts">
 export default {
-  name: 'HomeView'
-}
+  name: "HomeView",
+};
 </script>
 
 <script setup lang="ts">
-import { ref, onMounted, onActivated, onDeactivated, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
-import PostCard from '../components/PostCard.vue'
-import { fetchPostList } from '../api'
-import type { Datum } from '../types'
+import { ref, onMounted, onActivated, onDeactivated, nextTick } from "vue";
+import { useRouter } from "vue-router";
+import PostCard from "../components/PostCard.vue";
+import { fetchPostList } from "../api";
+import type { Datum } from "../types";
 
-const router = useRouter()
-const posts = ref<Datum[]>([])
-const loading = ref(false)
-const currentPage = ref(0)
-const postsPerPage = 20
-const postType = ref(0) // 0: 最新, 1: 热门, 3: 关注
-const searchKeyword = ref('')
-const savedPosition = ref(0)
+const router = useRouter();
+const posts = ref<Datum[]>([]);
+const loading = ref(false);
+const currentPage = ref(0);
+const postsPerPage = 20;
+const postType = ref(0); // 0: 最新, 1: 热门, 3: 关注
+const searchKeyword = ref("");
+const savedPosition = ref(0);
 
 function goToSearch() {
   if (searchKeyword.value.trim()) {
-    router.push(`/search?q=${encodeURIComponent(searchKeyword.value.trim())}`)
+    router.push(`/search?q=${encodeURIComponent(searchKeyword.value.trim())}`);
   }
 }
 
 async function loadPosts(type = 0, page = 0) {
-  loading.value = true
+  loading.value = true;
   try {
-    const response = await fetchPostList(type, page, postsPerPage)
+    const response = await fetchPostList(type, page, postsPerPage);
     if (response.code === 200 && response.data) {
       if (page === 0) {
-        posts.value = response.data
+        posts.value = response.data;
       } else {
-        posts.value.push(...response.data)
+        posts.value.push(...response.data);
       }
     } else {
-      console.error('Failed to fetch posts:', response.msg)
+      console.error("Failed to fetch posts:", response.msg);
     }
   } catch (error) {
-    console.error('Error fetching posts:', error)
+    console.error("Error fetching posts:", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function changeType(type: number) {
-  postType.value = type
-  currentPage.value = 0
-  loadPosts(type, 0)
+  postType.value = type;
+  currentPage.value = 0;
+  loadPosts(type, 0);
 }
 
 function loadMore() {
-  currentPage.value++
-  loadPosts(postType.value, currentPage.value)
+  currentPage.value++;
+  loadPosts(postType.value, currentPage.value);
 }
 
 onMounted(() => {
   if (posts.value.length === 0) {
-    loadPosts()
+    loadPosts();
   }
-})
+});
 
 onActivated(async () => {
-  await nextTick()
+  await nextTick();
   setTimeout(() => {
-    window.scrollTo({ top: savedPosition.value, behavior: 'instant' as ScrollBehavior })
-  }, 50)
-})
+    window.scrollTo({
+      top: savedPosition.value,
+      behavior: "instant" as ScrollBehavior,
+    });
+  }, 50);
+});
 
 onDeactivated(() => {
-  savedPosition.value = window.scrollY || document.documentElement.scrollTop
-})
+  savedPosition.value = window.scrollY || document.documentElement.scrollTop;
+});
 </script>
 
 <template>
@@ -99,13 +102,9 @@ onDeactivated(() => {
     </div>
 
     <div class="posts-container">
-      <div v-if="loading && posts.length === 0" class="loading">
-        加载中...
-      </div>
+      <div v-if="loading && posts.length === 0" class="loading">加载中...</div>
 
-      <div v-else-if="posts.length === 0" class="empty">
-        暂无帖子
-      </div>
+      <div v-else-if="posts.length === 0" class="empty">暂无帖子</div>
 
       <div v-else>
         <PostCard
@@ -116,12 +115,8 @@ onDeactivated(() => {
         />
 
         <div class="load-more">
-          <button
-            @click="loadMore"
-            :disabled="loading"
-            class="load-more-btn"
-          >
-            {{ loading ? '加载中...' : '加载更多' }}
+          <button @click="loadMore" :disabled="loading" class="load-more-btn">
+            {{ loading ? "加载中..." : "加载更多" }}
           </button>
         </div>
       </div>
@@ -144,7 +139,7 @@ onDeactivated(() => {
 }
 
 .forum-header h1 {
-  color: #FFFFFF;
+  color: #ffffff;
   font-size: 2.5rem;
   margin-bottom: 10px;
 }
@@ -164,8 +159,8 @@ onDeactivated(() => {
 
 .tab-btn {
   padding: 10px 20px;
-  background-color: #2A2A2A;
-  color: #FFFFFF;
+  background-color: #2a2a2a;
+  color: #ffffff;
   border: none;
   border-radius: 20px;
   cursor: pointer;
@@ -174,12 +169,12 @@ onDeactivated(() => {
 }
 
 .tab-btn:hover {
-  background-color: #3A3A3A;
+  background-color: #3a3a3a;
 }
 
 .tab-btn.active {
-  background-color: #FA7299;
-  color: #FFFFFF;
+  background-color: #fa7299;
+  color: #ffffff;
 }
 
 .posts-container {
@@ -190,7 +185,8 @@ onDeactivated(() => {
   margin-bottom: 20px;
 }
 
-.loading, .empty {
+.loading,
+.empty {
   text-align: center;
   padding: 40px;
   color: #999;
@@ -204,8 +200,8 @@ onDeactivated(() => {
 
 .load-more-btn {
   padding: 12px 30px;
-  background-color: #2A2A2A;
-  color: #FFFFFF;
+  background-color: #2a2a2a;
+  color: #ffffff;
   border: 1px solid #444;
   border-radius: 25px;
   cursor: pointer;
@@ -214,8 +210,8 @@ onDeactivated(() => {
 }
 
 .load-more-btn:hover:not(:disabled) {
-  background-color: #3A3A3A;
-  border-color: #FA7299;
+  background-color: #3a3a3a;
+  border-color: #fa7299;
 }
 
 .load-more-btn:disabled {

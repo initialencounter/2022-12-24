@@ -1,63 +1,61 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import PostCard from '../components/PostCard.vue'
-import { postListSearch } from '../api'
-import type { Datum } from '../types'
+import { ref, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import PostCard from "../components/PostCard.vue";
+import { postListSearch } from "../api";
+import type { Datum } from "../types";
 
-const route = useRoute()
-const posts = ref<Datum[]>([])
-const loading = ref(false)
-const currentPage = ref(0)
-const postsPerPage = 20
+const route = useRoute();
+const posts = ref<Datum[]>([]);
+const loading = ref(false);
+const currentPage = ref(0);
+const postsPerPage = 20;
 
-const keyword = ref(route.query.q as string || '')
+const keyword = ref((route.query.q as string) || "");
 
 async function searchPosts(page = 0) {
-  if (!keyword.value.trim()) return
+  if (!keyword.value.trim()) return;
 
-  loading.value = true
+  loading.value = true;
   try {
-    const response = await postListSearch(keyword.value, page, postsPerPage)
+    const response = await postListSearch(keyword.value, page, postsPerPage);
     if (response.code === 200 && response.data) {
       if (page === 0) {
-        posts.value = response.data
+        posts.value = response.data;
       } else {
-        posts.value.push(...response.data)
+        posts.value.push(...response.data);
       }
     } else {
-      console.error('Failed to search posts:', response.msg)
+      console.error("Failed to search posts:", response.msg);
     }
   } catch (error) {
-    console.error('Error searching posts:', error)
+    console.error("Error searching posts:", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function loadMore() {
-  currentPage.value++
-  searchPosts(currentPage.value)
+  currentPage.value++;
+  searchPosts(currentPage.value);
 }
 
 function handleSearch() {
-  currentPage.value = 0
-  searchPosts(0)
+  currentPage.value = 0;
+  searchPosts(0);
 }
 
 onMounted(() => {
   if (keyword.value) {
-    searchPosts()
+    searchPosts();
   }
-})
+});
 </script>
 
 <template>
   <div class="search">
     <header class="search-header">
-      <router-link to="/" class="back-btn">
-        ← 返回列表
-      </router-link>
+      <router-link to="/" class="back-btn"> ← 返回列表 </router-link>
 
       <div class="search-box">
         <input
@@ -67,9 +65,7 @@ onMounted(() => {
           class="search-input"
           @keyup.enter="handleSearch"
         />
-        <button @click="handleSearch" class="search-btn">
-          搜索
-        </button>
+        <button @click="handleSearch" class="search-btn">搜索</button>
       </div>
     </header>
 
@@ -100,12 +96,8 @@ onMounted(() => {
         />
 
         <div class="load-more">
-          <button
-            @click="loadMore"
-            :disabled="loading"
-            class="load-more-btn"
-          >
-            {{ loading ? '加载中...' : '加载更多' }}
+          <button @click="loadMore" :disabled="loading" class="load-more-btn">
+            {{ loading ? "加载中..." : "加载更多" }}
           </button>
         </div>
       </div>
@@ -127,7 +119,7 @@ onMounted(() => {
 .back-btn {
   display: inline-block;
   margin-bottom: 20px;
-  color: #FA7299;
+  color: #fa7299;
   text-decoration: none;
   font-size: 1rem;
   padding: 8px 16px;
@@ -137,8 +129,8 @@ onMounted(() => {
 }
 
 .back-btn:hover {
-  background-color: #2A2A2A;
-  border-color: #FA7299;
+  background-color: #2a2a2a;
+  border-color: #fa7299;
 }
 
 .search-box {
@@ -150,8 +142,8 @@ onMounted(() => {
 .search-input {
   flex: 1;
   padding: 12px 20px;
-  background-color: #2A2A2A;
-  color: #FFFFFF;
+  background-color: #2a2a2a;
+  color: #ffffff;
   border: 1px solid #444;
   border-radius: 25px;
   font-size: 1rem;
@@ -160,7 +152,7 @@ onMounted(() => {
 }
 
 .search-input:focus {
-  border-color: #FA7299;
+  border-color: #fa7299;
 }
 
 .search-input::placeholder {
@@ -169,8 +161,8 @@ onMounted(() => {
 
 .search-btn {
   padding: 12px 30px;
-  background-color: #FA7299;
-  color: #FFFFFF;
+  background-color: #fa7299;
+  color: #ffffff;
   border: none;
   border-radius: 25px;
   cursor: pointer;
@@ -180,14 +172,16 @@ onMounted(() => {
 }
 
 .search-btn:hover {
-  background-color: #E65C87;
+  background-color: #e65c87;
 }
 
 .search-results {
   margin-top: 30px;
 }
 
-.empty-search, .loading, .empty-results {
+.empty-search,
+.loading,
+.empty-results {
   text-align: center;
   padding: 60px 20px;
   color: #999;
@@ -201,13 +195,13 @@ onMounted(() => {
 }
 
 .results-info h2 {
-  color: #FFFFFF;
+  color: #ffffff;
   font-size: 1.8rem;
   margin-bottom: 10px;
 }
 
 .search-keyword {
-  color: #FA7299;
+  color: #fa7299;
   font-size: 1.1rem;
 }
 
@@ -224,8 +218,8 @@ onMounted(() => {
 
 .load-more-btn {
   padding: 12px 30px;
-  background-color: #2A2A2A;
-  color: #FFFFFF;
+  background-color: #2a2a2a;
+  color: #ffffff;
   border: 1px solid #444;
   border-radius: 25px;
   cursor: pointer;
@@ -234,8 +228,8 @@ onMounted(() => {
 }
 
 .load-more-btn:hover:not(:disabled) {
-  background-color: #3A3A3A;
-  border-color: #FA7299;
+  background-color: #3a3a3a;
+  border-color: #fa7299;
 }
 
 .load-more-btn:disabled {

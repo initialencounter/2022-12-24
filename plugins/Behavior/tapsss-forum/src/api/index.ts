@@ -46,3 +46,7 @@ export async function postListSearch(keyword: string, page: number = 0, count: n
 export async function postListGoodUser(postId: number, page: number = 0, count: number = 20): Promise<PostListGoodUserResponse> {
   return fetchJSON<PostListGoodUserResponse>('/post/list/good/user', { postId, page, count });
 }
+
+export async function postMinesweeperRecordGet(recordId: number): Promise<any> {
+  return fetchJSON<any>('/Minesweeper/minesweeper/record/get', { recordId });
+}

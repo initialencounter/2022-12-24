@@ -1,178 +1,205 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { postGet, commentList, postListGoodUser } from '../api'
-import type { Datum as CommentDatum } from '../types/response/PostCommentListResponse'
-import type { Datum as LikeDatum } from '../types/response/PostListGoodUserResponse'
-import type { PostList, Datum as PostListDatum } from '../types'
-import { formatTime, removeHashWrappedStrings, removeImagesAndLinksFromMarkdown, extractImageLinksFromMarkdown, findHashWrappedStrings } from '../utils/constants'
+import { ref, onMounted, computed } from "vue";
+import { useRouter } from "vue-router";
+import { postGet, commentList, postListGoodUser } from "../api";
+import type { Datum as CommentDatum } from "../types/response/PostCommentListResponse";
+import type { Datum as LikeDatum } from "../types/response/PostListGoodUserResponse";
+import type { PostList, Datum as PostListDatum } from "../types";
+import {
+  formatTime,
+  removeHashWrappedStrings,
+  removeImagesAndLinksFromMarkdown,
+  extractImageLinksFromMarkdown,
+  findHashWrappedStrings,
+} from "../utils/constants";
 
-import MarkdownIt from 'markdown-it'
+import MarkdownIt from "markdown-it";
 
 const props = defineProps<{
-  id: string
-}>()
+  id: string;
+}>();
 
-const router = useRouter()
+const router = useRouter();
 
-const post = ref<PostListDatum|null>(null)
-const comments = ref<CommentDatum[]>([])
-const likes = ref<LikeDatum[]>([])
-const loading = ref(false)
-const commentLoading = ref(false)
-const likeLoading = ref(false)
-const currentPage = ref(0)
-const currentLikePage = ref(0)
-const commentsPerPage = 20
-const likesPerPage = 20
-const sortType = ref(0) // 0: 最新, 1: 热门
-const showTab = ref<'comments' | 'likes'>('comments')
+const post = ref<PostListDatum | null>(null);
+const comments = ref<CommentDatum[]>([]);
+const likes = ref<LikeDatum[]>([]);
+const loading = ref(false);
+const commentLoading = ref(false);
+const likeLoading = ref(false);
+const currentPage = ref(0);
+const currentLikePage = ref(0);
+const commentsPerPage = 20;
+const likesPerPage = 20;
+const sortType = ref(0); // 0: 最新, 1: 热门
+const showTab = ref<"comments" | "likes">("comments");
 
-const postId = computed(() => parseInt(props.id))
+const postId = computed(() => parseInt(props.id));
 
 const tags = computed(() => {
-  if (!post.value?.text) return []
-  return findHashWrappedStrings(post.value.text)
-})
+  if (!post.value?.text) return [];
+  return findHashWrappedStrings(post.value.text);
+});
 
 const plainText = computed(() => {
-  if (!post.value?.text) return ''
-  return removeHashWrappedStrings(removeImagesAndLinksFromMarkdown(post.value.text)).trim()
-})
+  if (!post.value?.text) return "";
+  return removeHashWrappedStrings(
+    removeImagesAndLinksFromMarkdown(post.value.text),
+  ).trim();
+});
 
-const md = new MarkdownIt({ breaks: true, linkify: true })
+const md = new MarkdownIt({ breaks: true, linkify: true });
 const renderedText = computed(() => {
-  return md.render(plainText.value)
-})
+  return md.render(plainText.value);
+});
 
 const images = computed(() => {
-  if (!post.value?.text) return []
-  return extractImageLinksFromMarkdown(post.value.text)
-})
+  if (!post.value?.text) return [];
+  return extractImageLinksFromMarkdown(post.value.text);
+});
 
 async function loadPost() {
-  loading.value = true
+  loading.value = true;
   try {
-    const response = await postGet(postId.value)
+    const response = await postGet(postId.value);
     if (response.code === 200 && response.data) {
       // @ts-ignore
-      post.value = response.data
+      post.value = response.data;
     } else {
-      console.error('Failed to fetch post:', response.msg)
+      console.error("Failed to fetch post:", response.msg);
     }
   } catch (error) {
-    console.error('Error fetching post:', error)
+    console.error("Error fetching post:", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 async function loadComments(type = 0, page = 0) {
-  commentLoading.value = true
+  commentLoading.value = true;
   try {
-    const response = await commentList(postId.value, type, page, commentsPerPage)
+    const response = await commentList(
+      postId.value,
+      type,
+      page,
+      commentsPerPage,
+    );
     if (response.code === 200 && response.data) {
       if (page === 0) {
-        comments.value = response.data
+        comments.value = response.data;
       } else {
-        comments.value.push(...response.data)
+        comments.value.push(...response.data);
       }
     } else {
-      console.error('Failed to fetch comments:', response.msg)
+      console.error("Failed to fetch comments:", response.msg);
     }
   } catch (error) {
-    console.error('Error fetching comments:', error)
+    console.error("Error fetching comments:", error);
   } finally {
-    commentLoading.value = false
+    commentLoading.value = false;
   }
 }
 
 async function loadLikes(page = 0) {
-  likeLoading.value = true
+  likeLoading.value = true;
   try {
-    const response = await postListGoodUser(postId.value, page, likesPerPage)
+    const response = await postListGoodUser(postId.value, page, likesPerPage);
     if (response.code === 200 && response.data) {
       if (page === 0) {
-        likes.value = response.data
+        likes.value = response.data;
       } else {
-        likes.value.push(...response.data)
+        likes.value.push(...response.data);
       }
     } else {
-      console.error('Failed to fetch likes:', response.msg)
+      console.error("Failed to fetch likes:", response.msg);
     }
   } catch (error) {
-    console.error('Error fetching likes:', error)
+    console.error("Error fetching likes:", error);
   } finally {
-    likeLoading.value = false
+    likeLoading.value = false;
   }
 }
 
-function switchTab(tab: 'comments' | 'likes') {
-  showTab.value = tab
-  if (tab === 'likes' && likes.value.length === 0) {
-    loadLikes(0)
+function switchTab(tab: "comments" | "likes") {
+  showTab.value = tab;
+  if (tab === "likes" && likes.value.length === 0) {
+    loadLikes(0);
   }
 }
 
 function changeSort(type: number) {
-  sortType.value = type
-  currentPage.value = 0
-  loadComments(type, 0)
+  sortType.value = type;
+  currentPage.value = 0;
+  loadComments(type, 0);
 }
 
 function loadMoreComments() {
-  currentPage.value++
-  loadComments(sortType.value, currentPage.value)
+  currentPage.value++;
+  loadComments(sortType.value, currentPage.value);
 }
 
 function loadMoreLikes() {
-  currentLikePage.value++
-  loadLikes(currentLikePage.value)
+  currentLikePage.value++;
+  loadLikes(currentLikePage.value);
 }
 
 function openReplies(commentId: number) {
-  const routeData = router.resolve({ name: 'reply', params: { commentId: commentId.toString() } })
-  window.open(routeData.href, '_blank')
+  const routeData = router.resolve({
+    name: "reply",
+    params: { commentId: commentId.toString() },
+  });
+  window.open(routeData.href, "_blank");
 }
 
 function openImage(url: string) {
-  window.open(url, '_blank')
+  window.open(url, "_blank");
 }
 
 onMounted(() => {
-  loadPost()
-  loadComments()
-})
+  loadPost();
+  loadComments();
+});
 </script>
 
 <template>
   <div class="post-detail">
-    <div v-if="loading" class="loading">
-      加载帖子中...
-    </div>
+    <div v-if="loading" class="loading">加载帖子中...</div>
 
     <div v-else-if="post" class="post-content">
       <!-- 返回按钮 -->
-      <router-link to="/" class="back-btn">
-        ← 返回列表
-      </router-link>
+      <router-link to="/" class="back-btn"> ← 返回列表 </router-link>
 
       <!-- 帖子内容 -->
       <div class="post-header">
         <div class="user-info">
-          <img class="avatar" :src="post.user.avatar || 'https://via.placeholder.com/104'" alt="avatar" />
+          <img
+            class="avatar"
+            :src="post.user.avatar || 'https://via.placeholder.com/104'"
+            alt="avatar"
+          />
           <div class="user-meta">
             <div class="name-row">
               <span class="nickname">{{ post.user.nickName }}</span>
               <span v-if="post.user.timingRank === 1" class="rank-badge rank-1">
                 雷帝
               </span>
-              <span v-else-if="post.user.timingRank && post.user.timingRank <= 300" class="rank-badge">
-                {{ post.user.timingLevel === -1 ? '萌新' : ['萌新', '入门', '熟练', '高手', '大神'][post.user.timingLevel] }} {{ post.user.timingRank }}
+              <span
+                v-else-if="post.user.timingRank && post.user.timingRank <= 300"
+                class="rank-badge"
+              >
+                {{
+                  post.user.timingLevel === -1
+                    ? "萌新"
+                    : ["萌新", "入门", "熟练", "高手", "大神"][
+                        post.user.timingLevel
+                      ]
+                }}
+                {{ post.user.timingRank }}
               </span>
             </div>
             <div class="time-device">
-              {{ formatTime(post.createTime) }} <span v-if="post.device">📱{{ post.device }}</span>
+              {{ formatTime(post.createTime) }}
+              <span v-if="post.device">📱{{ post.device }}</span>
             </div>
           </div>
         </div>
@@ -205,10 +232,16 @@ onMounted(() => {
         <div v-if="post.recordId" class="record-section">
           <h3>🎮 游戏记录</h3>
           <div class="record-details">
-            <div v-if="post.recordType === 0 && post.record" class="record-item">
+            <div
+              v-if="post.recordType === 0 && post.record"
+              class="record-item"
+            >
               <div class="record-label">扫雷</div>
               <div class="record-data">
-                <span>难度: {{ post.record.row }}x{{ post.record.column }} {{ post.record.mine }}雷</span>
+                <span
+                  >难度: {{ post.record.row }}x{{ post.record.column }}
+                  {{ post.record.mine }}雷</span
+                >
                 <span>时间: {{ (post.record.time / 1000).toFixed(2) }}秒</span>
                 <span>3BV/s: {{ post.record.bvs }}</span>
               </div>
@@ -282,39 +315,64 @@ onMounted(() => {
         </div>
 
         <div v-else class="comments-list">
-          <div v-for="comment in comments" :key="comment.id" class="comment-item">
-          <div class="comment-header">
-            <img class="comment-avatar" :src="comment.user.avatar || 'https://via.placeholder.com/60'" />
-            <div class="comment-meta">
-              <div class="comment-name">{{ comment.user.nickName }}</div>
-              <div class="comment-time">{{ formatTime(comment.createTime) }}</div>
-            </div>
-            <div class="comment-stats">
-              <span class="comment-good">👍 {{ comment.goodCount }}</span>
-            </div>
-          </div>
-          <div class="comment-content">{{ comment.comment }}</div>
-
-          <!-- 回复 -->
-          <div v-if="comment.replyCount > 0" class="replies">
-            <div class="reply-list" v-if="comment.replyList && comment.replyList.length > 0">
-              <div v-for="reply in comment.replyList" :key="reply.id" class="reply-item">
-                <div class="reply-header">
-                  <img class="reply-avatar" :src="reply.user.avatar || 'https://via.placeholder.com/30'" />
-                  <div class="reply-meta">
-                    <span class="reply-name">{{ reply.user.nickName }}</span>
-                    <span class="reply-time">{{ formatTime(reply.createTime) }}</span>
-                  </div>
+          <div
+            v-for="comment in comments"
+            :key="comment.id"
+            class="comment-item"
+          >
+            <div class="comment-header">
+              <img
+                class="comment-avatar"
+                :src="comment.user.avatar || 'https://via.placeholder.com/60'"
+              />
+              <div class="comment-meta">
+                <div class="comment-name">{{ comment.user.nickName }}</div>
+                <div class="comment-time">
+                  {{ formatTime(comment.createTime) }}
                 </div>
-                <div class="reply-content">{{ reply.comment }}</div>
+              </div>
+              <div class="comment-stats">
+                <span class="comment-good">👍 {{ comment.goodCount }}</span>
               </div>
             </div>
+            <div class="comment-content">{{ comment.comment }}</div>
 
-            <div v-if="comment.replyCount > 4" class="view-more-replies">
-              <a href="#" @click.prevent="openReplies(comment.id)">查看更多回复 (共 {{ comment.replyCount }} 条)</a>
+            <!-- 回复 -->
+            <div v-if="comment.replyCount > 0" class="replies">
+              <div
+                class="reply-list"
+                v-if="comment.replyList && comment.replyList.length > 0"
+              >
+                <div
+                  v-for="reply in comment.replyList"
+                  :key="reply.id"
+                  class="reply-item"
+                >
+                  <div class="reply-header">
+                    <img
+                      class="reply-avatar"
+                      :src="
+                        reply.user.avatar || 'https://via.placeholder.com/30'
+                      "
+                    />
+                    <div class="reply-meta">
+                      <span class="reply-name">{{ reply.user.nickName }}</span>
+                      <span class="reply-time">{{
+                        formatTime(reply.createTime)
+                      }}</span>
+                    </div>
+                  </div>
+                  <div class="reply-content">{{ reply.comment }}</div>
+                </div>
+              </div>
+
+              <div v-if="comment.replyCount > 4" class="view-more-replies">
+                <a href="#" @click.prevent="openReplies(comment.id)"
+                  >查看更多回复 (共 {{ comment.replyCount }} 条)</a
+                >
+              </div>
             </div>
           </div>
-        </div>
 
           <div class="load-more-comments">
             <button
@@ -322,7 +380,7 @@ onMounted(() => {
               :disabled="commentLoading"
               class="load-more-btn"
             >
-              {{ commentLoading ? '加载中...' : '加载更多评论' }}
+              {{ commentLoading ? "加载中..." : "加载更多评论" }}
             </button>
           </div>
         </div>
@@ -339,13 +397,28 @@ onMounted(() => {
 
         <div v-else class="likes-list">
           <div v-for="like in likes" :key="like.id" class="like-item">
-            <img class="like-avatar" :src="like.avatar || 'https://via.placeholder.com/60'" />
+            <img
+              class="like-avatar"
+              :src="like.avatar || 'https://via.placeholder.com/60'"
+            />
             <div class="like-meta">
               <div class="like-name">{{ like.nickName }}</div>
-              <div v-if="like.timingRank && like.timingRank > 0" class="like-badge">
-                <span v-if="like.timingRank === 1" class="rank-badge rank-1">雷帝</span>
+              <div
+                v-if="like.timingRank && like.timingRank > 0"
+                class="like-badge"
+              >
+                <span v-if="like.timingRank === 1" class="rank-badge rank-1"
+                  >雷帝</span
+                >
                 <span v-else-if="like.timingRank <= 300" class="rank-badge">
-                  {{ like.timingLevel === -1 ? '萌新' : ['萌新', '入门', '熟练', '高手', '大神'][like.timingLevel] }} {{ like.timingRank }}
+                  {{
+                    like.timingLevel === -1
+                      ? "萌新"
+                      : ["萌新", "入门", "熟练", "高手", "大神"][
+                          like.timingLevel
+                        ]
+                  }}
+                  {{ like.timingRank }}
                 </span>
               </div>
             </div>
@@ -357,12 +430,11 @@ onMounted(() => {
               :disabled="likeLoading"
               class="load-more-btn"
             >
-              {{ likeLoading ? '加载中...' : '加载更多点赞' }}
+              {{ likeLoading ? "加载中..." : "加载更多点赞" }}
             </button>
           </div>
         </div>
       </template>
-
     </div>
   </div>
 </template>
@@ -377,7 +449,7 @@ onMounted(() => {
 .back-btn {
   display: inline-block;
   margin-bottom: 20px;
-  color: #FA7299;
+  color: #fa7299;
   text-decoration: none;
   font-size: 1rem;
   padding: 8px 16px;
@@ -387,8 +459,8 @@ onMounted(() => {
 }
 
 .back-btn:hover {
-  background-color: #2A2A2A;
-  border-color: #FA7299;
+  background-color: #2a2a2a;
+  border-color: #fa7299;
 }
 
 .loading {
@@ -399,7 +471,7 @@ onMounted(() => {
 }
 
 .post-content {
-  background-color: #1B1B1B;
+  background-color: #1b1b1b;
   border-radius: 12px;
   padding: 30px;
   margin-bottom: 30px;
@@ -437,12 +509,12 @@ onMounted(() => {
   font-size: 0.8rem;
   padding: 3px 8px;
   border-radius: 4px;
-  background-color: #FA7299;
+  background-color: #fa7299;
   color: white;
 }
 
 .rank-1 {
-  background-color: #FFD700;
+  background-color: #ffd700;
   color: #000;
 }
 
@@ -456,7 +528,7 @@ onMounted(() => {
   font-size: 1.8rem;
   font-weight: bold;
   margin: 20px 0;
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .post-tags {
@@ -464,7 +536,7 @@ onMounted(() => {
 }
 
 .tag {
-  color: #FA7299;
+  color: #fa7299;
   margin-right: 10px;
   font-size: 1.1rem;
 }
@@ -474,7 +546,7 @@ onMounted(() => {
 }
 
 .post-text {
-  color: #E0E0E0;
+  color: #e0e0e0;
   line-height: 1.6;
   font-size: 1.1rem;
   margin-bottom: 20px;
@@ -485,7 +557,7 @@ onMounted(() => {
 }
 
 .post-text :deep(a) {
-  color: #FA7299;
+  color: #fa7299;
   text-decoration: none;
 }
 
@@ -514,14 +586,14 @@ onMounted(() => {
 }
 
 .record-section {
-  background-color: #2A2A2A;
+  background-color: #2a2a2a;
   border-radius: 8px;
   padding: 20px;
   margin-top: 20px;
 }
 
 .record-section h3 {
-  color: #8D9E4B;
+  color: #8d9e4b;
   margin-bottom: 15px;
   font-size: 1.2rem;
 }
@@ -534,14 +606,14 @@ onMounted(() => {
 
 .record-label {
   font-weight: bold;
-  color: #FA7299;
+  color: #fa7299;
   min-width: 60px;
 }
 
 .record-data {
   display: flex;
   gap: 20px;
-  color: #E0E0E0;
+  color: #e0e0e0;
 }
 
 .post-stats {
@@ -556,7 +628,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #9EA1A6;
+  color: #9ea1a6;
 }
 
 .stat-icon {
@@ -573,7 +645,7 @@ onMounted(() => {
 }
 
 .comments-section {
-  background-color: #1B1B1B;
+  background-color: #1b1b1b;
   border-radius: 12px;
   padding: 30px;
 }
@@ -588,7 +660,7 @@ onMounted(() => {
 }
 
 .comments-header h2 {
-  color: #FFFFFF;
+  color: #ffffff;
   font-size: 1.5rem;
 }
 
@@ -609,12 +681,12 @@ onMounted(() => {
 }
 
 .section-tab-btn:hover {
-  color: #DDD;
+  color: #ddd;
 }
 
 .section-tab-btn.active {
-  color: #FFFFFF;
-  border-bottom: 2px solid #FA7299;
+  color: #ffffff;
+  border-bottom: 2px solid #fa7299;
   padding-bottom: 5px;
 }
 
@@ -625,8 +697,8 @@ onMounted(() => {
 
 .sort-btn {
   padding: 8px 16px;
-  background-color: #2A2A2A;
-  color: #FFFFFF;
+  background-color: #2a2a2a;
+  color: #ffffff;
   border: none;
   border-radius: 20px;
   cursor: pointer;
@@ -635,12 +707,12 @@ onMounted(() => {
 }
 
 .sort-btn:hover {
-  background-color: #3A3A3A;
+  background-color: #3a3a3a;
 }
 
 .sort-btn.active {
-  background-color: #FA7299;
-  color: #FFFFFF;
+  background-color: #fa7299;
+  color: #ffffff;
 }
 
 .empty-comments {
@@ -656,7 +728,7 @@ onMounted(() => {
 
 .comment-item {
   padding: 20px;
-  border-bottom: 1px solid #2A2A2A;
+  border-bottom: 1px solid #2a2a2a;
 }
 
 .comment-item:last-child {
@@ -684,7 +756,7 @@ onMounted(() => {
 .comment-name {
   font-weight: bold;
   font-size: 1rem;
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .comment-time {
@@ -694,7 +766,7 @@ onMounted(() => {
 }
 
 .comment-stats {
-  color: #9EA1A6;
+  color: #9ea1a6;
 }
 
 .comment-good {
@@ -702,7 +774,7 @@ onMounted(() => {
 }
 
 .comment-content {
-  color: #E0E0E0;
+  color: #e0e0e0;
   line-height: 1.5;
   font-size: 1rem;
 }
@@ -728,8 +800,8 @@ onMounted(() => {
 
 .load-more-btn {
   padding: 12px 30px;
-  background-color: #2A2A2A;
-  color: #FFFFFF;
+  background-color: #2a2a2a;
+  color: #ffffff;
   border: 1px solid #444;
   border-radius: 25px;
   cursor: pointer;
@@ -738,8 +810,8 @@ onMounted(() => {
 }
 
 .load-more-btn:hover:not(:disabled) {
-  background-color: #3A3A3A;
-  border-color: #FA7299;
+  background-color: #3a3a3a;
+  border-color: #fa7299;
 }
 
 .load-more-btn:disabled {
@@ -792,7 +864,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   padding: 15px;
-  background-color: #2A2A2A;
+  background-color: #2a2a2a;
   border-radius: 8px;
   transition: transform 0.2s;
 }
@@ -819,7 +891,7 @@ onMounted(() => {
 .like-name {
   font-weight: bold;
   font-size: 0.95rem;
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .like-badge {
@@ -835,7 +907,7 @@ onMounted(() => {
 .reply-name {
   font-weight: bold;
   font-size: 0.9rem;
-  color: #DDD;
+  color: #ddd;
 }
 
 .reply-time {
@@ -844,7 +916,7 @@ onMounted(() => {
 }
 
 .reply-content {
-  color: #CCC;
+  color: #ccc;
   font-size: 0.9rem;
   line-height: 1.4;
   padding-left: 34px;
@@ -856,7 +928,7 @@ onMounted(() => {
 }
 
 .view-more-replies a {
-  color: #FA7299;
+  color: #fa7299;
   text-decoration: none;
 }
 
