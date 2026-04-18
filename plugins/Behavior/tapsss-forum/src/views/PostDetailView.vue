@@ -164,6 +164,15 @@ function openImage(url: string) {
   window.open(url, "_blank");
 }
 
+function openReplay(recordId?: number) {
+  if (!recordId) return;
+  const routeData = router.resolve({
+    name: "replay",
+    params: { recordId: recordId.toString() },
+  });
+  window.open(routeData.href, "_blank");
+}
+
 onMounted(() => {
   loadPost();
   loadComments();
@@ -241,7 +250,8 @@ onMounted(() => {
         <div
           class="record-box"
           v-if="hasRecord"
-          :style="{ backgroundColor: recordBg, color: recordColor }"
+          :style="{ backgroundColor: recordBg, color: recordColor, cursor: 'pointer' }"
+          @click="openReplay(post.recordId)"
         >
           <div class="record-icon">
             <img

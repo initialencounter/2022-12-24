@@ -3107,6 +3107,7 @@ __metadata:
     "@shangxueink/koishi-plugin-puppeteer-without-canvas": "npm:3.0.7"
     "@types/markdown-it": "npm:^14.1.2"
     "@types/node": "npm:^20.19.39"
+    "@types/pako": "npm:^2.0.4"
     "@types/react": "npm:^18.3.28"
     cross-env: "npm:^7.0.3"
     esbuild: "npm:^0.18.20"
@@ -3136,6 +3137,7 @@ __metadata:
     koishi-plugin-toutai: "npm:1.1.9"
     koishi-plugin-weather: "npm:2.0.4"
     markdown-it: "npm:^14.1.1"
+    pako: "npm:^2.1.0"
     tsx: "npm:^4.21.0"
     typescript: "npm:^5.9.3"
     yakumo: "npm:^1.0.0"
@@ -5074,6 +5076,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/howler@npm:^2":
+  version: 2.2.12
+  resolution: "@types/howler@npm:2.2.12"
+  checksum: 10/94597cf283cdacb4edecd161161ca78b585d3abf342e57f86093ad0eec86d94b7de644fb902a11a6cd1d1bf5225ffd07c336a04a5ba9bdc1cc14c26ff57cb678
+  languageName: node
+  linkType: hard
+
 "@types/http-assert@npm:*":
   version: 1.5.6
   resolution: "@types/http-assert@npm:1.5.6"
@@ -5242,6 +5251,13 @@ __metadata:
   dependencies:
     os-name: "npm:*"
   checksum: 10/64cd083d4102990426477cd0a680bc51293a7d37fbd12c3e9780fb379d3ba1bd76d4a6f0cdaaa178b68cef16cc17af27e78b7d8687f33d874ece2b74b6211da3
+  languageName: node
+  linkType: hard
+
+"@types/pako@npm:^2.0.4":
+  version: 2.0.4
+  resolution: "@types/pako@npm:2.0.4"
+  checksum: 10/9be5167f5cb45d405d92e8b320219e6d26f244880893425abb16b998cde0386185f048d60de609672f1e8654c44b77344e754138da3784460f4543fe8576fa62
   languageName: node
   linkType: hard
 
@@ -10532,6 +10548,13 @@ __metadata:
   version: 5.5.3
   resolution: "hookable@npm:5.5.3"
   checksum: 10/c6cec06f693e99a8f8ebd55592efc68042b472a4a04522dde384620d9a2cd7f422003357bf5688525f4bb14454bb0e4188a26db847fb1f1e06875958dfc61cde
+  languageName: node
+  linkType: hard
+
+"howler@npm:^2.2.4":
+  version: 2.2.4
+  resolution: "howler@npm:2.2.4"
+  checksum: 10/e4177f6581ede99fdec68c2dc16a01e74ed3e4f3b28d4804030246f74f15a50311bd3d4d332a6e968a296e6bae1d0a8c8703e8e22d98ef8f5a3299e545e2fe55
   languageName: node
   linkType: hard
 
@@ -16613,10 +16636,12 @@ __metadata:
   resolution: "tapsss-forum@workspace:plugins/Behavior/tapsss-forum"
   dependencies:
     "@tsconfig/node24": "npm:^24.0.4"
+    "@types/howler": "npm:^2"
     "@types/node": "npm:^24.12.0"
     "@vitejs/plugin-vue": "npm:^6.0.5"
     "@vue/tsconfig": "npm:^0.9.1"
     cordis: "npm:^4.0.0-rc.3"
+    howler: "npm:^2.2.4"
     npm-run-all2: "npm:^8.0.4"
     pinia: "npm:^3.0.4"
     typescript: "npm:~6.0.0"

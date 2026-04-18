@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import PostDetailView from '../views/PostDetailView.vue'
 import SearchView from '../views/SearchView.vue'
 import ReplyDetailView from '../views/ReplyDetailView.vue'
+import ReplayDetailView from '../views/ReplayDetailView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -28,6 +29,12 @@ const router = createRouter({
       path: '/search',
       name: 'search',
       component: SearchView
+    },
+    {
+      path: '/replay/:recordId',
+      name: 'replay',
+      component: ReplayDetailView,
+      props: true
     }
   ],
   scrollBehavior(to, from, savedPosition) {

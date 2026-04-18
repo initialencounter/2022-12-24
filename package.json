@@ -53,6 +53,7 @@
     "@satorijs/element": "^3.2.0",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^20.19.39",
+    "@types/pako": "^2.0.4",
     "@types/react": "^18.3.28",
     "cross-env": "^7.0.3",
     "esbuild": "^0.18.20",
@@ -128,6 +129,7 @@
     "koishi-plugin-toutai": "1.1.9",
     "koishi-plugin-weather": "2.0.4",
     "markdown-it": "^14.1.1",
+    "pako": "^2.1.0",
     "yakumo-esbuild-yaml": "^0.3.1",
     "yakumo-publish-sync": "^0.3.3"
   }

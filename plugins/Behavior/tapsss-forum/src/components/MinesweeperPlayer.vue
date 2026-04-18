@@ -1,0 +1,648 @@
+<script setup lang="ts">
+import {
+  ref,
+  onMounted,
+  onUnmounted,
+  computed,
+  watch,
+  shallowRef,
+  nextTick,
+} from "vue";
+import { parseReplayHandle, type ActionRecord } from "../utils/replayParser";
+import { minesweeperRecordGet } from "../api";
+import { Howl } from "howler";
+
+interface Cell {
+  id: number;
+  isFlagged: boolean;
+  isMine: boolean;
+  isOpen: boolean;
+  mines: number; // 0-8 for number of adjacent mines, 9 for mine
+}
+
+interface Minefeild {
+  width: number;
+  height: number;
+  cells: number;
+  mines: number;
+  cell: Cell[];
+}
+
+const openSound = new Howl({
+  src: ["/audio/open.mp3"],
+  volume: 0.5,
+});
+const flagSound = new Howl({
+  src: ["/audio/flag.mp3"],
+  volume: 0.5,
+});
+
+const props = defineProps<{
+  recordId: string;
+}>();
+
+const loading = ref(true);
+const errorMsg = ref("");
+const replayData = shallowRef<any | null>(null);
+
+const canvasRef = ref<HTMLCanvasElement | null>(null);
+const ctx = shallowRef<CanvasRenderingContext2D | null>(null);
+
+// 播放状态
+const isPlaying = ref(false);
+const currentTime = ref(0);
+const playbackSpeed = ref(1.0);
+const totalTime = ref(0);
+
+const cellSize = 20;
+
+let animationFrameId: number | null = null;
+let lastRenderTime = 0;
+
+// 图片资源
+const skinUrls = [
+  "/theme/wom/type0.png",
+  "/theme/wom/type1.png",
+  "/theme/wom/type2.png",
+  "/theme/wom/type3.png",
+  "/theme/wom/type4.png",
+  "/theme/wom/type5.png",
+  "/theme/wom/type6.png",
+  "/theme/wom/type7.png",
+  "/theme/wom/type8.png",
+  "/theme/wom/type9.png",
+  "/theme/wom/closed.png", // 10
+  "/theme/wom/flag.png", // 11
+  "/theme/wom/cursor-arrow.png", // 12
+];
+const loadedImages: Record<number, HTMLImageElement> = {};
+
+// 预计算的帧状态: frameStates[0] = 初始状态(全关闭), frameStates[i] = 执行第i个action后的状态
+let frameStates: Uint8Array[] = [];
+
+const currentFrameIndex = computed(() => {
+  if (!replayData.value) return 0;
+  const actions = replayData.value.actions as ActionRecord[];
+  // 二分查找: 找到最后一个 time <= currentTime 的 action
+  let lo = 0,
+    hi = actions.length - 1;
+  let result = 0; // 0 = 初始状态(无操作)
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    if (actions[mid]!.time <= currentTime.value) {
+      result = mid + 1; // frameStates[mid+1] 是执行 action[mid] 后的状态
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+  return result;
+});
+
+watch(currentFrameIndex, (newIdx, oldIdx) => {
+  if (isPlaying.value && newIdx > oldIdx) {
+    const actions = replayData.value?.actions as ActionRecord[] | undefined;
+    if (actions) {
+      // openSound.stop();
+      // flagSound.stop();
+      // 限制一帧内最多播放3个声音，避免跳动进度时产生爆音
+      const startIndex = Math.max(oldIdx, newIdx - 3);
+      for (let i = startIndex; i < newIdx; i++) {
+        const act = actions[i];
+        if (act && act.action === 2) {
+          flagSound.play();
+        } else if (act) {
+          openSound.play();
+        }
+      }
+    }
+  }
+});
+
+function precomputeStates() {
+  const data = replayData.value;
+  if (!data) return;
+
+  const mapStr = data.map.replace(/-/g, "");
+  const rows = data.row;
+  const cols = data.column;
+  const actions = data.actions as ActionRecord[];
+
+  const minefeild: Minefeild = {
+    width: cols,
+    height: rows,
+    cells: rows * cols,
+    mines: data.mine,
+    cell: [],
+  };
+
+  for (let i = 0; i < rows * cols; i++) {
+    minefeild.cell.push({
+      id: i,
+      isFlagged: false,
+      isMine: mapStr[i] === "9",
+      isOpen: false,
+      mines: parseInt(mapStr[i]),
+    });
+  }
+
+  const reveal = (state: Uint8Array, r: number, c: number) => {
+    if (r < 0 || r >= rows || c < 0 || c >= cols) return;
+    const idx = r * cols + c;
+    if (state[idx] !== 10) return; // 只揭开未标旗的关闭格子
+    const cellValue = parseInt(mapStr[idx]);
+    state[idx] = cellValue;
+    minefeild.cell[idx]!.isOpen = true;
+    if (cellValue === 0) {
+      minefeild.cell[idx]!.isOpen = true;
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          if (dr === 0 && dc === 0) continue;
+          if (r + dr < 0 || r + dr >= rows || c + dc < 0 || c + dc >= cols)
+            continue;
+          reveal(state, r + dr, c + dc);
+        }
+      }
+    }
+  };
+
+  // 初始状态: 全部关闭
+  const initial = new Uint8Array(rows * cols);
+  initial.fill(10);
+  frameStates = [initial];
+
+  for (let i = 0; i < actions.length; i++) {
+    const prev = frameStates[i]!;
+    const state = new Uint8Array(prev); // 拷贝上一帧
+    const act = actions[i]!;
+    const c = act.column - 1;
+    const r = act.row - 1;
+
+    const idx = r * cols + c;
+    const cell = minefeild.cell[idx]!;
+
+    if (cell.isOpen) {
+      // 已打开的数字格: 如果雷已找全, 不管action是什么, 都尝试和弦打开周围格子
+      const minesAround = cell.mines;
+      let flaggedAround = 0;
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          if (dr === 0 && dc === 0) continue;
+          const nr = r + dr;
+          const nc = c + dc;
+          const nidx = nr * cols + nc;
+          if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
+          // @ts-ignore
+          if (minefeild.cell[nidx].isFlagged) flaggedAround++;
+        }
+      }
+      if (flaggedAround === minesAround) {
+        for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+            if (dr === 0 && dc === 0) continue;
+            const nr = r + dr;
+            const nc = c + dc;
+            reveal(state, nr, nc);
+          }
+        }
+      }
+    } else {
+      if (act.action === 0) {
+        // 左键: 揭开格子
+        reveal(state, r, c);
+      } else {
+        // 右键: 标旗/取消标旗
+        minefeild.cell[idx]!.isFlagged = !minefeild.cell[idx]!.isFlagged;
+        state[idx] = minefeild.cell[idx]!.isFlagged ? 11 : 10;
+      }
+    }
+    frameStates.push(state);
+  }
+
+}
+
+// 获取数据
+async function loadReplay() {
+  try {
+    loading.value = true;
+    errorMsg.value = "";
+    const res = await minesweeperRecordGet(Number(props.recordId));
+
+    if (res.code === 200 && res.data) {
+      if (res.data.handle) {
+        // The endpoint returns JSON containing map, row, column, etc.
+        const parsedActions = parseReplayHandle(res.data.handle);
+        // Inject actions back into data object
+        (res.data as any).actions = parsedActions;
+        replayData.value = res.data;
+        totalTime.value = res.data.time / 1000;
+        loading.value = false; // 先关闭 loading，让 canvas 进入 DOM
+        precomputeStates();
+        await nextTick(); // 确保 Vue 完成 DOM 渲染，将 canvas 元素挂载到 canvasRef
+        await preloadImages();
+        initCanvas();
+      } else {
+        errorMsg.value = "录像内容为空";
+      }
+    } else {
+      errorMsg.value = res.msg || "无法获取录像数据";
+    }
+  } catch (error: any) {
+    console.error(error);
+    errorMsg.value = error.message || "加载失败";
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function preloadImages() {
+  const promises = skinUrls.map((url, i) => {
+    return new Promise<void>((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = url;
+      img.onload = () => {
+        loadedImages[i] = img;
+        resolve();
+      };
+      img.onerror = () => {
+        resolve(); // 忽略失败
+      };
+    });
+  });
+  await Promise.all(promises);
+}
+
+function initCanvas() {
+  const canvas = canvasRef.value;
+  const data = replayData.value;
+  if (!canvas || !data) return;
+
+  ctx.value = canvas.getContext("2d");
+
+  canvas.width = data.column * cellSize;
+  canvas.height = data.row * cellSize;
+
+  lastRenderedFrameIndex = -1;
+  drawFrame();
+}
+
+let lastRenderedFrameIndex = -1;
+
+function drawFrame() {
+  if (!ctx.value || frameStates.length === 0) return;
+  const data = replayData.value;
+  if (!data) return;
+
+  const fi = currentFrameIndex.value;
+  if (fi === lastRenderedFrameIndex) return; // 帧未变化，跳过
+
+  const g = ctx.value;
+  const rows = data.row;
+  const cols = data.column;
+  const state = frameStates[fi]!;
+
+  // 全量覆盖绘制（不透明图片直接覆盖，无需 clearRect）
+  let index = 0;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const cellValue = state[index]!;
+      const cellImg = loadedImages[cellValue];
+      if (cellImg) {
+        g.drawImage(cellImg, c * cellSize, r * cellSize, cellSize, cellSize);
+      } else {
+        g.fillStyle =
+          cellValue === 10
+            ? "#cccccc"
+            : cellValue === 11
+              ? "blue"
+              : cellValue === 9
+                ? "#ff0000"
+                : "#888888";
+        g.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+        g.strokeStyle = "#999";
+        g.strokeRect(c * cellSize, r * cellSize, cellSize, cellSize);
+      }
+      index++;
+    }
+  }
+
+  // 绘制光标
+  drawMotions();
+  lastRenderedFrameIndex = fi;
+}
+
+function drawMotions() {
+  const data = replayData.value;
+  if (!ctx.value || !data) return;
+
+  const fi = currentFrameIndex.value;
+  if (fi === 0) return;
+
+  const currentAction = data.actions[fi - 1];
+  const x = (currentAction.column - 1) * cellSize;
+  const y = (currentAction.row - 1) * cellSize;
+  ctx.value!.drawImage(loadedImages[12]!, x, y, 20, 30);
+}
+
+function renderLoop(timestamp: number) {
+  if (!isPlaying.value) {
+    lastRenderTime = timestamp;
+    animationFrameId = requestAnimationFrame(renderLoop);
+    return;
+  }
+
+  const delta = (timestamp - lastRenderTime) / 1000; // 秒
+  lastRenderTime = timestamp;
+
+  currentTime.value += delta * playbackSpeed.value;
+  if (currentTime.value >= totalTime.value) {
+    currentTime.value = totalTime.value;
+    isPlaying.value = false;
+  }
+
+  drawFrame();
+
+  animationFrameId = requestAnimationFrame(renderLoop);
+}
+
+function togglePlay() {
+  if (currentTime.value >= totalTime.value) {
+    currentTime.value = 0;
+  }
+  isPlaying.value = !isPlaying.value;
+}
+
+function seek(e: Event) {
+  const target = e.target as HTMLInputElement;
+  currentTime.value = parseFloat(target.value);
+  if (!isPlaying.value) {
+    drawFrame();
+  }
+}
+
+function jumpToAction(idx: number) {
+  const data = replayData.value;
+  if (!data) return;
+  currentTime.value = data.actions[idx].time;
+  isPlaying.value = false;
+  drawFrame();
+}
+
+watch(playbackSpeed, () => {
+  // speed 变化即可
+});
+
+onMounted(() => {
+  loadReplay().then(() => {
+    lastRenderTime = performance.now();
+    animationFrameId = requestAnimationFrame(renderLoop);
+  });
+});
+
+onUnmounted(() => {
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+  }
+});
+
+const currentFrameActionInfo = computed(() => {
+  if (!replayData.value) return "";
+  const fi = currentFrameIndex.value;
+  if (fi === 0) return "无操作";
+  const act = replayData.value.actions[fi - 1];
+  const actionName =
+    act.action === 0 ? "左键" : act.action === 1 ? "双击" : "右键";
+  return `帧: ${fi}/${frameStates.length - 1} | 时间: ${act.time.toFixed(3)}s | 坐标: (${act.column}, ${act.row}) | ${actionName}`;
+});
+</script>
+
+<template>
+  <div class="minesweeper-player">
+    <div v-if="loading" class="loading">加载录像中...</div>
+    <div v-else-if="errorMsg" class="error">{{ errorMsg }}</div>
+    <div v-else-if="replayData" class="player-container">
+      <!-- 参数面板 -->
+      <div class="info-panel">
+        <div class="stat-item">
+          <span>难度: </span>{{ replayData.row }} x {{ replayData.column }} ({{
+            replayData.mine
+          }}雷)
+        </div>
+        <div class="stat-item">
+          <span>时长: </span>{{ (replayData.time / 1000).toFixed(3) }}s
+        </div>
+        <div class="stat-item"><span>3BV: </span>{{ replayData.bv }}</div>
+        <div class="stat-item">
+          <span>3BV/s: </span>{{ replayData.bvs.toFixed(3) }}
+        </div>
+        <div class="stat-item">
+          <span>点击数: </span>{{ replayData.effectiveTap }} /
+          {{ replayData.tap }}
+        </div>
+        <div class="stat-item">
+          <span>创建时间: </span>{{ new Date(replayData.creatTime) }}
+        </div>
+      </div>
+
+      <!-- 画布渲染 -->
+      <div class="canvas-wrapper">
+        <canvas ref="canvasRef"></canvas>
+      </div>
+
+      <!-- 控制栏 -->
+      <div class="controls">
+        <button @click="togglePlay" class="play-btn">
+          {{ isPlaying ? "暂停" : currentTime >= totalTime ? "重播" : "播放" }}
+        </button>
+
+        <div class="progress-bar">
+          <span>{{ currentTime.toFixed(3) }}</span>
+          <input
+            type="range"
+            min="0"
+            :max="totalTime"
+            step="0.001"
+            :value="currentTime"
+            @input="seek"
+          />
+          <span>{{ totalTime.toFixed(3) }}</span>
+        </div>
+
+        <select v-model="playbackSpeed" class="speed-select">
+          <option :value="0.5">0.5x</option>
+          <option :value="1.0">1.0x</option>
+          <option :value="2.0">2.0x</option>
+          <option :value="5.0">5.0x</option>
+        </select>
+      </div>
+
+      <!-- 实时高亮状态 -->
+      <div class="current-action">
+        <strong>当前动作: </strong> {{ currentFrameActionInfo }}
+      </div>
+
+      <!-- 帧列表 -->
+      <div class="actions-list">
+        <h3>操作记录 ({{ replayData.actions.length }}，最近操作着重高亮)</h3>
+        <div class="list-scroll">
+          <div
+            v-for="(act, idx) in replayData.actions"
+            :key="idx"
+            :class="[
+              'action-row',
+              { active: Number(idx) < currentFrameIndex },
+              { current: Number(idx) === currentFrameIndex - 1 },
+            ]"
+            @click="jumpToAction(Number(idx))"
+          >
+            {{ Number(idx) + 1 }}. [{{ act.time.toFixed(3) }}s] 坐标: ({{
+              act.column
+            }}, {{ act.row }})
+            {{ act.action === 0 ? "左键" : act.action === 1 ? "双击" : "右键" }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.minesweeper-player {
+  background: #1b1b1b;
+  border-radius: 12px;
+  padding: 20px;
+  color: #fff;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 40px;
+  font-size: 1.2rem;
+}
+
+.error {
+  color: #ff4d4d;
+}
+
+.info-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+  background: #2a2a2a;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.stat-item {
+  font-size: 0.95rem;
+}
+
+.stat-item span {
+  color: #999;
+}
+
+.canvas-wrapper {
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  background: #b6ccd2;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+canvas {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  image-rendering: pixelated;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.play-btn {
+  background: #fa7299;
+  border: none;
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.play-btn:hover {
+  background: #f05a81;
+}
+
+.progress-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-bar input {
+  flex: 1;
+  cursor: pointer;
+}
+
+.speed-select {
+  background: #2a2a2a;
+  color: #fff;
+  border: 1px solid #444;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.current-action {
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+  padding: 10px;
+  background: #2a2a2a;
+  border-radius: 5px;
+}
+.current-action strong {
+  color: #fa7299;
+}
+
+.actions-list {
+  background: #2a2a2a;
+  padding: 15px;
+  border-radius: 8px;
+}
+.actions-list h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1rem;
+  color: #ccc;
+}
+.list-scroll {
+  max-height: 200px;
+  overflow-y: auto;
+  font-family: monospace;
+  font-size: 0.9rem;
+}
+.action-row {
+  padding: 5px;
+  border-bottom: 1px solid #333;
+  cursor: pointer;
+}
+.action-row:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.action-row.active {
+  color: #aaa;
+}
+.action-row.current {
+  background: rgba(250, 114, 153, 0.4);
+  color: #fff;
+  font-weight: bold;
+}
+</style>

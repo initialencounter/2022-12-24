@@ -39,3 +39,4 @@ __screenshots__/
 *.timestamp-*-*.mjs
 
 proxy-server.ts
+recoder.json
