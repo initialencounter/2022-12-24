@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { postGet, commentList } from '../api'
-import type { Datum } from '../types/response/PostCommentListResponse'
+import { postGet, commentList, postListGoodUser } from '../api'
+import type { Datum as CommentDatum } from '../types/response/PostCommentListResponse'
+import type { Datum as LikeDatum } from '../types/response/PostListGoodUserResponse'
 import type { PostList, Datum as PostListDatum } from '../types'
 import { formatTime, removeHashWrappedStrings, removeImagesAndLinksFromMarkdown, extractImageLinksFromMarkdown, findHashWrappedStrings } from '../utils/constants'
 
@@ -15,12 +16,17 @@ const props = defineProps<{
 const router = useRouter()
 
 const post = ref<PostListDatum|null>(null)
-const comments = ref<Datum[]>([])
+const comments = ref<CommentDatum[]>([])
+const likes = ref<LikeDatum[]>([])
 const loading = ref(false)
 const commentLoading = ref(false)
+const likeLoading = ref(false)
 const currentPage = ref(0)
+const currentLikePage = ref(0)
 const commentsPerPage = 20
+const likesPerPage = 20
 const sortType = ref(0) // 0: 最新, 1: 热门
+const showTab = ref<'comments' | 'likes'>('comments')
 
 const postId = computed(() => parseInt(props.id))
 
@@ -81,6 +87,33 @@ async function loadComments(type = 0, page = 0) {
   }
 }
 
+async function loadLikes(page = 0) {
+  likeLoading.value = true
+  try {
+    const response = await postListGoodUser(postId.value, page, likesPerPage)
+    if (response.code === 200 && response.data) {
+      if (page === 0) {
+        likes.value = response.data
+      } else {
+        likes.value.push(...response.data)
+      }
+    } else {
+      console.error('Failed to fetch likes:', response.msg)
+    }
+  } catch (error) {
+    console.error('Error fetching likes:', error)
+  } finally {
+    likeLoading.value = false
+  }
+}
+
+function switchTab(tab: 'comments' | 'likes') {
+  showTab.value = tab
+  if (tab === 'likes' && likes.value.length === 0) {
+    loadLikes(0)
+  }
+}
+
 function changeSort(type: number) {
   sortType.value = type
   currentPage.value = 0
@@ -90,6 +123,11 @@ function changeSort(type: number) {
 function loadMoreComments() {
   currentPage.value++
   loadComments(sortType.value, currentPage.value)
+}
+
+function loadMoreLikes() {
+  currentLikePage.value++
+  loadLikes(currentLikePage.value)
 }
 
 function openReplies(commentId: number) {
@@ -200,11 +238,25 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- 评论区域 -->
+    <!-- 评论和点赞区域 -->
     <div class="comments-section">
       <div class="comments-header">
-        <h2>评论 ({{ comments.length }})</h2>
-        <div class="sort-tabs">
+        <div class="tab-buttons">
+          <button
+            :class="['section-tab-btn', { active: showTab === 'comments' }]"
+            @click="switchTab('comments')"
+          >
+            评论 ({{ post?.commentCount || 0 }})
+          </button>
+          <button
+            :class="['section-tab-btn', { active: showTab === 'likes' }]"
+            @click="switchTab('likes')"
+          >
+            点赞 ({{ post?.goodCount || 0 }})
+          </button>
+        </div>
+
+        <div class="sort-tabs" v-if="showTab === 'comments'">
           <button
             :class="['sort-btn', { active: sortType === 0 }]"
             @click="changeSort(0)"
@@ -220,16 +272,17 @@ onMounted(() => {
         </div>
       </div>
 
-      <div v-if="commentLoading && comments.length === 0" class="loading">
-        加载评论中...
-      </div>
+      <template v-if="showTab === 'comments'">
+        <div v-if="commentLoading && comments.length === 0" class="loading">
+          加载评论中...
+        </div>
 
-      <div v-else-if="comments.length === 0" class="empty-comments">
-        暂无评论
-      </div>
+        <div v-else-if="comments.length === 0" class="empty-comments">
+          暂无评论
+        </div>
 
-      <div v-else class="comments-list">
-        <div v-for="comment in comments" :key="comment.id" class="comment-item">
+        <div v-else class="comments-list">
+          <div v-for="comment in comments" :key="comment.id" class="comment-item">
           <div class="comment-header">
             <img class="comment-avatar" :src="comment.user.avatar || 'https://via.placeholder.com/60'" />
             <div class="comment-meta">
@@ -263,16 +316,53 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="load-more-comments">
-          <button
-            @click="loadMoreComments"
-            :disabled="commentLoading"
-            class="load-more-btn"
-          >
-            {{ commentLoading ? '加载中...' : '加载更多评论' }}
-          </button>
+          <div class="load-more-comments">
+            <button
+              @click="loadMoreComments"
+              :disabled="commentLoading"
+              class="load-more-btn"
+            >
+              {{ commentLoading ? '加载中...' : '加载更多评论' }}
+            </button>
+          </div>
         </div>
-      </div>
+      </template>
+
+      <template v-else-if="showTab === 'likes'">
+        <div v-if="likeLoading && likes.length === 0" class="loading">
+          加载点赞列表中...
+        </div>
+
+        <div v-else-if="likes.length === 0" class="empty-comments">
+          暂无点赞
+        </div>
+
+        <div v-else class="likes-list">
+          <div v-for="like in likes" :key="like.id" class="like-item">
+            <img class="like-avatar" :src="like.avatar || 'https://via.placeholder.com/60'" />
+            <div class="like-meta">
+              <div class="like-name">{{ like.nickName }}</div>
+              <div v-if="like.timingRank && like.timingRank > 0" class="like-badge">
+                <span v-if="like.timingRank === 1" class="rank-badge rank-1">雷帝</span>
+                <span v-else-if="like.timingRank <= 300" class="rank-badge">
+                  {{ like.timingLevel === -1 ? '萌新' : ['萌新', '入门', '熟练', '高手', '大神'][like.timingLevel] }} {{ like.timingRank }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="load-more-comments">
+            <button
+              @click="loadMoreLikes"
+              :disabled="likeLoading"
+              class="load-more-btn"
+            >
+              {{ likeLoading ? '加载中...' : '加载更多点赞' }}
+            </button>
+          </div>
+        </div>
+      </template>
+
     </div>
   </div>
 </template>
@@ -502,6 +592,32 @@ onMounted(() => {
   font-size: 1.5rem;
 }
 
+.tab-buttons {
+  display: flex;
+  gap: 20px;
+}
+
+.section-tab-btn {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.3s;
+}
+
+.section-tab-btn:hover {
+  color: #DDD;
+}
+
+.section-tab-btn.active {
+  color: #FFFFFF;
+  border-bottom: 2px solid #FA7299;
+  padding-bottom: 5px;
+}
+
 .sort-tabs {
   display: flex;
   gap: 10px;
@@ -663,6 +779,57 @@ onMounted(() => {
   display: flex;
   align-items: baseline;
   gap: 10px;
+}
+
+.likes-list {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.like-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background-color: #2A2A2A;
+  border-radius: 8px;
+  transition: transform 0.2s;
+}
+
+.like-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.like-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 12px;
+  object-fit: cover;
+}
+
+.like-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.like-name {
+  font-weight: bold;
+  font-size: 0.95rem;
+  color: #FFFFFF;
+}
+
+.like-badge {
+  display: flex;
+  align-items: center;
+}
+
+/* 覆盖默认的 grid 布局对于 load-more-comments 的影响 */
+.likes-list .load-more-comments {
+  grid-column: 1 / -1;
 }
 
 .reply-name {

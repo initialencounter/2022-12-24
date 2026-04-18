@@ -1,6 +1,7 @@
 import type { PostCommentListResponse } from "@/types/response/PostCommentListResponse";
 import type { PostGetResponse } from "@/types/response/PostGetResponse";
 import type { PostList } from "@/types";
+import type { PostListGoodUserResponse } from "@/types/response/PostListGoodUserResponse";
 
 // Replace base URL with your actual backend or proxy endpoint
 const BASE_URL = '/api/Minesweeper';
@@ -40,4 +41,8 @@ export async function commentReplyList(commentId: number, page: number = 0, coun
 
 export async function postListSearch(keyword: string, page: number = 0, count: number = 20): Promise<PostList> {
   return fetchJSON<PostList>('/post/list/search', { keyword, page, count });
+}
+
+export async function postListGoodUser(postId: number, page: number = 0, count: number = 20): Promise<PostListGoodUserResponse> {
+  return fetchJSON<PostListGoodUserResponse>('/post/list/good/user', { postId, page, count });
 }
