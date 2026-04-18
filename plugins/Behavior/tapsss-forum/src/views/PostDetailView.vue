@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { postGet, commentList } from '../api'
-import type { PostGetResponse, PostCommentListResponse, Comment } from '../types'
+import type { ReplyList } from '../types/response/PostCommentListResponse'
 import { formatTime, removeHashWrappedStrings, removeImagesAndLinksFromMarkdown, extractImageLinksFromMarkdown, findHashWrappedStrings } from '../utils/constants'
 
 const props = defineProps<{
@@ -9,7 +9,7 @@ const props = defineProps<{
 }>()
 
 const post = ref<any>(null)
-const comments = ref<Comment[]>([])
+const comments = ref<ReplyList[]>([])
 const loading = ref(false)
 const commentLoading = ref(false)
 const currentPage = ref(0)
@@ -212,7 +212,7 @@ onMounted(() => {
       </div>
 
       <div v-else class="comments-list">
-        <div v-for="comment in comments" :key="comment.commentId" class="comment-item">
+        <div v-for="comment in comments" :key="comment.id" class="comment-item">
           <div class="comment-header">
             <img class="comment-avatar" :src="comment.user.avatar || 'https://via.placeholder.com/60'" />
             <div class="comment-meta">

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import type { Datum, LastComment } from '../types';
+import type { Datum } from '../types';
 import {
   TIMING_LEVELS_MAP,
   TIMING_LEVELS_COLOR,
