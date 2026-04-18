@@ -1,4 +1,6 @@
-import type { PostListResponse, PostGetResponse, PostCommentListResponse } from '../types';
+import type { PostCommentListResponse } from "@/types/response/PostCommentListResponse";
+import type { PostGetResponse } from "@/types/response/PostGetResponse";
+import type { PostList } from "@/types";
 
 // Replace base URL with your actual backend or proxy endpoint
 const BASE_URL = '/api/Minesweeper';
@@ -20,8 +22,8 @@ async function fetchJSON<T>(path: string, body?: any): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export async function fetchPostList(type: number = 0, page: number = 0, count: number = 20): Promise<PostListResponse> {
-  return fetchJSON<PostListResponse>('/post/list', { type, page, count });
+export async function fetchPostList(type: number = 0, page: number = 0, count: number = 20): Promise<PostList> {
+  return fetchJSON<PostList>('/post/list', { type, page, count });
 }
 
 export async function postGet(postId: number): Promise<PostGetResponse> {
@@ -32,6 +34,10 @@ export async function commentList(postId: number, sort: number = 0, page: number
   return fetchJSON<PostCommentListResponse>('/post/comment/list', { postId, sort, page, count });
 }
 
-export async function postListSearch(keyword: string, page: number = 0, count: number = 20): Promise<PostListResponse> {
-  return fetchJSON<PostListResponse>('/post/list/search', { keyword, page, count });
+export async function commentReplyList(commentId: number, page: number = 0, count: number = 20): Promise<any> {
+  return fetchJSON<any>('/post/comment/list/reply', { commentId, page, count });
+}
+
+export async function postListSearch(keyword: string, page: number = 0, count: number = 20): Promise<PostList> {
+  return fetchJSON<PostList>('/post/list/search', { keyword, page, count });
 }

@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import PostDetailView from '../views/PostDetailView.vue'
 import SearchView from '../views/SearchView.vue'
+import ReplyDetailView from '../views/ReplyDetailView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -15,6 +16,12 @@ const router = createRouter({
       path: '/post/:id',
       name: 'post',
       component: PostDetailView,
+      props: true
+    },
+    {
+      path: '/reply/:commentId',
+      name: 'reply',
+      component: ReplyDetailView,
       props: true
     },
     {

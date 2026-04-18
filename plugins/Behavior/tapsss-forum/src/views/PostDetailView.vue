@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { postGet, commentList } from '../api'
-import type { ReplyList } from '../types/response/PostCommentListResponse'
+import type { Datum } from '../types/response/PostCommentListResponse'
 import { formatTime, removeHashWrappedStrings, removeImagesAndLinksFromMarkdown, extractImageLinksFromMarkdown, findHashWrappedStrings } from '../utils/constants'
 
 const props = defineProps<{
   id: string
 }>()
 
+const router = useRouter()
+
 const post = ref<any>(null)
-const comments = ref<ReplyList[]>([])
+const comments = ref<Datum[]>([])
 const loading = ref(false)
 const commentLoading = ref(false)
 const currentPage = ref(0)
@@ -78,6 +81,11 @@ function changeSort(type: number) {
 function loadMoreComments() {
   currentPage.value++
   loadComments(sortType.value, currentPage.value)
+}
+
+function openReplies(commentId: number) {
+  const routeData = router.resolve({ name: 'reply', params: { commentId: commentId.toString() } })
+  window.open(routeData.href, '_blank')
 }
 
 function openImage(url: string) {
@@ -227,10 +235,22 @@ onMounted(() => {
 
           <!-- 回复 -->
           <div v-if="comment.replyCount > 0" class="replies">
-            <div class="reply-count">
-              共 {{ comment.replyCount }} 条回复
+            <div class="reply-list" v-if="comment.replyList && comment.replyList.length > 0">
+              <div v-for="reply in comment.replyList" :key="reply.id" class="reply-item">
+                <div class="reply-header">
+                  <img class="reply-avatar" :src="reply.user.avatar || 'https://via.placeholder.com/30'" />
+                  <div class="reply-meta">
+                    <span class="reply-name">{{ reply.user.nickName }}</span>
+                    <span class="reply-time">{{ formatTime(reply.createTime) }}</span>
+                  </div>
+                </div>
+                <div class="reply-content">{{ reply.comment }}</div>
+              </div>
             </div>
-            <!-- 这里可以添加回复列表 -->
+
+            <div v-if="comment.replyCount > 4" class="view-more-replies">
+              <a href="#" @click.prevent="openReplies(comment.id)">查看更多回复 (共 {{ comment.replyCount }} 条)</a>
+            </div>
           </div>
         </div>
 
@@ -587,5 +607,71 @@ onMounted(() => {
 .load-more-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.reply-list {
+  margin-top: 10px;
+}
+
+.reply-item {
+  padding: 10px 0;
+  border-bottom: 1px dashed #333;
+}
+
+.reply-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.reply-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.reply-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+.reply-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.reply-name {
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #DDD;
+}
+
+.reply-time {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.reply-content {
+  color: #CCC;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  padding-left: 34px;
+}
+
+.view-more-replies {
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.view-more-replies a {
+  color: #FA7299;
+  text-decoration: none;
+}
+
+.view-more-replies a:hover {
+  text-decoration: underline;
 }
 </style>
