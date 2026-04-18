@@ -28,8 +28,7 @@ watch(
   <nav class="navbar">
     <div class="nav-container">
       <div class="nav-brand" @click="goToHome">
-        <span class="brand-icon">💣</span>
-        <span class="brand-text">扫雷社区</span>
+        <span class="brand-text">联萌社区</span>
       </div>
 
       <div class="nav-search">
