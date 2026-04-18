@@ -168,33 +168,30 @@ const recordColor = computed(() => recordTextColor[recordGameType.value]);
       </div>
     </template>
 
-    <!-- Details only if not sticked (or handle toggle logic if needed, but per request just show title and hide others) -->
-    <template v-if="post.stick !== 1">
-      <!-- Last Comment Box inside card -->
-      <div class="last-comment" v-if="post.lastComment">
-        <div class="lc-title">最新评论</div>
-        <div class="lc-header">
-          <img
-            class="lc-avatar"
-            :src="
-              post.lastComment.user.avatar || 'https://via.placeholder.com/60'
-            "
-          />
-          <div class="lc-meta">
-            <div class="lc-name">{{ post.lastComment.user.nickName }}</div>
-            <div class="lc-time">
-              {{ formatTime(post.lastComment.createTime) }}
-            </div>
+    <!-- Last Comment Box inside card -->
+    <div class="last-comment" v-if="post.lastComment">
+      <div class="lc-title">最新评论</div>
+      <div class="lc-header">
+        <img
+          class="lc-avatar"
+          :src="
+            post.lastComment.user.avatar || 'https://via.placeholder.com/60'
+          "
+        />
+        <div class="lc-meta">
+          <div class="lc-name">{{ post.lastComment.user.nickName }}</div>
+          <div class="lc-time">
+            {{ formatTime(post.lastComment.createTime) }}
           </div>
         </div>
-        <div class="lc-content">
-          {{
-            post.lastComment.comment.slice(0, 100) +
-            (post.lastComment.comment.length > 100 ? "..." : "")
-          }}
-        </div>
       </div>
-    </template>
+      <div class="lc-content">
+        {{
+          post.lastComment.comment.slice(0, 100) +
+          (post.lastComment.comment.length > 100 ? "..." : "")
+        }}
+      </div>
+    </div>
 
     <!-- Footer -->
     <div class="post-footer">

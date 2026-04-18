@@ -13,6 +13,7 @@ import type { Datum } from "../types";
 
 const router = useRouter();
 const posts = ref<Datum[]>([]);
+const stickPosts = ref<Datum[]>([]);
 const loading = ref(false);
 const currentPage = ref(0);
 const postsPerPage = 20;
@@ -32,9 +33,11 @@ async function loadPosts(type = 0, page = 0) {
     const response = await fetchPostList(type, page, postsPerPage);
     if (response.code === 200 && response.data) {
       if (page === 0) {
-        posts.value = response.data;
+        posts.value = response.data.filter((p: Datum) => !p.stick);
+        stickPosts.value = response.data.filter((p: Datum) => p.stick);
       } else {
-        posts.value.push(...response.data);
+        posts.value.push(...response.data.filter((p: Datum) => !p.stick));
+        stickPosts.value.push(...response.data.filter((p: Datum) => p.stick));
       }
     } else {
       console.error("Failed to fetch posts:", response.msg);
@@ -55,6 +58,11 @@ function changeType(type: number) {
 function loadMore() {
   currentPage.value++;
   loadPosts(postType.value, currentPage.value);
+}
+
+function goToPostDetail(id: number) {
+  const routeData = router.resolve(`/post/${id}`);
+  window.open(routeData.href, "_blank");
 }
 
 onMounted(() => {
@@ -99,6 +107,17 @@ onDeactivated(() => {
       >
         关注
       </button>
+    </div>
+
+    <div class="stick-posts-container">
+      <div v-if="stickPosts.length > 0" class="stick-posts">
+        <div v-for="post in stickPosts" :key="post.id" class="stick-post-item" @click="goToPostDetail(post.id)">
+          <span class="stick-badge">置顶</span>
+          <div class="stick-post-title">
+            {{ post.title }}
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="posts-container">
@@ -175,6 +194,46 @@ onDeactivated(() => {
 .tab-btn.active {
   background-color: #fa7299;
   color: #ffffff;
+}
+
+.stick-posts-container {
+  margin-bottom: 20px;
+}
+
+.stick-post-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #333;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.stick-post-item:last-child {
+  border-bottom: none;
+}
+
+.stick-post-item:hover {
+  opacity: 0.8;
+}
+
+.stick-badge {
+  background-color: #fa7299;
+  color: #fff;
+  font-size: 0.85rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-right: 15px;
+  white-space: nowrap;
+}
+
+.stick-post-title {
+  color: #ddd;
+  font-size: 1.05rem;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .posts-container {
