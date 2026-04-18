@@ -17,6 +17,8 @@ import {
   computeNonoType,
 } from "../utils/constants";
 
+import UserAvatar from "./UserAvatar.vue";
+
 const props = defineProps<{ post: Datum }>();
 const router = useRouter();
 
@@ -70,10 +72,10 @@ const recordColor = computed(() => recordTextColor[recordGameType.value]);
 <template>
   <div class="post-card" @click="goToPostDetail">
     <div class="user-info">
-      <img
-        class="avatar"
-        :src="post.user.avatar || 'https://via.placeholder.com/104'"
-        alt="avatar"
+      <UserAvatar
+        :user="post.user"
+        :size="50"
+        className="avatar"
       />
       <div class="user-meta">
         <div class="name-row">
@@ -182,11 +184,10 @@ const recordColor = computed(() => recordTextColor[recordGameType.value]);
     <div class="last-comment" v-if="post.lastComment">
       <div class="lc-title">最新评论</div>
       <div class="lc-header">
-        <img
-          class="lc-avatar"
-          :src="
-            post.lastComment.user.avatar || 'https://via.placeholder.com/60'
-          "
+        <UserAvatar
+          :user="post.lastComment.user"
+          :size="30"
+          className="lc-avatar"
         />
         <div class="lc-meta">
           <div class="lc-name">{{ post.lastComment.user.nickName }}</div>

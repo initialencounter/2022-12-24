@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from "vue";
 import { commentReplyList } from "../api";
 import { formatTime } from "../utils/constants";
+import UserAvatar from "../components/UserAvatar.vue";
 import type { Datum } from "../types/response/PostListReply";
 
 const props = defineProps<{
@@ -64,9 +65,10 @@ onMounted(() => {
     <div v-else class="replies-list">
       <div v-for="reply in replies" :key="reply.id" class="reply-item">
         <div class="reply-header-info">
-          <img
-            class="reply-avatar"
-            :src="reply.user?.avatar || 'https://via.placeholder.com/40'"
+          <UserAvatar
+            className="reply-avatar"
+            :user="reply.user"
+            :size="40"
           />
           <div class="reply-meta">
             <span class="reply-name">{{ reply.user?.nickName }}</span>

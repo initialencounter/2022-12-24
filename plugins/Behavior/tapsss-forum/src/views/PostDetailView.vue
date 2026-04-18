@@ -17,6 +17,7 @@ import {
 } from "../utils/constants";
 
 import MarkdownIt from "markdown-it";
+import UserAvatar from "../components/UserAvatar.vue";
 
 const props = defineProps<{
   id: string;
@@ -190,10 +191,10 @@ onMounted(() => {
       <!-- 帖子内容 -->
       <div class="post-header">
         <div class="user-info">
-          <img
-            class="avatar"
-            :src="post.user.avatar || 'https://via.placeholder.com/104'"
-            alt="avatar"
+          <UserAvatar
+            className="avatar"
+            :user="post.user"
+            :size="60"
           />
           <div class="user-meta">
             <div class="name-row">
@@ -374,9 +375,10 @@ onMounted(() => {
             class="comment-item"
           >
             <div class="comment-header">
-              <img
-                class="comment-avatar"
-                :src="comment.user.avatar || 'https://via.placeholder.com/60'"
+              <UserAvatar
+                className="comment-avatar"
+                :user="comment.user"
+                :size="40"
               />
               <div class="comment-meta">
                 <div class="comment-name">{{ comment.user.nickName }}</div>
@@ -402,11 +404,10 @@ onMounted(() => {
                   class="reply-item"
                 >
                   <div class="reply-header">
-                    <img
-                      class="reply-avatar"
-                      :src="
-                        reply.user.avatar || 'https://via.placeholder.com/30'
-                      "
+                    <UserAvatar
+                      className="reply-avatar"
+                      :user="reply.user"
+                      :size="24"
                     />
                     <div class="reply-meta">
                       <span class="reply-name">{{ reply.user.nickName }}</span>
@@ -450,9 +451,10 @@ onMounted(() => {
 
         <div v-else class="likes-list">
           <div v-for="like in likes" :key="like.id" class="like-item">
-            <img
-              class="like-avatar"
-              :src="like.avatar || 'https://via.placeholder.com/60'"
+            <UserAvatar
+              className="like-avatar"
+              :user="like"
+              :size="40"
             />
             <div class="like-meta">
               <div class="like-name">{{ like.nickName }}</div>
