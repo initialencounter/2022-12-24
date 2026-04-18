@@ -528,6 +528,25 @@ function jumpToAction(idx: number) {
   drawFrame();
 }
 
+function stepFrame(direction: number) {
+  const data = replayData.value;
+  if (!data) return;
+
+  let targetIndex = currentFrameIndex.value + direction;
+  if (targetIndex < 0) targetIndex = 0;
+  if (targetIndex > data.actions.length) targetIndex = data.actions.length;
+
+  if (targetIndex === 0) {
+    currentTime.value = 0;
+  } else {
+    currentTime.value = data.actions[targetIndex - 1]?.time ?? 0;
+  }
+
+  isPlaying.value = false;
+  stopTicker();
+  drawFrame();
+}
+
 watch(playbackSpeed, () => {
   if (isPlaying.value) {
     startAudioPlayback(currentTime.value, playbackSpeed.value);
@@ -595,6 +614,8 @@ const currentFrameActionInfo = computed(() => {
         <button @click="togglePlay" class="play-btn">
           {{ isPlaying ? "暂停" : currentTime >= totalTime ? "重播" : "播放" }}
         </button>
+        <button @click="stepFrame(-1)" class="step-btn" title="上一帧">◀</button>
+        <button @click="stepFrame(1)" class="step-btn" title="下一帧">▶</button>
 
         <div class="progress-bar">
           <span>{{ currentTime.toFixed(3) }}</span>
@@ -719,6 +740,18 @@ canvas {
 }
 .play-btn:hover {
   background: #f05a81;
+}
+
+.step-btn {
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.step-btn:hover {
+  background: #444;
 }
 
 .progress-bar {
