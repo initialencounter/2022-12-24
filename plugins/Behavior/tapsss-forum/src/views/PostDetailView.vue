@@ -11,6 +11,9 @@ import {
   removeImagesAndLinksFromMarkdown,
   extractImageLinksFromMarkdown,
   findHashWrappedStrings,
+  recordBgColor,
+  recordTextColor,
+  computeType,
 } from "../utils/constants";
 
 import MarkdownIt from "markdown-it";
@@ -57,6 +60,12 @@ const images = computed(() => {
   if (!post.value?.text) return [];
   return extractImageLinksFromMarkdown(post.value.text);
 });
+
+const hasRecord = computed(() => !!post.value?.recordId);
+const recordGameType = computed(() => post.value?.recordType ?? 0); // 0=Minesweeper, 1=Puzzle, 2=2048, 3=Schulte, 4=Nono
+
+const recordBg = computed(() => recordBgColor[recordGameType.value]);
+const recordColor = computed(() => recordTextColor[recordGameType.value]);
 
 async function loadPost() {
   loading.value = true;
@@ -228,25 +237,59 @@ onMounted(() => {
           />
         </div>
 
-        <!-- 游戏记录 -->
-        <div v-if="post.recordId" class="record-section">
-          <h3>🎮 游戏记录</h3>
+        <!-- 当前游戏记录模块渲染 -->
+        <div
+          class="record-box"
+          v-if="hasRecord"
+          :style="{ backgroundColor: recordBg, color: recordColor }"
+        >
+          <div class="record-icon">
+            <img
+              :src="`/icon/${recordGameType}.png`"
+              style="width: 48px; height: 48px; object-fit: contain"
+              alt="icon"
+            />
+          </div>
           <div class="record-details">
-            <div
-              v-if="post.recordType === 0 && post.record"
-              class="record-item"
-            >
-              <div class="record-label">扫雷</div>
-              <div class="record-data">
-                <span
-                  >难度: {{ post.record.row }}x{{ post.record.column }}
-                  {{ post.record.mine }}雷</span
-                >
-                <span>时间: {{ (post.record.time / 1000).toFixed(2) }}秒</span>
-                <span>3BV/s: {{ post.record.bvs }}</span>
+            <template v-if="recordGameType === 0 && post.record">
+              <div class="r-col">
+                <div class="r-val">
+                  {{
+                    computeType(
+                      post.record.row,
+                      post.record.column,
+                      post.record.mine,
+                    )
+                  }}
+                </div>
+                <div class="r-lbl">难度</div>
               </div>
-            </div>
-            <!-- 可以添加其他游戏类型的记录显示 -->
+              <div class="r-col">
+                <div class="r-val">{{ post.record.time / 1000 }}</div>
+                <div class="r-lbl">时间</div>
+              </div>
+              <div class="r-col">
+                <div class="r-val">{{ post.record.bvs }}</div>
+                <div class="r-lbl">3BV/s</div>
+              </div>
+            </template>
+            <template v-if="recordGameType === 1 && post.puzzleRecord">
+              <div class="r-col">
+                <div class="r-val">
+                  {{ post.puzzleRecord.row }}x{{ post.puzzleRecord.column }}
+                </div>
+                <div class="r-lbl">难度</div>
+              </div>
+              <div class="r-col">
+                <div class="r-val">{{ post.puzzleRecord.time / 1000 }}</div>
+                <div class="r-lbl">时间</div>
+              </div>
+              <div class="r-col">
+                <div class="r-val">{{ post.puzzleRecord.step }}</div>
+                <div class="r-lbl">步数</div>
+              </div>
+            </template>
+            <!-- Similar for 2048, Schulte, Nono if provided -->
           </div>
         </div>
       </div>
@@ -585,35 +628,34 @@ onMounted(() => {
   transform: scale(1.05);
 }
 
-.record-section {
-  background-color: #2a2a2a;
+.record-box {
   border-radius: 8px;
-  padding: 20px;
-  margin-top: 20px;
-}
-
-.record-section h3 {
-  color: #8d9e4b;
+  padding: 16px;
   margin-bottom: 15px;
-  font-size: 1.2rem;
-}
-
-.record-item {
   display: flex;
   align-items: center;
-  gap: 20px;
 }
 
-.record-label {
-  font-weight: bold;
-  color: #fa7299;
-  min-width: 60px;
+.record-icon {
+  font-size: 2rem;
+  margin-right: 20px;
 }
 
-.record-data {
+.record-details {
   display: flex;
-  gap: 20px;
-  color: #e0e0e0;
+  gap: 40px;
+  text-align: center;
+}
+
+.r-val {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.r-lbl {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin-top: 4px;
 }
 
 .post-stats {
