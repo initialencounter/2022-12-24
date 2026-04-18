@@ -15,7 +15,7 @@ const keyword = ref(route.query.q as string || '')
 
 async function searchPosts(page = 0) {
   if (!keyword.value.trim()) return
-  
+
   loading.value = true
   try {
     const response = await postListSearch(keyword.value, page, postsPerPage)
@@ -58,7 +58,7 @@ onMounted(() => {
       <router-link to="/" class="back-btn">
         ← 返回列表
       </router-link>
-      
+
       <div class="search-box">
         <input
           v-model="keyword"
@@ -81,7 +81,7 @@ onMounted(() => {
       <div v-else-if="loading && posts.length === 0" class="loading">
         搜索中...
       </div>
-      
+
       <div v-else-if="posts.length === 0" class="empty-results">
         <p>没有找到与 "{{ keyword }}" 相关的帖子</p>
       </div>
@@ -92,16 +92,16 @@ onMounted(() => {
           <p class="search-keyword">关键词: "{{ keyword }}"</p>
         </div>
 
-        <PostCard 
-          v-for="post in posts" 
-          :key="post.postId" 
-          :post="post" 
+        <PostCard
+          v-for="post in posts"
+          :key="post.id"
+          :post="post"
           class="post-item"
         />
-        
+
         <div class="load-more">
-          <button 
-            @click="loadMore" 
+          <button
+            @click="loadMore"
             :disabled="loading"
             class="load-more-btn"
           >
