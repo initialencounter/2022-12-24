@@ -539,19 +539,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cordisjs/plugin-logger@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "@cordisjs/plugin-logger@npm:1.0.2"
-  dependencies:
-    cosmokit: "npm:^1.8.1"
-    reggol: "npm:^2.1.0"
-    schemastery: "npm:^3.18.0"
-  peerDependencies:
-    cordis: ^4.0.0-rc.1
-  checksum: 10/29def627a7b678b7d000f8e7467d8298df67a200b8524b017051fa38d0960f80918006939748dd3ce9750daab0169c0f480030c3d8e1a406e07c806d55f5a0aa
-  languageName: node
-  linkType: hard
-
 "@cordisjs/plugin-proxy-agent@npm:^0.3.3":
   version: 0.3.3
   resolution: "@cordisjs/plugin-proxy-agent@npm:0.3.3"
@@ -3078,7 +3065,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@koishijs/boilerplate@workspace:."
   dependencies:
-    "@cordisjs/plugin-logger": "npm:^1.0.2"
     "@initencounter/jimp": "workspace:^"
     "@initencounter/sst": "workspace:^"
     "@initencounter/vits": "workspace:^"
@@ -7660,7 +7646,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cosmokit@npm:^1.7.3, cosmokit@npm:^1.8.1":
+"cosmokit@npm:^1.8.1":
   version: 1.8.1
   resolution: "cosmokit@npm:1.8.1"
   checksum: 10/c4b328f822729686e37e160c874fe739845f37986ec03bad3d53ba9d7d436f96b4da21e67daee248090b3488192cc1977c45c48b22710940e481ca61e02add6e
@@ -13917,7 +13903,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"object-inspect@npm:^1.13.1, object-inspect@npm:^1.13.3, object-inspect@npm:^1.13.4":
+"object-inspect@npm:^1.13.1, object-inspect@npm:^1.13.3":
   version: 1.13.4
   resolution: "object-inspect@npm:1.13.4"
   checksum: 10/aa13b1190ad3e366f6c83ad8a16ed37a19ed57d267385aa4bfdccda833d7b90465c057ff6c55d035a6b2e52c1a2295582b294217a0a3a1ae7abdd6877ef781fb
@@ -15339,17 +15325,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"reggol@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "reggol@npm:2.1.0"
-  dependencies:
-    cosmokit: "npm:^1.7.3"
-    object-inspect: "npm:^1.13.4"
-    supports-color: "npm:^10.0.0"
-  checksum: 10/737b044ff0ffbb2c418fc0625237be6e150966e8d0d997f1b67abe5cb6f454d5338fef8787073dfb6b07cc77a38856efbc08e7ff0a41b9f15012eb03b6e3154c
-  languageName: node
-  linkType: hard
-
 "reinterval@npm:^1.1.0":
   version: 1.1.0
   resolution: "reinterval@npm:1.1.0"
@@ -15795,7 +15770,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"schemastery@npm:^3.17.1, schemastery@npm:^3.17.2, schemastery@npm:^3.18.0":
+"schemastery@npm:^3.17.1, schemastery@npm:^3.17.2":
   version: 3.18.0
   resolution: "schemastery@npm:3.18.0"
   dependencies:
@@ -16498,13 +16473,6 @@ __metadata:
   dependencies:
     copy-anything: "npm:^4"
   checksum: 10/7bb6446b70e8a37ec9aa2f2d08295ae4e7e8268b86c89d83a306b3798cd0cc60d89016c0c5fa83b558db23e8de8863c585a4cf52d18c4834c48bad7d2b6ee25b
-  languageName: node
-  linkType: hard
-
-"supports-color@npm:^10.0.0":
-  version: 10.2.2
-  resolution: "supports-color@npm:10.2.2"
-  checksum: 10/bd132705fc07213a4024131fb061f0a46a48b49ecaf434bb029c0a5aa0339b969236d496d63969e3c248a90fdcac16d4f9c5bf187e7be0bfb5e804ed13bef6b0
   languageName: node
   linkType: hard
 

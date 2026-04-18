@@ -57,13 +57,13 @@ class TapsssAPI extends Service {
     // const timeStamp = '1752668107525'; // 获取当前时间戳
     const apiKey = this.makeApiKey(body, timeStamp);
     const headers = this.headers;
-    headers.set('time-stamp', timeStamp);
-    headers.set('api-key', apiKey);
-    headers.set('Content-Length', body.length.toString()); // 获取字符串长度
-    headers.set('Content-Type', 'application/x-www-form-urlencoded; charset=utf-8');
+    headers['time-stamp'] = timeStamp;
+    headers['api-key'] = apiKey;
+    headers['Content-Length'] = body.length.toString(); // 获取字符串长度
+    headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8';
 
     try {
-      const response = await fetch(`http://${headers.get('Host')}${path}`,
+      const response = await fetch(`http://${headers['Host']}${path}`,
         {
           method,
           headers,
@@ -182,6 +182,11 @@ class TapsssAPI extends Service {
     return this.executeRequest<PostResponse>(path, method, params);
   }
 
+  /**
+   *
+   * @param params type: 0最新 1热门 3关注
+   * @returns
+   */
   async fetchPostList(params: { type: number, page: number, count: number }): Promise<PostList> {
     const path = '/Minesweeper/post/list';
     const method = 'POST';
@@ -205,6 +210,11 @@ class TapsssAPI extends Service {
     return await this.executeRequest<RecordGetResponse>(path, method, params);
   }
 
+  async postListSearch(params: { keyword: string, page: number, count: number }): Promise<PostList> {
+    const path = '/Minesweeper/post/list/search';
+    const method = 'POST';
+    return await this.executeRequest<PostList>(path, method, params);
+  }
 }
 
 export default TapsssAPI;
