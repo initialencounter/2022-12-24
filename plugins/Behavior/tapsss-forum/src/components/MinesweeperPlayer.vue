@@ -32,17 +32,19 @@ interface Minefeild {
   cell: Cell[];
 }
 
-// Web Audio API: 预解码 AudioBuffer + 精确音频时钟调度
+// Web Audio API: 预解码 + OfflineAudioContext 离线合成完整音轨
 let audioCtx: AudioContext | null = null;
 let openBuffer: AudioBuffer | null = null;
 let flagBuffer: AudioBuffer | null = null;
-let masterGain: GainNode | null = null;
+
+// 预混合的完整音轨 + 播放控制
+let mixedAudioBuffer: AudioBuffer | null = null;
+let audioSourceNode: AudioBufferSourceNode | null = null;
+let audioNodeStartedAt = 0;
+let audioNodeOffset = 0;
 
 async function initAudio() {
   audioCtx = new AudioContext();
-  masterGain = audioCtx.createGain();
-  masterGain.gain.value = 0.5;
-  masterGain.connect(audioCtx.destination);
   const [openResp, flagResp] = await Promise.all([
     fetch("/audio/open.mp3"),
     fetch("/audio/flag.mp3"),
@@ -57,22 +59,54 @@ async function initAudio() {
   ]);
 }
 
-// 断开旧 masterGain（立即静音所有已调度的音效），重建新管道
-function resetAudioPipeline() {
-  if (masterGain) masterGain.disconnect();
-  if (audioCtx) {
-    masterGain = audioCtx.createGain();
-    masterGain.gain.value = 0.5;
-    masterGain.connect(audioCtx.destination);
+// 离线渲染: 把所有 action 音效烘焙为一条完整音轨，播放时不再实时调度
+async function renderAudioTrack() {
+  if (!audioCtx || !openBuffer || !flagBuffer) return;
+  const data = replayData.value;
+  if (!data) return;
+  const actions = data.actions as ActionRecord[];
+  const sr = audioCtx.sampleRate;
+  const pad = Math.max(openBuffer.duration, flagBuffer.duration) + 0.1;
+  const offlineCtx = new OfflineAudioContext(
+    2,
+    Math.ceil((totalTime.value + pad) * sr),
+    sr,
+  );
+  for (let i = 0; i < actions.length; i++) {
+    if (!actionEffective[i]) continue;
+    const act = actions[i]!;
+    const buf = act.action === 0 ? openBuffer : flagBuffer;
+    const source = offlineCtx.createBufferSource();
+    source.buffer = buf;
+    const gain = offlineCtx.createGain();
+    gain.gain.value = 0.5;
+    source.connect(gain);
+    gain.connect(offlineCtx.destination);
+    source.start(act.time);
   }
+  mixedAudioBuffer = await offlineCtx.startRendering();
 }
 
-function playSoundAt(buffer: AudioBuffer | null, atTime: number) {
-  if (!audioCtx || !masterGain || !buffer) return;
-  const source = audioCtx.createBufferSource();
-  source.buffer = buffer;
-  source.connect(masterGain);
-  source.start(atTime);
+function startAudioPlayback(offset: number, speed: number) {
+  stopAudioPlayback();
+  if (!audioCtx || !mixedAudioBuffer) return;
+  audioSourceNode = audioCtx.createBufferSource();
+  audioSourceNode.buffer = mixedAudioBuffer;
+  audioSourceNode.playbackRate.value = speed;
+  audioSourceNode.connect(audioCtx.destination);
+  audioSourceNode.start(0, offset);
+  audioNodeStartedAt = audioCtx.currentTime;
+  audioNodeOffset = offset;
+}
+
+function stopAudioPlayback() {
+  if (audioSourceNode) {
+    try {
+      audioSourceNode.stop();
+    } catch {}
+    audioSourceNode.disconnect();
+    audioSourceNode = null;
+  }
 }
 
 const props = defineProps<{
@@ -95,9 +129,7 @@ const totalTime = ref(0);
 const cellSize = 20;
 
 let rafId: number | null = null;
-let playStartWallTime = 0; // 播放开始时的 performance.now()
-let playStartGameTime = 0; // 播放开始时的录像时间
-let audioAnchorTime = 0; // 播放开始时的 audioCtx.currentTime
+
 
 // 图片资源
 const skinUrls = [
@@ -126,10 +158,6 @@ let actionEffective: boolean[] = [];
 // 将每个状态帧预先渲染到离屏的画布中存储（空间换时间，极致性能）
 let preRenderedFrames: HTMLCanvasElement[] = [];
 let lastRenderedFrameIndex = -1;
-
-// 音效调度: 跟踪已调度到哪个 action
-let nextScheduleIndex = 0;
-const SCHEDULE_AHEAD_SEC = 0.1; // 100ms 前瞻窗口
 
 const currentFrameIndex = computed(() => {
   if (!replayData.value) return 0;
@@ -172,6 +200,8 @@ async function loadReplay() {
         totalTime.value = res.data.time / 1000;
         loading.value = false; // 先关闭 loading，让 canvas 进入 DOM
         precomputeStates();
+        await initAudio();
+        await renderAudioTrack();
         await nextTick(); // 确保 Vue 完成 DOM 渲染，将 canvas 元素挂载到 canvasRef
         await preloadImages();
         initCanvas();
@@ -382,54 +412,6 @@ function preRenderFramesToCache() {
   });
 }
 
-// game time → audioCtx.currentTime 的精确映射
-function gameTimeToAudioTime(gameT: number): number {
-  return audioAnchorTime + (gameT - playStartGameTime) / playbackSpeed.value;
-}
-
-// 计算游戏时间 t 对应的第一个 time > t 的 action 索引
-function firstIndexAfter(t: number): number {
-  const actions = replayData.value?.actions as ActionRecord[] | undefined;
-  if (!actions) return 0;
-  let lo = 0,
-    hi = actions.length;
-  while (lo < hi) {
-    const mid = (lo + hi) >> 1;
-    if (actions[mid]!.time <= t) lo = mid + 1;
-    else hi = mid;
-  }
-  return lo;
-}
-
-// 用音频硬件时钟提前调度未来 100ms 内的音效，精度 ~3ms (128 samples@48kHz)
-function scheduleSoundsAhead() {
-  if (!audioCtx) return;
-  const actions = replayData.value?.actions as ActionRecord[] | undefined;
-  if (!actions) return;
-  const scheduleHorizon = audioCtx.currentTime + SCHEDULE_AHEAD_SEC;
-
-  while (nextScheduleIndex < actions.length) {
-    if (!actionEffective[nextScheduleIndex]) {
-      nextScheduleIndex++;
-      continue;
-    }
-    const act = actions[nextScheduleIndex]!;
-    const audioTime = gameTimeToAudioTime(act.time);
-    if (audioTime > scheduleHorizon) break;
-    if (audioTime >= audioCtx.currentTime - 0.005) {
-      // 允许 5ms 容差，把刚刚过去的也播放
-      const startAt = Math.max(audioTime, audioCtx.currentTime);
-      playSoundAt(act.action === 0 ? openBuffer : flagBuffer, startAt);
-    }
-    nextScheduleIndex++;
-  }
-}
-
-function resetSoundSchedule() {
-  resetAudioPipeline();
-  nextScheduleIndex = firstIndexAfter(currentTime.value);
-}
-
 function drawFrame() {
   if (!ctx.value || preRenderedFrames.length === 0) return;
   const data = replayData.value;
@@ -479,10 +461,11 @@ function drawMotions() {
 }
 
 function tick() {
-  if (!isPlaying.value) return;
+  if (!isPlaying.value || !audioCtx) return;
 
-  const elapsed = (performance.now() - playStartWallTime) / 1000;
-  currentTime.value = playStartGameTime + elapsed * playbackSpeed.value;
+  // 从音频时钟推导游戏时间 — 音画同源，绝对零延迟
+  const audioElapsed = audioCtx.currentTime - audioNodeStartedAt;
+  currentTime.value = audioNodeOffset + audioElapsed * playbackSpeed.value;
 
   if (currentTime.value >= totalTime.value) {
     currentTime.value = totalTime.value;
@@ -490,17 +473,12 @@ function tick() {
     stopTicker();
   }
 
-  scheduleSoundsAhead();
   drawFrame();
 }
 
 function startTicker() {
   stopTicker();
-  playStartWallTime = performance.now();
-  playStartGameTime = currentTime.value;
-  audioAnchorTime = audioCtx?.currentTime ?? 0;
-  nextScheduleIndex = firstIndexAfter(currentTime.value);
-  resetAudioPipeline();
+  startAudioPlayback(currentTime.value, playbackSpeed.value);
   const loop = () => {
     tick();
     if (isPlaying.value) rafId = requestAnimationFrame(loop);
@@ -513,7 +491,7 @@ function stopTicker() {
     cancelAnimationFrame(rafId);
     rafId = null;
   }
-  resetAudioPipeline(); // 立即静音所有已调度但未播放的音效
+  stopAudioPlayback();
 }
 
 function togglePlay() {
@@ -534,12 +512,8 @@ function togglePlay() {
 function seek(e: Event) {
   const target = e.target as HTMLInputElement;
   currentTime.value = parseFloat(target.value);
-  resetSoundSchedule();
   if (isPlaying.value) {
-    audioAnchorTime = audioCtx?.currentTime ?? 0;
-    // 重置绝对时间锚点，避免跳回
-    playStartWallTime = performance.now();
-    playStartGameTime = currentTime.value;
+    startAudioPlayback(currentTime.value, playbackSpeed.value);
   } else {
     drawFrame();
   }
@@ -550,23 +524,17 @@ function jumpToAction(idx: number) {
   if (!data) return;
   currentTime.value = data.actions[idx]?.time ?? 0;
   isPlaying.value = false;
-  resetSoundSchedule();
   stopTicker();
   drawFrame();
 }
 
 watch(playbackSpeed, () => {
   if (isPlaying.value) {
-    // 速度变化时重置锚点 + 音效排期，从当前时刻以新速度继续
-    playStartGameTime = currentTime.value;
-    playStartWallTime = performance.now();
-    audioAnchorTime = audioCtx?.currentTime ?? 0;
-    resetSoundSchedule();
+    startAudioPlayback(currentTime.value, playbackSpeed.value);
   }
 });
 
 onMounted(() => {
-  initAudio();
   loadReplay().then(() => {
     drawFrame();
   });
