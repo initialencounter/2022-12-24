@@ -77,11 +77,6 @@ onDeactivated(() => {
 
 <template>
   <div class="home">
-    <header class="forum-header">
-      <h1>扫雷社区论坛</h1>
-      <p class="subtitle">只读论坛 - 浏览帖子和评论</p>
-    </header>
-
     <div class="filter-tabs">
       <button
         :class="['tab-btn', { active: postType === 0 }]"
