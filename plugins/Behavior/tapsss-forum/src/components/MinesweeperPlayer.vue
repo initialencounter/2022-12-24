@@ -8,9 +8,13 @@ import {
   shallowRef,
   nextTick,
 } from "vue";
-import { parseReplayHandle, type ActionRecord } from "../utils/replayParser";
+import { parseReplayHandle } from "../utils/replayParser";
 import { minesweeperRecordGet } from "../api";
-import { Howl } from "howler";
+import type {
+  ActionRecord,
+  RecordGetResponse,
+  ReplyData,
+} from "@/types/response/RecordGet";
 
 interface Cell {
   id: number;
@@ -28,14 +32,48 @@ interface Minefeild {
   cell: Cell[];
 }
 
-const openSound = new Howl({
-  src: ["/audio/open.mp3"],
-  volume: 0.5,
-});
-const flagSound = new Howl({
-  src: ["/audio/flag.mp3"],
-  volume: 0.5,
-});
+// Web Audio API: 预解码 AudioBuffer + 精确音频时钟调度
+let audioCtx: AudioContext | null = null;
+let openBuffer: AudioBuffer | null = null;
+let flagBuffer: AudioBuffer | null = null;
+let masterGain: GainNode | null = null;
+
+async function initAudio() {
+  audioCtx = new AudioContext();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.5;
+  masterGain.connect(audioCtx.destination);
+  const [openResp, flagResp] = await Promise.all([
+    fetch("/audio/open.mp3"),
+    fetch("/audio/flag.mp3"),
+  ]);
+  const [openData, flagData] = await Promise.all([
+    openResp.arrayBuffer(),
+    flagResp.arrayBuffer(),
+  ]);
+  [openBuffer, flagBuffer] = await Promise.all([
+    audioCtx.decodeAudioData(openData),
+    audioCtx.decodeAudioData(flagData),
+  ]);
+}
+
+// 断开旧 masterGain（立即静音所有已调度的音效），重建新管道
+function resetAudioPipeline() {
+  if (masterGain) masterGain.disconnect();
+  if (audioCtx) {
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0.5;
+    masterGain.connect(audioCtx.destination);
+  }
+}
+
+function playSoundAt(buffer: AudioBuffer | null, atTime: number) {
+  if (!audioCtx || !masterGain || !buffer) return;
+  const source = audioCtx.createBufferSource();
+  source.buffer = buffer;
+  source.connect(masterGain);
+  source.start(atTime);
+}
 
 const props = defineProps<{
   recordId: string;
@@ -43,7 +81,7 @@ const props = defineProps<{
 
 const loading = ref(true);
 const errorMsg = ref("");
-const replayData = shallowRef<any | null>(null);
+const replayData = shallowRef<ReplyData | null>(null);
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const ctx = shallowRef<CanvasRenderingContext2D | null>(null);
@@ -56,8 +94,10 @@ const totalTime = ref(0);
 
 const cellSize = 20;
 
-let animationFrameId: number | null = null;
-let lastRenderTime = 0;
+let rafId: number | null = null;
+let playStartWallTime = 0; // 播放开始时的 performance.now()
+let playStartGameTime = 0; // 播放开始时的录像时间
+let audioAnchorTime = 0; // 播放开始时的 audioCtx.currentTime
 
 // 图片资源
 const skinUrls = [
@@ -80,6 +120,17 @@ const loadedImages: Record<number, HTMLImageElement> = {};
 // 预计算的帧状态: frameStates[0] = 初始状态(全关闭), frameStates[i] = 执行第i个action后的状态
 let frameStates: Uint8Array[] = [];
 
+// 标记每个 action 是否有效（是否导致状态变化）
+let actionEffective: boolean[] = [];
+
+// 将每个状态帧预先渲染到离屏的画布中存储（空间换时间，极致性能）
+let preRenderedFrames: HTMLCanvasElement[] = [];
+let lastRenderedFrameIndex = -1;
+
+// 音效调度: 跟踪已调度到哪个 action
+let nextScheduleIndex = 0;
+const SCHEDULE_AHEAD_SEC = 0.1; // 100ms 前瞻窗口
+
 const currentFrameIndex = computed(() => {
   if (!replayData.value) return 0;
   const actions = replayData.value.actions as ActionRecord[];
@@ -99,25 +150,44 @@ const currentFrameIndex = computed(() => {
   return result;
 });
 
-watch(currentFrameIndex, (newIdx, oldIdx) => {
-  if (isPlaying.value && newIdx > oldIdx) {
-    const actions = replayData.value?.actions as ActionRecord[] | undefined;
-    if (actions) {
-      // openSound.stop();
-      // flagSound.stop();
-      // 限制一帧内最多播放3个声音，避免跳动进度时产生爆音
-      const startIndex = Math.max(oldIdx, newIdx - 3);
-      for (let i = startIndex; i < newIdx; i++) {
-        const act = actions[i];
-        if (act && act.action === 2) {
-          flagSound.play();
-        } else if (act) {
-          openSound.play();
-        }
+// 获取数据
+async function loadReplay() {
+  try {
+    loading.value = true;
+    errorMsg.value = "";
+    const res: RecordGetResponse = await minesweeperRecordGet(
+      Number(props.recordId),
+    );
+
+    if (res.code === 200 && res.data) {
+      if (res.data.handle) {
+        // The endpoint returns JSON containing map, row, column, etc.
+        const parsedActions = parseReplayHandle(res.data.handle);
+        // Inject actions back into data object
+        let replayDataValue = res.data;
+        (replayDataValue as any).actions = parsedActions;
+        replayData.value = replayDataValue as ReplyData;
+        console.log("Parsed actions:", replayData.value);
+
+        totalTime.value = res.data.time / 1000;
+        loading.value = false; // 先关闭 loading，让 canvas 进入 DOM
+        precomputeStates();
+        await nextTick(); // 确保 Vue 完成 DOM 渲染，将 canvas 元素挂载到 canvasRef
+        await preloadImages();
+        initCanvas();
+      } else {
+        errorMsg.value = "录像内容为空";
       }
+    } else {
+      errorMsg.value = res.msg || "无法获取录像数据";
     }
+  } catch (error: any) {
+    console.error(error);
+    errorMsg.value = error.message || "加载失败";
+  } finally {
+    loading.value = false;
   }
-});
+}
 
 function precomputeStates() {
   const data = replayData.value;
@@ -142,7 +212,7 @@ function precomputeStates() {
       isFlagged: false,
       isMine: mapStr[i] === "9",
       isOpen: false,
-      mines: parseInt(mapStr[i]),
+      mines: parseInt(mapStr[i] ?? "0"),
     });
   }
 
@@ -150,7 +220,7 @@ function precomputeStates() {
     if (r < 0 || r >= rows || c < 0 || c >= cols) return;
     const idx = r * cols + c;
     if (state[idx] !== 10) return; // 只揭开未标旗的关闭格子
-    const cellValue = parseInt(mapStr[idx]);
+    const cellValue = parseInt(mapStr[idx] ?? "0");
     state[idx] = cellValue;
     minefeild.cell[idx]!.isOpen = true;
     if (cellValue === 0) {
@@ -170,6 +240,7 @@ function precomputeStates() {
   const initial = new Uint8Array(rows * cols);
   initial.fill(10);
   frameStates = [initial];
+  actionEffective = [];
 
   for (let i = 0; i < actions.length; i++) {
     const prev = frameStates[i]!;
@@ -217,41 +288,16 @@ function precomputeStates() {
       }
     }
     frameStates.push(state);
-  }
 
-}
-
-// 获取数据
-async function loadReplay() {
-  try {
-    loading.value = true;
-    errorMsg.value = "";
-    const res = await minesweeperRecordGet(Number(props.recordId));
-
-    if (res.code === 200 && res.data) {
-      if (res.data.handle) {
-        // The endpoint returns JSON containing map, row, column, etc.
-        const parsedActions = parseReplayHandle(res.data.handle);
-        // Inject actions back into data object
-        (res.data as any).actions = parsedActions;
-        replayData.value = res.data;
-        totalTime.value = res.data.time / 1000;
-        loading.value = false; // 先关闭 loading，让 canvas 进入 DOM
-        precomputeStates();
-        await nextTick(); // 确保 Vue 完成 DOM 渲染，将 canvas 元素挂载到 canvasRef
-        await preloadImages();
-        initCanvas();
-      } else {
-        errorMsg.value = "录像内容为空";
+    // 比较前后状态，标记该 action 是否有效
+    let effective = false;
+    for (let j = 0; j < state.length; j++) {
+      if (state[j] !== prev[j]) {
+        effective = true;
+        break;
       }
-    } else {
-      errorMsg.value = res.msg || "无法获取录像数据";
     }
-  } catch (error: any) {
-    console.error(error);
-    errorMsg.value = error.message || "加载失败";
-  } finally {
-    loading.value = false;
+    actionEffective.push(effective);
   }
 }
 
@@ -283,51 +329,119 @@ function initCanvas() {
   canvas.width = data.column * cellSize;
   canvas.height = data.row * cellSize;
 
+  // 将前面算好的 frameStates 全量转化为 preRenderedFrames
+  preRenderFramesToCache();
+
   lastRenderedFrameIndex = -1;
   drawFrame();
 }
 
-let lastRenderedFrameIndex = -1;
+function preRenderFramesToCache() {
+  const data = replayData.value;
+  if (!data) return;
+
+  const rows = data.row;
+  const cols = data.column;
+
+  preRenderedFrames = frameStates.map((state) => {
+    const frameCanvas = document.createElement("canvas");
+    frameCanvas.width = cols * cellSize;
+    frameCanvas.height = rows * cellSize;
+    const fCtx = frameCanvas.getContext("2d")!;
+
+    let index = 0;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const cellValue = state[index]!;
+        const cellImg = loadedImages[cellValue];
+        if (cellImg) {
+          fCtx.drawImage(
+            cellImg,
+            c * cellSize,
+            r * cellSize,
+            cellSize,
+            cellSize,
+          );
+        } else {
+          fCtx.fillStyle =
+            cellValue === 10
+              ? "#cccccc"
+              : cellValue === 11
+                ? "blue"
+                : cellValue === 9
+                  ? "#ff0000"
+                  : "#888888";
+          fCtx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+          fCtx.strokeStyle = "#999";
+          fCtx.strokeRect(c * cellSize, r * cellSize, cellSize, cellSize);
+        }
+        index++;
+      }
+    }
+    return frameCanvas;
+  });
+}
+
+// game time → audioCtx.currentTime 的精确映射
+function gameTimeToAudioTime(gameT: number): number {
+  return audioAnchorTime + (gameT - playStartGameTime) / playbackSpeed.value;
+}
+
+// 计算游戏时间 t 对应的第一个 time > t 的 action 索引
+function firstIndexAfter(t: number): number {
+  const actions = replayData.value?.actions as ActionRecord[] | undefined;
+  if (!actions) return 0;
+  let lo = 0,
+    hi = actions.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (actions[mid]!.time <= t) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
+// 用音频硬件时钟提前调度未来 100ms 内的音效，精度 ~3ms (128 samples@48kHz)
+function scheduleSoundsAhead() {
+  if (!audioCtx) return;
+  const actions = replayData.value?.actions as ActionRecord[] | undefined;
+  if (!actions) return;
+  const scheduleHorizon = audioCtx.currentTime + SCHEDULE_AHEAD_SEC;
+
+  while (nextScheduleIndex < actions.length) {
+    if (!actionEffective[nextScheduleIndex]) {
+      nextScheduleIndex++;
+      continue;
+    }
+    const act = actions[nextScheduleIndex]!;
+    const audioTime = gameTimeToAudioTime(act.time);
+    if (audioTime > scheduleHorizon) break;
+    if (audioTime >= audioCtx.currentTime - 0.005) {
+      // 允许 5ms 容差，把刚刚过去的也播放
+      const startAt = Math.max(audioTime, audioCtx.currentTime);
+      playSoundAt(act.action === 0 ? openBuffer : flagBuffer, startAt);
+    }
+    nextScheduleIndex++;
+  }
+}
+
+function resetSoundSchedule() {
+  resetAudioPipeline();
+  nextScheduleIndex = firstIndexAfter(currentTime.value);
+}
 
 function drawFrame() {
-  if (!ctx.value || frameStates.length === 0) return;
+  if (!ctx.value || preRenderedFrames.length === 0) return;
   const data = replayData.value;
   if (!data) return;
 
   const fi = currentFrameIndex.value;
-  if (fi === lastRenderedFrameIndex) return; // 帧未变化，跳过
-
   const g = ctx.value;
-  const rows = data.row;
-  const cols = data.column;
-  const state = frameStates[fi]!;
 
-  // 全量覆盖绘制（不透明图片直接覆盖，无需 clearRect）
-  let index = 0;
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const cellValue = state[index]!;
-      const cellImg = loadedImages[cellValue];
-      if (cellImg) {
-        g.drawImage(cellImg, c * cellSize, r * cellSize, cellSize, cellSize);
-      } else {
-        g.fillStyle =
-          cellValue === 10
-            ? "#cccccc"
-            : cellValue === 11
-              ? "blue"
-              : cellValue === 9
-                ? "#ff0000"
-                : "#888888";
-        g.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
-        g.strokeStyle = "#999";
-        g.strokeRect(c * cellSize, r * cellSize, cellSize, cellSize);
-      }
-      index++;
-    }
-  }
+  // 主画布直接贴上已经预渲染好的网格画面（纯粹的贴图性能拉满）
+  g.drawImage(preRenderedFrames[fi]!, 0, 0);
 
-  // 绘制光标
+  // 绘制光标层
   drawMotions();
   lastRenderedFrameIndex = fi;
 }
@@ -340,43 +454,93 @@ function drawMotions() {
   if (fi === 0) return;
 
   const currentAction = data.actions[fi - 1];
-  const x = (currentAction.column - 1) * cellSize;
-  const y = (currentAction.row - 1) * cellSize;
-  ctx.value!.drawImage(loadedImages[12]!, x, y, 20, 30);
-}
+  if (!currentAction) return;
+  let x = (currentAction.column - 1) * cellSize;
+  let y = (currentAction.row - 1) * cellSize;
 
-function renderLoop(timestamp: number) {
-  if (!isPlaying.value) {
-    lastRenderTime = timestamp;
-    animationFrameId = requestAnimationFrame(renderLoop);
-    return;
+  // 使用线性插值(Linear Interpolation)提供平滑的鼠标移动
+  if (fi < data.actions.length) {
+    const nextAction = data.actions[fi];
+    if (!nextAction) return;
+    const timeDiff = nextAction.time - currentAction.time;
+    if (timeDiff > 0) {
+      let progress = (currentTime.value - currentAction.time) / timeDiff;
+      progress = Math.max(0, Math.min(1, progress));
+
+      const nextX = (nextAction.column - 1) * cellSize;
+      const nextY = (nextAction.row - 1) * cellSize;
+
+      x = x + (nextX - x) * progress;
+      y = y + (nextY - y) * progress;
+    }
   }
 
-  const delta = (timestamp - lastRenderTime) / 1000; // 秒
-  lastRenderTime = timestamp;
+  ctx.value!.drawImage(loadedImages[12]!, x, y, 14, 20);
+}
 
-  currentTime.value += delta * playbackSpeed.value;
+function tick() {
+  if (!isPlaying.value) return;
+
+  const elapsed = (performance.now() - playStartWallTime) / 1000;
+  currentTime.value = playStartGameTime + elapsed * playbackSpeed.value;
+
   if (currentTime.value >= totalTime.value) {
     currentTime.value = totalTime.value;
     isPlaying.value = false;
+    stopTicker();
   }
 
+  scheduleSoundsAhead();
   drawFrame();
+}
 
-  animationFrameId = requestAnimationFrame(renderLoop);
+function startTicker() {
+  stopTicker();
+  playStartWallTime = performance.now();
+  playStartGameTime = currentTime.value;
+  audioAnchorTime = audioCtx?.currentTime ?? 0;
+  nextScheduleIndex = firstIndexAfter(currentTime.value);
+  resetAudioPipeline();
+  const loop = () => {
+    tick();
+    if (isPlaying.value) rafId = requestAnimationFrame(loop);
+  };
+  rafId = requestAnimationFrame(loop);
+}
+
+function stopTicker() {
+  if (rafId !== null) {
+    cancelAnimationFrame(rafId);
+    rafId = null;
+  }
+  resetAudioPipeline(); // 立即静音所有已调度但未播放的音效
 }
 
 function togglePlay() {
+  if (audioCtx?.state === "suspended") {
+    audioCtx.resume();
+  }
   if (currentTime.value >= totalTime.value) {
     currentTime.value = 0;
   }
   isPlaying.value = !isPlaying.value;
+  if (isPlaying.value) {
+    startTicker();
+  } else {
+    stopTicker();
+  }
 }
 
 function seek(e: Event) {
   const target = e.target as HTMLInputElement;
   currentTime.value = parseFloat(target.value);
-  if (!isPlaying.value) {
+  resetSoundSchedule();
+  if (isPlaying.value) {
+    audioAnchorTime = audioCtx?.currentTime ?? 0;
+    // 重置绝对时间锚点，避免跳回
+    playStartWallTime = performance.now();
+    playStartGameTime = currentTime.value;
+  } else {
     drawFrame();
   }
 }
@@ -384,26 +548,32 @@ function seek(e: Event) {
 function jumpToAction(idx: number) {
   const data = replayData.value;
   if (!data) return;
-  currentTime.value = data.actions[idx].time;
+  currentTime.value = data.actions[idx]?.time ?? 0;
   isPlaying.value = false;
+  resetSoundSchedule();
+  stopTicker();
   drawFrame();
 }
 
 watch(playbackSpeed, () => {
-  // speed 变化即可
+  if (isPlaying.value) {
+    // 速度变化时重置锚点 + 音效排期，从当前时刻以新速度继续
+    playStartGameTime = currentTime.value;
+    playStartWallTime = performance.now();
+    audioAnchorTime = audioCtx?.currentTime ?? 0;
+    resetSoundSchedule();
+  }
 });
 
 onMounted(() => {
+  initAudio();
   loadReplay().then(() => {
-    lastRenderTime = performance.now();
-    animationFrameId = requestAnimationFrame(renderLoop);
+    drawFrame();
   });
 });
 
 onUnmounted(() => {
-  if (animationFrameId) {
-    cancelAnimationFrame(animationFrameId);
-  }
+  stopTicker();
 });
 
 const currentFrameActionInfo = computed(() => {
@@ -411,6 +581,7 @@ const currentFrameActionInfo = computed(() => {
   const fi = currentFrameIndex.value;
   if (fi === 0) return "无操作";
   const act = replayData.value.actions[fi - 1];
+  if (!act) return "";
   const actionName =
     act.action === 0 ? "左键" : act.action === 1 ? "双击" : "右键";
   return `帧: ${fi}/${frameStates.length - 1} | 时间: ${act.time.toFixed(3)}s | 坐标: (${act.column}, ${act.row}) | ${actionName}`;
@@ -441,7 +612,8 @@ const currentFrameActionInfo = computed(() => {
           {{ replayData.tap }}
         </div>
         <div class="stat-item">
-          <span>创建时间: </span>{{ new Date(replayData.creatTime) }}
+          <span>创建时间: </span
+          >{{ new Date(replayData.createTime).toISOString() }}
         </div>
       </div>
 

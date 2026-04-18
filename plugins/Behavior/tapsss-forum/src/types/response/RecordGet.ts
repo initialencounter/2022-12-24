@@ -56,3 +56,41 @@ export interface User {
     uid: string;
     vip: boolean;
 }
+
+export interface ActionRecord {
+  action: number;
+  column: number;
+  row: number;
+  time: number;
+}
+
+export interface ReplyData {
+  bv: number;
+    bvs: number;
+    collect: boolean;
+    column: number;
+    createTime: number;
+    effectiveTap: number;
+    estimatedTime: number;
+    finished: boolean;
+    handle: string;
+    id: number;
+    map: string;
+    mapStatus: string;
+    mine: number;
+    mode: number;
+    playCount: number;
+    postId: number;
+    rank: number;
+    rankPercent: number;
+    row: number;
+    solvedBv: number;
+    tap: number;
+    themeId: number;
+    time: number;
+    type: number;
+    uid: string;
+    upload: boolean;
+    user: User;
+    actions: ActionRecord[];
+}

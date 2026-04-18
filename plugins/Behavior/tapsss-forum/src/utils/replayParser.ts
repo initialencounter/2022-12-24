@@ -1,11 +1,6 @@
+import type { ActionRecord } from '@/types/response/RecordGet';
 import pako from 'pako';
 
-export interface ActionRecord {
-  action: number;
-  column: number;
-  row: number;
-  time: number;
-}
 
 export function parseReplayHandle(base64Str: string): ActionRecord[] {
   const binaryString = window.atob(base64Str);

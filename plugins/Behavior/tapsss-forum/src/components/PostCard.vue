@@ -25,6 +25,15 @@ function goToPostDetail() {
   window.open(routeData.href, "_blank");
 }
 
+function openReplay(recordId?: number) {
+  if (!recordId) return;
+  const routeData = router.resolve({
+    name: "replay",
+    params: { recordId: recordId.toString() },
+  });
+  window.open(routeData.href, "_blank");
+}
+
 const levelIndex = computed(() =>
   props.post.user.timingLevel === -1 ? 0 : props.post.user.timingLevel,
 );
@@ -114,6 +123,7 @@ const recordColor = computed(() => recordTextColor[recordGameType.value]);
       <!-- Record Box -->
       <div
         class="record-box"
+        @click="openReplay(post.recordId)"
         v-if="hasRecord"
         :style="{ backgroundColor: recordBg, color: recordColor }"
       >

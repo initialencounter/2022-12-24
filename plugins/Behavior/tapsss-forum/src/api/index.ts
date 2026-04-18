@@ -3,9 +3,10 @@ import type { PostGetResponse } from "@/types/response/PostGetResponse";
 import type { PostList } from "@/types";
 import type { PostListGoodUserResponse } from "@/types/response/PostListGoodUserResponse";
 import type { RecordGetResponse } from "@/types/response/RecordGet";
+const isDev = import.meta.env.DEV;
 
 // Replace base URL with your actual backend or proxy endpoint
-const BASE_URL = '/api/Minesweeper';
+const BASE_URL = isDev ? '/api/Minesweeper': '/Minesweeper';
 
 async function fetchJSON<T>(path: string, body?: any): Promise<T> {
   const url = `${BASE_URL}${path}`;
