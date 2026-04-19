@@ -6,6 +6,7 @@ import type { RecordGetResponse } from "@/types/response/RecordGet";
 import type { UserHomeResponse } from "@/types/response/userHomeResponse";
 import type { SchulteRecordGetResponse } from "@/types/response/SchulteRecordGetResponse";
 import type { PuzzleRecordGetResponse } from "@/types/response/PuzzleRecordGetResponse";
+import type { userSearchResponse } from "@/types/response/userSearchResponse";
 
 const isDev = import.meta.env.DEV;
 
@@ -67,4 +68,8 @@ export async function schulteRecordGet(recordId: number): Promise<SchulteRecordG
 
 export async function userHome(targetUid?: number, targetName?: string): Promise<UserHomeResponse> {
   return fetchJSON<UserHomeResponse>('/user/home', { targetUid, targetName });
+}
+
+export async function userSearch(name: string, page: number, count: string): Promise<userSearchResponse> {
+  return fetchJSON<userSearchResponse>('/user/search', { name, page, count });
 }

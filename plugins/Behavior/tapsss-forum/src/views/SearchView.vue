@@ -1,12 +1,17 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import { useRoute } from "vue-router";
 import PostCard from "../components/PostCard.vue";
+import UserCard from "../components/UserCard.vue";
 import { postListSearch } from "../api";
-import type { Datum } from "../types";
+import { userSearch } from "../api";
+import type { Datum as PostDatum } from "../types";
+import type { Datum as UserDatum } from "../types/response/userSearchResponse";
 
 const route = useRoute();
-const posts = ref<Datum[]>([]);
+const searchType = ref<"post" | "user">("post");
+const posts = ref<PostDatum[]>([]);
+const users = ref<UserDatum[]>([]);
 const loading = ref(false);
 const currentPage = ref(0);
 const postsPerPage = 20;
@@ -35,21 +40,52 @@ async function searchPosts(page = 0) {
   }
 }
 
+async function searchUsers(page = 0) {
+  if (!keyword.value.trim()) return;
+
+  loading.value = true;
+  try {
+    const response = await userSearch(keyword.value, page, String(postsPerPage));
+    if (response.code === 200 && response.data) {
+      if (page === 0) {
+        users.value = response.data;
+      } else {
+        users.value.push(...response.data);
+      }
+    } else {
+      console.error("Failed to search users:", response.msg);
+    }
+  } catch (error) {
+    console.error("Error searching users:", error);
+  } finally {
+    loading.value = false;
+  }
+}
+
 function loadMore() {
   currentPage.value++;
-  searchPosts(currentPage.value);
+  if (searchType.value === "post") {
+    searchPosts(currentPage.value);
+  } else {
+    searchUsers(currentPage.value);
+  }
 }
 
 function handleSearch() {
   currentPage.value = 0;
-  searchPosts(0);
+  if (searchType.value === "post") {
+    searchPosts(0);
+  } else {
+    searchUsers(0);
+  }
 }
 
-onMounted(() => {
-  if (keyword.value) {
-    searchPosts();
-  }
-});
+function switchTab(type: "post" | "user") {
+  if (type === searchType.value) return;
+  searchType.value = type;
+  handleSearch();
+}
+
 </script>
 
 <template>
@@ -57,11 +93,26 @@ onMounted(() => {
     <header class="search-header">
       <router-link to="/" class="back-btn"> ← 返回列表 </router-link>
 
+      <div class="filter-tabs">
+        <button
+          :class="['tab-btn', { active: searchType === 'post' }]"
+          @click="switchTab('post')"
+        >
+          帖子
+        </button>
+        <button
+          :class="['tab-btn', { active: searchType === 'user' }]"
+          @click="switchTab('user')"
+        >
+          用户
+        </button>
+      </div>
+
       <div class="search-box">
         <input
           v-model="keyword"
           type="text"
-          placeholder="搜索帖子..."
+          :placeholder="searchType === 'post' ? '搜索帖子...' : '搜索用户...'"
           class="search-input"
           @keyup.enter="handleSearch"
         />
@@ -74,28 +125,42 @@ onMounted(() => {
         <p>请输入搜索关键词</p>
       </div>
 
-      <div v-else-if="loading && posts.length === 0" class="loading">
+      <div v-else-if="loading && currentPage === 0" class="loading">
         搜索中...
       </div>
 
-      <div v-else-if="posts.length === 0" class="empty-results">
+      <div v-else-if="searchType === 'post' && posts.length === 0" class="empty-results">
         <p>没有找到与 "{{ keyword }}" 相关的帖子</p>
+      </div>
+      <div v-else-if="searchType === 'user' && users.length === 0" class="empty-results">
+        <p>没有找到与 "{{ keyword }}" 相关的用户</p>
       </div>
 
       <div v-else>
         <div class="results-info">
-          <h2>搜索结果 ({{ posts.length }})</h2>
+          <h2>搜索结果 ({{ searchType === 'post' ? posts.length : users.length }})</h2>
           <p class="search-keyword">关键词: "{{ keyword }}"</p>
         </div>
 
-        <PostCard
-          v-for="post in posts"
-          :key="post.id"
-          :post="post"
-          class="post-item"
-        />
+        <template v-if="searchType === 'post'">
+          <PostCard
+            v-for="post in posts"
+            :key="post.id"
+            :post="post"
+            class="post-item"
+          />
+        </template>
 
-        <div class="load-more">
+        <template v-if="searchType === 'user'">
+          <UserCard
+            v-for="user in users"
+            :key="user.id"
+            :user="user"
+            class="post-item"
+          />
+        </template>
+
+        <div class="load-more" v-if="(searchType === 'post' && posts.length >= postsPerPage) || (searchType === 'user' && users.length >= postsPerPage)">
           <button @click="loadMore" :disabled="loading" class="load-more-btn">
             {{ loading ? "加载中..." : "加载更多" }}
           </button>
@@ -131,6 +196,32 @@ onMounted(() => {
 .back-btn:hover {
   background-color: #2a2a2a;
   border-color: #fa7299;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.tab-btn {
+  padding: 10px 20px;
+  background-color: #2a2a2a;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.tab-btn:hover {
+  background-color: #3a3a3a;
+}
+
+.tab-btn.active {
+  background-color: #fa7299;
+  color: #ffffff;
 }
 
 .search-box {

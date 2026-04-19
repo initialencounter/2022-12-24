@@ -19,7 +19,7 @@ const props = withDefaults(defineProps<{
 const router = useRouter();
 
 const avatarUrl = computed(() => {
-  return props.user?.avatar || 'https://via.placeholder.com/104';
+  return props.user?.avatar || '/Z7.png';
 });
 
 const style = computed(() => {

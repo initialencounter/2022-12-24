@@ -10,12 +10,6 @@ function goToHome() {
   router.push("/");
 }
 
-function goToSearch() {
-  if (searchKeyword.value.trim()) {
-    router.push(`/search?q=${encodeURIComponent(searchKeyword.value.trim())}`);
-  }
-}
-
 watch(
   () => route.path,
   () => {
@@ -29,17 +23,6 @@ watch(
     <div class="nav-container">
       <div class="nav-brand" @click="goToHome">
         <span class="brand-text">联萌社区</span>
-      </div>
-
-      <div class="nav-search">
-        <input
-          v-model="searchKeyword"
-          type="text"
-          placeholder="搜索帖子..."
-          class="nav-search-input"
-          @keyup.enter="goToSearch"
-        />
-        <button @click="goToSearch" class="nav-search-btn">搜索</button>
       </div>
 
       <div class="nav-links">
