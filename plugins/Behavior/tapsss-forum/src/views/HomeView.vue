@@ -5,8 +5,8 @@ export default {
 </script>
 
 <script setup lang="ts">
-import { ref, onMounted, onActivated, onDeactivated, nextTick } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted, onActivated, nextTick } from "vue";
+import { useRouter, onBeforeRouteLeave } from "vue-router";
 import PostCard from "../components/PostCard.vue";
 import { fetchPostList } from "../api";
 import type { Datum } from "../types";
@@ -81,7 +81,7 @@ onActivated(async () => {
   }, 50);
 });
 
-onDeactivated(() => {
+onBeforeRouteLeave(() => {
   savedPosition.value = window.scrollY || document.documentElement.scrollTop;
 });
 </script>

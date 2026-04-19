@@ -23,8 +23,7 @@ const props = defineProps<{ post: Datum }>();
 const router = useRouter();
 
 function goToPostDetail() {
-  const routeData = router.resolve(`/post/${props.post.id}`);
-  window.open(routeData.href, "_blank");
+  router.push(`/post/${props.post.id}`);
 }
 
 function openReplay(recordId?: number) {
