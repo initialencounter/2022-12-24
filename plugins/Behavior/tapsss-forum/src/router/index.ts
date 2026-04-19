@@ -32,7 +32,7 @@ const router = createRouter({
       component: SearchView
     },
     {
-      path: '/replay/:recordId',
+      path: '/replay/:recordId/:recordType',
       name: 'replay',
       component: ReplayDetailView,
       props: true

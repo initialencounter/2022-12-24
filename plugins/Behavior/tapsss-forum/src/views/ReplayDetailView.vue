@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from 'vue-router';
-import MinesweeperPlayer from '../components/MinesweeperPlayer.vue';
+import { useRoute, useRouter } from "vue-router";
+import MinesweeperPlayer from "../components/MinesweeperPlayer.vue";
 
 const route = useRoute();
 const router = useRouter();
 
 const recordId = route.params.recordId as string;
+const recordType = (route.params.recordType as string) || "0";
 
 function goBack() {
   router.go(-1);
@@ -15,11 +16,15 @@ function goBack() {
 <template>
   <div class="replay-view">
     <div class="header">
-      <button class="back-btn" @click="goBack"> ← 返回帖子</button>
+      <button class="back-btn" @click="goBack">← 返回帖子</button>
       <h1>录像回放 #{{ recordId }}</h1>
     </div>
-
-    <MinesweeperPlayer :record-id="recordId" />
+    <div v-if="recordType == '0'">
+      <MinesweeperPlayer :record-id="recordId" />
+    </div>
+    <div v-else>
+      <p>暂不支持该类型的录像回放。</p>
+    </div>
   </div>
 </template>
 

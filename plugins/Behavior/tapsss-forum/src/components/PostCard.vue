@@ -31,7 +31,10 @@ function openReplay(recordId?: number) {
   if (!recordId) return;
   const routeData = router.resolve({
     name: "replay",
-    params: { recordId: recordId.toString() },
+    params: {
+      recordId: recordId.toString(),
+      recordType: props.post.recordType.toString(),
+    },
   });
   window.open(routeData.href, "_blank");
 }
@@ -72,11 +75,7 @@ const recordColor = computed(() => recordTextColor[recordGameType.value]);
 <template>
   <div class="post-card" @click="goToPostDetail">
     <div class="user-info">
-      <UserAvatar
-        :user="post.user"
-        :size="50"
-        className="avatar"
-      />
+      <UserAvatar :user="post.user" :size="50" className="avatar" />
       <div class="user-meta">
         <div class="name-row">
           <span class="nickname">{{ post.user.nickName }}</span>
