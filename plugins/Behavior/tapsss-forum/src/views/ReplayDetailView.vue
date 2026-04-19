@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from "vue-router";
 import MinesweeperPlayer from "../components/MinesweeperPlayer.vue";
+import SchultePlayer from "../components/SchultePlayer.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -22,8 +23,11 @@ function goBack() {
     <div v-if="recordType == '0'">
       <MinesweeperPlayer :record-id="recordId" />
     </div>
+    <div v-if="recordType == '3'">
+      <SchultePlayer :record-id="recordId" />
+    </div>
     <div v-else>
-      <p>暂不支持该类型的录像回放。</p>
+      <p>未知的录像类型: {{ recordType }}</p>
     </div>
   </div>
 </template>

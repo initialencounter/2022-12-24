@@ -1,4 +1,5 @@
 import type { ActionRecord } from '@/types/response/RecordGet';
+import type { SchulteActionRecord } from '@/types/response/SchulteRecordGetResponse';
 import pako from 'pako';
 
 
@@ -28,5 +29,30 @@ export function parseReplayHandle(base64Str: string): ActionRecord[] {
     }
   }
 
+  return actions;
+}
+
+export function parseSchulteReplayHandle(base64Str: string): SchulteActionRecord[] {
+  const binaryString = window.atob(base64Str);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
+  const decompressed = pako.inflate(bytes, { to: 'string' });
+  const segments = decompressed.split('-');
+  const actions: SchulteActionRecord[] = [];
+  for (const seg of segments) {
+    if (!seg) continue;
+    const parts = seg.split(':');
+    if (parts.length >= 3) {
+      actions.push({
+        idx: parseInt(parts[0] as string) - 1,
+        right: parseInt(parts[1] as string) as 0 | 1,
+        time: parseInt(parts[2] as string)
+      });
+    }
+  }
   return actions;
 }

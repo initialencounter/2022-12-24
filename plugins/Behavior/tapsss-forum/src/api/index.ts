@@ -4,6 +4,8 @@ import type { PostList } from "@/types";
 import type { PostListGoodUserResponse } from "@/types/response/PostListGoodUserResponse";
 import type { RecordGetResponse } from "@/types/response/RecordGet";
 import type { UserHomeResponse } from "@/types/response/userHomeResponse";
+import type { SchulteRecordGetResponse } from "@/types/response/SchulteRecordGetResponse";
+
 const isDev = import.meta.env.DEV;
 
 // Replace base URL with your actual backend or proxy endpoint
@@ -52,6 +54,10 @@ export async function postListGoodUser(postId: number, page: number = 0, count: 
 
 export async function minesweeperRecordGet(recordId: number): Promise<RecordGetResponse> {
   return fetchJSON<RecordGetResponse>('/minesweeper/record/get', { recordId });
+}
+
+export async function schulteRecordGet(recordId: number): Promise<SchulteRecordGetResponse> {
+  return fetchJSON<SchulteRecordGetResponse>('/schulte/record/get', { recordId });
 }
 
 export async function userHome(targetUid?: number, targetName?: string): Promise<UserHomeResponse> {
