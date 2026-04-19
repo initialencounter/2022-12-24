@@ -10,11 +10,15 @@ import {
   formatTime,
 } from "@/utils/constants";
 import UserAvatar from "@/components/UserAvatar.vue";
+import UserCareer from "@/views/UserCareer.vue";
+import RecordList from "@/views/RecordList.vue";
+import AboutTa from "@/components/AboutTa.vue";
 
 const route = useRoute();
 const userData = ref<UserHomeData | null>(null);
 const loading = ref(true);
 const error = ref<string | null>(null);
+const currentTab = ref<"career" | "records" | "about">("about");
 
 onMounted(async () => {
   const uid = Number(route.params.uid);
@@ -53,7 +57,50 @@ const rankText = computed(() => {
   return `${TIMING_LEVELS_MAP[levelIndex.value] || ""}${r <= 300 ? " " + r : ""}`;
 });
 
-const sexMap: Record<number, string> = { 0: "", 1: "男", 2: "女" };
+const sexMap: Record<number, string> = { 0: "", 1: "♂", 2: "♀" };
+
+const age = computed(() => {
+  const b = user.value?.birthday;
+  if (!b) return null;
+  const d = new Date(b);
+  if (isNaN(d.getTime())) return null;
+  const today = new Date();
+  let a = today.getFullYear() - d.getFullYear();
+  if (
+    today.getMonth() < d.getMonth() ||
+    (today.getMonth() === d.getMonth() && today.getDate() < d.getDate())
+  ) {
+    a--;
+  }
+  return a >= 0 ? a : null;
+});
+
+const zodiac = computed(() => {
+  const b = user.value?.birthday;
+  if (!b) return null;
+  const d = new Date(b);
+  if (isNaN(d.getTime())) return null;
+  const m = d.getMonth() + 1;
+  const day = d.getDate();
+  const c = [20, 19, 21, 20, 21, 22, 23, 23, 23, 24, 23, 22];
+  const s = [
+    "摩羯座",
+    "水瓶座",
+    "双鱼座",
+    "白羊座",
+    "金牛座",
+    "双子座",
+    "巨蟹座",
+    "狮子座",
+    "处女座",
+    "天秤座",
+    "天蝎座",
+    "射手座",
+    "摩羯座",
+  ];
+  if (m === undefined || day === undefined) return null;
+  return day < (c[m - 1] || 0) ? s[m - 1] : s[m];
+});
 </script>
 
 <template>
@@ -61,145 +108,93 @@ const sexMap: Record<number, string> = { 0: "", 1: "男", 2: "女" };
     <div v-if="loading" class="loading">Loading...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
     <div v-else-if="user" class="user-profile">
-      <!-- 顶部背景 -->
-      <div
-        class="cover"
-        :style="{
-          backgroundImage: `url(${user.background || 'https://via.placeholder.com/800x200?text=Background'})`,
-        }"
-      ></div>
+      <!-- 头部区域（包含背景与用户信息） -->
+      <div class="header-section">
+        <!-- 顶部背景 -->
+        <div
+          class="cover"
+          :style="{
+            backgroundImage: `url(${user.background || 'https://via.placeholder.com/800x200?text=Background'})`,
+          }"
+        ></div>
 
-      <!-- 头像和基本信息 -->
-      <div class="user-info-section">
-        <UserAvatar :user="user" size="100px" className="avatar-large" />
-        <div class="basic-info">
-          <h2>
-            {{ user.nickName }}
-            <span v-if="user.vip" class="badge vip-badge">VIP</span>
-            <span class="badge sex-badge" :class="'sex-' + user.sex">{{
-              sexMap[user.sex]
-            }}</span>
-            <span
-              class="badge rank-badge"
-              v-if="rankText"
-              :style="{ backgroundColor: levelColor, color: textColor }"
-            >
-              {{ rankText }}
-            </span>
-          </h2>
-          <div class="id-row">
-            <span class="uid">UID: {{ user.uid || user.id }}</span>
-            <span class="online-status" :class="{ online: user.online }">{{
-              user.online ? "在线" : "离线"
-            }}</span>
-          </div>
-          <p class="sign">{{ user.sign || "这个人很懒，什么都没写~" }}</p>
-        </div>
-      </div>
-
-      <div class="user-record-section">
-        <!-- 生涯 -->
-        <router-link :to="`/career/${user.id}`" class="view-record-btn">
-          生涯
-        </router-link>
-        <!-- 录像 -->
-        <router-link :to="`/records/${user.id}`" class="view-record-btn">
-          录像
-        </router-link>
-      </div>
-
-      <!-- 数据统计区 -->
-      <div class="stats-section">
-        <div class="stat-item">
-          <span class="val">{{ userData?.followCount }}</span>
-          <span class="lbl">关注</span>
-        </div>
-        <div class="stat-item">
-          <span class="val">{{ userData?.fansCount }}</span>
-          <span class="lbl">粉丝</span>
-        </div>
-        <div class="stat-item">
-          <span class="val">{{ userData?.distance }}</span>
-          <span class="lbl">距离</span>
-        </div>
-        <div class="stat-item">
-          <span class="val">{{ user.visits }}</span>
-          <span class="lbl">人气</span>
-        </div>
-        <div class="stat-item">
-          <span class="val">{{ user.puzzleRank || "-" }}</span>
-          <span class="lbl">puzzleRank</span>
-        </div>
-      </div>
-
-      <!-- 详细信息区 -->
-      <div class="details-section">
-        <h3>基本资料</h3>
-        <div class="detail-grid">
-          <div class="detail-item">
-            <span class="lbl">注册时间</span>
-            <span class="val">{{ new Date(user.createTime).toISOString() }}</span>
-          </div>
-          <div class="detail-item" v-if="user.birthday">
-            <span class="lbl">生日</span>
-            <span class="val">{{ formatTime(user.birthday) }}</span>
-          </div>
-          <div class="detail-item">
-            <span class="lbl">地区</span>
-            <span class="val"
-              >{{ user.country || "暂无" }}
-              {{ user.province ? "- " + user.province : "" }}</span
-            >
-          </div>
-          <div class="detail-item">
-            <span class="lbl">账号状态</span>
-            <span class="val">
-              <span v-if="user.accountStatus === 0">正常</span>
-              <span v-else class="danger-text"
-                >异常 (状态码: {{ user.accountStatus }})</span
+        <!-- 头像和基本信息 -->
+        <div class="user-info-section">
+          <UserAvatar :user="user" size="90px" className="avatar-large" />
+          <div class="basic-info">
+            <h2>
+              {{ user.nickName }}
+              <span v-if="user.vip" class="badge vip-badge">VIP</span>
+              <span
+                class="badge rank-badge"
+                v-if="rankText"
+                :style="{ backgroundColor: levelColor, color: textColor }"
               >
-            </span>
+                {{ rankText }}
+              </span>
+            </h2>
+
+            <!-- Follow & Fans -->
+            <div class="follow-fans-row">
+              <div class="stat-item">
+                <span class="val">关注  {{ userData?.followCount || 0 }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="val">粉丝  {{ userData?.fansCount || 0 }}</span>
+              </div>
+            </div>
+
+            <!-- Tags -->
+            <div class="tags-row">
+              <span class="badge" :class="'sex-' + user.sex" v-if="user.sex">
+                {{ sexMap[user.sex] }} {{ age !== null ? age : "" }}
+              </span>
+              <span class="badge zodiac-badge" v-if="zodiac">{{ zodiac }}</span>
+              <span class="badge saolei-badge" v-if="saolei"
+                >扫雷网 {{ saolei.id }}</span
+              >
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- 绑定的扫雷网账号 -->
-      <div class="saolei-section" v-if="saolei">
-        <h3>扫雷网绑定</h3>
-        <div class="saolei-card">
-          <img
-            class="saolei-avatar"
-            :src="saolei.avatar || 'https://via.placeholder.com/60'"
-            alt="saolei avatar"
-          />
-          <div class="saolei-info">
-            <div class="saolei-name">
-              {{ saolei.name }} <span class="lbl">(ID: {{ saolei.id }})</span>
-            </div>
-            <div class="saolei-time">
-              绑定于: {{ formatTime(parseInt(saolei.createTime) || 0) }}
-            </div>
-          </div>
+      <!-- Tabs -->
+      <div class="tabs-nav">
+        <div
+          class="tab-item"
+          :class="{ active: currentTab === 'career' }"
+          @click="currentTab = 'career'"
+        >
+          生涯
+        </div>
+        <div
+          class="tab-item"
+          :class="{ active: currentTab === 'records' }"
+          @click="currentTab = 'records'"
+        >
+          记录
+        </div>
+        <div
+          class="tab-item"
+          :class="{ active: currentTab === 'about' }"
+          @click="currentTab = 'about'"
+        >
+          关于Ta
         </div>
       </div>
 
-      <!-- 比赛奖牌 -->
-      <div class="medals-section" v-if="userData?.userMatchMedals?.length">
-        <h3>比赛奖牌</h3>
-        <div class="medals">
-          <div
-            v-for="medal in userData.userMatchMedals"
-            :key="medal.id"
-            class="medal-item"
-            :title="'Rank: ' + medal.rank"
-          >
-            <img v-if="medal.icon" :src="medal.icon" :alt="medal.title" />
-            <div class="medal-info">
-              <div class="medal-title">{{ medal.title }}</div>
-              <div class="medal-rank">No.{{ medal.rank }}</div>
-            </div>
-          </div>
-        </div>
+      <div class="tab-content">
+        <UserCareer v-if="currentTab === 'career'" :uid="String(user.id)" />
+        <RecordList
+          v-else-if="currentTab === 'records'"
+          :uid="String(user.id)"
+        />
+        <AboutTa
+          v-else-if="currentTab === 'about'"
+          :user="user"
+          :saolei="saolei"
+          :userMatchMedals="userData?.userMatchMedals"
+        />
       </div>
     </div>
   </div>
@@ -213,11 +208,16 @@ const sexMap: Record<number, string> = { 0: "", 1: "男", 2: "女" };
   color: #fff;
   font-family: Arial, sans-serif;
 }
+.header-section {
+  position: relative;
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+}
 .cover {
-  height: 220px;
+  height: 320px;
+  width: 100%;
   background-size: cover;
   background-position: center;
-  border-radius: 0 0 12px 12px;
   position: relative;
 }
 .cover::after {
@@ -226,43 +226,51 @@ const sexMap: Record<number, string> = { 0: "", 1: "男", 2: "女" };
   bottom: 0;
   left: 0;
   right: 0;
-  height: 100px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
-  border-radius: 0 0 12px 12px;
+  height: 180px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
 }
 
 .user-info-section {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
   display: flex;
   align-items: flex-end;
-  margin-top: -50px;
-  padding: 0 20px;
-  position: relative;
+  padding: 20px 30px;
+  box-sizing: border-box;
   z-index: 2;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 /* 用 :deep 或者全局类处理 UserAvatar 中定义的 className="avatar-large" */
 :deep(.avatar-large) {
-  border: 4px solid #1b1b1b !important;
+  border: 3px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   background-color: #333;
+  flex-shrink: 0;
 }
 
 .basic-info {
   margin-left: 20px;
-  padding-bottom: 5px;
+  height: 90px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   flex: 1;
 }
 .basic-info h2 {
   margin: 0;
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
 }
 .badge {
-  font-size: 0.8rem;
-  padding: 2px 6px;
-  border-radius: 4px;
+  font-size: 0.6rem;
+  padding: 2px 10px;
+  border-radius: 20px;
   font-weight: normal;
 }
 .vip-badge {
@@ -286,76 +294,82 @@ const sexMap: Record<number, string> = { 0: "", 1: "男", 2: "女" };
   display: flex;
   align-items: center;
   gap: 15px;
-  margin-top: 6px;
 }
 .uid {
   color: #bbb;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
 }
 .online-status {
   font-size: 0.85rem;
-  color: #777;
+  color: #ccc;
 }
 .online-status.online {
   color: #4caf50;
 }
 
 .sign {
-  margin-top: 8px;
   color: #ddd;
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
-.stats-section {
+.tags-row {
   display: flex;
-  justify-content: space-around;
-  padding: 20px;
-  margin-top: 25px;
-  background: #1e1e1e;
-  border-radius: 10px;
+  gap: 8px;
 }
-
-.user-record-section {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 25px;
-}
-
-.view-record-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 15px;
-  background: #1e1e1e;
-  border-radius: 10px;
-  color: #fa7299;
-  text-decoration: none;
-  font-size: 1.1rem;
-  font-weight: bold;
-  transition: background-color 0.2s;
-}
-
-.view-record-btn:hover {
-  background: #2a2a2a;
-}
-
-.arrow-icon {
-  margin-left: 8px;
-  font-size: 1.4rem;
-  line-height: 1;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.stat-item .val {
-  font-size: 1.5rem;
-  font-weight: bold;
+.zodiac-badge {
+  background-color: #9c27b0;
   color: #fff;
+}
+.saolei-badge {
+  background-color: #2196f3;
+  color: #fff;
+}
+
+.follow-fans-row {
+  display: flex;
+  gap: 15px;
+  font-size: 0.85rem;
+}
+.follow-fans-row .stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.follow-fans-row .stat-item .val {
+  color: #fff;
+}
+.follow-fans-row .stat-item .lbl {
+  color: #aaa;
+}
+
+.tabs-nav {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+  border-bottom: 2px solid #333;
+}
+.tab-item {
+  padding: 10px 0;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: #aaa;
+  position: relative;
+}
+.tab-item.active {
+  color: #2196f3;
+  font-weight: bold;
+}
+.tab-item.active::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #2196f3;
+}
+.tab-content {
+  padding: 20px 0;
 }
 .stat-item .lbl {
   font-size: 0.9rem;

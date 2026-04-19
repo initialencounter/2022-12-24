@@ -5,8 +5,6 @@ import SearchView from '../views/SearchView.vue'
 import ReplyDetailView from '../views/ReplyDetailView.vue'
 import ReplayDetailView from '../views/ReplayDetailView.vue'
 import UserDetailView from '../views/UserDetailView.vue'
-import RecordList from '../views/RecordList.vue'
-import UserCareer from '../views/UserCareer.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -15,12 +13,6 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView
-    },
-    {
-      path: '/records/:uid',
-      name: 'records',
-      component: RecordList,
-      props: true
     },
     {
       path: '/post/:id',
@@ -50,13 +42,7 @@ const router = createRouter({
       name: 'user',
       component: UserDetailView,
       props: true
-    },
-    {
-      path: '/career/:uid',
-      name: 'career',
-      component: UserCareer,
-      props: true
-    },
+    }
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
