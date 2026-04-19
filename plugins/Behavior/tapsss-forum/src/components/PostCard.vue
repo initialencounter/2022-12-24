@@ -124,7 +124,7 @@ const recordColor = computed(() => recordTextColor[recordGameType.value]);
       <!-- Record Box -->
       <div
         class="record-box"
-        @click="openReplay(post.recordId)"
+        @click.stop="openReplay(post.recordId)"
         v-if="hasRecord"
         :style="{ backgroundColor: recordBg, color: recordColor }"
       >
