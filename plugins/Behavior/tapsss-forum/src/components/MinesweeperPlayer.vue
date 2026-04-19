@@ -8,6 +8,7 @@ import {
   shallowRef,
   nextTick,
 } from "vue";
+import UserAvatar from "./UserAvatar.vue";
 import { parseReplayHandle } from "../utils/replayParser";
 import { minesweeperRecordGet } from "../api";
 import type {
@@ -580,6 +581,12 @@ const currentFrameActionInfo = computed(() => {
     <div v-if="loading" class="loading">加载录像中...</div>
     <div v-else-if="errorMsg" class="error">{{ errorMsg }}</div>
     <div v-else-if="replayData" class="player-container">
+      <!-- 玩家信息 -->
+      <div class="player-info" v-if="replayData.user">
+        <UserAvatar :user="replayData.user" :size="48" class="avatar" />
+        <span class="nickname">{{ replayData.user.nickName }}</span>
+      </div>
+
       <!-- 参数面板 -->
       <div class="info-panel">
         <div class="stat-item">
@@ -687,6 +694,30 @@ const currentFrameActionInfo = computed(() => {
 
 .error {
   color: #ff4d4d;
+}
+
+.player-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: #2a2a2a;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #b6ccd2;
+}
+
+.nickname {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #fa7299;
 }
 
 .info-panel {
