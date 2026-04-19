@@ -96,8 +96,13 @@ const sexMap: Record<number, string> = { 0: "", 1: "男", 2: "女" };
           <p class="sign">{{ user.sign || "这个人很懒，什么都没写~" }}</p>
         </div>
       </div>
-      <!-- 生涯 -->
+
       <div class="user-record-section">
+        <!-- 生涯 -->
+        <router-link :to="`/career/${user.id}`" class="view-record-btn">
+          生涯
+        </router-link>
+        <!-- 录像 -->
         <router-link :to="`/records/${user.id}`" class="view-record-btn">
           录像
         </router-link>

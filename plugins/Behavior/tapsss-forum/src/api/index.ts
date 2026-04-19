@@ -12,6 +12,13 @@ import type { SchulteRecordListFilterResponse } from "@/types/response/SchulteRe
 import type { PuzzleRecordListFilterResponse } from "@/types/response/PuzzleRecordListFilterResponse";
 import type { TzfeRecordListFilterResponse } from "@/types/response/TzfeRecordListFilterResponse";
 import type { NonoRecordListFilterResponse } from "@/types/response/NonoRecordListFilterResponse";
+import type { UserConfigGetResponse } from "@/types/response/UserConfigGetResponse";
+import type { MinesweeperCareerResponse } from "@/types/response/MinesweeperCareerResponse";
+import type { SudokuCareerResponse } from "@/types/response/SudokuCareerResponse";
+import type { PuzzleCareerResponse } from "@/types/response/PuzzleCareerResponse";
+import type { NonoCareerResponse } from "@/types/response/NonoCareerResponse";
+import type { TzfeCareerResponse } from "@/types/response/TzfeCareerResponse";
+import type { SchulteCareerResponse } from "@/types/response/SchulteCareerResponse";
 
 const isDev = import.meta.env.DEV;
 
@@ -102,4 +109,38 @@ export async function tzfeRecordListFilter(userId: string, page: number, count: 
 export async function nonoRecordListFilter(userId: string, page: number, count: number): Promise<NonoRecordListFilterResponse> {
   const filter = `{"asc":false,"column":0,"finished":-1,"level":0,"maxDate":0,"maxTime":0.0,"minDate":0,"minTime":0.0,"mine":0,"mode":-1,"row":0,"sort":0,"targetId":0,"type":0,"userId":${userId}}`;
   return fetchJSON<NonoRecordListFilterResponse>('/nono/record/list/filter', { filter, page, count });
+}
+
+export async function userConfigGet(uid: number): Promise<UserConfigGetResponse> {
+  return fetchJSON<UserConfigGetResponse>('/user/config/get', { uid });
+}
+
+// '/Minesweeper/minesweeper/timing/career/simple',
+// '/Minesweeper/sudoku/career',
+// '/Minesweeper/puzzle/career/simple',
+// '/Minesweeper/nono/career/simple',
+// '/Minesweeper/tzfe/career',
+// '/Minesweeper/schulte/career',
+export async function minesweeperCareer(uid: number): Promise<MinesweeperCareerResponse> {
+  return fetchJSON<MinesweeperCareerResponse>('/minesweeper/timing/career/simple', { uid });
+}
+
+export async function sudokuCareer(targetUid: number): Promise<SudokuCareerResponse> {
+  return fetchJSON<SudokuCareerResponse>('/sudoku/career', { targetUid });
+}
+
+export async function puzzleCareer(uid: number): Promise<PuzzleCareerResponse> {
+  return fetchJSON<PuzzleCareerResponse>('/puzzle/career/simple', { uid });
+}
+
+export async function nonoCareer(uid: number): Promise<NonoCareerResponse> {
+  return fetchJSON<NonoCareerResponse>('/nono/career/simple', { uid });
+}
+
+export async function tzfeCareer(targetUid: number): Promise<TzfeCareerResponse> {
+  return fetchJSON<TzfeCareerResponse>('/tzfe/career', { targetUid, row:4, column:4 });
+}
+
+export async function schulteCareer(targetUid: number): Promise<SchulteCareerResponse> {
+  return fetchJSON<SchulteCareerResponse>('/schulte/career', { targetUid, level: 5, type: 0, blind: false });
 }
