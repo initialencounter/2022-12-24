@@ -1,0 +1,11 @@
+services:
+  forum:
+    volumes:
+      - ./dist:/root/forum/dist
+      - ./app:/root/forum/app
+    ports:
+      - 3001:3001
+    container_name: forum
+    image: ubuntu
+    restart: always
+    command: bash -c "cd /root/forum && ./app" # tail -f /dev/null
