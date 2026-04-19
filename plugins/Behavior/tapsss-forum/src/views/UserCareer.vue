@@ -194,7 +194,7 @@ function getScore(score: number) {
             <span class="label">3x3</span>
             <router-link target='_blank'
               v-if="puzzleData.info3?.record?.id"
-              :to="`/replay/${puzzleData.info3.record.id}/puzzle`"
+              :to="`/replay/${puzzleData.info3.record.id}/1`"
               class="value link"
             >
               {{ formatTime(puzzleData.info3?.time) }}
@@ -208,7 +208,7 @@ function getScore(score: number) {
             <span class="label">4x4</span>
             <router-link target='_blank'
               v-if="puzzleData.info4?.record?.id"
-              :to="`/replay/${puzzleData.info4.record.id}/puzzle`"
+              :to="`/replay/${puzzleData.info4.record.id}/1`"
               class="value link"
             >
               {{ formatTime(puzzleData.info4?.time) }}
@@ -222,7 +222,7 @@ function getScore(score: number) {
             <span class="label">5x5</span>
             <router-link target='_blank'
               v-if="puzzleData.info5?.record?.id"
-              :to="`/replay/${puzzleData.info5.record.id}/puzzle`"
+              :to="`/replay/${puzzleData.info5.record.id}/1`"
               class="value link"
             >
               {{ formatTime(puzzleData.info5?.time) }}
@@ -234,14 +234,7 @@ function getScore(score: number) {
           </div>
           <div class="stat-row">
             <span class="label">总成绩</span>
-            <router-link target='_blank'
-              v-if="puzzleData.infoTotal?.record?.id"
-              :to="`/replay/${puzzleData.infoTotal.record.id}/puzzle`"
-              class="value link"
-            >
-              {{ formatTime(puzzleData.infoTotal?.time) }}
-            </router-link>
-            <span v-else class="value">{{
+            <span class="value">{{
               formatTime(puzzleData.infoTotal?.time)
             }}</span>
             <span class="rank">{{ getRank(puzzleData.infoTotal?.rank) }}</span>
