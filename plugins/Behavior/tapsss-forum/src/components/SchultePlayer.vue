@@ -6,16 +6,24 @@ import {
   computed,
   shallowRef,
   nextTick,
-  watch
+  watch,
 } from "vue";
 import UserAvatar from "./UserAvatar.vue";
 import { parseSchulteReplayHandle } from "../utils/replayParser";
 import { schulteRecordGet } from "../api";
-import type { SchulteRecordGetResponse, Data, SchulteActionRecord } from "@/types/response/SchulteRecordGetResponse";
+import type {
+  SchulteRecordGetResponse,
+  Data,
+  SchulteActionRecord,
+} from "@/types/response/SchulteRecordGetResponse";
 
 // Since Data from SchulteRecordGetResponse doesn't have `actions` parsed, we extend it
 interface PlayData extends Data {
   parsedActions: SchulteActionRecord[];
+  parsedMaps?: {
+    board: number[][];
+    numberMap: Map<number, { r: number; c: number }>;
+  }[];
 }
 
 const props = defineProps<{
@@ -41,7 +49,8 @@ let lastRenderedTime = -1;
 const currentFrameIndex = computed(() => {
   if (!replayData.value) return 0;
   const actions = replayData.value.parsedActions;
-  let lo = 0, hi = actions.length - 1;
+  let lo = 0,
+    hi = actions.length - 1;
   let result = 0;
   while (lo <= hi) {
     const mid = (lo + hi) >> 1;
@@ -54,10 +63,6 @@ const currentFrameIndex = computed(() => {
   }
   return result;
 });
-
-// Board map
-let board: number[][] = [];
-let numberMap: Map<number, {r: number, c: number}> = new Map();
 
 // Web Audio API
 let audioCtx: AudioContext | null = null;
@@ -89,7 +94,8 @@ async function renderAudioTrack() {
   );
   for (let i = 0; i < actions.length; i++) {
     const act = actions[i]!;
-    if (act.right === 1) { // 仅对正确的点击播放声音
+    if (act.right === 1) {
+      // 仅对正确的点击播放声音
       const source = offlineCtx.createBufferSource();
       source.buffer = flagBuffer;
       const gain = offlineCtx.createGain();
@@ -128,27 +134,42 @@ async function loadReplay() {
   try {
     loading.value = true;
     errorMsg.value = "";
-    const res: SchulteRecordGetResponse = await schulteRecordGet(Number(props.recordId));
+    const res: SchulteRecordGetResponse = await schulteRecordGet(
+      Number(props.recordId),
+    );
 
     if (res.code === 200 && res.data) {
       if (res.data.actions) {
         const rawActions = parseSchulteReplayHandle(res.data.actions);
-        const parsedActions = rawActions.map(a => ({ ...a, time: a.time / 1000 }));
+        const parsedActions = rawActions.map((a) => ({
+          ...a,
+          time: a.time / 1000,
+        }));
+
+        const parsedMaps = [];
+        const mapsSource = (res.data as any).maps
+          ? (res.data as any).maps.split("|")
+          : [res.data.map];
+        for (const mapStr of mapsSource) {
+          const rowsStr = mapStr.split("-");
+          const b = rowsStr.map((r: string) => r.split(":").map(Number));
+          const nm = new Map<number, { r: number; c: number }>();
+          for (let r = 0; r < b.length; r++) {
+            for (let c = 0; c < b[r]!.length; c++) {
+              nm.set(b[r]![c]!, { r, c });
+            }
+          }
+          parsedMaps.push({ board: b, numberMap: nm });
+        }
+
         replayData.value = {
           ...res.data,
-          parsedActions
+          parsedActions,
+          parsedMaps,
         };
-        totalTime.value = res.data.time / 1000;
+        console.log("Parsed actions:", replayData.value);
 
-        // Parse map: e.g. "6:1:7-4:3:5-8:2:9"
-        const rows = res.data.map.split('-');
-        board = rows.map(r => r.split(':').map(Number));
-        numberMap.clear();
-        for (let r = 0; r < board.length; r++) {
-          for (let c = 0; c < board[r]!.length; c++) {
-            numberMap.set(board[r]![c]!, { r, c });
-          }
-        }
+        totalTime.value = res.data.time / 1000;
 
         loading.value = false;
         await initAudio();
@@ -195,30 +216,31 @@ function drawFrame() {
   const fi = currentFrameIndex.value;
   const actions = data.parsedActions;
 
-  // Determine safely clicked numbers till current frame
+  // Determine safely clicked numbers till current frame (which gives us currentTarget)
   let currentTarget = 1;
-  const clickedCells = new Set<string>();
 
   for (let i = 0; i < fi; i++) {
     const act = actions[i]!;
-    const pos = numberMap.get(act.idx);
-    if (!pos) continue;
-    const { r, c } = pos;
-
     if (act.right === 1) {
-      const val = board[r]?.[c];
-      if (val === currentTarget) {
-        clickedCells.add(`${r},${c}`);
-        currentTarget++;
-      }
+      currentTarget++;
     }
   }
+
+  // Current map depends on how many correct taps we had
+  const mapIndex = Math.min(
+    currentTarget - 1,
+    (data.parsedMaps?.length || 1) - 1,
+  );
+  const currentMapObj = data.parsedMaps?.[mapIndex];
+  if (!currentMapObj) return;
+
+  const { board: currentBoard, numberMap: currentNm } = currentMapObj;
 
   const wrongCells = new Set<string>();
   if (fi > 0) {
     const lastAct = actions[fi - 1];
     if (lastAct && lastAct.right === 0) {
-      const pos = numberMap.get(lastAct.idx);
+      const pos = currentNm.get(lastAct.idx);
       if (pos) {
         wrongCells.add(`${pos.r},${pos.c}`);
       }
@@ -228,8 +250,8 @@ function drawFrame() {
   // Draw board
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      const val = board[r]?.[c];
-      const isClicked = clickedCells.has(`${r},${c}`);
+      const val = currentBoard[r]?.[c];
+      const isClicked = val !== undefined && val < currentTarget;
       const isWrongInfo = wrongCells.has(`${r},${c}`);
 
       if (isWrongInfo) {
@@ -243,12 +265,16 @@ function drawFrame() {
       g.lineWidth = 2;
       g.strokeRect(c * cellSize, r * cellSize, cellSize, cellSize);
 
-      if (val !== undefined && (!data.blind || !isClicked)) {
+      if (val !== undefined && (data.type !== 1 || !isClicked)) {
         g.fillStyle = "#fff";
         g.font = `bold ${cellSize * 0.4}px Arial`;
         g.textAlign = "center";
         g.textBaseline = "middle";
-        g.fillText(val.toString(), c * cellSize + cellSize / 2, r * cellSize + cellSize / 2);
+        g.fillText(
+          val.toString(),
+          c * cellSize + cellSize / 2,
+          r * cellSize + cellSize / 2,
+        );
       }
     }
   }
@@ -266,7 +292,14 @@ function drawMotions() {
   const currentAction = data.parsedActions[fi - 1];
   if (!currentAction) return;
 
-  const pos = numberMap.get(currentAction.idx);
+  let tapsSoFar = 0;
+  for (let i = 0; i < fi - 1; i++) {
+    if (data.parsedActions[i]?.right) tapsSoFar++;
+  }
+  const curMapIndex = Math.min(tapsSoFar, (data.parsedMaps?.length ?? 1) - 1);
+  const curNm = data.parsedMaps![curMapIndex]?.numberMap;
+
+  const pos = curNm?.get(currentAction.idx);
   if (!pos) return;
 
   let x = pos.c * cellSize + cellSize / 2;
@@ -274,16 +307,23 @@ function drawMotions() {
 
   if (fi < data.parsedActions.length) {
     const nextAction = data.parsedActions[fi];
-    if (nextAction && numberMap.has(nextAction.idx)) {
-      const nextPos = numberMap.get(nextAction.idx)!;
-      const timeDiff = nextAction.time - currentAction.time;
-      if (timeDiff > 0) {
-        let progress = (currentTime.value - currentAction.time) / timeDiff;
-        progress = Math.max(0, Math.min(1, progress));
-        const nextX = nextPos.c * cellSize + cellSize / 2;
-        const nextY = nextPos.r * cellSize + cellSize / 2;
-        x = x + (nextX - x) * progress;
-        y = y + (nextY - y) * progress;
+    if (nextAction) {
+      const nextMapIndex = Math.min(
+        tapsSoFar + (currentAction.right ? 1 : 0),
+        (data.parsedMaps?.length ?? 1) - 1,
+      );
+      const nextNm = data?.parsedMaps![nextMapIndex]?.numberMap;
+      if (nextNm?.has(nextAction.idx)) {
+        const nextPos = nextNm.get(nextAction.idx)!;
+        const timeDiff = nextAction.time - currentAction.time;
+        if (timeDiff > 0) {
+          let progress = (currentTime.value - currentAction.time) / timeDiff;
+          progress = Math.max(0, Math.min(1, progress));
+          const nextX = nextPos.c * cellSize + cellSize / 2;
+          const nextY = nextPos.r * cellSize + cellSize / 2;
+          x = x + (nextX - x) * progress;
+          y = y + (nextY - y) * progress;
+        }
       }
     }
   }
@@ -370,7 +410,8 @@ function stepFrame(direction: number) {
 
   let targetIndex = currentFrameIndex.value + direction;
   if (targetIndex < 0) targetIndex = 0;
-  if (targetIndex > data.parsedActions.length) targetIndex = data.parsedActions.length;
+  if (targetIndex > data.parsedActions.length)
+    targetIndex = data.parsedActions.length;
 
   if (targetIndex === 0) {
     currentTime.value = 0;
@@ -404,12 +445,36 @@ const currentFrameActionInfo = computed(() => {
   const act = replayData.value.parsedActions[fi - 1];
   if (!act) return "";
 
-  const pos = numberMap.get(act.idx);
-  const c = pos ? pos.c + 1 : '?';
-  const r = pos ? pos.r + 1 : '?';
+  let tapsSoFar = 0;
+  for (let i = 0; i < fi - 1; i++) {
+    if (replayData.value.parsedActions[i]?.right) tapsSoFar++;
+  }
+  const curMapIndex = Math.min(
+    tapsSoFar,
+    (replayData.value.parsedMaps?.length ?? 1) - 1,
+  );
+  const nm = replayData?.value?.parsedMaps![curMapIndex]?.numberMap;
 
-  return `帧: ${fi}/${replayData.value.parsedActions.length} | 时间: ${act.time.toFixed(3)}s | 坐标: (${c}, ${r}) | 目标: ${act.idx} | ${act.right ? '正确' : '错误'}`;
+  const pos = nm?.get(act.idx);
+  const c = pos ? pos.c + 1 : "?";
+  const r = pos ? pos.r + 1 : "?";
+
+  return `帧: ${fi}/${replayData.value.parsedActions.length} | 时间: ${act.time.toFixed(3)}s | 坐标: (${c}, ${r}) | 目标: ${act.idx} | ${act.right ? "正确" : "错误"}`;
 });
+
+function getActionPos(idx: number) {
+  const data = replayData.value;
+  if (!data) return { c: "?", r: "?" };
+  let tapsSoFar = 0;
+  for (let i = 0; i < idx; i++) {
+    if (data.parsedActions[i]?.right) tapsSoFar++;
+  }
+  const curMapIndex = Math.min(tapsSoFar, (data.parsedMaps?.length ?? 1) - 1);
+  const nm = data.parsedMaps![curMapIndex]?.numberMap;
+  // @ts-ignore
+  const pos = nm?.get(data?.parsedActions[idx].idx);
+  return pos ? { c: pos.c + 1, r: pos.r + 1 } : { c: "?", r: "?" };
+}
 </script>
 
 <template>
@@ -423,11 +488,25 @@ const currentFrameActionInfo = computed(() => {
       </div>
 
       <div class="info-panel">
-        <div class="stat-item"><span>难度: </span>{{ replayData.row }} x {{ replayData.column }}</div>
-        <div class="stat-item"><span>时长: </span>{{ (replayData.time / 1000).toFixed(3) }}s</div>
-        <div class="stat-item"><span>点击: </span>{{ replayData.tapCorrect }}/{{ replayData.tap }}</div>
-        <div class="stat-item"><span>反应时间: </span>{{ replayData.reactionTime }}ms</div>
-        <div class="stat-item"><span>创建时间: </span>{{ new Date(replayData.createTime).toISOString() }}</div>
+        <div class="stat-item">
+          <span>难度: </span>{{ replayData.row }} x {{ replayData.column }}
+          {{ replayData.type === 1 ? "简单" : "普通" }}
+          {{ replayData.maps ? "打乱" : "" }}
+          {{ replayData.blind ? "盲玩" : "" }}
+        </div>
+        <div class="stat-item">
+          <span>时长: </span>{{ (replayData.time / 1000).toFixed(3) }}s
+        </div>
+        <div class="stat-item">
+          <span>点击: </span>{{ replayData.tapCorrect }}/{{ replayData.tap }}
+        </div>
+        <div class="stat-item">
+          <span>反应时间: </span>{{ replayData.reactionTime }}ms
+        </div>
+        <div class="stat-item">
+          <span>创建时间: </span
+          >{{ new Date(replayData.createTime).toISOString() }}
+        </div>
       </div>
 
       <div class="canvas-wrapper">
@@ -438,11 +517,20 @@ const currentFrameActionInfo = computed(() => {
         <button @click="togglePlay" class="play-btn">
           {{ isPlaying ? "暂停" : currentTime >= totalTime ? "重播" : "播放" }}
         </button>
-        <button @click="stepFrame(-1)" class="step-btn" title="上一帧">◀</button>
+        <button @click="stepFrame(-1)" class="step-btn" title="上一帧">
+          ◀
+        </button>
         <button @click="stepFrame(1)" class="step-btn" title="下一帧">▶</button>
         <div class="progress-bar">
           <span>{{ currentTime.toFixed(3) }}</span>
-          <input type="range" min="0" :max="totalTime" step="0.001" :value="currentTime" @input="seek" />
+          <input
+            type="range"
+            min="0"
+            :max="totalTime"
+            step="0.001"
+            :value="currentTime"
+            @input="seek"
+          />
           <span>{{ totalTime.toFixed(3) }}</span>
         </div>
         <select v-model="playbackSpeed" class="speed-select">
@@ -463,10 +551,18 @@ const currentFrameActionInfo = computed(() => {
           <div
             v-for="(act, idx) in replayData.parsedActions"
             :key="idx"
-            :class="['action-row', { active: Number(idx) < currentFrameIndex }, { current: Number(idx) === currentFrameIndex - 1 }]"
+            :class="[
+              'action-row',
+              { active: Number(idx) < currentFrameIndex },
+              { current: Number(idx) === currentFrameIndex - 1 },
+            ]"
             @click="jumpToAction(Number(idx))"
           >
-            {{ Number(idx) + 1 }}. [{{ act.time.toFixed(3) }}s] 目标: {{ act.idx }} 坐标: ({{ numberMap.get(act.idx)?.c !== undefined ? numberMap.get(act.idx)!.c + 1 : '?' }}, {{ numberMap.get(act.idx)?.r !== undefined ? numberMap.get(act.idx)!.r + 1 : '?' }}) [{{ act.right ? '正确' : '错误' }}]
+            {{ Number(idx) + 1 }}. [{{ act.time.toFixed(3) }}s] 目标:
+            {{ act.idx }} 坐标: ({{ getActionPos(Number(idx)).c }},
+            {{ getActionPos(Number(idx)).r }}) [{{
+              act.right ? "正确" : "错误"
+            }}]
           </div>
         </div>
       </div>
@@ -483,31 +579,150 @@ const currentFrameActionInfo = computed(() => {
   max-width: 900px;
   margin: 0 auto;
 }
-.loading, .error { text-align: center; padding: 40px; font-size: 1.2rem; }
-.error { color: #ff4d4d; }
-.player-info { display: flex; align-items: center; gap: 15px; background: #2a2a2a; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-.avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid #ff8c00; }
-.nickname { font-size: 1.2rem; font-weight: bold; color: #ff8c00; }
-.info-panel { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; background: #2a2a2a; padding: 15px; border-radius: 8px; }
-.stat-item { font-size: 0.95rem; }
-.stat-item span { color: #999; }
-.canvas-wrapper { overflow: auto; display: flex; justify-content: center; background: #333; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-canvas { box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); }
-.controls { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
-.play-btn { background: #ff8c00; border: none; color: #fff; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 1rem; }
-.play-btn:hover { background: #e07b00; }
-.step-btn { background: #2a2a2a; border: 1px solid #444; color: #fff; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
-.step-btn:hover { background: #444; }
-.progress-bar { flex: 1; display: flex; align-items: center; gap: 10px; }
-.progress-bar input { flex: 1; cursor: pointer; }
-.speed-select { background: #2a2a2a; color: #fff; border: 1px solid #444; padding: 5px 10px; border-radius: 5px; }
-.current-action { font-size: 1.1rem; margin-bottom: 15px; padding: 10px; background: #2a2a2a; border-radius: 5px; }
-.current-action strong { color: #ff8c00; }
-.actions-list { background: #2a2a2a; padding: 15px; border-radius: 8px; }
-.actions-list h3 { margin-top: 0; margin-bottom: 10px; font-size: 1rem; color: #ccc; }
-.list-scroll { max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.9rem; }
-.action-row { padding: 5px; border-bottom: 1px solid #333; cursor: pointer; }
-.action-row:hover { background: rgba(255, 255, 255, 0.1); }
-.action-row.active { color: #aaa; }
-.action-row.current { background: rgba(255, 140, 0, 0.4); color: #fff; font-weight: bold; }
+.loading,
+.error {
+  text-align: center;
+  padding: 40px;
+  font-size: 1.2rem;
+}
+.error {
+  color: #ff4d4d;
+}
+.player-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: #2a2a2a;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ff8c00;
+}
+.nickname {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #ff8c00;
+}
+.info-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+  background: #2a2a2a;
+  padding: 15px;
+  border-radius: 8px;
+}
+.stat-item {
+  font-size: 0.95rem;
+}
+.stat-item span {
+  color: #999;
+}
+.canvas-wrapper {
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  background: #333;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+canvas {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+.play-btn {
+  background: #ff8c00;
+  border: none;
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.play-btn:hover {
+  background: #e07b00;
+}
+.step-btn {
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.step-btn:hover {
+  background: #444;
+}
+.progress-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.progress-bar input {
+  flex: 1;
+  cursor: pointer;
+}
+.speed-select {
+  background: #2a2a2a;
+  color: #fff;
+  border: 1px solid #444;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+.current-action {
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+  padding: 10px;
+  background: #2a2a2a;
+  border-radius: 5px;
+}
+.current-action strong {
+  color: #ff8c00;
+}
+.actions-list {
+  background: #2a2a2a;
+  padding: 15px;
+  border-radius: 8px;
+}
+.actions-list h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1rem;
+  color: #ccc;
+}
+.list-scroll {
+  max-height: 200px;
+  overflow-y: auto;
+  font-family: monospace;
+  font-size: 0.9rem;
+}
+.action-row {
+  padding: 5px;
+  border-bottom: 1px solid #333;
+  cursor: pointer;
+}
+.action-row:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.action-row.active {
+  color: #aaa;
+}
+.action-row.current {
+  background: rgba(255, 140, 0, 0.4);
+  color: #fff;
+  font-weight: bold;
+}
 </style>
