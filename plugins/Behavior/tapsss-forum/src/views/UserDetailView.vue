@@ -96,6 +96,12 @@ const sexMap: Record<number, string> = { 0: "", 1: "男", 2: "女" };
           <p class="sign">{{ user.sign || "这个人很懒，什么都没写~" }}</p>
         </div>
       </div>
+      <!-- 生涯 -->
+      <div class="user-record-section">
+        <router-link :to="`/records/${user.id}`" class="view-record-btn">
+          录像
+        </router-link>
+      </div>
 
       <!-- 数据统计区 -->
       <div class="stats-section">
@@ -303,6 +309,39 @@ const sexMap: Record<number, string> = { 0: "", 1: "男", 2: "女" };
   background: #1e1e1e;
   border-radius: 10px;
 }
+
+.user-record-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 25px;
+}
+
+.view-record-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 15px;
+  background: #1e1e1e;
+  border-radius: 10px;
+  color: #fa7299;
+  text-decoration: none;
+  font-size: 1.1rem;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.view-record-btn:hover {
+  background: #2a2a2a;
+}
+
+.arrow-icon {
+  margin-left: 8px;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
 .stat-item {
   display: flex;
   flex-direction: column;

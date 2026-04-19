@@ -7,6 +7,11 @@ import type { UserHomeResponse } from "@/types/response/userHomeResponse";
 import type { SchulteRecordGetResponse } from "@/types/response/SchulteRecordGetResponse";
 import type { PuzzleRecordGetResponse } from "@/types/response/PuzzleRecordGetResponse";
 import type { userSearchResponse } from "@/types/response/userSearchResponse";
+import type { MinesweeperRecordListResponse } from "@/types/response/MinesweeperRecordListResponse";
+import type { SchulteRecordListFilterResponse } from "@/types/response/SchulteRecordListFilterResponse";
+import type { PuzzleRecordListFilterResponse } from "@/types/response/PuzzleRecordListFilterResponse";
+import type { TzfeRecordListFilterResponse } from "@/types/response/TzfeRecordListFilterResponse";
+import type { NonoRecordListFilterResponse } from "@/types/response/NonoRecordListFilterResponse";
 
 const isDev = import.meta.env.DEV;
 
@@ -72,4 +77,29 @@ export async function userHome(targetUid?: number, targetName?: string): Promise
 
 export async function userSearch(name: string, page: number, count: string): Promise<userSearchResponse> {
   return fetchJSON<userSearchResponse>('/user/search', { name, page, count });
+}
+
+export async function minesweeperRecordList(userId: string, page: number, count: number): Promise<MinesweeperRecordListResponse> {
+  const filter = `{"asc":false,"column":0,"finished":-1,"level":0,"maxBv":0,"maxBvs":0.0,"maxDate":0,"maxTime":0.0,"minBv":0,"minBvs":0.0,"minDate":0,"minTime":0.0,"mine":0,"mode":-1,"row":0,"sort":0,"targetId":0,"type":0,"userId":${userId}}`;
+  return fetchJSON<MinesweeperRecordListResponse>('/minesweeper/record/list', { filter, page, count });
+}
+
+export async function schulteRecordListFilter(userId: string, page: number, count: number): Promise<SchulteRecordListFilterResponse> {
+  const filter = `{"asc":false,"blind":-1,"level":0,"maxDate":0,"maxTime":0.0,"minDate":0,"minTime":0.0,"sort":0,"targetId":0,"type":-1,"userId":${userId}}`;
+  return fetchJSON<SchulteRecordListFilterResponse>('/schulte/record/list/filter', { filter, page, count });
+}
+
+export async function puzzleRecordListFilter(userId: string, page: number, count: number): Promise<PuzzleRecordListFilterResponse> {
+  const filter = `{"asc":false,"blind":-1,"level":0,"maxStep":0,"maxTime":0.0,"minStep":0,"minTime":0.0,"mode":-1,"sort":0,"targetId":0,"userId":${userId}}`;
+  return fetchJSON<PuzzleRecordListFilterResponse>('/puzzle/record/list/filter', { filter, page, count });
+}
+
+export async function tzfeRecordListFilter(userId: string, page: number, count: number): Promise<TzfeRecordListFilterResponse> {
+  const filter = `{"asc":false,"level":0,"maxScore":0,"maxTime":0.0,"minScore":0,"minTime":0.0,"sort":0,"targetId":0,"userId":${userId}}`;
+  return fetchJSON<TzfeRecordListFilterResponse>('/tzfe/record/list/filter', { filter, page, count });
+}
+
+export async function nonoRecordListFilter(userId: string, page: number, count: number): Promise<NonoRecordListFilterResponse> {
+  const filter = `{"asc":false,"column":0,"finished":-1,"level":0,"maxDate":0,"maxTime":0.0,"minDate":0,"minTime":0.0,"mine":0,"mode":-1,"row":0,"sort":0,"targetId":0,"type":0,"userId":${userId}}`;
+  return fetchJSON<NonoRecordListFilterResponse>('/nono/record/list/filter', { filter, page, count });
 }
