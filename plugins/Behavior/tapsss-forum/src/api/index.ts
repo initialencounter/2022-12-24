@@ -5,6 +5,7 @@ import type { PostListGoodUserResponse } from "@/types/response/PostListGoodUser
 import type { RecordGetResponse } from "@/types/response/RecordGet";
 import type { UserHomeResponse } from "@/types/response/userHomeResponse";
 import type { SchulteRecordGetResponse } from "@/types/response/SchulteRecordGetResponse";
+import type { PuzzleRecordGetResponse } from "@/types/response/PuzzleRecordGetResponse";
 
 const isDev = import.meta.env.DEV;
 
@@ -54,6 +55,10 @@ export async function postListGoodUser(postId: number, page: number = 0, count: 
 
 export async function minesweeperRecordGet(recordId: number): Promise<RecordGetResponse> {
   return fetchJSON<RecordGetResponse>('/minesweeper/record/get', { recordId });
+}
+
+export async function puzzleRecordGetResponse(recordId: number): Promise<PuzzleRecordGetResponse> {
+  return fetchJSON<PuzzleRecordGetResponse>('/puzzle/record/get', { recordId });
 }
 
 export async function schulteRecordGet(recordId: number): Promise<SchulteRecordGetResponse> {

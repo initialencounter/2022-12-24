@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from "vue-router";
 import MinesweeperPlayer from "../components/MinesweeperPlayer.vue";
+import PuzzlePlayer from "../components/PuzzlePlayer.vue";
 import SchultePlayer from "../components/SchultePlayer.vue";
 
 const route = useRoute();
@@ -22,6 +23,9 @@ function goBack() {
     </div>
     <div v-if="recordType == '0'">
       <MinesweeperPlayer :record-id="recordId" />
+    </div>
+    <div v-if="recordType == '1'">
+      <PuzzlePlayer :record-id="recordId" />
     </div>
     <div v-if="recordType == '3'">
       <SchultePlayer :record-id="recordId" />

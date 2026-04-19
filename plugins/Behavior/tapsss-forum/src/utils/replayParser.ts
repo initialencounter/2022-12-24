@@ -1,5 +1,6 @@
 import type { ActionRecord } from '@/types/response/RecordGet';
 import type { SchulteActionRecord } from '@/types/response/SchulteRecordGetResponse';
+import type { PuzzleActionRecord } from '@/types/response/PuzzleRecordGetResponse';
 import pako from 'pako';
 
 
@@ -54,5 +55,31 @@ export function parseSchulteReplayHandle(base64Str: string): SchulteActionRecord
       });
     }
   }
+  return actions;
+}
+
+export function parsePuzzleReplayHandle(base64Str: string): PuzzleActionRecord[] {
+  const binaryString = window.atob(base64Str);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
+  const decompressed = pako.inflate(bytes, { to: 'string' });
+  const segments = decompressed.split('-');
+  const actions: PuzzleActionRecord[] = [];
+  for (const seg of segments) {
+    if (!seg) continue;
+    const parts = seg.split(':');
+    if (parts.length >= 3) {
+      actions.push({
+        row: parseInt(parts[0] as string),
+        column: parseInt(parts[1] as string),
+        time: parseInt(parts[2] as string),
+      });
+    }
+  }
+  console.log('Parsed puzzle actions:', actions);
   return actions;
 }
