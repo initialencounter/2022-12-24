@@ -7,7 +7,6 @@ import {
   TIMING_LEVELS_MAP,
   TIMING_LEVELS_COLOR,
   TIMING_LEVELS_TEXT_COLOR,
-  formatTime,
 } from "@/utils/constants";
 import UserAvatar from "@/components/UserAvatar.vue";
 import UserCareer from "@/views/UserCareer.vue";
@@ -184,17 +183,19 @@ const zodiac = computed(() => {
       </div>
 
       <div class="tab-content">
-        <UserCareer v-if="currentTab === 'career'" :uid="String(user.id)" />
-        <RecordList
-          v-else-if="currentTab === 'records'"
-          :uid="String(user.id)"
-        />
-        <AboutTa
-          v-else-if="currentTab === 'about'"
-          :user="user"
-          :saolei="saolei"
-          :userMatchMedals="userData?.userMatchMedals"
-        />
+        <KeepAlive>
+          <UserCareer v-if="currentTab === 'career'" :uid="String(user.id)" />
+          <RecordList
+            v-else-if="currentTab === 'records'"
+            :uid="String(user.id)"
+          />
+          <AboutTa
+            v-else-if="currentTab === 'about'"
+            :user="user"
+            :saolei="saolei"
+            :userMatchMedals="userData?.userMatchMedals"
+          />
+        </KeepAlive>
       </div>
     </div>
   </div>
