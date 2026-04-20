@@ -4727,6 +4727,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/cors@npm:^2.8.19":
+  version: 2.8.19
+  resolution: "@types/cors@npm:2.8.19"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10/9545cc532c9218754443f48a0c98c1a9ba4af1fe54a3425c95de75ff3158147bb39e666cb7c6bf98cc56a9c6dc7b4ce5b2cbdae6b55d5942e50c81b76ed6b825
+  languageName: node
+  linkType: hard
+
 "@types/d3-array@npm:*":
   version: 3.2.1
   resolution: "@types/d3-array@npm:3.2.1"
@@ -16636,6 +16645,7 @@ __metadata:
   resolution: "tapsss-forum@workspace:plugins/Behavior/tapsss-forum"
   dependencies:
     "@tsconfig/node24": "npm:^24.0.4"
+    "@types/cors": "npm:^2.8.19"
     "@types/howler": "npm:^2"
     "@types/node": "npm:^24.12.0"
     "@vitejs/plugin-vue": "npm:^6.0.5"

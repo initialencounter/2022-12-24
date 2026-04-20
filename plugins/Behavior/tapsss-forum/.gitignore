@@ -38,9 +38,9 @@ __screenshots__/
 # Vite
 *.timestamp-*-*.mjs
 
-proxy-server.ts
 recoder.json
 dist.zip
 app
 image-cache
 record-cache
+encrypt.ts

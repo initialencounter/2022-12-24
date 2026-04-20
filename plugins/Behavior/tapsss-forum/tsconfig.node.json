@@ -2,6 +2,8 @@
 {
   "extends": "@tsconfig/node24/tsconfig.json",
   "include": [
+    "encrypt.ts",
+    "proxy-server.ts",
     "vite.config.*",
     "vitest.config.*",
     "cypress.config.*",

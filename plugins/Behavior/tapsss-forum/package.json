@@ -11,6 +11,7 @@
     "type-check": "vue-tsc --build"
   },
   "dependencies": {
+    "@types/cors": "^2.8.19",
     "cordis": "^4.0.0-rc.3",
     "howler": "^2.2.4",
     "pinia": "^3.0.4",
