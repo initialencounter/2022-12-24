@@ -15,6 +15,7 @@ import {
   recordTextColor,
   computeType,
 } from "../utils/constants";
+import { proxyImageUrl } from "../utils/imageProxy";
 
 import MarkdownIt from "markdown-it";
 import UserAvatar from "../components/UserAvatar.vue";
@@ -59,7 +60,7 @@ const renderedText = computed(() => {
 
 const images = computed(() => {
   if (!post.value?.text) return [];
-  return extractImageLinksFromMarkdown(post.value.text);
+  return extractImageLinksFromMarkdown(post.value.text).map(proxyImageUrl);
 });
 
 const hasRecord = computed(() => !!post.value?.recordId);

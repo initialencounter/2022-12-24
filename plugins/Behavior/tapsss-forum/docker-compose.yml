@@ -2,6 +2,8 @@ services:
   forum:
     volumes:
       - ./dist:/root/forum/dist
+      - ./image-cache:/root/forum/image-cache
+      - ./record-cache:/root/forum/record-cache
       - ./app:/root/forum/app
     ports:
       - 3001:3001

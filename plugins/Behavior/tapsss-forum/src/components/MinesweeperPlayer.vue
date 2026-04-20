@@ -11,6 +11,7 @@ import {
 import UserAvatar from "./UserAvatar.vue";
 import { parseReplayHandle } from "../utils/replayParser";
 import { minesweeperRecordGet } from "../api";
+import { getCachedRecord, cacheRecord } from "@/utils/recordCache";
 import type {
   ActionRecord,
   RecordGetResponse,
@@ -184,9 +185,12 @@ async function loadReplay() {
   try {
     loading.value = true;
     errorMsg.value = "";
-    const res: RecordGetResponse = await minesweeperRecordGet(
-      Number(props.recordId),
-    );
+    const recordIdNum = Number(props.recordId);
+    const cached = await getCachedRecord<RecordGetResponse>('minesweeper', recordIdNum);
+    const res: RecordGetResponse = cached ?? await minesweeperRecordGet(recordIdNum);
+    if (!cached && res.code === 200) {
+      cacheRecord('minesweeper', recordIdNum, res);
+    }
 
     if (res.code === 200 && res.data) {
       if (res.data.handle) {

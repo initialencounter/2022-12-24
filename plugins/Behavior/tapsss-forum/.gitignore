@@ -42,3 +42,5 @@ proxy-server.ts
 recoder.json
 dist.zip
 app
+image-cache
+record-cache

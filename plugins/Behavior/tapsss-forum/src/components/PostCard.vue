@@ -16,6 +16,7 @@ import {
   computeType,
   computeNonoType,
 } from "../utils/constants";
+import { proxyImageUrl } from "../utils/imageProxy";
 
 import UserAvatar from "./UserAvatar.vue";
 
@@ -61,7 +62,7 @@ const plainText = computed(() => {
   return removeHashWrappedStrings(removeImagesAndLinksFromMarkdown(t)).trim();
 });
 const images = computed(() =>
-  extractImageLinksFromMarkdown(props.post.text || ""),
+  extractImageLinksFromMarkdown(props.post.text || "").map(proxyImageUrl),
 );
 
 const hasRecord = computed(() => !!props.post.recordId);

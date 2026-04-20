@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { proxyImageUrl } from '@/utils/imageProxy';
 
 const props = withDefaults(defineProps<{
   user?: {
@@ -19,7 +20,7 @@ const props = withDefaults(defineProps<{
 const router = useRouter();
 
 const avatarUrl = computed(() => {
-  return props.user?.avatar || '/Z7.png';
+  return proxyImageUrl(props.user?.avatar || '/Z7.png');
 });
 
 const style = computed(() => {

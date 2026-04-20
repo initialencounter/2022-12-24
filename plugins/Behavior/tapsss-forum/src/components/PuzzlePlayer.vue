@@ -11,6 +11,7 @@ import {
 import UserAvatar from "./UserAvatar.vue";
 import { parsePuzzleReplayHandle } from "../utils/replayParser";
 import { puzzleRecordGetResponse } from "../api";
+import { getCachedRecord, cacheRecord } from "@/utils/recordCache";
 import type {
   PuzzleRecordGetResponse,
   Data,
@@ -280,9 +281,12 @@ async function loadReplay() {
   try {
     loading.value = true;
     errorMsg.value = "";
-    const res: PuzzleRecordGetResponse = await puzzleRecordGetResponse(
-      Number(props.recordId),
-    );
+    const recordIdNum = Number(props.recordId);
+    const cached = await getCachedRecord<PuzzleRecordGetResponse>('puzzle', recordIdNum);
+    const res: PuzzleRecordGetResponse = cached ?? await puzzleRecordGetResponse(recordIdNum);
+    if (!cached && res.code === 200) {
+      cacheRecord('puzzle', recordIdNum, res);
+    }
 
     if (res.code === 200 && res.data) {
       const data = res.data;

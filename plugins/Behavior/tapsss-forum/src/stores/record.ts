@@ -9,6 +9,7 @@ import type { SchulteRecordListFilterResponse } from '@/types/response/SchulteRe
 import type { PuzzleRecordListFilterResponse } from '@/types/response/PuzzleRecordListFilterResponse'
 import type { TzfeRecordListFilterResponse } from '@/types/response/TzfeRecordListFilterResponse'
 import type { NonoRecordListFilterResponse } from '@/types/response/NonoRecordListFilterResponse'
+import { getCachedRecord, cacheRecord } from '@/utils/recordCache'
 
 export const useRecordStore = defineStore('record', () => {
   const currentRecord = ref<RecordGetResponse | PuzzleRecordGetResponse | SchulteRecordGetResponse | null>(null)
@@ -24,7 +25,16 @@ export const useRecordStore = defineStore('record', () => {
   async function fetchMinesweeperRecord(recordId: number) {
     isLoading.value = true
     try {
-      currentRecord.value = await api.minesweeperRecordGet(recordId)
+      const cached = await getCachedRecord<RecordGetResponse>('minesweeper', recordId)
+      if (cached) {
+        currentRecord.value = cached
+        return
+      }
+      const data = await api.minesweeperRecordGet(recordId)
+      currentRecord.value = data
+      if ((data as any).code === 200) {
+        cacheRecord('minesweeper', recordId, data)
+      }
     } finally {
       isLoading.value = false
     }
@@ -33,7 +43,16 @@ export const useRecordStore = defineStore('record', () => {
   async function fetchPuzzleRecord(recordId: number) {
     isLoading.value = true
     try {
-      currentRecord.value = await api.puzzleRecordGetResponse(recordId)
+      const cached = await getCachedRecord<PuzzleRecordGetResponse>('puzzle', recordId)
+      if (cached) {
+        currentRecord.value = cached
+        return
+      }
+      const data = await api.puzzleRecordGetResponse(recordId)
+      currentRecord.value = data
+      if ((data as any).code === 200) {
+        cacheRecord('puzzle', recordId, data)
+      }
     } finally {
       isLoading.value = false
     }
@@ -42,7 +61,16 @@ export const useRecordStore = defineStore('record', () => {
   async function fetchSchulteRecord(recordId: number) {
     isLoading.value = true
     try {
-      currentRecord.value = await api.schulteRecordGet(recordId)
+      const cached = await getCachedRecord<SchulteRecordGetResponse>('schulte', recordId)
+      if (cached) {
+        currentRecord.value = cached
+        return
+      }
+      const data = await api.schulteRecordGet(recordId)
+      currentRecord.value = data
+      if ((data as any).code === 200) {
+        cacheRecord('schulte', recordId, data)
+      }
     } finally {
       isLoading.value = false
     }

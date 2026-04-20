@@ -11,6 +11,7 @@ import {
 import UserAvatar from "./UserAvatar.vue";
 import { parseSchulteReplayHandle } from "../utils/replayParser";
 import { schulteRecordGet } from "../api";
+import { getCachedRecord, cacheRecord } from "@/utils/recordCache";
 import type {
   SchulteRecordGetResponse,
   Data,
@@ -134,9 +135,12 @@ async function loadReplay() {
   try {
     loading.value = true;
     errorMsg.value = "";
-    const res: SchulteRecordGetResponse = await schulteRecordGet(
-      Number(props.recordId),
-    );
+    const recordIdNum = Number(props.recordId);
+    const cached = await getCachedRecord<SchulteRecordGetResponse>('schulte', recordIdNum);
+    const res: SchulteRecordGetResponse = cached ?? await schulteRecordGet(recordIdNum);
+    if (!cached && res.code === 200) {
+      cacheRecord('schulte', recordIdNum, res);
+    }
 
     if (res.code === 200 && res.data) {
       if (res.data.actions) {

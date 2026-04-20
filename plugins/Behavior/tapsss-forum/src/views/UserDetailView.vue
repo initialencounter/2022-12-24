@@ -9,6 +9,7 @@ import {
   TIMING_LEVELS_TEXT_COLOR,
 } from "@/utils/constants";
 import UserAvatar from "@/components/UserAvatar.vue";
+import { proxyImageUrl } from "@/utils/imageProxy";
 import UserCareer from "@/views/UserCareer.vue";
 import RecordList from "@/views/RecordList.vue";
 import AboutTa from "@/components/AboutTa.vue";
@@ -113,7 +114,7 @@ const zodiac = computed(() => {
         <div
           class="cover"
           :style="{
-            backgroundImage: `url(${user.background || 'https://via.placeholder.com/800x200?text=Background'})`,
+            backgroundImage: `url(${proxyImageUrl(user.background) || 'https://via.placeholder.com/800x200?text=Background'})`,
           }"
         ></div>
 
