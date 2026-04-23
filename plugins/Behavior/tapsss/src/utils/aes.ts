@@ -9,7 +9,8 @@ import { createCipheriv, createDecipheriv, createHash } from 'crypto';
  */
 export function aesEcbEncrypt(
   plaintext: string,
-  key: string
+  key: string,
+  salt: string = ''
 ): string {
   if (!plaintext) return '';
   // 确保密钥是 Buffer
@@ -32,6 +33,13 @@ export function aesEcbEncrypt(
     cipher.update(plaintextBuffer),
     cipher.final()
   ]);
+
+  if (salt) {
+    const encryptedHex = encrypted.toString('hex');
+    const saltedData = encryptedHex + salt;
+    const md5Hash = createHash('md5').update(saltedData).digest('hex');
+    return md5Hash + encryptedHex;
+  }
 
   // 返回十六进制字符串
   return encrypted.toString('hex');
