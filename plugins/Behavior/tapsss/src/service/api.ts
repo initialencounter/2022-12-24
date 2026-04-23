@@ -10,7 +10,7 @@ import { DailyStarResponse } from "../types/response/DailyStar";
 import { PostList } from "../types/postList";
 import { GameNews } from "../types/gameNews";
 import { APIServiceConfig } from "../types/apiService";
-import { aesEcbEncrypt, extractJsonFromEncrypted } from "../utils/aes";
+import { aesEcbEncrypt, aesEcbDecrypt } from "../utils/aes";
 import { computeMD5 } from "../utils/md5";
 import { LoginResponse } from "../types/response/LoginResponse";
 import { RecordGetResponse } from "../types/response/RecordGet";
@@ -70,7 +70,7 @@ class TapsssAPI extends Service {
           body
         });
       const cipher = await response.text();
-      const jsonStr = extractJsonFromEncrypted(cipher, this.decryptSecretKey) as string;
+      const jsonStr = aesEcbDecrypt(cipher, this.decryptSecretKey) as string;
       const json = JSON.parse(jsonStr);
       return json as T;
     } catch (error) {

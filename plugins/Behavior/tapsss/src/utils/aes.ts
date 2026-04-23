@@ -43,10 +43,10 @@ export function aesEcbEncrypt(
  * @param key 密钥 (字符串)
  * @returns 解密后的原始 Buffer
  */
-function aesEcbDecryptNoPadding(
+export function aesEcbDecrypt(
   encryptedData: string,
   key: string
-): Buffer {
+): string {
   // 确保密钥是 Buffer
   const keyBuffer = Buffer.from(key, 'utf8');
 
@@ -56,7 +56,9 @@ function aesEcbDecryptNoPadding(
   }
 
   // 将十六进制字符串转换为 Buffer
-  const encryptedBuffer = Buffer.from(encryptedData, 'hex');
+  const encryptedBuffer = Buffer.from(
+    encryptedData.slice(32), // 去掉前32个字符 (加盐部分)
+    'hex');
 
   // 检查数据长度 (必须是 16 字节的整数倍)
   if (encryptedBuffer.length % 16 !== 0) {
@@ -76,52 +78,7 @@ function aesEcbDecryptNoPadding(
     decipher.final()
   ]);
 
-  return decrypted;
-}
-
-
-/**
- * 智能提取JSON - 直接从Buffer中提取，避免UTF-8编码问题
- * @param encryptedData 加密的数据 (十六进制字符串)
- * @param key 密钥 (字符串)
- * @returns 解密后的JSON字符串
- */
-export function extractJsonFromEncrypted(
-  encryptedData: string,
-  key: string
-): string {
-  // 获取原始解密Buffer
-  const rawBuffer = aesEcbDecryptNoPadding(encryptedData, key);
-  let jsonStartByte = 0;
-
-
-  // 从JSON起始位置提取Buffer
-  const jsonBuffer = rawBuffer.subarray(jsonStartByte);
-
-  // 找到JSON结束位置（移除尾部的null字节）
-  let endByte = jsonBuffer.length;
-  while (endByte > 0 && jsonBuffer[endByte - 1] === 0x00) {
-    endByte--;
-  }
-
-  // 提取有效的JSON Buffer并转换为字符串
-  const validJsonBuffer = jsonBuffer.subarray(0, endByte);
-  let jsonStr = validJsonBuffer.toString('utf8');
-
-  for (let i = 0; i < jsonStr.length; i++) {
-    const char = jsonStr.slice(i, i + 4);
-    if (char === 'rl":') {
-      jsonStr = '{"url":' + jsonStr.slice(i + 4);
-      break;
-    }
-  }
-
-  // 清理字符串 - 移除可能的问题字符
-  jsonStr = jsonStr
+  return decrypted.toString('utf8')
     .replace(/[\x00-\x1F\x7F-\x9F]/g, '') // 移除控制字符
-  // .replace(/\0/g, '') // 移除null字符
-  // .replace('/\\u000[a-f]/g', '')
-  // .replace('/\\u000\d/g', '')
-
-  return jsonStr;
+    .trim();
 }
