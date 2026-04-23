@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv } from 'crypto';
+import { createCipheriv, createDecipheriv, createHash } from 'crypto';
 
 
 /**
@@ -34,7 +34,7 @@ export function aesEcbEncrypt(
   ]);
 
   // 返回十六进制字符串
-  return encrypted.toString('hex').toLocaleUpperCase();
+  return encrypted.toString('hex');
 }
 
 /**
@@ -68,9 +68,8 @@ export function aesEcbDecrypt(
     );
   }
 
-  // 创建解密器 - ECB 模式，禁用自动填充
+  // 创建解密器 - ECB 模式
   const decipher = createDecipheriv(`aes-${keyBuffer.length * 8}-ecb`, keyBuffer, null);
-  decipher.setAutoPadding(false);
 
   // 解密数据
   const decrypted = Buffer.concat([
@@ -79,6 +78,4 @@ export function aesEcbDecrypt(
   ]);
 
   return decrypted.toString('utf8')
-    .replace(/[\x00-\x1F\x7F-\x9F]/g, '') // 移除控制字符
-    .trim();
 }
