@@ -66,11 +66,20 @@ const apiPaths = [
   '/Minesweeper/nono/career/simple',
   '/Minesweeper/tzfe/career',
   '/Minesweeper/schulte/career',
+  '/Minesweeper/rank/timing/list',
+  '/Minesweeper/rank/puzzle/list',
+  '/Minesweeper/rank/schulte/list',
+  '/Minesweeper/rank/tzfe/list',
+  '/Minesweeper/rank/nono/list',
+  '/Minesweeper/rank/all',
 ];
 
 apiPaths.forEach(path => {
-  app.post(path, async (req, res) => {
+  app.all(path, async (req, res) => {
     try {
+      if (req.method !== 'POST') {
+        req.body = new URLSearchParams(req.query as Record<string, string>);
+      }
       const data = await executeRequest(path, 'POST', req.body);
       res.json(data);
     } catch (err) {
