@@ -7628,26 +7628,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cordis@npm:^4.0.0-rc.3":
-  version: 4.0.0-rc.3
-  resolution: "cordis@npm:4.0.0-rc.3"
-  dependencies:
-    "@standard-schema/spec": "npm:^1.1.0"
-    cosmokit: "npm:^1.8.1"
-  peerDependencies:
-    "@cordisjs/plugin-include": ^1.0.2
-    "@cordisjs/plugin-loader": ^1.0.0-rc.2
-  peerDependenciesMeta:
-    "@cordisjs/plugin-include":
-      optional: true
-    "@cordisjs/plugin-loader":
-      optional: true
-  bin:
-    cordis: bin.js
-  checksum: 10/a2a0c107542dbca5e136bea85c040e81d5cafbf9716942b55ecf6ca0a097002db8417d82aeec8f59bd94c3f254eefa792d947671190c176743900a8c42417219
-  languageName: node
-  linkType: hard
-
 "core-util-is@npm:1.0.2":
   version: 1.0.2
   resolution: "core-util-is@npm:1.0.2"
@@ -16650,7 +16630,6 @@ __metadata:
     "@types/node": "npm:^24.12.0"
     "@vitejs/plugin-vue": "npm:^6.0.5"
     "@vue/tsconfig": "npm:^0.9.1"
-    cordis: "npm:^4.0.0-rc.3"
     howler: "npm:^2.2.4"
     npm-run-all2: "npm:^8.0.4"
     pinia: "npm:^3.0.4"
