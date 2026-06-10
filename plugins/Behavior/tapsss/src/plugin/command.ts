@@ -27,7 +27,7 @@ class TapsssCommand {
         }
       })
 
-    ctx.command('删除评论 <commentId:number>', '删除评论')
+    ctx.command('删除评论 <commentId:number>', '删除评论', { authority: 4 })
       .option('commentId', '-c <commentId:number>')
       .action(async ({ session, options }, commentId) => {
         if (!options) return;
@@ -36,14 +36,56 @@ class TapsssCommand {
           if (options.commentId) {
             id = options.commentId;
           } else {
-            return '评论ID不能为空';
+            if (session?.quote?.id) {
+              const post = await this.ctx.postStorage.getPost(session.quote.id);
+              if (post && post.length > 0) {
+                const targetPost = post[0];
+                if (targetPost.isComment && targetPost.commentId) {
+                  id = targetPost.commentId;
+                }
+              }
+            }
           }
+        }
+        if (!id) {
+          return '评论ID不能为空';
         }
         try {
           await ctx.tapsssAPI.commentDelete({ commentId: id });
           return '评论已删除';
         } catch (error: any) {
           return `删除评论失败: ${error.message}`;
+        }
+      })
+
+    ctx.command('删除帖子 <postId:number>', '删除帖子', { authority: 4 })
+      .option('postId', '-p <postId:number>')
+      .action(async ({ session, options }, postId) => {
+        if (!options) return;
+        let id = postId;
+        if (!id) {
+          if (options.postId) {
+            id = options.postId;
+          } else {
+            if (session?.quote?.id) {
+              const post = await this.ctx.postStorage.getPost(session.quote.id);
+              if (post && post.length > 0) {
+                const targetPost = post[0];
+                if (targetPost.isComment && targetPost.commentId) {
+                  id = targetPost.postId;
+                }
+              }
+            }
+          }
+        }
+        if (!id) {
+          return '帖子ID不能为空';
+        }
+        try {
+          await ctx.tapsssAPI.postDelete({ postId: id });
+          return '帖子已删除';
+        } catch (error: any) {
+          return `删除帖子失败: ${error.message}`;
         }
       })
 

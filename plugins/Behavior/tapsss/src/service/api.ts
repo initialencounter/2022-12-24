@@ -5,7 +5,6 @@ import { PostGetTopResponse } from "../types/response/PostGetTopResponse";
 import { PostListReplyResponse } from "../types/response/PostListReply";
 import { PostListGoodUserResponse } from "../types/response/PostListGoodUserResponse";
 import { UserSaoleiResponse } from "../types/response/UserSaoleiResponse";
-import { UserHomeResponse } from "../types/response/UserHomeResponse";
 import { DailyStarResponse } from "../types/response/DailyStar";
 import { PostList } from "../types/postList";
 import { GameNews } from "../types/gameNews";
@@ -15,6 +14,7 @@ import { computeMD5 } from "../utils/md5";
 import { LoginResponse } from "../types/response/LoginResponse";
 import { RecordGetResponse } from "../types/response/RecordGet";
 import { PostGetResponse } from "../types/response/PostGetResponse";
+import { UserHomeResponse } from "../types/response/UserHomeResponse";
 
 const GAME_PATH = ['minesweeper', 'puzzle', 'schulte', 'tzfe', 'nono']
 declare module 'koishi' {
@@ -57,12 +57,17 @@ class TapsssAPI extends Service {
     // const timeStamp = '1752668107525'; // 获取当前时间戳
     const apiKey = this.makeApiKey(body, timeStamp);
     const headers = this.headers;
+    // @ts-ignore
     headers['time-stamp'] = timeStamp;
+    // @ts-ignore
     headers['api-key'] = apiKey;
+    // @ts-ignore
     headers['Content-Length'] = body.length.toString(); // 获取字符串长度
+    // @ts-ignore
     headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8';
 
     try {
+      // @ts-ignore
       const response = await fetch(`http://${headers['Host']}${path}`,
         {
           method,
@@ -214,6 +219,12 @@ class TapsssAPI extends Service {
     const path = '/Minesweeper/post/list/search';
     const method = 'POST';
     return await this.executeRequest<PostList>(path, method, params);
+  }
+
+  async postDelete(params: { postId: number }): Promise<PostResponse> {
+    const path = '/Minesweeper/post/delete';
+    const method = 'POST';
+    return await this.executeRequest<PostResponse>(path, method, params);
   }
 }
 
