@@ -31,8 +31,7 @@
     "koishi": "^4.18.11"
   },
   "dependencies": {
-    "iconv-lite": "^0.6.3",
-    "xmldom": "^0.6.0",
-    "xpath": "^0.0.32"
+    "cheerio": "^1.0.0",
+    "iconv-lite": "^0.6.3"
   }
 }
