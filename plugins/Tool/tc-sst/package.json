@@ -44,6 +44,6 @@
   },
   "dependencies": {
     "@initencounter/sst": "^0.0.1",
-    "tencentcloud-sdk-nodejs-asr": "^4.1.205"
+    "tencentcloud-sdk-nodejs-asr": "^4.1.247"
   }
 }
