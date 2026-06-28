@@ -51,14 +51,30 @@ class BattleList {
     //   writeFileSync('tftBattleList.png', img);
     // })
     ctx.command('铲铲战绩', '查询金铲铲战绩')
+      .option('uid', '-u <uid:string> 用户ID, 目标用户的掌盟ID, 如果不填写则查询自己的战绩')
       .option('date', '-d <date:string> 开始日期, 格式2025-08-17T14:12:19')
       .userFields(['jgameScene'])
       .action(async ({ session, options }) => {
         if (!session) return;
-        const scene = session.user?.jgameScene;
-        if (!scene) {
-          return h.quote(session.messageId) + '' + h.at(session.userId) + '未绑定掌盟, 请使用 `绑定掌盟 [掌盟ID]` 命令进行绑定';
+
+        let scene: string;
+
+        if (options?.uid) {
+          // 临时查询：通过掌盟ID获取目标用户的金铲铲信息
+          const userScene = await ctx.jgameAPI.getSceneByAppNum(options.uid);
+          if (!userScene.jgameScene) {
+            return h.quote(session.messageId) + '' + h.at(session.userId) + '未查询到该用户的金铲铲战绩信息';
+          }
+          scene = userScene.jgameScene;
+        } else {
+          // 使用已绑定的掌盟信息
+          const sc = session.user?.jgameScene;
+          if (!sc) {
+            return h.quote(session.messageId) + '' + h.at(session.userId) + '未绑定掌盟, 请使用 `绑定掌盟 [掌盟ID]` 命令进行绑定';
+          }
+          scene = sc;
         }
+
         let baton: string | undefined = undefined
         if (options?.date) {
           const validatedBaton = validateAndFormatDate(options.date + 'z')
@@ -79,17 +95,39 @@ class BattleList {
       });
 
     ctx.command('云顶战绩', '查询云顶之弈战绩')
+      .option('uid', '-u <uid:string> 用户ID, 目标用户的掌盟ID, 如果不填写则查询自己的战绩')
       .option('date', '-d <date:string> 开始日期, 格式2025-08-17T14:12:19')
       .userFields(['lolUuid', 'tftScene', 'lolAppNum', 'tftAreaId', 'tftUuid'])
       .action(async ({ session, options }) => {
         if (!session) return;
-        const tftUuid = session.user?.tftUuid;
-        const scene = session.user?.tftScene;
-        const area_id = session.user?.tftAreaId;
-        const lolAppNum = session.user?.lolAppNum;
-        if (!lolAppNum || !tftUuid || !scene || area_id == null) {
-          return h.quote(session.messageId) + '' + h.at(session.userId) + '未绑定掌盟, 请使用 `绑定掌盟 [掌盟ID]` 命令进行绑定';
+
+        let tftUuid: string;
+        let scene: string;
+        let area_id: number;
+
+        if (options?.uid) {
+          // 临时查询：通过掌盟ID获取目标用户的云顶信息
+          const userScene = await ctx.jgameAPI.getSceneByAppNum(options.uid);
+          if (!userScene.tftUuid || !userScene.tftScene || userScene.tftAreaId == null) {
+            return h.quote(session.messageId) + '' + h.at(session.userId) + '未查询到该用户的云顶战绩信息';
+          }
+          tftUuid = userScene.tftUuid;
+          scene = userScene.tftScene;
+          area_id = userScene.tftAreaId;
+        } else {
+          // 使用已绑定的掌盟信息
+          const uid = session.user?.tftUuid;
+          const sc = session.user?.tftScene;
+          const aid = session.user?.tftAreaId;
+          const lolAppNum = session.user?.lolAppNum;
+          if (!lolAppNum || !uid || !sc || aid == null) {
+            return h.quote(session.messageId) + '' + h.at(session.userId) + '未绑定掌盟, 请使用 `绑定掌盟 [掌盟ID]` 命令进行绑定';
+          }
+          tftUuid = uid;
+          scene = sc;
+          area_id = aid;
         }
+
         let baton: string | undefined = undefined
         if (options?.date) {
           const validatedBaton = validateAndFormatDate(options.date + 'z')
