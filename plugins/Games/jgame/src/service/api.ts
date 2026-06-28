@@ -26,12 +26,11 @@ declare module 'koishi' {
 
 class JGameAPI extends Service {
   static inject = ['loader'];
-  headers: Record<string, string>;
   logger = this.ctx.logger('JGame API');
   pluginConfig: JGameAPIConfig
-  opUuid: string
-  openid: string
-  refreshTicket: string;
+  opUuid: string | null
+  openid: string | null
+  refreshTicket!: string;
   cookiePath: string;
   constructor(ctx: Context, config: JGameAPIConfig) {
     super(ctx, 'jgameAPI');
@@ -128,7 +127,14 @@ class JGameAPI extends Service {
 
       // 更新cookie
       currentTicket['tid'] = newTicketRep.data.ct_info.wt;
-      const latestCookie = CookieParser.objectToCookieString(currentTicket);
+      // 过滤掉 null 值以满足 objectToCookieString 的类型要求
+      const filteredTicket: Record<string, string | number | boolean> = {};
+      for (const [key, value] of Object.entries(currentTicket)) {
+        if (value !== null) {
+          filteredTicket[key] = value;
+        }
+      }
+      const latestCookie = CookieParser.objectToCookieString(filteredTicket);
       this.pluginConfig.headers.cookie = latestCookie;
 
       this.logger.info('Cookie刷新成功');
@@ -146,7 +152,7 @@ class JGameAPI extends Service {
       },
       ct: this.refreshTicket,
       local_is_new_user: 0,
-      user_id: this.opUuid,
+      user_id: this.opUuid ?? '',
     }
     const body = JSON.stringify(bodyParams);
     const headers = this.makeHeaders('POST', path, body.length);
@@ -169,7 +175,7 @@ class JGameAPI extends Service {
     const bodyParams = {
       "type": "qc",
       "uuid": v4(),
-      "openid": this.openid,
+      "openid": this.openid ?? '',
     };
     return await this.makeRequest<RefreshThirdToken>(path, 'POST', bodyParams);
   }
@@ -207,8 +213,8 @@ class JGameAPI extends Service {
     return await response.json() as Promise<T>;
   }
 
-  makeHeaders(method: string, path: string, bodyLength?: number,) {
-    const headers = this.pluginConfig.headers;
+  makeHeaders(method: string, path: string, bodyLength?: number,): Record<string, string> {
+    const headers: Record<string, string> = { ...this.pluginConfig.headers };
     headers['content-type'] = 'application/json';
     if (bodyLength) {
       headers['content-length'] = bodyLength.toString();
@@ -223,7 +229,7 @@ class JGameAPI extends Service {
   }
   async fetchBattleList(scene: string, baton?: string): Promise<BattleList> {
     // 实现获取战斗列表的逻辑
-    const bodyParams = { scene, filter: 'all' };
+    const bodyParams: Record<string, any> = { scene, filter: 'all' };
     if (baton) {
       bodyParams['baton'] = prependBufferToStringTyped(baton)
     }
@@ -312,7 +318,13 @@ class JGameAPI extends Service {
     tftAreaId: number | null;
     tftUuid: string | null;
   }> {
-    const scene = {
+    const scene: {
+      jgameScene: string | null;
+      tftScene: string | null;
+      uuid: string | null;
+      tftAreaId: number | null;
+      tftUuid: string | null;
+    } = {
       jgameScene: null,
       tftScene: null,
       uuid: null,
@@ -321,8 +333,9 @@ class JGameAPI extends Service {
     }
     try {
       const userList: SearchUserByKeyword = await this.searchUserByKeyword(appNum);
-      const uuid = userList.data?.userList[0]?.userId;
-      scene['uuid'] = uuid;
+      const uuid = userList.data?.userList[0]?.userId ?? null;
+      scene.uuid = uuid;
+      if (!uuid) return scene;
       const gameCard: GameCardResponse = await this.fetchGameCard(uuid);
       const tftSearchParams = new URL(gameCard.data.tftCard.intent).searchParams;
       scene.tftScene = tftSearchParams.get('scene');

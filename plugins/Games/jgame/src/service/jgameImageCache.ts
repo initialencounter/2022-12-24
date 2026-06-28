@@ -35,7 +35,7 @@ class ImageCache extends Service {
   static inject = ['canvas'];
   logger = this.ctx.logger('Tapsss ImageCache');
   cacheDir: string;
-  loadedDefaultImage: Image
+  loadedDefaultImage!: Image
   constructor(ctx: Context) {
     super(ctx, 'jgameImageCache');
     this.cacheDir = resolve(ctx.root.baseDir, 'data/tapsss/imageCache');

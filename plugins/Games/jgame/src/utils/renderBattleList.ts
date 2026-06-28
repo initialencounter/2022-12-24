@@ -286,13 +286,13 @@ async function drawUserInfo(ctx: CanvasRenderingContext2D, userInfoY: number, ba
 
     for (const badge of statsInfo.badge_list) {
       let continued = 0
-      if (badge.badge_id === 1201) {
+      if (badge.badge_id === 1201 && honorTopImage) {
         ctx.drawImage(honorTopImage, badgeStatsX, badgeStatsY, 80, 80); // 稍微缩小
         continued = 1
-      } else if (badge.badge_id === 1202) {
+      } else if (badge.badge_id === 1202 && honorTop4Image) {
         ctx.drawImage(honorTop4Image, badgeStatsX, badgeStatsY, 80, 80);
         continued = 1
-      } else if (badge.badge_id === 1207) {
+      } else if (badge.badge_id === 1207 && honorSilkBloodImage) {
         ctx.drawImage(honorSilkBloodImage, badgeStatsX, badgeStatsY, 80, 80);
         continued = 1
       }

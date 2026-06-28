@@ -54,12 +54,13 @@ class BattleList {
       .option('date', '-d <date:string> 开始日期, 格式2025-08-17T14:12:19')
       .userFields(['jgameScene'])
       .action(async ({ session, options }) => {
-        const scene = session.user.jgameScene;
+        if (!session) return;
+        const scene = session.user?.jgameScene;
         if (!scene) {
           return h.quote(session.messageId) + '' + h.at(session.userId) + '未绑定掌盟, 请使用 `绑定掌盟 [掌盟ID]` 命令进行绑定';
         }
-        let baton: null | string = null
-        if (options.date) {
+        let baton: string | undefined = undefined
+        if (options?.date) {
           const validatedBaton = validateAndFormatDate(options.date + 'z')
           if (!validatedBaton) {
             return h.quote(session.messageId) + '' + h.at(session.userId) + '日期格式错误, 请使用 `YYYY-MM-DDTHH:MM:SS` 格式';
@@ -81,15 +82,16 @@ class BattleList {
       .option('date', '-d <date:string> 开始日期, 格式2025-08-17T14:12:19')
       .userFields(['lolUuid', 'tftScene', 'lolAppNum', 'tftAreaId', 'tftUuid'])
       .action(async ({ session, options }) => {
-        const tftUuid = session.user.tftUuid;
-        const scene = session.user.tftScene;
-        const area_id = session.user.tftAreaId;
-        const lolAppNum = session.user.lolAppNum;
-        if (!lolAppNum) {
+        if (!session) return;
+        const tftUuid = session.user?.tftUuid;
+        const scene = session.user?.tftScene;
+        const area_id = session.user?.tftAreaId;
+        const lolAppNum = session.user?.lolAppNum;
+        if (!lolAppNum || !tftUuid || !scene || area_id == null) {
           return h.quote(session.messageId) + '' + h.at(session.userId) + '未绑定掌盟, 请使用 `绑定掌盟 [掌盟ID]` 命令进行绑定';
         }
-        let baton: null | string = null
-        if (options.date) {
+        let baton: string | undefined = undefined
+        if (options?.date) {
           const validatedBaton = validateAndFormatDate(options.date + 'z')
           if (!validatedBaton) {
             return h.quote(session.messageId) + '' + h.at(session.userId) + '日期格式错误, 请使用 `YYYY-MM-DDTHH:MM:SS` 格式';
@@ -110,17 +112,18 @@ class BattleList {
     ctx.command('绑定掌盟 [id:string]', '绑定掌盟ID 068075508')
       .userFields(['jgameScene', 'lolAppNum', 'tftScene', 'lolUuid', 'tftAreaId', 'tftUuid'])
       .action(async ({ session }, prompt) => {
+        if (!session?.user) return;
         const appNum = session.user.lolAppNum;
         if (appNum) {
-          session.send(`当前绑定掌盟ID: ${appNum} 是否覆盖?[Y/n]`);
+          await session.send(`当前绑定掌盟ID: ${appNum} 是否覆盖?[Y/n]`);
           const confirm = await session.prompt(60000);
           if (confirm && confirm.toLowerCase() !== 'y') {
-            session.send('已取消绑定');
+            await session.send('已取消绑定');
             return;
           }
         }
         if (!prompt) {
-          session.send('请输入掌盟ID');
+          await session.send('请输入掌盟ID');
           prompt = await session.prompt(60000)
           if (!prompt) {
             return;
@@ -128,11 +131,11 @@ class BattleList {
         }
         session.user.lolAppNum = prompt;
         const scene = await ctx.jgameAPI.getSceneByAppNum(prompt);
-        session.user.tftScene = scene.tftScene;
-        session.user.jgameScene = scene.jgameScene;
-        session.user.lolUuid = scene.uuid;
-        session.user.tftAreaId = scene.tftAreaId;
-        session.user.tftUuid = scene.tftUuid;
+        if (scene.jgameScene) session.user.jgameScene = scene.jgameScene;
+        if (scene.tftScene) session.user.tftScene = scene.tftScene;
+        if (scene.uuid) session.user.lolUuid = scene.uuid;
+        if (scene.tftAreaId) session.user.tftAreaId = scene.tftAreaId;
+        if (scene.tftUuid) session.user.tftUuid = scene.tftUuid;
         return h.quote(session.messageId) + '' + h.at(session.userId) + '绑定成功';
       })
   }
