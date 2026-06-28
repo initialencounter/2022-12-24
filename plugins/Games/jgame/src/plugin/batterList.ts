@@ -84,7 +84,10 @@ class BattleList {
           baton = validatedBaton;
         }
         const battleList = await ctx.jgameAPI.fetchBattleList(scene, baton);
-        if (!battleList || !battleList.data.battle_list.length) {
+        if (battleList.result !== 0) {
+          return h.quote(session.messageId) + '' + h.at(session.userId) + '查询战绩失败: ' + battleList.err_msg;
+        }
+        if (!battleList || !battleList?.data.battle_list.length) {
           return h.quote(session.messageId) + '' + h.at(session.userId) + '未查询到战绩';
         }
 
