@@ -33,12 +33,12 @@ const defaultImage = readFileSync(path.resolve(resourcesPath, 'Z7.png'));
 
 class ImageCache extends Service {
   static inject = ['canvas'];
-  logger = this.ctx.logger('Tapsss ImageCache');
+  logger = this.ctx.logger('JGame ImageCache');
   cacheDir: string;
   loadedDefaultImage!: Image
   constructor(ctx: Context) {
     super(ctx, 'jgameImageCache');
-    this.cacheDir = resolve(ctx.root.baseDir, 'data/tapsss/imageCache');
+    this.cacheDir = resolve(ctx.root.baseDir, 'data/jgame/imageCache');
     if (!existsSync(this.cacheDir)) {
       mkdirSync(this.cacheDir, { recursive: true })
     }
