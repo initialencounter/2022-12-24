@@ -38,8 +38,8 @@ export interface Config {
 
 export const Config: Schema<Config> = Schema.object({
   providerId: Schema.string()
-    .default('openaiCompatible')
-    .description('LLM Provider ID(@cline/llms 内置,如 openaiCompatible / openai / anthropic)'),
+    .default('openai-compatible')
+    .description('LLM Provider ID(@cline/llms 内置,如 openai-compatible / openai / anthropic)'),
   apiKey: Schema.string()
     .role('secret')
     .default('sk-')
