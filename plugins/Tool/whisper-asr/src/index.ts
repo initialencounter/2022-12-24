@@ -1,4 +1,4 @@
-import { Context, Schema, Logger, Session, h} from 'koishi'
+import { Context, Schema, Logger, Session, h } from 'koishi'
 export const name = 'whisper'
 import Sst from '@initencounter/sst'
 
@@ -7,13 +7,13 @@ class WhisperAsr extends Sst {
   temp_msg: string
   recall_time: number
   endpoint: string
-  access_token: string
   method: string
   task: string
   language: string
 
   constructor(ctx: Context, config: WhisperAsr.Config) {
     super(ctx)
+    this.temp_msg = ''
     this.endpoint = config.endpoint
     this.method = config.method
     this.task = config.task
@@ -22,7 +22,7 @@ class WhisperAsr extends Sst {
     ctx.i18n.define('zh', require('./locales/zh'));
     if (config.auto_rcg) {
       ctx.middleware(async (session, next) => {
-        if (session.elements[0].type == "audio") {
+        if (session?.elements?.[0].type == "audio") {
           let text: string = await this.audio2text(session)
           if (text == '') {
             text = session.text('commands.say.messages.louder')
@@ -32,18 +32,21 @@ class WhisperAsr extends Sst {
         return next()
       })
     }
-    
+
     ctx.command('asr <url:string>', '语音url转文字')
       .alias('whisper')
       .option('lang', '-l <lang:string>', { fallback: config.language })
       .option('task', '-t <task:number>')
       .option('method', '-m <method:number>')
       .action(async ({ session, options }, input) => {
-        this.language = options.lang ? options.lang : config.language
-        this.task = options.task ? 'translate' : 'transcribe'
-        this.method = options.method ? 'faster-whisper' : 'openai-whisper'
+        if (!session) {
+          return 'Session is undefined'
+        }
+        this.language = options?.lang ? options.lang : config.language
+        this.task = options?.task ? 'translate' : 'transcribe'
+        this.method = options?.method ? 'faster-whisper' : 'openai-whisper'
         if (!input) {
-          return h('quote', { id: session.messageId }) + session.text('commands.say.messages.no-input')
+          return h('quote', { id: session?.messageId }) + session.text('commands.say.messages.no-input')
         }
         await session.send(session.text('commands.say.messages.waiting'));
         // 判断是否需要撤回
@@ -51,75 +54,84 @@ class WhisperAsr extends Sst {
           this.recall(session, this.temp_msg)
         }
         const buffer = Buffer.from((await this.get_file(input)))
-        const base64_str = buffer.toString('base64')
-        const text: string = await this.create_task(base64_str)
+        const text: string = await this.create_task(buffer)
         return text
       })
 
     // 记录发送消息的messageid
     ctx.on('send', (session) => {
-      this.temp_msg = session.messageId
+      this.temp_msg = session.messageId ?? ''
     })
 
   }
   // 撤回的方法
   async recall(session: Session, messageId: string) {
     new Promise(resolve => setTimeout(() => {
-      session.bot.deleteMessage(session.channelId, messageId)
+      if (session.channelId)
+        session.bot.deleteMessage(session.channelId, messageId)
     }
       , this.recall_time));
   }
   async audio2text(session: Session): Promise<string> {
-    if (session.elements[0].type == "audio") {
-      const url: string = session.elements[0]["attrs"].url
-      let base64_str:string
-      if(session.platform=='wechaty'){
-        base64_str = url.replace('data:audio/wav;base64,','')
-      }else{
-        const buffer = Buffer.from((await this.get_file(url)))
-        base64_str = buffer.toString('base64')
+    if (session?.elements?.[0].type == "audio") {
+      let url: string = session.elements[0]["attrs"]?.url || session.elements[0]["attrs"]?.src
+      let buffer: Buffer
+      if (session.platform == 'wechaty') {
+        buffer = Buffer.from(url.replace('data:audio/wav;base64,', ''))
+      } else {
+        buffer = Buffer.from((await this.get_file(url)))
       }
-      const text: string = await this.create_task(base64_str)
+      const text: string = await this.create_task(buffer)
       return text
     }
     return 'Not a audio'
   }
   private async get_file(url: string): Promise<ArrayBuffer> {
-    const response = await this.ctx.http.get(url,{
+    const response = await this.ctx.http.get(url, {
       responseType: "arraybuffer",
     });
     return response;
   }
-  private async create_task(base64: string): Promise<string> {
+
+  private async makeMultipartFormData(audio_file: Buffer): Promise<FormData> {
+    const formData = new FormData();
+    // @ts-ignore
+    const blob = new Blob([audio_file], { type: 'audio/wav' });
+    formData.append('audio_file', blob, 'audio.wav');
+    return formData;
+  }
+  private async create_task(audio_file: Buffer): Promise<string> {
     try {
-      const res = await this.ctx.http.post(`${this.endpoint}/asr`,{
-          method: this.method,
-          audio: base64,
-          task: this.task,
-          language: this.language
-      })
-      return res.data
+      const multipartFormData = await this.makeMultipartFormData(audio_file);
+      const params = new URLSearchParams({
+        encode: 'true',
+        task: this.task,
+        output: 'txt'
+      });
+      const url = `${this.endpoint}/asr?${params.toString()}`;
+      const res = await this.ctx.http.post(url, multipartFormData);
+      return res
     } catch (e) {
       logger.info(String(e))
       return ''
     }
   }
-  
+
 
 
 }
 namespace WhisperAsr {
   export const usage = `
 ## 使用说明
-自建后端教程<a style="color:blue" href="https://github.com/ahmetoner/whisper-asr-webservice">whisper-asr-webservice</a> 
-插件仓库<a style="color:blue" href="https://github.com/initialencounter/koishi-plugin-whisper-asr">插件仓库</a> 
+自建后端教程<a style="color:blue" href="https://github.com/ahmetoner/whisper-asr-webservice">whisper-asr-webservice</a>
+插件仓库<a style="color:blue" href="https://github.com/initialencounter/koishi-plugin-whisper-asr">插件仓库</a>
 ## 使用方法
 * 直接发送语音即可转化或翻译为文本
 * asr 要转化/或翻译的语言url
   - lang: 语言
   - task: 是否切换为translate
   - method: 是否切换为faster-whisper
-## 问题反馈群: 
+## 问题反馈群:
 399899914
 `
   export interface Config {
