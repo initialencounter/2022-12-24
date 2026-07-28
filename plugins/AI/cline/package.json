@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-cline",
-  "description": "model context protocol client",
-  "version": "0.0.5",
+  "description": "AI Agent for koishi, powered by @cline/sdk",
+  "version": "1.0.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -31,27 +31,29 @@
     "modelcontextprotocol",
     "AI Agent"
   ],
+  "koishi": {
+    "description": "AI Agent,支持命令执行、文件操作、MCP 工具调用",
+    "service": {
+      "optional": [
+        "console"
+      ],
+      "implements": [
+        "clineAgent",
+        "clineMcp"
+      ]
+    }
+  },
   "devDependencies": {
-    "@anthropic-ai/sdk": "^0.39.0",
-    "@koishijs/client": "^5.30.11",
-    "@types/clone-deep": "^4",
-    "@types/diff": "^7",
-    "@types/os-name": "^3.1.0",
-    "openai": "^4.104.0"
+    "@koishijs/client": "^5.30.11"
   },
   "peerDependencies": {
     "@koishijs/plugin-console": "^5.30.11",
     "koishi": "^4.18.11"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0",
-    "chokidar": "^4.0.3",
-    "clone-deep": "^4.0.1",
-    "diff": "^7.0.0",
-    "fast-deep-equal": "^3.1.3",
-    "ignore": "^7.0.5",
-    "os-name": "^6.1.0",
-    "vue3-json-viewer": "^2.4.1",
-    "zod": "^3.26.0-canary.20250708T225111"
+    "@cline/agents": "^0.0.65",
+    "@cline/core": "^0.0.65",
+    "@cline/shared": "^0.0.65",
+    "vue3-json-viewer": "^2.4.1"
   }
 }
