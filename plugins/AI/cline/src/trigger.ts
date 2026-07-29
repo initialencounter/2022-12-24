@@ -31,18 +31,24 @@ export function apply(ctx: Context, config: Config) {
     })
 
   // 私聊 / @机器人 / 昵称 / 语音触发(指令消息由指令中间件优先处理,不会到达这里)
-  ctx.middleware(async (session, next) => {
+  ctx.inject(['sst'], (ctx) => {
     // 语音触发
-    if (config.trigger.whisper) {
-      const sst = (ctx as any).sst
-      if (sst && session.elements?.some((el) => el.type === 'audio' || el.type === 'record')) {
-        const text: string = await sst.audio2text(session)
-        if (text) {
-          await ctx.clineAgent.run(session, withQuote(session, text))
-          return
+    ctx.middleware(async (session, next) => {
+      if (config.trigger.whisper) {
+        const sst = (ctx as any).sst
+        if (sst && session.elements?.some((el) => el.type === 'audio' || el.type === 'record')) {
+          const text: string = await sst.audio2text(session)
+          if (text) {
+            await ctx.clineAgent.run(session, withQuote(session, text))
+            return
+          }
         }
       }
-    }
+      return next()
+    })
+  })
+
+  ctx.middleware(async (session, next) => {
     // 私聊触发
     if (config.trigger.private && session.channelId?.startsWith('private') && session.content) {
       await ctx.clineAgent.run(session, withQuote(session, session.content))

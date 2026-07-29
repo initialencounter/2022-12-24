@@ -46,8 +46,7 @@
     }
   },
   "devDependencies": {
-    "@koishijs/client": "^5.30.11",
-    "koishi-plugin-markdown-to-image-service": "^1.2.5"
+    "@koishijs/client": "^5.30.11"
   },
   "peerDependencies": {
     "@koishijs/plugin-console": "^5.30.11",
@@ -57,6 +56,7 @@
     "@cline/agents": "^0.0.65",
     "@cline/core": "^0.0.65",
     "@cline/shared": "^0.0.65",
+    "koishi-plugin-markdown-to-image-service": "^1.2.5",
     "vue3-json-viewer": "^2.4.1"
   }
 }

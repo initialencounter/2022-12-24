@@ -1,5 +1,5 @@
 import { Schema } from 'koishi'
-
+import { Config as markdownToImageServiceConfig} from 'koishi-plugin-markdown-to-image-service'
 export interface ToolSwitches {
   readFiles: boolean
   search: boolean
@@ -24,6 +24,7 @@ export interface TriggerConfig {
 export interface RenderConfig {
   enabled: boolean
   threshold: number
+  markdownToImageServiceConfig: markdownToImageServiceConfig
 }
 
 export type ProcessLevel = 'none' | 'tools' | 'verbose' | 'debug'
@@ -108,5 +109,6 @@ export const Config: Schema<Config> = Schema.object({
     threshold: Schema.number()
       .default(50)
       .description('超过该字数的文本将渲染为图片'),
+    markdownToImageServiceConfig: markdownToImageServiceConfig,
   }).description('输出渲染'),
 })

@@ -1,14 +1,15 @@
 import { Context } from 'koishi'
 import { resolve } from 'path'
-import {} from '@koishijs/plugin-console'
+import { } from '@koishijs/plugin-console'
 import type { McpServerSnapshot } from '@cline/core'
+import * as markdownToImageService from 'koishi-plugin-markdown-to-image-service'
 import { Config } from './config'
 import McpService from './services/mcp'
 import AgentService from './services/agent'
 import * as trigger from './trigger'
 
 export const name = 'cline'
-export const inject = { optional: ['console', 'markdownToImage'] }
+export const inject = { optional: ['console', 'markdownToImage', 'sst'], required: ['puppeteer'] }
 
 export * from './config'
 export * from './services/mcp'
@@ -21,6 +22,8 @@ declare module '@koishijs/plugin-console' {
 }
 
 export function apply(ctx: Context, config: Config) {
+  // @ts-ignore
+  ctx.plugin(markdownToImageService, config.render.markdownToImageServiceConfig)
   ctx.plugin(McpService, config)
   ctx.plugin(AgentService, config)
   ctx.plugin(trigger, config)
