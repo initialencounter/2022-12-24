@@ -108,7 +108,7 @@ class DVc extends Dvc {
       .alias(...config.alias)
       .userFields(["usage"])
       .action(async ({ session }, ...prompt) => {
-        return this.dvc(session, prompt.join(" "));
+        return this.dvc(session!, prompt.join(" "));
       });
 
     //清空所有会话及人格
@@ -117,7 +117,7 @@ class DVc extends Dvc {
         authority: 1,
       })
       .action(({ session }) => {
-        return this.clear(session);
+        return this.clear(session!);
       });
 
     if (!config.onlyOnePersonality) {
@@ -128,7 +128,7 @@ class DVc extends Dvc {
         })
         .alias("dvc.人格切换", "切换人格")
         .action(async ({ session }, prompt) => {
-          return this.switch_personality(session, prompt);
+          return this.switch_personality(session!, prompt);
         });
       //设置人格
       ctx
@@ -136,10 +136,10 @@ class DVc extends Dvc {
           authority: 1,
         })
         .action(({ session }, prompt) => {
-          session.send(
+          session!.send(
             "添加人格失败？看这里！\n https://forum.koishi.xyz/t/topic/2349/4"
           );
-          return this.add_personality(session, prompt);
+          return this.add_personality(session!, prompt);
         });
       //删除人格
       ctx
@@ -147,7 +147,7 @@ class DVc extends Dvc {
           authority: 1,
         })
         .action(({ session }, prompt) => {
-          return this.rm_personality(session, prompt);
+          return this.rm_personality(session!, prompt);
         });
     }
 
@@ -158,37 +158,21 @@ class DVc extends Dvc {
       })
       .alias("重置会话")
       .action(({ session }) => {
-        return this.reset(session);
+        return this.reset(session!);
       });
 
     //切换dvc的输出方式
     ctx
       .command("dvc.output <type:string>", "切换dvc的输出方式")
       .action(({ session }, type) => {
-        return this.switch_output(session, type);
+        return this.switch_output(session!, type);
       });
 
-    //生图
-    ctx
-      .command("dvc.生图 <prompt:text>", "生成图片", {
-        authority: 1,
-        usageName: "dvc",
-      })
-      .option("resolution", "-r <resolution:string>")
-      .option("img_number", "-n <img_number:number>")
-      .action(async ({ session, options }, prompt) => {
-        return this.paint(
-          session,
-          prompt ? prompt : "landscape",
-          options.img_number ? options.img_number : 1,
-          options.resolution ? options.resolution : config.resolution
-        );
-      });
     ctx
       .command("dvc.翻译 <prompt:text>", "AI翻译", { usageName: "dvc" })
       .option("lang", "-l <lang:t=string>", { fallback: config.lang })
       .action(async ({ session, options }, prompt) => {
-        return await this.translate(options.lang, prompt);
+        return await this.translate(options!.lang, prompt);
       });
     ctx
       .command("dvc.update", "一键加载 400 条极品预设", { authority: 4 })
@@ -204,11 +188,11 @@ class DVc extends Dvc {
         const prompts_latest_ = JSON.parse(
           Buffer.from(prompts_latest, "base64").toString("utf-8")
         );
-        if (options.displace) {
-          await session.send("该选项将会导致人格丢失，其否继续[Y/n]?");
-          const confirm = await session.prompt(60000);
+        if (options!.displace) {
+          await session!.send("该选项将会导致人格丢失，其否继续[Y/n]?");
+          const confirm = await session!.prompt(60000);
           if (!confirm) return;
-          if (confirm.toLowerCase() !== "y") return session.send("取消切换");
+          if (confirm.toLowerCase() !== "y") return session!.send("取消切换");
           this.personality = prompts_latest_;
         } else {
           for (const i of Object.keys(prompts_latest_)) {
@@ -220,7 +204,7 @@ class DVc extends Dvc {
           JSON.stringify(this.personality, null, 2)
         );
         logger.info("更新预设成功");
-        return session.execute("切换人格");
+        return session!.execute("切换人格");
       });
 
     ctx
@@ -234,11 +218,11 @@ class DVc extends Dvc {
           return JSON.stringify(
             this.personality[options?.personality ?? "预设人格"]
           );
-        const sid = options.id ?? 0;
+        const sid = options!.id ?? 0;
         let text = (
-          this.sessions[session.userId]?.[sid] ?? this.session_config[0]
+          this.sessions[session!.userId!]?.[sid] ?? this.session_config[0]
         ).content;
-        if (!options.all && text.length > 200)
+        if (!options!.all && text.length > 200)
           text = text.slice(0, 200) + "...";
         return text;
       });
@@ -306,60 +290,6 @@ class DVc extends Dvc {
   /**
    *
    * @param session 会话
-   * @param prompt 描述词
-   * @param n 生成数量
-   * @param size 图片大小
-   * @returns Promise<string|segment>
-   */
-  async paint(
-    session: Session,
-    prompt: string,
-    n: number,
-    size: string
-  ): Promise<string | segment> {
-    session.send(
-      h("quote", { id: session.messageId }) +
-        session.text("commands.dvc.messages.painting")
-    );
-    try {
-      const response = await this.ctx.http.post(
-        trimSlash(
-          `${
-            this.pluginConfig.baseURL ?? "https://api.openai.com"
-          }/v1/images/generations`
-        ),
-        {
-          prompt: prompt,
-          n: n,
-          size: size,
-        },
-        {
-          timeout: 0,
-          headers: {
-            Authorization: `Bearer ${this.pluginConfig.key[this.key_number]}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const result = segment("figure");
-      const attrs: Dict = {
-        userId: session.userId,
-        nickname: "GPT",
-      };
-      for (var msg of response.data) {
-        result.children.push(segment("message", attrs, segment.image(msg.url)));
-      }
-      return result;
-    } catch (e) {
-      return session.text("commands.dvc.messages.err", [
-        `key${this.key_number + 1} 报错：${String(e)}`,
-      ]);
-    }
-  }
-
-  /**
-   *
-   * @param session 会话
    * @param prompt 会话内容
    * @returns Promise<string | Element>
    */
@@ -368,6 +298,7 @@ class DVc extends Dvc {
     session: Session,
     prompt: string
   ): Promise<string | Element | void> {
+    if (!session.userId || !session.channelId || !session.messageId) return;
     // 黑名单拦截
     if (
       this.pluginConfig.blockuser.includes(session.userId) ||
@@ -381,7 +312,7 @@ class DVc extends Dvc {
         session.userId
       );
       let usage = getUsage("ai", user);
-      if (usage > this.pluginConfig.usage)
+      if (this.pluginConfig.usage && usage > this.pluginConfig.usage)
         return session.text("commands.dvc.messages.usage-exhausted");
     }
     // 内容为空
@@ -437,7 +368,7 @@ class DVc extends Dvc {
     next: Next
   ): Promise<string | string[] | segment | void | Fragment> {
     // 语音触发
-    // @ts-ignore
+    if (!session.elements) return next()
     if (
       session.elements.filter((i) => i.type === "audio" || i.type === "record")
         .length > 0 &&
@@ -450,7 +381,7 @@ class DVc extends Dvc {
     }
     // 私信触发
     if (session.subtype === "private" && this.pluginConfig.private)
-      return this.dvc(session, session.content);
+      return this.dvc(session, session.content ?? '');
 
     // 艾特触发
     if (session.stripped.appel && this.pluginConfig.mention) {
@@ -463,8 +394,9 @@ class DVc extends Dvc {
     // 昵称触发
     if (this.pluginConfig.nickwake) {
       for (var i of this.sessions_cmd) {
-        if (session.content.startsWith(i)) {
-          this.sessions[session.userId] = this.personality[i];
+        if (session.content && session.content.startsWith(i)) {
+          if (session.userId)
+            this.sessions[session.userId] = this.personality[i];
           return await this.dvc(session, session.content);
         }
       }
@@ -515,7 +447,7 @@ class DVc extends Dvc {
         contents = contents.replace(/<think>[\s\S]*?<\/think>/g, '')
       };
       return `${reasoning_content}${contents.trim()}`;
-    } catch (e) {
+    } catch (e: any) {
       if (String(e).includes("Bad Request")) {
         console.dir(config.data.messages);
         return "Bad Request";
@@ -629,9 +561,6 @@ class DVc extends Dvc {
       message = "deepseek 不支持重复的 user, 请等待上一次对话结束";
     } else {
       let rawMsg = { role: "user", content: msg };
-      if (this.pluginConfig?.baseURL.includes("api.deepseek.com")) {
-        rawMsg["name"] = name;
-      }
       session_of_id.push(rawMsg);
       // 与ChatGPT交互获得对话内容
       message = await this.try_control(session_of_id);
@@ -656,7 +585,7 @@ class DVc extends Dvc {
     return await this.getContent(
       sessionid,
       session_of_id,
-      session.messageId,
+      session.messageId ?? '',
       session.bot.selfId
     );
   }
@@ -709,7 +638,7 @@ class DVc extends Dvc {
       this.sessions_cmd.splice(index, 1);
       delete this.personality[nick_name_0];
     }
-    this.sessions[session.userId] = [
+    this.sessions[session.userId ?? ''] = [
       { role: "system", content: "你是我的全能AI助理" },
     ];
     fs.writeFileSync(
@@ -861,8 +790,8 @@ class DVc extends Dvc {
    */
 
   reset(session: Session): string {
-    let session_json: Dvc.Msg[] = this.get_chat_session(session.userId);
-    this.sessions[session.userId] = [
+    let session_json: Dvc.Msg[] = this.get_chat_session(session.userId!);
+    this.sessions[session.userId!] = [
       { role: "system", content: session_json[0].content },
     ];
     return "重置成功";
@@ -911,7 +840,7 @@ class DVc extends Dvc {
 
   set_personality(session: Session, nick_name: string): string {
     this.sessions_cmd.push(nick_name);
-    this.sessions[session.userId] = this.personality[nick_name];
+    this.sessions[session.userId!] = this.personality[nick_name];
     return "人格设置成功: " + nick_name;
   }
 

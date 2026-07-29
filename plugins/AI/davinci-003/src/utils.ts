@@ -8,7 +8,7 @@ import { Session, segment } from 'koishi'
  */
 export async function recall(session: Session, messageId: string, time: number) {
   new Promise(resolve => setTimeout(() => {
-    session.bot.deleteMessage(session.channelId, messageId)
+    session.bot.deleteMessage(session.channelId!, messageId)
   }, time))
 }
 
@@ -59,7 +59,7 @@ export async function switch_menu(session: Session, type_arr: string[], name: st
 export async function switch_menu_grid(session: Session, type_arr: string[], name: string): Promise<string[]> {
   let type_str: string = '\n' + name + '\n\n'
   let count = 0
-  function getActualLength(str) {
+  function getActualLength(str: string): number {
     let actualLength = 0
 
     for (let i = 0; i < str.length; i++) {
@@ -74,7 +74,7 @@ export async function switch_menu_grid(session: Session, type_arr: string[], nam
 
     return actualLength
   }
-  function multiplyStrings(str, n) {
+  function multiplyStrings(str:string, n:number): string {
     return Array.from({ length: n }, () => str).join('')
   }
   const result = segment('figure')
