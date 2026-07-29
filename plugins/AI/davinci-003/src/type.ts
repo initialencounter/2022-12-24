@@ -1,19 +1,9 @@
 import { Context, Dict, Schema, Service } from 'koishi'
 export class Dvc extends Service {
   static inject = {
-    required: ['console', 'database'],
-    optional: ['puppeteer', 'vits', 'sst', 'censor']
+    required: ['console', 'database', 'markdownToImage'],
+    optional: ['vits', 'sst', 'censor']
   }
-  output_type: string
-  session_config: Dvc.Msg[]
-  sessions: Dict
-  personality: Dict
-  sessions_cmd: string[]
-  aliasMap: any
-  type: string
-  l6k: boolean
-  key_number: number
-  maxRetryTimes: number
   constructor(ctx: Context, config: Dvc.Config) {
     super(ctx, 'dvc', true)
   }
@@ -60,7 +50,7 @@ export namespace Dvc {
 
     alias: string[]
     resolution?: string
-    output: string
+    output: "image" | "quote" | "figure" | "minimal" | "voice"
 
     private: boolean
     mention: boolean

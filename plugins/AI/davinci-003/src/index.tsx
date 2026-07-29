@@ -19,17 +19,20 @@ import {} from "@initencounter/vits";
 import {} from "@initencounter/sst";
 import {} from "@koishijs/censor";
 import {} from "@koishijs/plugin-console";
+import {} from "koishi-plugin-markdown-to-image-service";
 import { resolve } from "path";
 import { recall, switch_menu, switch_menu_grid } from "./utils";
 import { Dvc } from "./type";
 const name = "davinci-003";
 const logger = new Logger(name);
-type ChatCallback = (session_of_id: Dvc.Msg[]) => Promise<string>;
+
 declare module "@koishijs/plugin-console" {
   interface Events {
     "davinci-003/getusage"(): string;
     "davinci-003/chatTest"(text: string): Promise<string>;
-    "davinci-003/addPersonality"(personality: PersonalityConfig): Promise<string>
+    "davinci-003/addPersonality"(
+      personality: PersonalityConfig,
+    ): Promise<string>;
   }
 }
 
@@ -43,7 +46,6 @@ interface PersonalityConfig {
   personality: Personality[];
 }
 
-
 declare module "koishi" {
   interface Context {
     dvc: DVc;
@@ -54,6 +56,14 @@ const localUsage = readFileSync(resolve(__dirname, "../readme.md"))
   .toString("utf-8")
   .split("更新日志")[0];
 class DVc extends Dvc {
+  output_type: string;
+  session_config: Dvc.Msg[];
+  sessions: Dict;
+  personality: Dict;
+  sessions_cmd: string[];
+  aliasMap: any;
+  key_number: number;
+  maxRetryTimes: number;
   pluginConfig: Dvc.Config;
   constructor(ctx: Context, config: Dvc.Config) {
     super(ctx, config);
@@ -65,8 +75,8 @@ class DVc extends Dvc {
     ctx.i18n.define("zh", require("./locales/zh"));
 
     ctx.on("ready", () => {
-      if (!ctx.puppeteer && config.output == "image")
-        logger.warn("未启用 pptr，将无法发送图片消息");
+      if (!ctx.markdownToImage && config.output == "image")
+        logger.warn("未启用 markdownToImage，将无法发送图片消息");
       if (!ctx.vits && config.output == "voice")
         logger.warn("未启用 vits，将无法输出语音");
     });
@@ -79,7 +89,7 @@ class DVc extends Dvc {
 
     try {
       this.personality = JSON.parse(
-        fs.readFileSync("./personality.json", "utf-8")
+        fs.readFileSync("./personality.json", "utf-8"),
       );
     } catch (e) {
       this.personality = {
@@ -87,7 +97,7 @@ class DVc extends Dvc {
       };
       fs.writeFileSync(
         "./personality.json",
-        JSON.stringify(this.personality, null, 2)
+        JSON.stringify(this.personality, null, 2),
       );
     }
     this.session_config = Object.values(this.personality)[0];
@@ -137,7 +147,7 @@ class DVc extends Dvc {
         })
         .action(({ session }, prompt) => {
           session!.send(
-            "添加人格失败？看这里！\n https://forum.koishi.xyz/t/topic/2349/4"
+            "添加人格失败？看这里！\n https://forum.koishi.xyz/t/topic/2349/4",
           );
           return this.add_personality(session!, prompt);
         });
@@ -183,10 +193,10 @@ class DVc extends Dvc {
           "https://gitee.com/initencunter/ChatPrompts/raw/master/safe",
           {
             responseType: "text",
-          }
+          },
         );
         const prompts_latest_ = JSON.parse(
-          Buffer.from(prompts_latest, "base64").toString("utf-8")
+          Buffer.from(prompts_latest, "base64").toString("utf-8"),
         );
         if (options!.displace) {
           await session!.send("该选项将会导致人格丢失，其否继续[Y/n]?");
@@ -201,7 +211,7 @@ class DVc extends Dvc {
         }
         fs.writeFileSync(
           "./personality.json",
-          JSON.stringify(this.personality, null, 2)
+          JSON.stringify(this.personality, null, 2),
         );
         logger.info("更新预设成功");
         return session!.execute("切换人格");
@@ -216,7 +226,7 @@ class DVc extends Dvc {
       .action(async ({ session, options }) => {
         if (options?.personality)
           return JSON.stringify(
-            this.personality[options?.personality ?? "预设人格"]
+            this.personality[options?.personality ?? "预设人格"],
           );
         const sid = options!.id ?? 0;
         let text = (
@@ -257,15 +267,21 @@ class DVc extends Dvc {
     ctx.console.addListener("davinci-003/getusage", () => {
       return localUsage;
     });
-    ctx.console.addListener("davinci-003/addPersonality", async (personality: PersonalityConfig) => {
-      try{
-        this.personality[personality.name] = personality.personality;
-        fs.writeFileSync("./personality.json", JSON.stringify(this.personality, null, 2));
-        return "success";
-      } catch (e) {
-        return "error" + e;
-      }
-    });
+    ctx.console.addListener(
+      "davinci-003/addPersonality",
+      async (personality: PersonalityConfig) => {
+        try {
+          this.personality[personality.name] = personality.personality;
+          fs.writeFileSync(
+            "./personality.json",
+            JSON.stringify(this.personality, null, 2),
+          );
+          return "success";
+        } catch (e) {
+          return "error" + e;
+        }
+      },
+    );
   }
 
   /**
@@ -296,7 +312,7 @@ class DVc extends Dvc {
 
   async dvc(
     session: Session,
-    prompt: string
+    prompt: string,
   ): Promise<string | Element | void> {
     if (!session.userId || !session.channelId || !session.messageId) return;
     // 黑名单拦截
@@ -309,7 +325,7 @@ class DVc extends Dvc {
     if (!this.pluginConfig.superuser.includes(session.userId)) {
       let user: User = await this.ctx.database.getUser(
         session.platform,
-        session.userId
+        session.userId,
       );
       let usage = getUsage("ai", user);
       if (this.pluginConfig.usage && usage > this.pluginConfig.usage)
@@ -327,7 +343,7 @@ class DVc extends Dvc {
           session.channelId,
           h("quote", { id: session.messageId }) +
             session.text("commands.dvc.messages.thinking"),
-          session.guildId
+          session.guildId,
         )
       )[0];
       if (this.pluginConfig.recall)
@@ -349,7 +365,7 @@ class DVc extends Dvc {
         session.userId,
         resp,
         session.messageId,
-        session.bot.selfId
+        session.bot.selfId,
       );
     } else {
       return await this.chat(prompt, session.userId, session);
@@ -365,10 +381,10 @@ class DVc extends Dvc {
 
   async middleware(
     session: Session,
-    next: Next
+    next: Next,
   ): Promise<string | string[] | segment | void | Fragment> {
     // 语音触发
-    if (!session.elements) return next()
+    if (!session.elements) return next();
     if (
       session.elements.filter((i) => i.type === "audio" || i.type === "record")
         .length > 0 &&
@@ -381,7 +397,7 @@ class DVc extends Dvc {
     }
     // 私信触发
     if (session.subtype === "private" && this.pluginConfig.private)
-      return this.dvc(session, session.content ?? '');
+      return this.dvc(session, session.content ?? "");
 
     // 艾特触发
     if (session.stripped.appel && this.pluginConfig.mention) {
@@ -413,7 +429,7 @@ class DVc extends Dvc {
     let url = trimSlash(
       `${
         this.pluginConfig.baseURL ?? "https://api.openai.com"
-      }/v1/chat/completions`
+      }/v1/chat/completions`,
     );
     const payload = {
       stream: true,
@@ -438,14 +454,13 @@ class DVc extends Dvc {
     let data: ReadableStream;
     try {
       data = (await this.ctx.http<ReadableStream>("POST", url, config)).data;
-      let { contents, reasoning_content } = await this.readableStreamDecoder(
-        data
-      );
+      let { contents, reasoning_content } =
+        await this.readableStreamDecoder(data);
       reasoning_content = `<think>\n${reasoning_content.trim()}\n</think>\n\n`;
       if (!this.pluginConfig.enableReasoningContent) {
-        reasoning_content = ''
-        contents = contents.replace(/<think>[\s\S]*?<\/think>/g, '')
-      };
+        reasoning_content = "";
+        contents = contents.replace(/<think>[\s\S]*?<\/think>/g, "");
+      }
       return `${reasoning_content}${contents.trim()}`;
     } catch (e: any) {
       if (String(e).includes("Bad Request")) {
@@ -513,9 +528,9 @@ class DVc extends Dvc {
   async switch_key(e: Error) {
     // 查询余额
     logger.info(
-      `key${this.key_number + 1}. ${
-        this.pluginConfig.key[this.key_number].slice(0, 10)
-      }*** 报错：${String(e)}`
+      `key${this.key_number + 1}. ${this.pluginConfig.key[
+        this.key_number
+      ].slice(0, 10)}*** 报错：${String(e)}`,
     );
     // 余额为 0 ,切换 key
     this.key_number_pp();
@@ -542,7 +557,7 @@ class DVc extends Dvc {
   async chat(
     msg: string,
     sessionid: string,
-    session: Session
+    session: Session,
   ): Promise<string | segment> {
     let name = session.author?.nick || session.username;
     logger.info(name + ": " + msg);
@@ -585,8 +600,8 @@ class DVc extends Dvc {
     return await this.getContent(
       sessionid,
       session_of_id,
-      session.messageId ?? '',
-      session.bot.selfId
+      session.messageId ?? "",
+      session.bot.selfId,
     );
   }
 
@@ -638,12 +653,12 @@ class DVc extends Dvc {
       this.sessions_cmd.splice(index, 1);
       delete this.personality[nick_name_0];
     }
-    this.sessions[session.userId ?? ''] = [
+    this.sessions[session.userId ?? ""] = [
       { role: "system", content: "你是我的全能AI助理" },
     ];
     fs.writeFileSync(
       "./personality.json",
-      JSON.stringify(this.personality, null, 2)
+      JSON.stringify(this.personality, null, 2),
     );
     return "人格删除成功";
   }
@@ -681,7 +696,7 @@ class DVc extends Dvc {
     userId: string,
     resp: Dvc.Msg[],
     messageId: string,
-    botId: string
+    botId: string,
   ): Promise<string | segment> {
     if (this.output_type == "voice" && this.ctx.vits)
       return this.ctx.vits.say({ input: resp[resp.length - 1].content });
@@ -698,8 +713,8 @@ class DVc extends Dvc {
                 userId: userId,
                 nickname: msg.role,
               },
-              msg.content
-            )
+              msg.content,
+            ),
           );
           continue;
         }
@@ -711,8 +726,8 @@ class DVc extends Dvc {
                 userId: botId,
                 nickname: msg.role,
               },
-              msg.content
-            )
+              msg.content,
+            ),
           );
         } else {
           result.children.push(
@@ -722,39 +737,17 @@ class DVc extends Dvc {
                 userId: userId,
                 nickname: msg.role,
               },
-              msg.content
-            )
+              msg.content,
+            ),
           );
         }
       }
       return result;
-    } else if (this.output_type == "image") {
-      const elements: Array<string> = [];
-      for (var msg of resp) {
-        if (msg.role == "user") {
-          elements.push(
-            `<div style='color:#ff9900;font-size: 25px;background:transparent;width=500px;height:50px'>用户:${msg.content}</div>`
-          );
-          continue;
-        }
-        if (msg.role == "assistant") {
-          elements.push(
-            `<div style='color:black;font-size: 25px;background:transparent;width:500px;height:50px'>AI:${msg.content}</div>`
-          );
-        } else {
-          elements.push(
-            `<div style='color:#723b8d;font-size: 25px;background:transparent;width:400px'>人格设定:${msg.content}</div>`
-          );
-        }
-      }
-      let html = `<html>
-        <div style='position: absolute;top:20px;left:20px;width:600px;'>
-          <p style='color:#723b8d'>ChatGPT3.5-Turbo</p>
-          ${elements.join("")}
-        </div>
-        <div style='position: absolute;top:10px;'>create by koishi-plugin-davinci-003@${version}</div>
-      </html>`;
-      return this.ctx.puppeteer.render(html);
+    } else if (this.output_type == "image" && this.ctx.markdownToImage) {
+      const buffer = await this.ctx.markdownToImage.convertToImage(
+        resp[resp.length - 1].content,
+      );
+      return h.image(buffer, "image/png");
     } else {
       return h.text(resp[resp.length - 1].content);
     }
@@ -825,7 +818,7 @@ class DVc extends Dvc {
     this.personality[nick_name] = personality_session;
     fs.writeFileSync(
       "./personality.json",
-      JSON.stringify(this.personality, null, 2)
+      JSON.stringify(this.personality, null, 2),
     );
     return this.set_personality(session, nick_name);
   }

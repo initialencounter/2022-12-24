@@ -55,6 +55,7 @@
     }
   },
   "devDependencies": {
+    "koishi-plugin-markdown-to-image-service": "^1.3.6",
     "@initencounter/sst": "^0.0.1",
     "@initencounter/vits": "^0.0.3",
     "@koishijs/censor": "^1.1.0",

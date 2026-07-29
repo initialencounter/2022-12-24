@@ -12109,6 +12109,7 @@ __metadata:
     "@initencounter/vits": "npm:^0.0.3"
     "@koishijs/censor": "npm:^1.1.0"
     "@koishijs/client": "npm:^5.30.11"
+    koishi-plugin-markdown-to-image-service: "npm:^1.3.6"
   peerDependencies:
     "@koishijs/plugin-console": ^5.30.11
     koishi: ^4.18.11
@@ -12253,7 +12254,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"koishi-plugin-markdown-to-image-service@npm:^1.2.5":
+"koishi-plugin-markdown-to-image-service@npm:^1.2.5, koishi-plugin-markdown-to-image-service@npm:^1.3.6":
   version: 1.3.6
   resolution: "koishi-plugin-markdown-to-image-service@npm:1.3.6"
   dependencies:
