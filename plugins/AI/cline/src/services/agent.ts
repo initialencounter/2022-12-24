@@ -4,6 +4,7 @@ import { Context, Service, Session } from 'koishi'
 import { createEventBridge } from '../bridge'
 import type { Config } from '../config'
 import { buildSystemPrompt } from '../prompt'
+import { formatDuration, sendRendered, statsFooter, type RunStats } from '../render'
 import { loadAgents, loadCore } from '../sdk'
 import { createKoishiTools } from '../tools'
 
@@ -100,24 +101,24 @@ export class AgentService extends Service {
       requestToolApproval: this.options.autoApprove
         ? undefined
         : async (request): Promise<ToolApprovalResult> => {
-            await session.send(
-              `⚠️ Agent 请求执行工具 ${request.toolName}\n${summarizeInput(request.input)}\n` +
-              `回复 y 批准,其他回复视为拒绝(${APPROVAL_TIMEOUT / 1000} 秒超时默认拒绝)`,
-            )
-            const answer = await session.prompt(APPROVAL_TIMEOUT)
-            const approved = answer?.trim().toLowerCase() === 'y'
-            return { approved, reason: approved ? undefined : '用户拒绝' }
-          },
+          await session.send(
+            `⚠️ Agent 请求执行工具 ${request.toolName}\n${summarizeInput(request.input)}\n` +
+            `回复 y 批准,其他回复视为拒绝(${APPROVAL_TIMEOUT / 1000} 秒超时默认拒绝)`,
+          )
+          const answer = await session.prompt(APPROVAL_TIMEOUT)
+          const approved = answer?.trim().toLowerCase() === 'y'
+          return { approved, reason: approved ? undefined : '用户拒绝' }
+        },
     })
 
-    const bridge = createEventBridge(this.options, session)
+    const bridge = createEventBridge(this.ctx, this.options, session)
     agent.subscribe(bridge.listener)
     return { agent, busy: false, getSubmitSummary, getLastAssistantText: bridge.getLastAssistantText }
   }
 
   /**
    * 运行一个任务:取当前频道的 Agent 会话(无则创建),内部迭代调用工具直到完成。
-   * 工作过程按配置转播,最终结果直接发送给用户。
+   * 工作过程按配置转播,最终结果渲染为 markdown 图片(附带 token 与耗时统计)发送给用户。
    */
   async run(session: Session, task: string): Promise<void> {
     const key = this.sessionKey(session)
@@ -135,17 +136,24 @@ export class AgentService extends Service {
     entry.busy = true
     this.refreshIdleTimer(key)
 
+    const start = Date.now()
     try {
       const result = await entry.agent.continue(task)
       const output = (entry.getSubmitSummary() ?? result.outputText)?.trim()
+      const stats: RunStats = { ...result.usage, durationMs: Date.now() - start }
+      const footer = statsFooter(stats)
       if (result.error) {
-        await session.send(`❌ 任务失败:${result.error.message}`)
+        await session.send(`❌ 任务失败:${result.error.message}\n⏱️ 耗时:${formatDuration(stats.durationMs)}`)
         this.clear(key)
-      } else if (output && output !== entry.getLastAssistantText()) {
-        // 与已转播的最后一条 assistant 文本相同时不重复发送
-        await session.send(output)
-      } else if (!output) {
-        await session.send('✅ 任务已完成')
+      } else if (output) {
+        if (this.options.render.enabled) {
+          await sendRendered(this.ctx, session, output + footer)
+        } else if (output !== entry.getLastAssistantText()) {
+          // 与已转播的最后一条 assistant 文本相同时不重复发送
+          await session.send(output + footer)
+        }
+      } else {
+        await session.send(`✅ 任务已完成\n⏱️ 耗时:${formatDuration(stats.durationMs)}`)
       }
     } catch (error) {
       this.ctx.logger('cline/agent').warn(error)

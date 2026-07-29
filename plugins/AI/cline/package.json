@@ -35,7 +35,9 @@
     "description": "AI Agent,支持命令执行、文件操作、MCP 工具调用",
     "service": {
       "optional": [
-        "console"
+        "console",
+        "markdownToImage",
+        "sst"
       ],
       "implements": [
         "clineAgent",
@@ -44,7 +46,8 @@
     }
   },
   "devDependencies": {
-    "@koishijs/client": "^5.30.11"
+    "@koishijs/client": "^5.30.11",
+    "koishi-plugin-markdown-to-image-service": "^1.2.5"
   },
   "peerDependencies": {
     "@koishijs/plugin-console": "^5.30.11",

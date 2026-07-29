@@ -469,11 +469,6 @@ class DVc extends Dvc {
         }
       }
     }
-    // 随机触发
-    if (this.pluginConfig.randnum == 0) return next();
-    const randnum: number = Math.random();
-    if (randnum < this.pluginConfig.randnum)
-      return await this.dvc(session, session.content);
     return next();
   }
   /**

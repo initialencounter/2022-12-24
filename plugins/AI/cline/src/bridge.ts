@@ -1,6 +1,7 @@
 import type { AgentRuntimeEvent, AgentToolCallPart } from '@cline/shared'
-import type { Session } from 'koishi'
+import type { Context, Session } from 'koishi'
 import type { Config, ProcessLevel } from './config'
+import { sendSmart } from './render'
 
 const LEVELS: Record<ProcessLevel, number> = {
   none: 0,
@@ -42,7 +43,7 @@ export interface EventBridge {
  * 注意:不订阅 assistant-text-delta(逐 token 会刷屏),
  * 改为在 assistant-message(每轮完整消息)时输出文本。
  */
-export function createEventBridge(config: Config, session: Session): EventBridge {
+export function createEventBridge(ctx: Context, config: Config, session: Session): EventBridge {
   const level = LEVELS[config.processLevel]
   let lastAssistantText = ''
 
@@ -57,7 +58,8 @@ export function createEventBridge(config: Config, session: Session): EventBridge
           .trim()
         if (text) {
           lastAssistantText = text
-          session.send(`💭 ${text}`).catch(() => {})
+          // 超过阈值的思考内容渲染为图片发送
+          sendSmart(ctx, session, config, `💭 ${text}`).catch(() => { })
         }
         if (level >= LEVELS.debug) {
           const reasoning = event.message.content
@@ -66,7 +68,7 @@ export function createEventBridge(config: Config, session: Session): EventBridge
             .join('\n')
             .trim()
           if (reasoning) {
-            session.send(`🧠 推理过程\n${summarizeOutput(reasoning, 1000)}`).catch(() => {})
+            session.send(`🧠 推理过程\n${summarizeOutput(reasoning, 1000)}`).catch(() => { })
           }
         }
         break
@@ -75,7 +77,7 @@ export function createEventBridge(config: Config, session: Session): EventBridge
         if (level < LEVELS.tools) break
         const toolCall: AgentToolCallPart = event.toolCall
         const input = summarizeInput(toolCall.input)
-        session.send(`🔧 调用工具 ${toolCall.toolName}${input ? `\n${input}` : ''}`).catch(() => {})
+        session.send(`🔧 调用工具 ${toolCall.toolName}${input ? `\n${input}` : ''}`).catch(() => { })
         break
       }
       case 'tool-finished': {
@@ -83,11 +85,11 @@ export function createEventBridge(config: Config, session: Session): EventBridge
         const result = event.message.content.find((part) => part.type === 'tool-result')
         if (!result || result.type !== 'tool-result') break
         if (result.isError) {
-          session.send(`❌ 工具 ${result.toolName} 执行失败\n${summarizeOutput(result.output)}`).catch(() => {})
+          session.send(`❌ 工具 ${result.toolName} 执行失败\n${summarizeOutput(result.output)}`).catch(() => { })
         } else if (level >= LEVELS.debug) {
           const output = summarizeOutput(result.output)
           if (output) {
-            session.send(`📄 工具 ${result.toolName} 输出\n${output}`).catch(() => {})
+            session.send(`📄 工具 ${result.toolName} 输出\n${output}`).catch(() => { })
           }
         }
         break

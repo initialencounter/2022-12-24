@@ -8,7 +8,7 @@ import AgentService from './services/agent'
 import * as trigger from './trigger'
 
 export const name = 'cline'
-export const inject = { optional: ['console'] }
+export const inject = { optional: ['console', 'markdownToImage'] }
 
 export * from './config'
 export * from './services/mcp'

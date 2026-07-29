@@ -17,6 +17,13 @@ export interface McpConfig {
 export interface TriggerConfig {
   private: boolean
   mention: boolean
+  nickname: string[]
+  whisper: boolean
+}
+
+export interface RenderConfig {
+  enabled: boolean
+  threshold: number
 }
 
 export type ProcessLevel = 'none' | 'tools' | 'verbose' | 'debug'
@@ -34,6 +41,7 @@ export interface Config {
   processLevel: ProcessLevel
   mcp: McpConfig
   trigger: TriggerConfig
+  render: RenderConfig
 }
 
 export const Config: Schema<Config> = Schema.object({
@@ -88,5 +96,17 @@ export const Config: Schema<Config> = Schema.object({
   trigger: Schema.object({
     private: Schema.boolean().default(true).description('私聊触发'),
     mention: Schema.boolean().default(true).description('@机器人触发'),
+    nickname: Schema.array(Schema.string())
+      .default([])
+      .description('昵称触发:消息以列表中任一昵称开头时触发,例如 `["小助手"]`'),
+    whisper: Schema.boolean().default(false).description('语音触发(需要加载 sst 服务插件)'),
   }).description('触发方式(指令 cline 始终可用)'),
+  render: Schema.object({
+    enabled: Schema.boolean()
+      .default(true)
+      .description('将长文本与任务结果渲染为 markdown 图片(需要加载 markdown-to-image 服务插件,未加载时回退为纯文本)'),
+    threshold: Schema.number()
+      .default(50)
+      .description('超过该字数的文本将渲染为图片'),
+  }).description('输出渲染'),
 })
