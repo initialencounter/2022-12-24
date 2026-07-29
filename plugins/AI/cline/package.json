@@ -36,11 +36,11 @@
     "service": {
       "optional": [
         "console",
-        "markdownToImage",
         "sst"
       ],
       "implements": [
         "clineAgent",
+        "markdownToImage",
         "clineMcp"
       ]
     }
