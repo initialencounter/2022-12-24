@@ -131,7 +131,7 @@ export namespace Dvc {
         Schema.const('figure').description('以聊天记录形式发送'),
         Schema.const('image').description('将对话转成图片'),
         Schema.const('voice').description('发送语音')
-      ]).description('输出方式。').default('minimal'),
+      ]).description('输出方式。').default('image'),
 
       private: Schema.boolean().default(true).description('开启后私聊AI可触发对话, 不需要使用指令'),
       mention: Schema.boolean().default(true).description('开启后机器人被提及(at/引用)可触发对话'),

@@ -74,7 +74,7 @@ export async function switch_menu_grid(session: Session, type_arr: string[], nam
 
     return actualLength
   }
-  function multiplyStrings(str:string, n:number): string {
+  function multiplyStrings(str: string, n: number): string {
     return Array.from({ length: n }, () => str).join('')
   }
   const result = segment('figure')
@@ -112,3 +112,60 @@ export async function switch_menu_grid(session: Session, type_arr: string[], nam
   return res
 }
 
+export interface ModelUsage {
+  prompt_tokens?: number
+  completion_tokens?: number
+  total_tokens?: number
+  prompt_tokens_details?: {
+    cached_tokens?: number
+  }
+  prompt_cache_hit_tokens?: number
+  prompt_cache_miss_tokens?: number
+}
+
+export interface RunStats {
+  inputTokens?: number
+  outputTokens?: number
+  cacheReadTokens?: number
+  cacheWriteTokens?: number
+  reasoningTokenCount?: number
+  totalCost?: number
+  durationMs: number
+}
+
+export function modelUsageToRunStats(usage: ModelUsage): RunStats {
+  const stats: RunStats = {
+    inputTokens: usage.prompt_tokens,
+    outputTokens: usage.completion_tokens,
+    cacheReadTokens: usage.prompt_cache_hit_tokens,
+    cacheWriteTokens: usage.prompt_cache_miss_tokens,
+    totalCost: undefined,
+    durationMs: 0,
+  }
+  return stats
+}
+
+function formatNumber(value: number): string {
+  return value.toLocaleString('en-US')
+}
+
+export function formatDuration(ms: number): string {
+  if (ms < 1000) return `${ms}ms`
+  const seconds = ms / 1000
+  if (seconds < 60) return `${seconds.toFixed(1)}s`
+  const minutes = Math.floor(seconds / 60)
+  return `${minutes}m${Math.round(seconds % 60)}s`
+}
+
+/** 生成附加在图片底部的统计信息(markdown 引用块) */
+export function statsFooter(stats: RunStats): string {
+  const parts: string[] = []
+  const tokens: string[] = []
+  if (stats.inputTokens) tokens.push(`输入 ${formatNumber(stats.inputTokens)}`)
+  if (stats.outputTokens) tokens.push(`输出 ${formatNumber(stats.outputTokens)}`)
+  if (stats.cacheReadTokens) tokens.push(`缓存 ${formatNumber(stats.cacheReadTokens)}`)
+  if (tokens.length) parts.push(`🔢 Tokens:${tokens.join(' · ')}`)
+  if (stats.totalCost) parts.push(`💰 费用:$${stats.totalCost.toFixed(4)}`)
+  parts.push(`⏱️ 耗时:${formatDuration(stats.durationMs)}`)
+  return `\n\n---\n\n> ${parts.join(' ｜ ')}`
+}

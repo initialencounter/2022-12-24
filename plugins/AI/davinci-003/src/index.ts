@@ -14,14 +14,14 @@ import {
 } from "koishi";
 import fs, { readFileSync } from "fs";
 import { getUsage } from "koishi-plugin-rate-limit";
-import {} from "koishi-plugin-puppeteer";
-import {} from "@initencounter/vits";
-import {} from "@initencounter/sst";
-import {} from "@koishijs/censor";
-import {} from "@koishijs/plugin-console";
-import {} from "koishi-plugin-markdown-to-image-service";
+import { } from "koishi-plugin-puppeteer";
+import { } from "@initencounter/vits";
+import { } from "@initencounter/sst";
+import { } from "@koishijs/censor";
+import { } from "@koishijs/plugin-console";
+import { } from "koishi-plugin-markdown-to-image-service";
 import { resolve } from "path";
-import { recall, switch_menu, switch_menu_grid } from "./utils";
+import { ModelUsage, modelUsageToRunStats, recall, statsFooter, switch_menu, switch_menu_grid } from "./utils";
 import { Dvc } from "./type";
 const name = "davinci-003";
 const logger = new Logger(name);
@@ -51,7 +51,6 @@ declare module "koishi" {
     dvc: DVc;
   }
 }
-const version = require("../package.json")["version"];
 const localUsage = readFileSync(resolve(__dirname, "../readme.md"))
   .toString("utf-8")
   .split("更新日志")[0];
@@ -250,7 +249,7 @@ class DVc extends Dvc {
         content: `\n${text}，现在时间是：${JSON.stringify(status)}`,
       });
       // 与ChatGPT交互获得对话内容
-      let message: string = await this.try_control(session_of_id);
+      let { output: message } = await this.try_control(session_of_id);
 
       // 记录上下文
       session_of_id.push({ role: "assistant", content: message });
@@ -291,16 +290,21 @@ class DVc extends Dvc {
    * @returns 翻译后的内容
    */
   async translate(lang: string, prompt: string): Promise<string> {
-    return this.try_control([
-      {
-        role: "system",
-        content:
-          "你是一个翻译引擎，请将文本翻译为" +
-          lang +
-          "，只需要翻译不需要解释。",
-      },
-      { role: "user", content: `请帮我我将如下文字翻译成${lang},“${prompt}”` },
-    ]);
+    return (
+      await this.try_control([
+        {
+          role: "system",
+          content:
+            "你是一个翻译引擎，请将文本翻译为" +
+            lang +
+            "，只需要翻译不需要解释。",
+        },
+        {
+          role: "user",
+          content: `请帮我我将如下文字翻译成${lang},“${prompt}”`,
+        },
+      ])
+    ).output;
   }
 
   /**
@@ -342,7 +346,7 @@ class DVc extends Dvc {
         await session.bot.sendMessage(
           session.channelId,
           h("quote", { id: session.messageId }) +
-            session.text("commands.dvc.messages.thinking"),
+          session.text("commands.dvc.messages.thinking"),
           session.guildId,
         )
       )[0];
@@ -354,7 +358,7 @@ class DVc extends Dvc {
       prompt = await this.ctx.censor.transform(prompt, session);
     // 启用/关闭上下文
     if (!this.pluginConfig.enableContext) {
-      const text = await this.chat_with_gpt([
+      const { output: text, usage } = await this.chat_with_gpt([
         { role: "user", content: prompt },
       ]);
       const resp = [
@@ -366,6 +370,7 @@ class DVc extends Dvc {
         resp,
         session.messageId,
         session.bot.selfId,
+        usage,
       );
     } else {
       return await this.chat(prompt, session.userId, session);
@@ -425,10 +430,11 @@ class DVc extends Dvc {
    * @returns 将返回文字处理成json
    */
 
-  async chat_with_gpt(message: Dvc.Msg[]): Promise<string> {
+  async chat_with_gpt(
+    message: Dvc.Msg[],
+  ): Promise<{ output: string; usage: ModelUsage }> {
     let url = trimSlash(
-      `${
-        this.pluginConfig.baseURL ?? "https://api.openai.com"
+      `${this.pluginConfig.baseURL ?? "https://api.openai.com"
       }/v1/chat/completions`,
     );
     const payload = {
@@ -454,33 +460,35 @@ class DVc extends Dvc {
     let data: ReadableStream;
     try {
       data = (await this.ctx.http<ReadableStream>("POST", url, config)).data;
-      let { contents, reasoning_content } =
+      let { contents, reasoning_content, usage } =
         await this.readableStreamDecoder(data);
       reasoning_content = `<think>\n${reasoning_content.trim()}\n</think>\n\n`;
       if (!this.pluginConfig.enableReasoningContent) {
         reasoning_content = "";
         contents = contents.replace(/<think>[\s\S]*?<\/think>/g, "");
       }
-      return `${reasoning_content}${contents.trim()}`;
+      return { output: `${reasoning_content}${contents.trim()}`, usage };
     } catch (e: any) {
       if (String(e).includes("Bad Request")) {
         console.dir(config.data.messages);
-        return "Bad Request";
+        return { output: "Bad Request", usage: {} };
       }
       this.switch_key(e);
-      return "";
+      return { output: "", usage: {} };
     }
   }
 
   async readableStreamDecoder(data: ReadableStream): Promise<{
     contents: string;
     reasoning_content: string;
+    usage: ModelUsage;
   }> {
     const reader = data.getReader();
     const decoder = new TextDecoder("utf-8");
     let sses = "",
       contents = "",
       reasoning_content = "";
+    let usage: ModelUsage = {};
     while (true) {
       const { done, value } = await reader.read();
       if (done) {
@@ -495,6 +503,7 @@ class DVc extends Dvc {
             const json = JSON.parse(jsonStr);
             const content = json?.choices?.[0]?.delta?.content;
             const reasoning = json?.choices?.[0]?.delta?.reasoning_content;
+            usage = json?.usage;
             if (reasoning) reasoning_content += reasoning;
             if (content) contents += content;
           }
@@ -509,6 +518,7 @@ class DVc extends Dvc {
     return {
       contents,
       reasoning_content,
+      usage,
     };
   }
   /**
@@ -567,6 +577,7 @@ class DVc extends Dvc {
     // 获得对话session
     let session_of_id = this.get_chat_session(sessionid);
     let message: string;
+    let usage: ModelUsage = {};
     // 设置本次对话内容
     //
     if (
@@ -578,7 +589,9 @@ class DVc extends Dvc {
       let rawMsg = { role: "user", content: msg };
       session_of_id.push(rawMsg);
       // 与ChatGPT交互获得对话内容
-      message = await this.try_control(session_of_id);
+      const {output, usage: _usage} = await this.try_control(session_of_id);
+      message = output;
+      usage = _usage;
     }
 
     // 记录上下文
@@ -602,6 +615,7 @@ class DVc extends Dvc {
       session_of_id,
       session.messageId ?? "",
       session.bot.selfId,
+      usage,
     );
   }
 
@@ -612,15 +626,17 @@ class DVc extends Dvc {
    * @param session_of_id 会话 ID
    * @returns
    */
-  async try_control(session_of_id: Dvc.Msg[]) {
+  async try_control(
+    session_of_id: Dvc.Msg[],
+  ): Promise<{ output: string; usage: ModelUsage }> {
     let try_times = 0;
     while (try_times < this.pluginConfig.maxRetryTimes) {
       const res = await this.chat_with_gpt(session_of_id);
-      if (res !== "") return res;
+      if (res.output !== "") return res;
       try_times++;
       await this.ctx.sleep(500);
     }
-    return "请求错误，请查看日志";
+    return { output: "请求错误，请查看日志", usage: {} };
   }
 
   /**
@@ -697,6 +713,7 @@ class DVc extends Dvc {
     resp: Dvc.Msg[],
     messageId: string,
     botId: string,
+    usage: ModelUsage,
   ): Promise<string | segment> {
     if (this.output_type == "voice" && this.ctx.vits)
       return this.ctx.vits.say({ input: resp[resp.length - 1].content });
@@ -744,8 +761,10 @@ class DVc extends Dvc {
       }
       return result;
     } else if (this.output_type == "image" && this.ctx.markdownToImage) {
+      const runStat = modelUsageToRunStats(usage);
+      const footer = statsFooter(runStat);
       const buffer = await this.ctx.markdownToImage.convertToImage(
-        resp[resp.length - 1].content,
+        resp[resp.length - 1].content + footer,
       );
       return h.image(buffer, "image/png");
     } else {
@@ -848,6 +867,6 @@ class DVc extends Dvc {
     return session.text("commands.dvc.messages.clean");
   }
 }
-namespace DVc {}
+namespace DVc { }
 
 export default DVc;
