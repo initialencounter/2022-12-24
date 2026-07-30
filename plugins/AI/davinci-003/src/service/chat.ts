@@ -4,7 +4,7 @@ import { } from '@koishijs/censor'
 import { } from './chatAPI'
 import { } from './renderer'
 import { DvcPluginConfig } from '../types/config'
-import { ModelUsage, Msg } from '../types/message'
+import { ModelUsage } from '../types/message'
 import { recall } from '../utils'
 import { SHARED_SESSION_ID } from './session'
 
@@ -143,8 +143,6 @@ class DVc extends Service {
     ) {
       session_of_id.push({ role: 'assistant', content: message })
     }
-
-    this.ctx.dvcSession.trim(session_of_id)
 
     this.ctx.dvcSession.sessions[sessionid] = session_of_id
     logger.info('ChatGPT返回内容: ')

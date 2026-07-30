@@ -55,7 +55,6 @@ class DvcConsole {
 
       // 记录上下文
       session_of_id.push({ role: 'assistant', content: message })
-      ctx.dvcSession.trim(session_of_id)
 
       ctx.dvcSession.sessions[sessionid] = session_of_id
       logger.info(`${this.pluginConfig.appointModel}返回内容: `)

@@ -46,7 +46,7 @@ class Davinci003 {
     })
     ctx.plugin(DvcPersonality)
     ctx.plugin(DvcSession)
-    ctx.plugin(DvcRenderer, { output: config.behavior.output })
+    ctx.plugin(DvcRenderer, { output: config.behavior.output, max_tokens: config.behavior.max_tokens })
     ctx.plugin(DVc, config)
 
     // 插件层

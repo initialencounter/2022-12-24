@@ -158,12 +158,17 @@ export function formatDuration(ms: number): string {
 }
 
 /** 生成附加在图片底部的统计信息(markdown 引用块) */
-export function statsFooter(stats: RunStats): string {
+export function statsFooter(stats: RunStats, max_tokens?: number): string {
   const parts: string[] = []
   const tokens: string[] = []
   if (stats.inputTokens) tokens.push(`输入 ${formatNumber(stats.inputTokens)}`)
   if (stats.outputTokens) tokens.push(`输出 ${formatNumber(stats.outputTokens)}`)
   if (stats.cacheReadTokens) tokens.push(`缓存 ${formatNumber(stats.cacheReadTokens)}`)
+  if (max_tokens && max_tokens > 0) {
+    const consumed = (stats.inputTokens ?? 0) + (stats.outputTokens ?? 0)
+    const pct = (consumed / max_tokens * 100).toFixed(1)
+    tokens.push(`消耗 ${pct}%`)
+  }
   if (tokens.length) parts.push(`🔢 Tokens:${tokens.join(' · ')}`)
   if (stats.totalCost) parts.push(`💰 费用:$${stats.totalCost.toFixed(4)}`)
   parts.push(`⏱️ 耗时:${formatDuration(stats.durationMs)}`)

@@ -93,7 +93,7 @@ class DvcCommand {
     ctx
       .command('dvc.翻译 <prompt:text>', 'AI翻译', { usageName: 'dvc' })
       .option('lang', '-l <lang:t=string>', { fallback: behavior.lang })
-      .action(async ({ session, options }, prompt) => {
+      .action(async ({ options }, prompt) => {
         return await ctx.dvc.translate(options!.lang, prompt)
       })
 

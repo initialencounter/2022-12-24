@@ -22,10 +22,12 @@ class DvcRenderer extends Service {
   }
 
   output_type: string
+  max_tokens: number
 
-  constructor(ctx: Context, config: { output: OutputType }) {
+  constructor(ctx: Context, config: { output: OutputType; max_tokens: number }) {
     super(ctx, 'dvcRenderer', true)
     this.output_type = config.output
+    this.max_tokens = config.max_tokens
   }
 
   /** 切换输出模式，返回是否合法 */
@@ -95,7 +97,7 @@ class DvcRenderer extends Service {
       return result
     } else if (this.output_type == 'image' && this.ctx.markdownToImage) {
       const runStat = modelUsageToRunStats(usage)
-      const footer = statsFooter(runStat)
+      const footer = statsFooter(runStat, this.max_tokens)
       const buffer = await this.ctx.markdownToImage.convertToImage(
         resp[resp.length - 1].content + footer,
       )

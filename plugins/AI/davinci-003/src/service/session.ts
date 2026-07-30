@@ -52,14 +52,6 @@ class DvcSession extends Service {
     ]
   }
 
-  /** 裁剪上下文，防止超出长度限制 */
-  trim(session_of_id: Msg[]) {
-    while (JSON.stringify(session_of_id).length > 10000) {
-      session_of_id.splice(1, 1)
-      if (session_of_id.length <= 1) break
-    }
-  }
-
   /** 清空所有会话 */
   clearAll() {
     this.sessions = {}
